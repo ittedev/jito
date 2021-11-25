@@ -1,0 +1,7 @@
+{
+    "name": "@appName@",
+    "image": "denoland/deno",
+    "extensions": [
+        "denoland.vscode-deno"
+    ]
+}
