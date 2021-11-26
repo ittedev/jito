@@ -1,4 +1,4 @@
-export { watch } from './watch.ts'
-export { hack } from './hack.ts'
-export { render } from './render.ts'
-export { compact } from './compact.ts'
+export { watch } from './src/watch.ts'
+export { hack } from './src/hack.ts'
+export { render } from './src/render.ts'
+export { compact } from './src/compact.ts'

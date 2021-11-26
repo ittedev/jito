@@ -7,7 +7,7 @@ const data = {
   value: 1
 }
 
-hack('.app', '{{ value }}', { $defaults: data })
+hack('.app', '{{ value }}', { $var: data })
 ```
 
 ``` ts
@@ -35,7 +35,19 @@ const component = compact('{{ data.value }}', { data })
   <div default>
 </temp>
 
-<div for="item of items"></div>
+<div each="item" of="items"></div>
+
+<div try="items">
+  <div each="item"></div>
+</div>
+<div catch></div>
+
+<div try></div>
+<div catch></div>
+
+<div if="a"></div>
+<div else if="a"></div>
+<div else></div>
 
 <header props*="{ props }"></header>
 
