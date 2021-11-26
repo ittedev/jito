@@ -64,7 +64,7 @@ import { create } from 'bearko/client.ts'
 
 const html = `{{ value }}`
 const css = ``
-const tree = parse(html, css)
+const tree = parse(html)
 
 const component = create(tree, {
   value: 1
