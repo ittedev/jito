@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std/testing/asserts.ts'
-import { watch } from '../src/watch.ts'
+import { watch } from '../watcher/watch.ts'
 
 Deno.test('watch object', () => {
   const data = {

@@ -1,7 +1,7 @@
-export { watch } from './src/watcher.ts'
-export { hack } from './src/shadow.ts'
-export { render } from './src/renderer.ts'
-export { compact } from './src/component.ts'
+export type { VirtualElement } from './virtual-dom/mod.ts'
 
-export type { VirtualElement } from './src/virtual/mod.ts'
-export { load, apply } from './src/virtual/mod.ts'
+export { watch } from './watcher/mod.ts'
+export { load, apply } from './virtual-dom/mod.ts'
+export { compact } from './component/mod.ts'
+export { hack } from './shadow-dom/mod.ts'
+export { render } from './renderer/mod.ts'
