@@ -1,5 +1,5 @@
 {
   "compilerOptions": {
-    "lib": ["deno", "ES2021", "DOM", "DOM.Iterable"]
+    "lib": ["deno.window", "ES2021", "DOM", "DOM.Iterable"]
   }
 }

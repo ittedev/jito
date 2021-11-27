@@ -1,6 +1,9 @@
+// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { dictionary, Callback, DictionaryPage, Dictionary, BearkoObject } from './types.ts'
 
-export const watch = (data: unknown, path?: string | string[], callback?: Callback): unknown => {
+export function watch(data: unknown, path?: string | string[], callback?: Callback): unknown {
   if (typeof data === 'object' && data !== null) {
     if (Array.isArray(data)) {
       // TODO: watch Array
