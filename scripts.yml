@@ -1,0 +1,8 @@
+watch: false
+scripts:
+  serve:
+    cmd: "file_server ./public"
+    desc: "run my app.ts file"
+  test:
+    cmd: "deno test --allow-run --allow-read --allow-write --allow-net --unstable --config deno.json"
+    desc: "run my app.ts file"
