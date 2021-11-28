@@ -9,6 +9,7 @@ export async function buildBrowserFile(fileName: string) {
   } catch (e) {}
   
   await Deno.writeTextFile(`./public/${fileName}.html`, `<!DOCTYPE html>
+<title>${fileName}</title>
 <style>
 body {
   white-space: pre-wrap;
@@ -16,8 +17,4 @@ body {
 </style>
 <body></body>
 <script>${files['deno:///bundle.js']}</script>`)
-}
-
-export function getTextById(id: string) {
-  return () => document.getElementById(id)?.innerText;
 }

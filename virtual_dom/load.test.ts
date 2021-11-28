@@ -1,13 +1,23 @@
-import { buildBrowserFile, getTextById } from '../_helper/test.ts'
-import { assertEquals } from 'https://deno.land/std/testing/asserts.ts'
+import { buildBrowserFile } from '../_helper/test.ts'
+import { assertObjectMatch } from 'https://deno.land/std/testing/asserts.ts'
 import { buildFor } from 'https://deno.land/x/sinco@v2.0.0/mod.ts'
 
 const fileName = 'virtual_dom/load.test.browser.ts'
 buildBrowserFile(fileName)
 
-Deno.test('loadTest', async () => {
+Deno.test('load body', async () => {
   const Sinco = await buildFor("chrome")
   await Sinco.goTo(`http://0.0.0.0:2555/${fileName}.html`)
-  assertEquals(await Sinco.evaluatePage(getTextById('loadTest')), "aaa")
-  await Sinco.done();
+  {
+    const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('loadBody')?.innerText) as string)
+    assertObjectMatch({
+      tag: 'BODY',
+      children: ['Hello'],
+      elm: {}
+    }, data)
+  }
+  await Sinco.done()
 })
+
+clearTimeout(setTimeout(() => {}))
+await new Promise(_ => setTimeout(_))

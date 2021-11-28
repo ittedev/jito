@@ -8,10 +8,22 @@ import { VirtualElement } from './VirtualElement.ts'
  * @alpha
  */
 export function load(elm: Element): VirtualElement {
+  console.log('[...elm.classList.values()]:', [...elm.classList.values()])
   return {
     tag: elm.tagName,
-    class: [...elm.classList.values()],
     elm,
+
+    // class
+    ...(elm.classList.length ? { class: [...elm.classList.values()] } : {}),
+
+    // style
+    ...(elm instanceof HTMLElement ? (styleList => {
+      const style = {} as Record<string, string>
+      for (let i = styleList.length; i--;) {
+        style[styleList[i]] = styleList.getPropertyValue(styleList[i])
+      }
+      return Object.keys(style).length ? { style } : {}
+    })(elm.style) : {}),
     
     // attributes
     ...(elm.hasAttributes() ? {
@@ -26,28 +38,22 @@ export function load(elm: Element): VirtualElement {
       })(elm.attributes)
     } : {}),
 
-    // style
-    ...(elm instanceof HTMLElement ? {
-      style: JSON.parse(JSON.stringify(elm.style))
-    } : {}),
-
     // children
-    ...(elm.hasChildNodes() ? {
-      children: (nodeList => {
-        const children = [] as Array<string | VirtualElement>
-        for (let i = 0; i < nodeList.length; i++) {
-          switch(nodeList[i].nodeType) {
-            case 3: // TEXT_NODE
-              children.push((nodeList[i] as CharacterData).data)
-              break
-            case 1: // ELEMENT_NODE
-              children.push(load(nodeList[i] as Element))
-              break
-          }
+    ...(elm.hasChildNodes() ? (nodeList => {
+      const children = [] as Array<string | VirtualElement>
+      for (let i = 0; i < nodeList.length; i++) {
+        switch(nodeList[i].nodeType) {
+          case 3: // TEXT_NODE
+            children.push((nodeList[i] as CharacterData).data)
+            console.log('(nodeList[i] as CharacterData).data:', (nodeList[i] as CharacterData).data)
+            break
+          case 1: // ELEMENT_NODE
+            children.push(load(nodeList[i] as Element))
+            break
         }
-        return children
-      })(elm.childNodes)
-    } : {})
+      }
+      return children.length ? { children } : {}
+    })(elm.childNodes) : {})
 
     // ignore events
   }

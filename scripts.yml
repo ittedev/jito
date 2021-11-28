@@ -4,5 +4,5 @@ scripts:
     cmd: "file_server ./public -p 2555"
     desc: "run my app.ts file"
   test:
-    cmd: "deno test --allow-run --allow-read --allow-write --allow-net --unstable --config deno.json"
+    cmd: "deno test -A --unstable --config deno.json"
     desc: "run my app.ts file"

@@ -4,12 +4,8 @@
 export interface VirtualElement {
   tag: string,
   class?: Array<string>,
-  style?: {
-    [name: string]: string
-  },
-  attr?: {
-    [name: string]: string | ((event?: Event) => void)
-  },
+  style?: Record<string, string>,
+  attr?: Record<string, string | ((event?: Event) => void)>,
   children?: Array<string | VirtualElement>
   key?: unknown,
   elm?: Element
