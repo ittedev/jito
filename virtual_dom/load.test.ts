@@ -7,7 +7,7 @@ buildBrowserFile(fileName)
 
 Deno.test('loadTest', async () => {
   const Sinco = await buildFor("chrome")
-  await Sinco.goTo(`http://0.0.0.0:4507/${fileName}.html`)
+  await Sinco.goTo(`http://0.0.0.0:2555/${fileName}.html`)
   assertEquals(await Sinco.evaluatePage(getTextById('loadTest')), "aaa")
   await Sinco.done();
 })
