@@ -11,7 +11,7 @@ Deno.test('load body', async () => {
   {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('loadBody')?.innerText) as string)
     assertObjectMatch({
-      tag: 'BODY',
+      tag: 'body',
       children: ['Hello'],
       elm: {}
     }, data)

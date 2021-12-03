@@ -1,16 +1,16 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { VirtualElement } from './VirtualElement.ts'
+import { LinkedVirtualElement } from './VirtualElement.ts'
 
 /**
  * Create a vertual tree from a dom node.
  * @alpha
  */
-export function load(elm: Element): VirtualElement {
+export function load(elm: Element): LinkedVirtualElement {
   console.log('[...elm.classList.values()]:', [...elm.classList.values()])
   return {
-    tag: elm.tagName,
+    tag: elm.tagName.toLowerCase(),
     elm,
 
     // class
@@ -29,7 +29,7 @@ export function load(elm: Element): VirtualElement {
     ...(elm.hasAttributes() ? {
       attr: (attrs => {
         const attr = {} as {
-          [name: string]: string | ((event?: Event) => void)
+          [name: string]: string
         }
         for(let i = attrs.length - 1; i >= 0; i--) {
           attr[attrs[i].name] = attrs[i].value;
@@ -40,7 +40,7 @@ export function load(elm: Element): VirtualElement {
 
     // children
     ...(elm.hasChildNodes() ? (nodeList => {
-      const children = [] as Array<string | VirtualElement>
+      const children = [] as Array<string | LinkedVirtualElement>
       for (let i = 0; i < nodeList.length; i++) {
         switch(nodeList[i].nodeType) {
           case 3: // TEXT_NODE
