@@ -4,7 +4,7 @@
 export interface VirtualElement {
   tag: string
   class?: Array<string>
-  style?: Record<string, string>
+  style?: string
   attr?: Record<string, string>
   event?: Record<string, ((event?: Event) => void)>
   children?: Array<string | VirtualElement | number>
@@ -13,5 +13,5 @@ export interface VirtualElement {
 
 export interface LinkedVirtualElement extends VirtualElement {
   children?: Array<string | LinkedVirtualElement | number>
-  elm: Element
+  el: Element
 }

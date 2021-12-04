@@ -7,26 +7,20 @@ import { LinkedVirtualElement } from './VirtualElement.ts'
  * Create a vertual tree from a dom node.
  * @alpha
  */
-export function load(elm: Element): LinkedVirtualElement {
-  console.log('[...elm.classList.values()]:', [...elm.classList.values()])
+export function load(el: Element): LinkedVirtualElement {
+  console.log('[...el.classList.values()]:', [...el.classList.values()])
   return {
-    tag: elm.tagName.toLowerCase(),
-    elm,
+    tag: el.tagName.toLowerCase(),
+    el,
 
     // class
-    ...(elm.classList.length ? { class: [...elm.classList.values()] } : {}),
+    ...(el.classList.length ? { class: [...el.classList.values()] } : {}),
 
     // style
-    ...(elm instanceof HTMLElement ? (styleList => {
-      const style = {} as Record<string, string>
-      for (let i = styleList.length; i--;) {
-        style[styleList[i]] = styleList.getPropertyValue(styleList[i])
-      }
-      return Object.keys(style).length ? { style } : {}
-    })(elm.style) : {}),
+    ...(el instanceof HTMLElement && el.style.length ? { style: el.style.cssText } : {}),
     
     // attributes
-    ...(elm.hasAttributes() ? {
+    ...(el.hasAttributes() ? {
       attr: (attrs => {
         const attr = {} as {
           [name: string]: string
@@ -35,11 +29,11 @@ export function load(elm: Element): LinkedVirtualElement {
           attr[attrs[i].name] = attrs[i].value;
         }
         return attr
-      })(elm.attributes)
+      })(el.attributes)
     } : {}),
 
     // children
-    ...(elm.hasChildNodes() ? (nodeList => {
+    ...(el.hasChildNodes() ? (nodeList => {
       const children = [] as Array<string | LinkedVirtualElement>
       for (let i = 0; i < nodeList.length; i++) {
         switch(nodeList[i].nodeType) {
@@ -53,7 +47,7 @@ export function load(elm: Element): LinkedVirtualElement {
         }
       }
       return children.length ? { children } : {}
-    })(elm.childNodes) : {})
+    })(el.childNodes) : {})
 
     // ignore events
   }
