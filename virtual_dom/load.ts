@@ -20,17 +20,17 @@ export function load(el: Element): LinkedVirtualElement {
     ...(el instanceof HTMLElement && el.style.length ? { style: el.style.cssText } : {}),
     
     // attributes
-    ...(el.hasAttributes() ? {
-      attr: (attrs => {
-        const attr = {} as {
-          [name: string]: string
+    ...(el.hasAttributes() ? (() => {
+      const attr = {} as Record<string, string>
+      el.getAttributeNames().forEach(name => {
+        switch (name) {
+          case 'class': case 'style':
+            return
         }
-        for(let i = attrs.length - 1; i >= 0; i--) {
-          attr[attrs[i].name] = attrs[i].value;
-        }
-        return attr
-      })(el.attributes)
-    } : {}),
+        attr[name] = el.getAttribute(name) as string
+      })
+      return attr.length ? { attr } : {}
+    })() : {}),
 
     // children
     ...(el.hasChildNodes() ? (nodeList => {
