@@ -27,7 +27,7 @@ export function load(el: Element): LinkedVirtualElement {
       const attr = {} as Record<string, string>
       el.getAttributeNames().forEach(name => {
         switch (name) {
-          case 'class': case 'style':
+          case 'class': case 'style': case 'part':
             return
         }
         attr[name] = el.getAttribute(name) as string
