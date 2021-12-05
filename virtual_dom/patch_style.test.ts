@@ -66,7 +66,6 @@ await Deno.test('patch remove All style', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchRemoveAllStyle1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      style: 'font-size: 1px; color: red;',
       el: {}
     }, data)
   }
@@ -84,7 +83,6 @@ await Deno.test('patch set empty style', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchSetEmptyStyle1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      style: 'font-size: 1px; color: red;',
       el: {}
     }, data)
   }
