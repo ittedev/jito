@@ -4,6 +4,7 @@
 export interface VirtualElement {
   tag: string
   class?: Array<string>
+  part?: Array<string>
   style?: string
   attr?: Record<string, string>
   event?: Record<string, ((event?: Event) => void)>

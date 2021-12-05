@@ -16,6 +16,9 @@ export function load(el: Element): LinkedVirtualElement {
     // class
     ...(el.classList.length ? { class: [...el.classList.values()] } : {}),
 
+    // part
+    ...(el.part.length ? { part: [...el.part.values()] } : {}),
+
     // style
     ...(el instanceof HTMLElement && el.style.length ? { style: el.style.cssText } : {}),
     

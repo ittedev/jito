@@ -12,7 +12,6 @@ await Deno.test('load body', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('loadBody')?.innerText) as string)
     assertObjectMatch({
       tag: 'body',
-      children: [],
       el: {}
     }, data)
   }
@@ -27,7 +26,20 @@ await Deno.test('load body class', async () => {
     assertObjectMatch({
       tag: 'body',
       class: ['class-a', 'class-b'],
-      children: ['Hello'],
+      el: {}
+    }, data)
+  }
+  await Sinco.done()
+})
+
+await Deno.test('load body part', async () => {
+  const Sinco = await buildFor("chrome")
+  await Sinco.goTo(`http://0.0.0.0:2555/${fileName}.html`)
+  {
+    const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('loadBodyPart')?.innerText) as string)
+    assertObjectMatch({
+      tag: 'body',
+      part: ['part-a', 'part-b'],
       el: {}
     }, data)
   }
