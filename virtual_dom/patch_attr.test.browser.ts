@@ -4,21 +4,20 @@ import { patchAttr } from './patch_attr.ts'
 // test: patch new attr
 {
   const el = document.createElement('div')
-  const ve = {
+  const tree = {
     tag: 'div',
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1'
-    },
-    el
+    }
   }
-  patchAttr(ve, newVE)
-  log('patchNewAttr1', ve)
+  patchAttr(tree, newTree)
+  log('patchNewAttr1', tree)
   let output = ''
-  for(const attr of ve.el.attributes) {
+  for(const attr of tree.el.attributes) {
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchNewAttr2', output)
@@ -28,26 +27,25 @@ import { patchAttr } from './patch_attr.ts'
 {
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
-  const ve = {
+  const tree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1'
     },
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1',
       'attr-b': 'value 2',
       'attr-c': 'value 3'
-    },
-    el
+    }
   }
-  patchAttr(ve, newVE)
-  log('patchAddAttr1', ve)
+  patchAttr(tree, newTree)
+  log('patchAddAttr1', tree)
   let output = ''
-  for(const attr of ve.el.attributes) {
+  for(const attr of tree.el.attributes) {
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchAddAttr2', output)
@@ -59,7 +57,7 @@ import { patchAttr } from './patch_attr.ts'
   el.setAttribute('attr-a', 'value 1')
   el.setAttribute('attr-b', 'value 2')
   el.setAttribute('attr-c', 'value 3')
-  const ve = {
+  const tree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1',
@@ -68,18 +66,17 @@ import { patchAttr } from './patch_attr.ts'
     },
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1',
       'attr-c': 'value 3'
-    },
-    el
+    }
   }
-  patchAttr(ve, newVE)
-  log('patchRemoveAttr1', ve)
+  patchAttr(tree, newTree)
+  log('patchRemoveAttr1', tree)
   let output = ''
-  for(const attr of ve.el.attributes) {
+  for(const attr of tree.el.attributes) {
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchRemoveAttr2', output)
@@ -91,7 +88,7 @@ import { patchAttr } from './patch_attr.ts'
   el.setAttribute('attr-a', 'value 1')
   el.setAttribute('attr-b', 'value 2')
   el.setAttribute('attr-c', 'value 3')
-  const ve = {
+  const tree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1',
@@ -100,14 +97,13 @@ import { patchAttr } from './patch_attr.ts'
     },
     el
   }
-  const newVE = {
-    tag: 'div',
-    el
+  const newTree = {
+    tag: 'div'
   }
-  patchAttr(ve, newVE)
-  log('patchRemoveAllAttr1', ve)
+  patchAttr(tree, newTree)
+  log('patchRemoveAllAttr1', tree)
   let output = ''
-  for(const attr of ve.el.attributes) {
+  for(const attr of tree.el.attributes) {
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchRemoveAllAttr2', output)
@@ -119,7 +115,7 @@ import { patchAttr } from './patch_attr.ts'
   el.setAttribute('attr-a', 'value 1')
   el.setAttribute('attr-b', 'value 2')
   el.setAttribute('attr-c', 'value 3')
-  const ve = {
+  const tree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1',
@@ -128,15 +124,14 @@ import { patchAttr } from './patch_attr.ts'
     },
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
-    attr: {},
-    el
+    attr: {}
   }
-  patchAttr(ve, newVE)
-  log('patchSetEmptyAttr1', ve)
+  patchAttr(tree, newTree)
+  log('patchSetEmptyAttr1', tree)
   let output = ''
-  for(const attr of ve.el.attributes) {
+  for(const attr of tree.el.attributes) {
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchSetEmptyAttr2', output)
@@ -147,7 +142,7 @@ import { patchAttr } from './patch_attr.ts'
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
   el.setAttribute('attr-b', 'value 2')
-  const ve = {
+  const tree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1',
@@ -155,18 +150,17 @@ import { patchAttr } from './patch_attr.ts'
     },
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1',
       'attr-b': 'value 2'
-    },
-    el
+    }
   }
-  patchAttr(ve, newVE)
-  log('patchNoChangeAttr1', ve)
+  patchAttr(tree, newTree)
+  log('patchNoChangeAttr1', tree)
   let output = ''
-  for(const attr of ve.el.attributes) {
+  for(const attr of tree.el.attributes) {
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchNoChangeAttr2', output)
@@ -176,24 +170,23 @@ import { patchAttr } from './patch_attr.ts'
 {
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
-  const ve = {
+  const tree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 1'
     },
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
     attr: {
       'attr-a': 'value 2'
-    },
-    el
+    }
   }
-  patchAttr(ve, newVE)
-  log('patchUpdateAttr1', ve)
+  patchAttr(tree, newTree)
+  log('patchUpdateAttr1', tree)
   let output = ''
-  for(const attr of ve.el.attributes) {
+  for(const attr of tree.el.attributes) {
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchUpdateAttr2', output)

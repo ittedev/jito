@@ -10,8 +10,7 @@ import { patchStyle } from './patch_style.ts'
   }
   const newTree = {
     tag: 'div',
-    style: 'color: red;',
-    el
+    style: 'color: red;'
   }
   patchStyle(tree, newTree)
   log('patchNewStyle1', tree)
@@ -29,8 +28,7 @@ import { patchStyle } from './patch_style.ts'
   }
   const newTree = {
     tag: 'div',
-    style: 'font-size: 1px; margin: auto; color: red;',
-    el
+    style: 'font-size: 1px; margin: auto; color: red;'
   }
   patchStyle(tree, newTree)
   log('patchAddStyle1', tree)
@@ -48,8 +46,7 @@ import { patchStyle } from './patch_style.ts'
   }
   const newTree = {
     tag: 'div',
-    style: 'font-size: 1px; color: red;',
-    el
+    style: 'font-size: 1px; color: red;'
   }
   patchStyle(tree, newTree)
   log('patchRemoveStyle1', tree)
@@ -66,8 +63,7 @@ import { patchStyle } from './patch_style.ts'
     el
   }
   const newTree = {
-    tag: 'div',
-    el
+    tag: 'div'
   }
   patchStyle(tree, newTree)
   log('patchRemoveAllStyle1', tree)
@@ -85,8 +81,7 @@ import { patchStyle } from './patch_style.ts'
   }
   const newTree = {
     tag: 'div',
-    style: '',
-    el
+    style: ''
   }
   patchStyle(tree, newTree)
   log('patchSetEmptyStyle1', tree)
@@ -104,8 +99,7 @@ import { patchStyle } from './patch_style.ts'
   }
   const newTree = {
     tag: 'div',
-    style: 'font-size: 1px; margin: auto;',
-    el
+    style: 'font-size: 1px; margin: auto;'
   }
   patchStyle(tree, newTree)
   log('patchNoChangeStyle1', tree)

@@ -4,44 +4,42 @@ import { patch } from './patch.ts'
 // test: patch change tag
 {
   const el = document.createElement('div')
-  const ve = {
+  const tree = {
     tag: 'div',
     el
   }
-  const newVE = {
-    tag: 'p',
-    el
+  const newTree = {
+    tag: 'p'
   }
-  const patchedVE = patch(ve, newVE)
-  log('patchChangeTag1', patchedVE)
-  log('patchChangeTag2', patchedVE.el.tagName)
+  const patchedTree = patch(tree, newTree)
+  log('patchChangeTag1', patchedTree)
+  log('patchChangeTag2', patchedTree.el.tagName)
 }
 
 // test: patch change tag and other
 {
   const el = document.createElement('div')
-  const ve = {
+  const tree = {
     tag: 'div',
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'p',
     class: ['class-a'],
     part: ['part-a'],
     style: 'color: red;',
     attr: {
       'attr-a': 'value 1'
-    },
-    el
+    }
   }
-  const patchedVE = patch(ve, newVE)
-  log('patchChangeTagAndOther1', patchedVE)
-  log('patchChangeTagAndOther2', patchedVE.el.tagName)
-  log('patchChangeTagAndOther3', [...patchedVE.el.classList.values()])
-  log('patchChangeTagAndOther4', [...patchedVE.el.part.values()])
-  log('patchChangeTagAndOther5', (patchedVE.el as HTMLElement).style.cssText)
+  const patchedTree = patch(tree, newTree)
+  log('patchChangeTagAndOther1', patchedTree)
+  log('patchChangeTagAndOther2', patchedTree.el.tagName)
+  log('patchChangeTagAndOther3', [...patchedTree.el.classList.values()])
+  log('patchChangeTagAndOther4', [...patchedTree.el.part.values()])
+  log('patchChangeTagAndOther5', (patchedTree.el as HTMLElement).style.cssText)
   let output = ''
-  for(const attr of patchedVE.el.attributes) {
+  for(const attr of patchedTree.el.attributes) {
     if ('class style part'.includes(attr.name)) {
       continue
     }

@@ -4,110 +4,104 @@ import { patchPart } from './patch_part.ts'
 // test: patch new part
 {
   const el = document.createElement('div')
-  const ve = {
+  const tree = {
     tag: 'div',
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
-    part: ['part-a'],
-    el
+    part: ['part-a']
   }
-  patchPart(ve, newVE)
-  log('patchNewPart1', ve)
-  log('patchNewPart2', [...ve.el.part.values()])
+  patchPart(tree, newTree)
+  log('patchNewPart1', tree)
+  log('patchNewPart2', [...tree.el.part.values()])
 }
 
 // test: patch add part
 {
   const el = document.createElement('div')
   el.part.add('part-a')
-  const ve = {
+  const tree = {
     tag: 'div',
     part: ['part-a'],
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
-    part: ['part-a', 'part-b', 'part-c'],
-    el
+    part: ['part-a', 'part-b', 'part-c']
   }
-  patchPart(ve, newVE)
-  log('patchAddPart1', ve)
-  log('patchAddPart2', [...ve.el.part.values()])
+  patchPart(tree, newTree)
+  log('patchAddPart1', tree)
+  log('patchAddPart2', [...tree.el.part.values()])
 }
 
 // test: patch remove part
 {
   const el = document.createElement('div')
   el.part.add('part-a', 'part-b', 'part-c')
-  const ve = {
+  const tree = {
     tag: 'div',
     part: ['part-a', 'part-b', 'part-c'],
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
-    part: ['part-a', 'part-c'],
-    el
+    part: ['part-a', 'part-c']
   }
-  patchPart(ve, newVE)
-  log('patchRemovePart1', ve)
-  log('patchRemovePart2', [...ve.el.part.values()])
+  patchPart(tree, newTree)
+  log('patchRemovePart1', tree)
+  log('patchRemovePart2', [...tree.el.part.values()])
 }
 
 // test: patch remove all part
 {
   const el = document.createElement('div')
   el.part.add('part-a', 'part-b', 'part-c')
-  const ve = {
+  const tree = {
     tag: 'div',
     part: ['part-a', 'part-b', 'part-c'],
     el
   }
-  const newVE = {
-    tag: 'div',
-    el
+  const newTree = {
+    tag: 'div'
   }
-  patchPart(ve, newVE)
-  log('patchRemoveAllPart1', ve)
-  log('patchRemoveAllPart2', [...ve.el.part.values()])
+  patchPart(tree, newTree)
+  log('patchRemoveAllPart1', tree)
+  log('patchRemoveAllPart2', [...tree.el.part.values()])
 }
 
 // test: patch set empty part
 {
   const el = document.createElement('div')
   el.part.add('part-a', 'part-b', 'part-c')
-  const ve = {
+  const tree = {
     tag: 'div',
     part: ['part-a', 'part-b', 'part-c'],
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
-    part: [],
-    el
+    part: []
   }
-  patchPart(ve, newVE)
-  log('patchSetEmptyPart1', ve)
-  log('patchSetEmptyPart2', [...ve.el.part.values()])
+  patchPart(tree, newTree)
+  log('patchSetEmptyPart1', tree)
+  log('patchSetEmptyPart2', [...tree.el.part.values()])
 }
 
 // test: patch no change part
 {
   const el = document.createElement('div')
   el.part.add('part-a', 'part-b')
-  const ve = {
+  const tree = {
     tag: 'div',
     part: ['part-a', 'part-b'],
     el
   }
-  const newVE = {
+  const newTree = {
     tag: 'div',
-    part: ['part-a', 'part-b'],
-    el
+    part: ['part-a', 'part-b']
   }
-  patchPart(ve, newVE)
-  log('patchNoChangePart1', ve)
-  log('patchNoChangePart2', [...ve.el.part.values()])
+  patchPart(tree, newTree)
+  log('patchNoChangePart1', tree)
+  log('patchNoChangePart2', [...tree.el.part.values()])
 }
