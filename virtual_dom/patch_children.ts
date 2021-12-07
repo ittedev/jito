@@ -1,4 +1,4 @@
-import { VirtualElement, LinkedVirtualElement } from './VirtualElement.ts'
+import { VirtualElement, LinkedVirtualElement } from './types.ts'
 import { patch } from './patch.ts'
 
 class LinkedVirtualElementPointer {

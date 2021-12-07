@@ -1,4 +1,4 @@
-import { VirtualElement, LinkedVirtualElement } from './VirtualElement.ts'
+import { VirtualElement, LinkedVirtualElement } from './types.ts'
 
 export function patchClass(tree: LinkedVirtualElement, newTree: VirtualElement) {
   const currentClass = tree.class || []

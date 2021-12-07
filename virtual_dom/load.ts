@@ -1,7 +1,7 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { LinkedVirtualElement } from './VirtualElement.ts'
+import { LinkedVirtualElement } from './types.ts'
 
 /**
  * Create a vertual tree from a dom node.

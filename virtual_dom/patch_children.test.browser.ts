@@ -1,6 +1,6 @@
 import { test, log } from '../_helper/document_console.ts'
 import { patchChildren } from './patch_children.ts'
-import { VirtualElement, LinkedVirtualElement } from './VirtualElement.ts'
+import { VirtualElement } from './types.ts'
 
 test('patch new text', () => {
   const el = document.createElement('div')

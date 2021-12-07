@@ -1,4 +1,4 @@
-import { VirtualElement, LinkedVirtualElement } from './VirtualElement.ts'
+import { VirtualElement, LinkedVirtualElement } from './types.ts'
 
 export function patchEvent(tree: LinkedVirtualElement, newTree: VirtualElement) {
 }

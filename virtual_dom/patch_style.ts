@@ -1,4 +1,4 @@
-import { VirtualElement, LinkedVirtualElement } from './VirtualElement.ts'
+import { VirtualElement, LinkedVirtualElement } from './types.ts'
 
 export function patchStyle(tree: LinkedVirtualElement, newTree: VirtualElement) {
   if (tree.el instanceof HTMLElement) {
