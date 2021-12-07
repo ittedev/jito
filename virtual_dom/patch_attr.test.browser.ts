@@ -1,8 +1,7 @@
-import { log } from '../_helper/document_console.ts'
+import { test, log } from '../_helper/document_console.ts'
 import { patchAttr } from './patch_attr.ts'
 
-// test: patch new attr
-{
+test('patch new attr', () => {
   const el = document.createElement('div')
   const tree = {
     tag: 'div',
@@ -21,10 +20,9 @@ import { patchAttr } from './patch_attr.ts'
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchNewAttr2', output)
-}
+})
 
-// test: patch add attr
-{
+test('patch add attr', () => {
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
   const tree = {
@@ -49,10 +47,9 @@ import { patchAttr } from './patch_attr.ts'
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchAddAttr2', output)
-}
+})
 
-// test: patch remove attr
-{
+test('patch remove attr', () => {
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
   el.setAttribute('attr-b', 'value 2')
@@ -80,10 +77,9 @@ import { patchAttr } from './patch_attr.ts'
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchRemoveAttr2', output)
-}
+})
 
-// test: patch remove all attr
-{
+test('patch remove all attr', () => {
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
   el.setAttribute('attr-b', 'value 2')
@@ -107,10 +103,9 @@ import { patchAttr } from './patch_attr.ts'
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchRemoveAllAttr2', output)
-}
+})
 
-// test: patch set empty attr
-{
+test('patch set empty attr', () => {
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
   el.setAttribute('attr-b', 'value 2')
@@ -135,10 +130,9 @@ import { patchAttr } from './patch_attr.ts'
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchSetEmptyAttr2', output)
-}
+})
 
-// test: patch no change attr
-{
+test('patch no change attr', () => {
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
   el.setAttribute('attr-b', 'value 2')
@@ -164,10 +158,9 @@ import { patchAttr } from './patch_attr.ts'
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchNoChangeAttr2', output)
-}
+})
 
-// test: patch update attr
-{
+test('patch update attr', () => {
   const el = document.createElement('div')
   el.setAttribute('attr-a', 'value 1')
   const tree = {
@@ -190,4 +183,4 @@ import { patchAttr } from './patch_attr.ts'
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchUpdateAttr2', output)
-}
+})

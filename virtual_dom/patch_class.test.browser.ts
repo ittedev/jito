@@ -1,8 +1,7 @@
-import { log } from '../_helper/document_console.ts'
+import { test, log } from '../_helper/document_console.ts'
 import { patchClass } from './patch_class.ts'
 
-// test: patch new class
-{
+test('patch new class', () => {
   const el = document.createElement('div')
   const tree = {
     tag: 'div',
@@ -15,10 +14,9 @@ import { patchClass } from './patch_class.ts'
   patchClass(tree, newTree)
   log('patchNewClass1', tree)
   log('patchNewClass2', [...tree.el.classList.values()])
-}
+})
 
-// test: patch add class
-{
+test('patch add class', () => {
   const el = document.createElement('div')
   el.classList.add('class-a')
   const tree = {
@@ -33,10 +31,9 @@ import { patchClass } from './patch_class.ts'
   patchClass(tree, newTree)
   log('patchAddClass1', tree)
   log('patchAddClass2', [...tree.el.classList.values()])
-}
+})
 
-// test: patch remove class
-{
+test('patch remove class', () => {
   const el = document.createElement('div')
   el.classList.add('class-a', 'class-b', 'class-c')
   const tree = {
@@ -51,10 +48,9 @@ import { patchClass } from './patch_class.ts'
   patchClass(tree, newTree)
   log('patchRemoveClass1', tree)
   log('patchRemoveClass2', [...tree.el.classList.values()])
-}
+})
 
-// test: patch remove all class
-{
+test('patch remove all class', () => {
   const el = document.createElement('div')
   el.classList.add('class-a', 'class-b', 'class-c')
   const tree = {
@@ -68,10 +64,9 @@ import { patchClass } from './patch_class.ts'
   patchClass(tree, newTree)
   log('patchRemoveAllClass1', tree)
   log('patchRemoveAllClass2', [...tree.el.classList.values()])
-}
+})
 
-// test: patch set empty class
-{
+test('patch set empty class', () => {
   const el = document.createElement('div')
   el.classList.add('class-a', 'class-b', 'class-c')
   const tree = {
@@ -86,10 +81,9 @@ import { patchClass } from './patch_class.ts'
   patchClass(tree, newTree)
   log('patchSetEmptyClass1', tree)
   log('patchSetEmptyClass2', [...tree.el.classList.values()])
-}
+})
 
-// test: patch no change class
-{
+test('patch no change class', () => {
   const el = document.createElement('div')
   el.classList.add('class-a', 'class-b')
   const tree = {
@@ -104,4 +98,4 @@ import { patchClass } from './patch_class.ts'
   patchClass(tree, newTree)
   log('patchNoChangeClass1', tree)
   log('patchNoChangeClass2', [...tree.el.classList.values()])
-}
+})

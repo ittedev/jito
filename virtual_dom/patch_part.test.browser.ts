@@ -1,8 +1,7 @@
-import { log } from '../_helper/document_console.ts'
+import { test, log } from '../_helper/document_console.ts'
 import { patchPart } from './patch_part.ts'
 
-// test: patch new part
-{
+test('patch new part', () => {
   const el = document.createElement('div')
   const tree = {
     tag: 'div',
@@ -15,10 +14,9 @@ import { patchPart } from './patch_part.ts'
   patchPart(tree, newTree)
   log('patchNewPart1', tree)
   log('patchNewPart2', [...tree.el.part.values()])
-}
+})
 
-// test: patch add part
-{
+test('patch add part', () => {
   const el = document.createElement('div')
   el.part.add('part-a')
   const tree = {
@@ -33,10 +31,9 @@ import { patchPart } from './patch_part.ts'
   patchPart(tree, newTree)
   log('patchAddPart1', tree)
   log('patchAddPart2', [...tree.el.part.values()])
-}
+})
 
-// test: patch remove part
-{
+test('patch remove part', () => {
   const el = document.createElement('div')
   el.part.add('part-a', 'part-b', 'part-c')
   const tree = {
@@ -51,10 +48,9 @@ import { patchPart } from './patch_part.ts'
   patchPart(tree, newTree)
   log('patchRemovePart1', tree)
   log('patchRemovePart2', [...tree.el.part.values()])
-}
+})
 
-// test: patch remove all part
-{
+test('patch remove all part', () => {
   const el = document.createElement('div')
   el.part.add('part-a', 'part-b', 'part-c')
   const tree = {
@@ -68,10 +64,9 @@ import { patchPart } from './patch_part.ts'
   patchPart(tree, newTree)
   log('patchRemoveAllPart1', tree)
   log('patchRemoveAllPart2', [...tree.el.part.values()])
-}
+})
 
-// test: patch set empty part
-{
+test('patch set empty part', () => {
   const el = document.createElement('div')
   el.part.add('part-a', 'part-b', 'part-c')
   const tree = {
@@ -86,10 +81,9 @@ import { patchPart } from './patch_part.ts'
   patchPart(tree, newTree)
   log('patchSetEmptyPart1', tree)
   log('patchSetEmptyPart2', [...tree.el.part.values()])
-}
+})
 
-// test: patch no change part
-{
+test('patch no change part', () => {
   const el = document.createElement('div')
   el.part.add('part-a', 'part-b')
   const tree = {
@@ -104,4 +98,4 @@ import { patchPart } from './patch_part.ts'
   patchPart(tree, newTree)
   log('patchNoChangePart1', tree)
   log('patchNoChangePart2', [...tree.el.part.values()])
-}
+})
