@@ -7,6 +7,7 @@ import { patchPart } from './patch_part.ts'
 import { patchStyle } from './patch_style.ts'
 import { patchAttr } from './patch_attr.ts'
 import { patchEvent } from './patch_event.ts'
+import { patchChildren } from './patch_children.ts'
 
 
 /**
@@ -32,6 +33,13 @@ export function patch(tree: LinkedVirtualElement, newTree: VirtualElement): Link
   patchStyle(tree, newTree)
   patchAttr(tree, newTree)
   patchEvent(tree, newTree)
+  patchChildren(tree, newTree)
+
+  if ('key' in newTree) {
+    tree.key = newTree.key
+  } else {
+    delete tree.key
+  }
   
   return tree
 }

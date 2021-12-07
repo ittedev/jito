@@ -35,6 +35,9 @@ await Deno.test('patch change tag', async () => {
       attr: {
         'attr-a': 'value 1'
       },
+      children: [
+        'Hello'
+      ],
       el: {}
     }, data)
   }
@@ -57,6 +60,10 @@ await Deno.test('patch change tag', async () => {
   {
     const data = await Sinco.evaluatePage(() => document.getElementById('patchChangeTagAndOther6')?.innerText) as string
     assertStrictEquals('attr-a: value 1;', data)
+  }
+  {
+    const data = await Sinco.evaluatePage(() => document.getElementById('patchChangeTagAndOther7')?.innerText) as string
+    assertStrictEquals('Hello', data)
   }
   await Sinco.done()
 })

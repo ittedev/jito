@@ -28,7 +28,10 @@ test('patch change tag and other', () => {
     style: 'color: red;',
     attr: {
       'attr-a': 'value 1'
-    }
+    },
+    children: [
+      'Hello'
+    ]
   }
   const patchedTree = patch(tree, newTree)
   log('patchChangeTagAndOther1', patchedTree)
@@ -44,4 +47,5 @@ test('patch change tag and other', () => {
     output += attr.name + ': ' + attr.value + ';';
   }
   log('patchChangeTagAndOther6', output)
+  log('patchChangeTagAndOther7', patchedTree.el.innerHTML)
 })
