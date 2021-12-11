@@ -7,11 +7,11 @@ const data = {
   value: 1
 }
 
-hack('.app', '{{ value }}', { $var: data })
+hack('.app', '{{ value }}', data)
 ```
 
 ``` ts
-import { compact, watch } from 'bearko/client.ts'
+import { compact, watch } from 'bearko/mod.ts'
 
 const data = {
   value: 1
@@ -22,6 +22,18 @@ watch(data)
 const component = compact('{{ data.value }}', { data })
 ```
 
+``` ts
+import { compact, watch } from 'bearko/mod.ts'
+
+const data = {
+  value: 1
+}
+
+watch(data)
+
+const component = compact('{{ data.value }}', [data, { data }])
+```
+
 ``` html
 <div @if="a"></div>
 <div @elseif="a"></div>
@@ -29,11 +41,11 @@ const component = compact('{{ data.value }}', { data })
 
 <a click!="">Click me</a>
 
-<temp @switch="">
+<region @switch="">
   <div @case="">
   <div @case="">
   <div @default>
-</temp>
+</region>
 
 <div @each="item" @of="items"></div>
 
@@ -64,26 +76,48 @@ const component = compact('{{ data.value }}', { data })
             class+="key.isOver && 'over'"
             class+="key.isAlt && 'alt'"
             class+="key.isSelected && 'select'"
-            href:="url"
-            value*="name"
-            mousedown!="e => mousedown(e, key)"
-            mouseup!="e => press(e, key)"
-            touchstart!="e => touchstart(e, key)"
-            touchmove!="e => touchmove(e, key)"
-            touchend!="e => touchend(e, key)"
             style+=""
+            href:="url"
+            go:="url => name = url"
+            value*="name"
+            onmousedown+="e => mousedown(e, key)"
+            onmousedown+stop="e => e.preventDefault()"
+            onmouseup+="e => press(e, key)"
+            ontouchstart+="e => touchstart(e, key)"
+            ontouchmove+="e => touchmove(e, key)"
+            ontouchend+="e => touchend(e, key)"
             @elseif="state.shift.x === null && state.shift.y === null || key.unshift"
           >
+
+<selectbox @of="options" value*="checked">
+  <option value:=""></option>
+  <option @each="option" value:="option">{{ option }}</option>
+</selectbox>
+
+<radiogroup @of="options" value*="checked">
+  <radio @each="option" value:="option">{{ option }}</radio>
+</radiogroup>
+
+<checkbox value*="checked">Jack</checkbox>
+
+<textarea value*="checked"></textarea>
+
+<textbox type="" value*="checked">
+  
+<checkgroup value*="checkedNames">
+  <checkbox value:="'Jack'">Jack</checkbox>
+  <checkbox value:="'Jack'">Jack</checkbox>
+  <checkbox value:="'Jack'">Jack</checkbox>
+</checkgroup>
 ```
 
 ``` ts
-import { create } from 'bearko/client.ts'
+import { create } from 'bearko/mod.ts'
 
 const html = `{{ value }}`
-const css = ``
-const tree = parse(html)
+const template = parse(html)
 
-const component = create(tree, {
+const component = compact(tree, {
   value: 1
 })
 ```
