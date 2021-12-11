@@ -52,6 +52,7 @@ function distinguish(field: TokenField, value: string): TokenType {
   }
   return TokenType.other
 }
+
 export class Lexer {
   text: string
   index = 0
@@ -62,25 +63,25 @@ export class Lexer {
     this.field = field
     this.token = null
   }
-  skip(): Token {
-    const token = { type: TokenType.none, value: '' }
+  skip(): string {
+    let value = ''
     if (!this.token) {
       for (let i = this.index; i < this.text.length; i++) {
         const nextType = distinguish(this.field, this.text[i])
         if (nextType === TokenType.other) {
-          token.value += this.text[i]
+          value += this.text[i]
         } else {
           this.token = this._next(i)
           if (this.token?.type === TokenType.partial) {
-            token.value += this.token.value
+            value += this.token.value
             this.token = null
           } else {
-            return token
+            return value
           }
         }
       }
     }
-    return token
+    return value
   }
   private _next(start: number): Token | null {
     const token = { type: TokenType.none, value: '' }
@@ -95,7 +96,7 @@ export class Lexer {
     }
     return token
   }
-  next(): Token | null {
+  get next(): Token | null {
     if (this.token) {
       return this.token
     } else {
