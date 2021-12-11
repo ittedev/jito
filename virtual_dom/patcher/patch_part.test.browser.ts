@@ -1,4 +1,6 @@
-import { test, log } from '../_helper/document_console.ts'
+// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// This module is browser compatible.
+import { test, log } from '../../_helper/document_console.ts'
 import { patchPart } from './patch_part.ts'
 
 test('patch new part', () => {

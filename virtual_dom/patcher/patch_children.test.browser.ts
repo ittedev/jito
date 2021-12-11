@@ -1,6 +1,8 @@
-import { test, log } from '../_helper/document_console.ts'
+// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// This module is browser compatible.
+import { test, log } from '../../_helper/document_console.ts'
 import { patchChildren } from './patch_children.ts'
-import { VirtualElement } from './types.ts'
+import { VirtualElement } from '../types.ts'
 
 test('patch new text', () => {
   const el = document.createElement('div')

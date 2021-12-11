@@ -1,3 +1,5 @@
+// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// This module is browser compatible.
 import { test, log } from '../_helper/document_console.ts'
 import { patch } from './patch.ts'
 

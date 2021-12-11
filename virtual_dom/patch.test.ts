@@ -1,3 +1,4 @@
+// Copyright 2021 itte.dev. All rights reserved. MIT license.
 import { buildBrowserFile } from '../_helper/test.ts'
 import { assertObjectMatch, assertStrictEquals } from 'https://deno.land/std/testing/asserts.ts'
 import { buildFor } from 'https://deno.land/x/sinco@v2.0.0/mod.ts'

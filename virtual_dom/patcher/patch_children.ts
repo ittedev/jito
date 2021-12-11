@@ -1,5 +1,9 @@
-import { VirtualElement, LinkedVirtualElement } from './types.ts'
-import { patch } from './patch.ts'
+// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// This module is browser compatible.
+import { VirtualElement, LinkedVirtualElement } from '../types.ts'
+import { patch } from '../patch.ts'
+
+// TODO: add use DocumentFragment
 
 class LinkedVirtualElementPointer {
   index = 0
