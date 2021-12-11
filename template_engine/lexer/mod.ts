@@ -1,4 +1,4 @@
-import { TokenField, TokenType, Token } from './types.ts'
+import { TokenField, TokenType, Token } from '../types.ts'
 
 function distinguish(field: TokenField, value: string): TokenType {
   switch (field) {

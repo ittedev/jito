@@ -1,6 +1,6 @@
 import { assertObjectMatch, assertEquals } from 'https://deno.land/std/testing/asserts.ts'
-import { TokenField, TokenType, Token } from './types.ts'
-import { Lexer } from './lexer.ts'
+import { TokenField, TokenType, Token } from '../types.ts'
+import { Lexer } from './mod.ts'
 
 Deno.test('Lexer class: script', () => {
   const lexer = new Lexer('1+ x', TokenField.script)
