@@ -1,7 +1,7 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { assertStrictEquals, assertThrows } from 'https://deno.land/std/testing/asserts.ts'
-import { TermEvaluator, Variables } from '../types.ts'
+import { Variables } from '../types.ts'
 import { VariableEvaluator } from './variable_evaluator.ts'
 import { UnaryOperationEvaluator } from './unary_operation_evaluator.ts'
 
