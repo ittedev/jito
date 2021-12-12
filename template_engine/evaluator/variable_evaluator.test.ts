@@ -31,8 +31,12 @@ Deno.test('VariableEvaluator class: evalute: object value', () => {
   assertStrictEquals(obj, evaluator.evalute([{ 'x': obj }]))
 })
 
-Deno.test('VariableEvaluator class: toString', () => {
-  const obj = {}
+Deno.test('VariableEvaluator class: optimize:', () => {
+  const evaluator = new VariableEvaluator('x')
+  assertStrictEquals(evaluator, evaluator.optimize())
+})
+
+Deno.test('VariableEvaluator class: toString:', () => {
   const evaluator = new VariableEvaluator('x')
   assertStrictEquals('x', evaluator.toString())
 })
