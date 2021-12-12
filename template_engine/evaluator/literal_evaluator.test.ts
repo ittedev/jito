@@ -1,6 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { assertStrictEquals, assertThrows } from 'https://deno.land/std/testing/asserts.ts'
+import { assertStrictEquals } from 'https://deno.land/std/testing/asserts.ts'
 import { LiteralEvaluator } from './literal_evaluator.ts'
 
 Deno.test('LiteralEvaluator class: evalute: string value', () => {
