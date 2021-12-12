@@ -18,7 +18,7 @@ export function load(el: Element): LinkedVirtualElement {
     el.getAttributeNames().forEach(name => {
       // ignore events
       if (name.startsWith('on')) return
-      
+
       const value = el.getAttribute(name) as string
       switch (name) {
         case 'class': case 'part': return tree[name] = value.split(/\s+/)
@@ -34,19 +34,16 @@ export function load(el: Element): LinkedVirtualElement {
   // children
   if (el.hasChildNodes()) {
     const nodeList = el.childNodes
-    const children = [] as Array<string | LinkedVirtualElement>
+    tree.children = []
     for (let i = 0; i < nodeList.length; i++) {
       switch(nodeList[i].nodeType) {
         case 3: // TEXT_NODE
-          children.push((nodeList[i] as CharacterData).data)
+          tree.children.push((nodeList[i] as CharacterData).data)
           break
         case 1: // ELEMENT_NODE
-          children.push(load(nodeList[i] as Element))
+          tree.children.push(load(nodeList[i] as Element))
           break
       }
-    }
-    if (children.length) {
-      tree.children = children
     }
   }
 
