@@ -1,8 +1,8 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Evaluator, Variables } from '../types.ts'
+import { Evaluator, TermEvaluator, Variables } from '../types.ts'
 
-export class VariableEvaluator implements Evaluator<unknown> {
+export class VariableEvaluator implements TermEvaluator<unknown> {
   constructor(
     private name: string
   ) {}
@@ -14,5 +14,8 @@ export class VariableEvaluator implements Evaluator<unknown> {
   }
   optimize(): unknown | Evaluator<unknown> {
     return this
+  }
+  toString(): string {
+    return this.name
   }
 }

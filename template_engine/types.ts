@@ -7,6 +7,14 @@ export interface Evaluator<T> {
   optimize(): T | Evaluator<T>
 }
 
+/**
+ * Evaluator interface for display error
+ * @alpha
+ */
+export interface TermEvaluator<T> extends Evaluator<T> {
+  toString(): string
+}
+
 // deno-lint-ignore no-explicit-any
 export function instanceOfEvaluator<T>(object: any): object is Evaluator<T> {
   return 'evalute' in object && 'optimize' in object
