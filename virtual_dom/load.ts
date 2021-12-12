@@ -7,50 +7,48 @@ import { LinkedVirtualElement } from './types.ts'
  * @alpha
  */
 export function load(el: Element): LinkedVirtualElement {
-  console.log('[...el.classList.values()]:', [...el.classList.values()])
-  return {
+  const tree = {
     tag: el.tagName.toLowerCase(),
-    el,
+    el
+  } as LinkedVirtualElement
 
-    // class
-    ...(el.classList.length ? { class: [...el.classList.values()] } : {}),
-
-    // part
-    ...(el.part.length ? { part: [...el.part.values()] } : {}),
-
-    // style
-    ...(el instanceof HTMLElement && el.style.length ? { style: el.style.cssText } : {}),
-    
-    // attributes
-    ...(el.hasAttributes() ? (() => {
-      const attr = {} as Record<string, string>
-      el.getAttributeNames().forEach(name => {
-        switch (name) {
-          case 'class': case 'style': case 'part':
-            return
-        }
-        attr[name] = el.getAttribute(name) as string
-      })
-      return attr.length ? { attr } : {}
-    })() : {}),
-
-    // children
-    ...(el.hasChildNodes() ? (nodeList => {
-      const children = [] as Array<string | LinkedVirtualElement>
-      for (let i = 0; i < nodeList.length; i++) {
-        switch(nodeList[i].nodeType) {
-          case 3: // TEXT_NODE
-            children.push((nodeList[i] as CharacterData).data)
-            console.log('(nodeList[i] as CharacterData).data:', (nodeList[i] as CharacterData).data)
-            break
-          case 1: // ELEMENT_NODE
-            children.push(load(nodeList[i] as Element))
-            break
-        }
+  // attributes
+  if (el.hasAttributes()) {
+    const attr = {} as Record<string, string>
+    el.getAttributeNames().forEach(name => {
+      // ignore events
+      if (name.startsWith('on')) return
+      
+      const value = el.getAttribute(name) as string
+      switch (name) {
+        case 'class': case 'part': return tree[name] = value.split(/\s+/)
+        case 'style': return tree.style = value
+        default: return attr[name] = value
       }
-      return children.length ? { children } : {}
-    })(el.childNodes) : {})
-
-    // ignore events
+    })
+    if (Object.keys(attr).length) {
+      tree.attr = attr
+    }
   }
+
+  // children
+  if (el.hasChildNodes()) {
+    const nodeList = el.childNodes
+    const children = [] as Array<string | LinkedVirtualElement>
+    for (let i = 0; i < nodeList.length; i++) {
+      switch(nodeList[i].nodeType) {
+        case 3: // TEXT_NODE
+          children.push((nodeList[i] as CharacterData).data)
+          break
+        case 1: // ELEMENT_NODE
+          children.push(load(nodeList[i] as Element))
+          break
+      }
+    }
+    if (children.length) {
+      tree.children = children
+    }
+  }
+
+  return tree
 }
