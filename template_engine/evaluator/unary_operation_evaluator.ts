@@ -7,14 +7,15 @@ export class UnaryOperationEvaluator implements TermEvaluator<unknown> {
     private operator: string,
     private operand: TermEvaluator<unknown>
   ) {}
-  static operate(operator: string, operand: unknown) {
+  // deno-lint-ignore no-explicit-any
+  static operate(operator: string, operand: any) {
     switch (operator) {
-      case 'void': return void(operand)
-      case 'typeof': return typeof(operand)
-      case '+': return +(operand as number)
-      case '-': return -(operand as number)
-      case '~': return ~(operand as number)
-      case '!': return !(operand)
+      case 'void': return void operand
+      case 'typeof': return typeof operand
+      case '+': return +operand
+      case '-': return -operand
+      case '~': return ~operand
+      case '!': return !operand
       default: throw Error(operator + ' does not exist')
     }
   }
