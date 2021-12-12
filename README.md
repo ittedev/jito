@@ -13,11 +13,9 @@ hack('.app', '{{ value }}', data)
 ``` ts
 import { compact, watch } from 'bearko/mod.ts'
 
-const data = {
+const data = watch({
   value: 1
-}
-
-watch(data)
+})
 
 const component = compact('{{ data.value }}', { data })
 ```
@@ -29,9 +27,7 @@ const data = {
   value: 1
 }
 
-watch(data)
-
-const component = compact('{{ data.value }}', [data, { data }])
+const component = compact('{{ value }}', [watch(data)])
 ```
 
 ``` html
@@ -57,9 +53,9 @@ const component = compact('{{ data.value }}', [data, { data }])
 <div @try></div>
 <div @catch></div>
 
-<header props+="{ props }"></header>
+<header props*="{ props }"></header>
 
-<header with+=""></header>
+<header with*=""></header>
 
 <slot name=""></slot>
 
@@ -68,7 +64,7 @@ const component = compact('{{ data.value }}', [data, { data }])
   </span>
 </c>
 
-<div class="button" class+="active && 'active'" style+1=""></div>
+<div class="button" class+="active && 'active'" style+=""></div>
   
           <template @elseif="prioritize(key, 'type') === 'space'"></template>
           <a
@@ -78,14 +74,13 @@ const component = compact('{{ data.value }}', [data, { data }])
             class+="key.isSelected && 'select'"
             style+=""
             href:="url"
-            go:="url => name = url"
             value*="name"
-            onmousedown+="e => mousedown(e, key)"
-            onmousedown+stop="e => e.preventDefault()"
-            onmouseup+="e => press(e, key)"
-            ontouchstart+="e => touchstart(e, key)"
-            ontouchmove+="e => touchmove(e, key)"
-            ontouchend+="e => touchend(e, key)"
+            onmousedown="mousedown(event, key)"
+            onmousedown+="event.preventDefault()"
+            onmouseup="press(event, key)"
+            ontouchstart="touchstart(event, key)"
+            ontouchmove="touchmove(event, key)"
+            ontouchend="touchend(event, key)"
             @elseif="state.shift.x === null && state.shift.y === null || key.unshift"
           >
 
@@ -120,4 +115,45 @@ const template = parse(html)
 const component = compact(tree, {
   value: 1
 })
+```
+
+``` ts
+import { compact, watch } from 'bearko/mod.ts'
+
+const component = compact(
+  '{{ data.value }}',
+  props => {
+    const data = watch({
+      value: 1
+    })
+
+    watch(props, 'name', value => {
+    })
+
+    watch(props, 'unmount', () => {
+    })
+
+    return [data]
+  }
+)
+```
+
+``` ts
+import { compact, watch } from 'bearko/mod.ts'
+
+const data = {
+  value: 1
+}
+
+hack(
+  '.app', 
+  '{{ fire(value) }}',
+  props => [
+    watch(data),
+    {
+      fire () {}
+    },
+    watch(props, 'unmount', () => {})
+  ]
+)
 ```
