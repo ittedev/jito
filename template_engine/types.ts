@@ -1,10 +1,15 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-
 export type Variables = Array<Record<string, unknown>>
 
 export interface Evaluator<T> {
   evalute(stack: Variables): T
+  optimize(): T | Evaluator<T>
+}
+
+// deno-lint-ignore no-explicit-any
+export function instanceOfEvaluator<T>(object: any): object is Evaluator<T> {
+  return 'evalute' in object && 'optimize' in object
 }
 
 export type TemplateChild = string | Template | Evaluator<string> | Evaluator<Template> | Evaluator<Array<string | Template>>
@@ -14,7 +19,7 @@ export interface Template extends Record<PropertyKey, unknown> {
   class?: Array<Array<string> | Evaluator<Array<string>>>
   part?: Array<Array<string> | Evaluator<Array<string>>>
   style?: string | Evaluator<string>
-  attr?: Evaluator<Record<string, unknown>>
+  attr?: Record<string, unknown | Evaluator<unknown>>
   event?: Evaluator<Record<string, (event?: Event) => void>>
   children?: Array<TemplateChild>
   bind?: Record<string, unknown>
