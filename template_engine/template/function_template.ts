@@ -1,11 +1,11 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Evaluator, TermEvaluator, Variables } from '../types.ts'
+import { Template, TermTemplate, Variables } from '../types.ts'
 
-export class FunctionEvaluator implements TermEvaluator<unknown> {
+export class FunctionTemplate implements TermTemplate<unknown> {
   constructor(
-    private name: TermEvaluator<unknown>,
-    private params: Array<TermEvaluator<unknown>>
+    private name: TermTemplate<unknown>,
+    private params: Array<TermTemplate<unknown>>
   ) {}
   evalute(stack: Variables): unknown {
     const func = this.name.evalute(stack)
@@ -14,7 +14,7 @@ export class FunctionEvaluator implements TermEvaluator<unknown> {
     }
     throw Error(this.name.toString() + ' is not a function')
   }
-  optimize(): unknown | Evaluator<unknown> {
+  optimize(): unknown | Template<unknown> {
     this.name.optimize()
     this.params.forEach(param => param.optimize())
     return this

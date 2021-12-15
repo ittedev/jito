@@ -2,48 +2,40 @@
 // This module is browser compatible.
 export type Variables = Array<Record<string, unknown>>
 
-export interface Evaluator<T> {
+export interface Template<T> {
   evalute(stack: Variables): T
-  optimize(): T | Evaluator<T>
+  optimize(): T | Template<T>
 }
 
 /**
- * Evaluator interface for display error
+ * Template interface for display error
  * @alpha
  */
-export interface TermEvaluator<T> extends Evaluator<T> {
+export interface TermTemplate<T> extends Template<T> {
   toString(): string
 }
 
 // deno-lint-ignore no-explicit-any
-export function instanceOfEvaluator<T>(object: any): object is Evaluator<T> {
-  return 'evalute' in object && 'optimize' in object
-}
-
-export type TemplateChild = string | Template | Evaluator<string> | Evaluator<Template> | Evaluator<Array<string | Template>>
-
-export interface Template extends Record<PropertyKey, unknown> {
-  tag: string
-  class?: Array<Array<string> | Evaluator<Array<string>>>
-  part?: Array<Array<string> | Evaluator<Array<string>>>
-  style?: string | Evaluator<string>
-  attr?: Record<string, unknown | Evaluator<unknown>>
-  event?: Evaluator<Record<string, (event?: Event) => void>>
-  children?: Array<TemplateChild>
-  bind?: Record<string, unknown>
-  key?: unknown
+export function instanceOfTemplate<T>(object: any): object is Template<T> {
+  return typeof object === 'object' && 'evalute' in object && 'optimize' in object
 }
 
 export const enum TokenField
 {
   innerText,
   script,
-  string,
+  singleString,
+  doubleString,
   template
 }
 
 export const enum TokenType {
-  none,
+  none = 0,
+  multiOpetator,
+  unaryOpetator,
+  binaryOpetator,
+  assignOpetator,
+
   text,
   chaining,     // .
   optional,
@@ -61,9 +53,12 @@ export const enum TokenType {
   exclamation, // !
   question,    // ?
   colon,       // :
+  singleQuote,
+  doubleQuote,
+  backQuote,
   crement,
-  assign,       // =
   spread,
+  return,
   leftPlaceHolder,  // ${
   rightPlaceHolder,  // }
   null,        // null
@@ -83,9 +78,9 @@ export const enum TokenType {
   string,      // "~", '~'
   operator,    // +, -, *, /, %, ==, ===, !=, !==, <, >, <=, >=, ||, &&
   word,        // x
-  space,       //
-  partial,     // |, ;, &, '~, "~
-  other        // other
+  escape,
+  partial,
+  other
 }
 
 export interface Token extends Record<PropertyKey, unknown> {

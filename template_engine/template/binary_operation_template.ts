@@ -1,12 +1,12 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Evaluator, instanceOfEvaluator, TermEvaluator, Variables } from '../types.ts'
+import { Template, instanceOfTemplate, TermTemplate, Variables } from '../types.ts'
 
-export class BinaryOperationEvaluator implements TermEvaluator<unknown> {
+export class BinaryOperationTemplate implements TermTemplate<unknown> {
   constructor(
     private operator: string,
-    private left: TermEvaluator<unknown>,
-    private right: TermEvaluator<unknown>
+    private left: TermTemplate<unknown>,
+    private right: TermTemplate<unknown>
   ) {}
   // deno-lint-ignore no-explicit-any
   static operate(operator: string, left: any, right: any) {
@@ -53,15 +53,15 @@ export class BinaryOperationEvaluator implements TermEvaluator<unknown> {
     }
   }
   evalute(stack: Variables): unknown {
-    return BinaryOperationEvaluator.operate(this.operator, this.left.evalute(stack), this.right.evalute(stack))
+    return BinaryOperationTemplate.operate(this.operator, this.left.evalute(stack), this.right.evalute(stack))
   }
-  optimize(): unknown | Evaluator<unknown> {
+  optimize(): unknown | Template<unknown> {
     const left = this.left.optimize()
     const right = this.right.optimize()
-    if (instanceOfEvaluator(left) && instanceOfEvaluator(right)) {
+    if (instanceOfTemplate(left) && instanceOfTemplate(right)) {
       return this
     } else {
-      return BinaryOperationEvaluator.operate(this.operator, left, right)
+      return BinaryOperationTemplate.operate(this.operator, left, right)
     }
   }
   toString(): string {

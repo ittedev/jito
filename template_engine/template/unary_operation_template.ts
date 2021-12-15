@@ -1,11 +1,11 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Evaluator, instanceOfEvaluator, TermEvaluator, Variables } from '../types.ts'
+import { Template, instanceOfTemplate, TermTemplate, Variables } from '../types.ts'
 
-export class UnaryOperationEvaluator implements TermEvaluator<unknown> {
+export class UnaryOperationTemplate implements TermTemplate<unknown> {
   constructor(
     private operator: string,
-    private operand: TermEvaluator<unknown>
+    private operand: TermTemplate<unknown>
   ) {}
   // deno-lint-ignore no-explicit-any
   static operate(operator: string, operand: any) {
@@ -20,14 +20,14 @@ export class UnaryOperationEvaluator implements TermEvaluator<unknown> {
     }
   }
   evalute(stack: Variables): unknown {
-    return UnaryOperationEvaluator.operate(this.operator, this.operand.evalute(stack))
+    return UnaryOperationTemplate.operate(this.operator, this.operand.evalute(stack))
   }
-  optimize(): unknown | Evaluator<unknown> {
+  optimize(): unknown | Template<unknown> {
     const operand = this.operand.optimize()
-    if (instanceOfEvaluator(operand)) {
+    if (instanceOfTemplate(operand)) {
       return this
     } else {
-      return UnaryOperationEvaluator.operate(this.operator, operand)
+      return UnaryOperationTemplate.operate(this.operator, operand)
     }
   }
   toString(): string {
