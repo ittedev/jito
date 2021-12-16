@@ -1,13 +1,13 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 import { assertObjectMatch, assertStrictEquals } from 'https://deno.land/std/testing/asserts.ts'
-import { TokenField, TokenType, Token } from '../types.ts'
+import { TokenField, TokenType, Token } from './types.ts'
 import {
   Lexer
-} from '../lexer/mod.ts'
+} from './lexer.ts'
 import {
   innerText,
   expression
-} from './mod.ts'
+} from './parser.ts'
 
 const stack = [{
   x: 1,

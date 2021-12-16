@@ -1,7 +1,7 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 import { assertObjectMatch, assertEquals } from 'https://deno.land/std/testing/asserts.ts'
-import { TokenField, TokenType, Token } from '../types.ts'
-import { Lexer } from './mod.ts'
+import { TokenField, TokenType, Token } from './types.ts'
+import { Lexer } from './lexer.ts'
 
 Deno.test('Lexer class: script', () => {
   const lexer = new Lexer('1+ x', TokenField.script)

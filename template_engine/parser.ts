@@ -1,7 +1,7 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Template, Token, TokenField, TokenType } from '../types.ts'
-import { Lexer } from '../lexer/mod.ts'
+import { Template, Token, TokenField, TokenType } from './types.ts'
+import { Lexer } from './lexer.ts'
 import {
   JoinTemplate,
   LiteralTemplate,
@@ -11,7 +11,7 @@ import {
   UnaryOperationTemplate,
   BinaryOperationTemplate,
   TernaryOperationTemplate
-} from '../template/mod.ts'
+} from './template/mod.ts'
 
 function must(token: Token | null, type: TokenType, message = ''): void {
   if (!token || token.type !== type) throw new Error(message)
