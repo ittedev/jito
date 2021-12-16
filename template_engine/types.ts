@@ -26,7 +26,9 @@ export const enum TokenField
   script,
   singleString,
   doubleString,
-  template
+  template,
+  lineComment,
+  blockComment
 }
 
 export const enum TokenType {
@@ -35,10 +37,10 @@ export const enum TokenType {
   unaryOpetator,
   binaryOpetator,
   assignOpetator,
+  crementOpetator, // ++, --
 
-  text,
   chaining,     // .
-  optional,
+  optional,     // ?.
   leftSquare,  // [
   rightSquare, // ]
   leftRound,   // (
@@ -47,8 +49,11 @@ export const enum TokenType {
   rightBrace, // }
   leftMustache,  // {{
   rightMustache, // }}
-  pipe,        // |>
-  comment,     // //~
+  leftPlaceHolder,  // ${
+  rightPlaceHolder,  // }
+  lineComment,     // //~
+  leftComment,  // /*
+  rightComment,  // */
   comma,       // ,
   exclamation, // !
   question,    // ?
@@ -56,27 +61,14 @@ export const enum TokenType {
   singleQuote,
   doubleQuote,
   backQuote,
-  crement,
   spread,
   return,
-  leftPlaceHolder,  // ${
-  rightPlaceHolder,  // }
   null,        // null
   undefined,   // undefined
   boolean,     // false, true
-  if,          // if
-  else,        // else
-  for,         // for
-  in,          // in
-  switch,      // switch
-  case,        // case
-  default,     // default
-  include,     // include
-  let,         // let
-  var,         // var
+  kwyword,
   number,      // 0, 1, 2, etc.,
   string,      // "~", '~'
-  operator,    // +, -, *, /, %, ==, ===, !=, !==, <, >, <=, >=, ||, &&
   word,        // x
   escape,
   partial,

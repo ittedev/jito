@@ -25,13 +25,14 @@ function distinguish(field: TokenField, value: string): TokenType {
         case '&&=': case '||=': case '??=':
           return TokenType.assignOpetator
 
+        case '++': case '--':
+          return TokenType.crementOpetator
+
         case 'false': case 'true':
           return TokenType.boolean
 
         case 'null': return TokenType.null
         case 'undefined': return TokenType.undefined
-        case '++': return TokenType.crement
-        case '--': return TokenType.crement
         case '.': return TokenType.chaining
         case '?.': return TokenType.optional
         case '[': return TokenType.leftSquare
@@ -49,7 +50,7 @@ function distinguish(field: TokenField, value: string): TokenType {
         case '`': return TokenType.backQuote
       }
       switch (true) {
-        case /^\/\/.*$/.test(value): return TokenType.comment
+        case /^\/\/.*$/.test(value): return TokenType.lineComment
         case /^[_\$a-zA-Z][_\$a-zA-Z0-9]*$/.test(value): return TokenType.word
         case /^\d+\.?\d*$|^\.?\d+$/.test(value): return TokenType.number
       }
