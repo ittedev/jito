@@ -1,25 +1,31 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Template, Token, TokenField, TokenType } from './types.ts'
-import { Lexer } from './lexer.ts'
 import {
-  JoinTemplate,
+  TemplateType,
+  Template,
   LiteralTemplate,
   VariableTemplate,
+  UnaryTemplate,
+  BinaryTemplate,
   FunctionTemplate,
   HashTemplate,
-  UnaryOperationTemplate,
-  BinaryOperationTemplate,
-  TernaryOperationTemplate
-} from './template/mod.ts'
+  JoinTemplate,
+  FlagsTemplate,
+  IfTemplate,
+  EachTemplate,
+  ElementTemplate,
+  Token,
+  TokenField,
+  TokenType
+} from './types.ts'
+import { Lexer } from './lexer.ts'
 
 function must(token: Token | null, type: TokenType, message = ''): void {
-  if (!token || token.type !== type) throw new Error(message)
+  if (!token || token.type !== type) throw Error(message)
 }
 
-
-export function innerText(lexer: Lexer): Template<string> {
-  const texts = [] as Array<string | Template<unknown>>
+export function innerText(lexer: Lexer): Template {
+  const texts = [] as Array<string | Template>
   texts.push(lexer.skip())
   while (lexer.nextType()) {
     if (lexer.nextType() === TokenType.leftMustache) {
@@ -33,8 +39,8 @@ export function innerText(lexer: Lexer): Template<string> {
       lexer.pop()
     }
   }
-  return new JoinTemplate(texts.filter(value => value !== ''))
-
+  
+  return { type: TemplateType.join, values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
 }
 
 /**
@@ -43,7 +49,7 @@ export function innerText(lexer: Lexer): Template<string> {
  * used: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
  * @alpha
  */
-export function expression(lexer: Lexer): Template<unknown> {
+export function expression(lexer: Lexer): Template {
   return conditional(lexer)
 }
 
@@ -53,16 +59,16 @@ export function expression(lexer: Lexer): Template<unknown> {
  * @alpha
  */
 // 
-function conditional(lexer: Lexer): Template<unknown> {
-  let template = arithmetic(lexer)
+function conditional(lexer: Lexer): Template {
+  let condition = arithmetic(lexer)
   while (lexer.nextType() === TokenType.question) {
     lexer.pop()
     const truthy = expression(lexer)
     must(lexer.pop(), TokenType.colon)
     const falsy = arithmetic(lexer)
-    template =  new TernaryOperationTemplate(template, truthy, falsy)
+    condition = { type: TemplateType.if, condition, truthy, falsy } as IfTemplate
   }
-  return template
+  return condition
 }
 
 /**
@@ -70,8 +76,8 @@ function conditional(lexer: Lexer): Template<unknown> {
  * Precedence: 4 - 14
  * @alpha
  */
- function arithmetic(lexer: Lexer): Template<unknown> {
-  const list = new Array<Template<unknown> | string>()
+ function arithmetic(lexer: Lexer): Template {
+  const list = new Array<Template | string>()
   list.push(unary(lexer))
   while(lexer.nextType() === TokenType.multiOpetator || lexer.nextType() === TokenType.binaryOpetator) {
     list.push((lexer.pop() as Token).value)
@@ -81,14 +87,14 @@ function conditional(lexer: Lexer): Template<unknown> {
   // Binary operator precedence
   while (list.length > 1) {
     for (let index = 0; index + 1 < list.length; index += 2) {
-      if (index + 3 >= list.length || precedence(list[index + 1] as string) > precedence(list[index + 3] as string)) {
-        const node = new BinaryOperationTemplate(list[index + 1] as string, list[index] as Template<unknown>, list[index + 2] as Template<unknown>)
+    if (index + 3 >= list.length || precedence(list[index + 1] as string) > precedence(list[index + 3] as string)) {
+        const node = { type: TemplateType.binary, operator: list[index + 1] as string, left:list[index] as Template, right: list[index + 2] as Template } as BinaryTemplate
         list.splice(index, 3, node)
       }
     }
   }
 
-  return typeof list[0] === 'string' ? new VariableTemplate(list[0]) : list[0] as Template<unknown>
+  return typeof list[0] === 'string' ? { type: TemplateType.variable, name: list[0] } as VariableTemplate : list[0] as Template
 }
 
 function precedence(operator: string): number {
@@ -113,11 +119,11 @@ function precedence(operator: string): number {
  * Precedence: 15
  * @alpha
  */
-function unary(lexer: Lexer): Template<unknown> {
+function unary(lexer: Lexer): Template {
   switch (lexer.nextType()) {
     case TokenType.multiOpetator: 
     case TokenType.exclamation:
-      return new UnaryOperationTemplate(lexer.pop()?.value as string, unary(lexer))
+      return { type: TemplateType.unary, operator: lexer.pop()?.value as string, operand:unary(lexer) } as UnaryTemplate
     default:
       return func(lexer)
   }
@@ -128,34 +134,35 @@ function unary(lexer: Lexer): Template<unknown> {
  * Precedence: 18
  * @alpha
  */
-function func(lexer: Lexer): Template<unknown> {
+function func(lexer: Lexer): Template {
   let template = term(lexer)
   while (true) {
     switch (lexer.nextType()) {
       case TokenType.leftRound: {
         lexer.pop()
-        const params = [] as Array<Template<unknown>>
+        const params = [] as Array<Template>
           while (lexer.nextType() !== TokenType.rightRound) {
           params.push(expression(lexer))
           if (lexer.nextType() === TokenType.comma) lexer.pop()
           else break
         }
         must(lexer.pop(), TokenType.rightRound)
-        template = new FunctionTemplate(template, params)
+        template = { type: TemplateType.function, name: template, params } as FunctionTemplate
         continue
       }
       case TokenType.chaining: {
         lexer.pop()
         const key = lexer.pop() as Token
         must(key, TokenType.word)
-        template = new HashTemplate(template, new LiteralTemplate(key.value))
+        
+        template = { type: TemplateType.hash, object: template, key: { type: TemplateType.literal, value: key.value } as LiteralTemplate } as HashTemplate
         continue
       }
       case TokenType.leftSquare: {
         lexer.pop()
         const key = expression(lexer)
         must(lexer.pop(), TokenType.rightSquare)
-        template = new HashTemplate(template, key)
+        template = { type: TemplateType.hash, object: template, key } as HashTemplate
         continue
       }
     }
@@ -169,18 +176,19 @@ function func(lexer: Lexer): Template<unknown> {
  * Precedence: 19
  * @alpha
  */
-function term(lexer: Lexer): Template<unknown> {
+function term(lexer: Lexer): Template {
   const token = lexer.pop() as Token
   switch (token.type) {
     // w
     case TokenType.word:
-      return new VariableTemplate(token.value)
+      return { type: TemplateType.variable, name: token.value } as VariableTemplate
 
     // L = n | s | b | undefined | null
-    case TokenType.number: return new LiteralTemplate(Number(token.value))
-    case TokenType.boolean: return new LiteralTemplate(token.value === 'true' ? true : false)
-    case TokenType.undefined: return new LiteralTemplate(undefined)
-    case TokenType.null: return new LiteralTemplate(null)
+    
+    case TokenType.number: return { type: TemplateType.literal, value: Number(token.value) } as LiteralTemplate
+    case TokenType.boolean: return { type: TemplateType.literal, value: token.value === 'true' ? true : false } as LiteralTemplate
+    case TokenType.undefined: return { type: TemplateType.literal, value: undefined } as LiteralTemplate
+    case TokenType.null: return { type: TemplateType.literal, value: null } as LiteralTemplate
     case TokenType.doubleQuote: return stringLiteral(lexer, TokenField.doubleString, token.type)
     case TokenType.singleQuote: return stringLiteral(lexer, TokenField.singleString, token.type)
     case TokenType.backQuote: return stringLiteral(lexer, TokenField.template, token.type)
@@ -199,8 +207,8 @@ function term(lexer: Lexer): Template<unknown> {
  * String Literal
  * @alpha
  */
-function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Template<unknown> {
-  const texts = [''] as Array<string | Template<unknown>>
+function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Template {
+  const texts = [''] as Array<string | Template>
   let i = 0
   lexer.expand(field, () => {
     loop: while (true) {
@@ -223,8 +231,8 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
     }
   })
   if (i === 0) {
-    return new LiteralTemplate(texts[0])
+    return { type: TemplateType.literal, value: texts[0] } as LiteralTemplate
   } else {
-    return new JoinTemplate(texts.filter(value => value !== ''))
+    return { type: TemplateType.join, values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
   }
 }
