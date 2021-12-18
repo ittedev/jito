@@ -31,27 +31,18 @@ const component = compact('{{ value }}', [watch(data)])
 ```
 
 ``` html
-<div @if="a"></div>
-<div @elseif="a"></div>
+<div @if="a === 2"></div>
+<div @else @if="a"></div>
 <div @else></div>
 
-<a click!="">Click me</a>
+<a onclick="">Click me</a>
 
-<region @switch="">
-  <div @case="">
-  <div @case="">
-  <div @default>
-</region>
-
-<div @each="item" @of="items"></div>
-
-<div @try="items">
-  <div @each="item"></div>
-</div>
-<div @catch></div>
+<div @for="items" @each="item"></div>
 
 <div @try></div>
-<div @catch></div>
+<div @catch="error"></div>
+
+<region></region>
 
 <header props*="{ props }"></header>
 
@@ -89,8 +80,8 @@ const component = compact('{{ value }}', [watch(data)])
   <option @each="option" value:="option">{{ option }}</option>
 </selectbox>
 
-<radiogroup @of="options" value*="checked">
-  <radio @each="option" value:="option">{{ option }}</radio>
+<radiogroup value*="checked">
+  <radio @for="options" @each="option" value:="option">{{ option }}</radio>
 </radiogroup>
 
 <checkbox value*="checked">Jack</checkbox>

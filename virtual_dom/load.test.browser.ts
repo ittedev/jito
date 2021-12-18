@@ -20,3 +20,28 @@ test('load body part', () => {
   const vtree = load(doc.body)
   log('loadBodyPart', vtree)
 })
+
+test('load single element', () => {
+  const doc = new DOMParser().parseFromString(`<p></p>`, 'text/html')
+  const vtree = load(doc.body)
+  log('loadSingleElement', vtree)
+})
+
+test('load multi element', () => {
+  const doc = new DOMParser().parseFromString(`<p></p><p></p>`, 'text/html')
+  const vtree = load(doc.body)
+  log('loadMultiElement', vtree)
+})
+
+test('load style element', () => {
+  const doc = new DOMParser().parseFromString(`<style>a { color: red; }</style>`, 'text/html')
+  console.log('textContent', doc.body.textContent)
+  const vtree = load(doc)
+  log('loadStyleElement', vtree)
+})
+
+test('load script element', () => {
+  const doc = new DOMParser().parseFromString(`<script>console.log('hello');<\/script>`, 'text/html')
+  const vtree = load(doc.body)
+  log('loadScriptElement', vtree)
+})

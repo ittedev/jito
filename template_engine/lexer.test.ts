@@ -8,7 +8,7 @@ Deno.test('Lexer class: script', () => {
   assertObjectMatch({ type: TokenType.number, value: '1' }, lexer.pop() as Token)
   assertEquals('', lexer.skip())
   assertEquals('', lexer.skip())
-  assertObjectMatch({ type: TokenType.operator, value: '+' }, lexer.pop() as Token)
+  assertObjectMatch({ type: TokenType.binaryOpetator, value: '+' }, lexer.pop() as Token)
   assertEquals(' ', lexer.skip())
   assertObjectMatch({ type: TokenType.word, value: 'x' }, lexer.pop() as Token)
 })

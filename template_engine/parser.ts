@@ -1,7 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import {
-  TemplateType,
   Template,
   LiteralTemplate,
   VariableTemplate,
@@ -10,10 +9,7 @@ import {
   FunctionTemplate,
   HashTemplate,
   JoinTemplate,
-  FlagsTemplate,
   IfTemplate,
-  EachTemplate,
-  ElementTemplate,
   Token,
   TokenField,
   TokenType
@@ -40,7 +36,7 @@ export function innerText(lexer: Lexer): Template {
     }
   }
   
-  return { type: TemplateType.join, values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
+  return { type: 'join', values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
 }
 
 /**
@@ -66,7 +62,7 @@ function conditional(lexer: Lexer): Template {
     const truthy = expression(lexer)
     must(lexer.pop(), TokenType.colon)
     const falsy = arithmetic(lexer)
-    condition = { type: TemplateType.if, condition, truthy, falsy } as IfTemplate
+    condition = { type: 'if', condition, truthy, falsy } as IfTemplate
   }
   return condition
 }
@@ -88,13 +84,13 @@ function conditional(lexer: Lexer): Template {
   while (list.length > 1) {
     for (let index = 0; index + 1 < list.length; index += 2) {
     if (index + 3 >= list.length || precedence(list[index + 1] as string) > precedence(list[index + 3] as string)) {
-        const node = { type: TemplateType.binary, operator: list[index + 1] as string, left:list[index] as Template, right: list[index + 2] as Template } as BinaryTemplate
+        const node = { type: 'binary', operator: list[index + 1] as string, left:list[index] as Template, right: list[index + 2] as Template } as BinaryTemplate
         list.splice(index, 3, node)
       }
     }
   }
 
-  return typeof list[0] === 'string' ? { type: TemplateType.variable, name: list[0] } as VariableTemplate : list[0] as Template
+  return typeof list[0] === 'string' ? { type: 'variable', name: list[0] } as VariableTemplate : list[0] as Template
 }
 
 function precedence(operator: string): number {
@@ -123,7 +119,7 @@ function unary(lexer: Lexer): Template {
   switch (lexer.nextType()) {
     case TokenType.multiOpetator: 
     case TokenType.exclamation:
-      return { type: TemplateType.unary, operator: lexer.pop()?.value as string, operand:unary(lexer) } as UnaryTemplate
+      return { type: 'unary', operator: lexer.pop()?.value as string, operand:unary(lexer) } as UnaryTemplate
     default:
       return func(lexer)
   }
@@ -147,7 +143,7 @@ function func(lexer: Lexer): Template {
           else break
         }
         must(lexer.pop(), TokenType.rightRound)
-        template = { type: TemplateType.function, name: template, params } as FunctionTemplate
+        template = { type: 'function', name: template, params } as FunctionTemplate
         continue
       }
       case TokenType.chaining: {
@@ -155,14 +151,14 @@ function func(lexer: Lexer): Template {
         const key = lexer.pop() as Token
         must(key, TokenType.word)
         
-        template = { type: TemplateType.hash, object: template, key: { type: TemplateType.literal, value: key.value } as LiteralTemplate } as HashTemplate
+        template = { type: 'hash', object: template, key: { type: 'literal', value: key.value } as LiteralTemplate } as HashTemplate
         continue
       }
       case TokenType.leftSquare: {
         lexer.pop()
         const key = expression(lexer)
         must(lexer.pop(), TokenType.rightSquare)
-        template = { type: TemplateType.hash, object: template, key } as HashTemplate
+        template = { type: 'hash', object: template, key } as HashTemplate
         continue
       }
     }
@@ -181,14 +177,14 @@ function term(lexer: Lexer): Template {
   switch (token.type) {
     // w
     case TokenType.word:
-      return { type: TemplateType.variable, name: token.value } as VariableTemplate
+      return { type: 'variable', name: token.value } as VariableTemplate
 
     // L = n | s | b | undefined | null
     
-    case TokenType.number: return { type: TemplateType.literal, value: Number(token.value) } as LiteralTemplate
-    case TokenType.boolean: return { type: TemplateType.literal, value: token.value === 'true' ? true : false } as LiteralTemplate
-    case TokenType.undefined: return { type: TemplateType.literal, value: undefined } as LiteralTemplate
-    case TokenType.null: return { type: TemplateType.literal, value: null } as LiteralTemplate
+    case TokenType.number: return { type: 'literal', value: Number(token.value) } as LiteralTemplate
+    case TokenType.boolean: return { type: 'literal', value: token.value === 'true' ? true : false } as LiteralTemplate
+    case TokenType.undefined: return { type: 'literal', value: undefined } as LiteralTemplate
+    case TokenType.null: return { type: 'literal', value: null } as LiteralTemplate
     case TokenType.doubleQuote: return stringLiteral(lexer, TokenField.doubleString, token.type)
     case TokenType.singleQuote: return stringLiteral(lexer, TokenField.singleString, token.type)
     case TokenType.backQuote: return stringLiteral(lexer, TokenField.template, token.type)
@@ -231,8 +227,8 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
     }
   })
   if (i === 0) {
-    return { type: TemplateType.literal, value: texts[0] } as LiteralTemplate
+    return { type: 'literal', value: texts[0] } as LiteralTemplate
   } else {
-    return { type: TemplateType.join, values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
+    return { type: 'join', values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
   }
 }

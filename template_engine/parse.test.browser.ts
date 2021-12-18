@@ -1,7 +1,13 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { test, log } from '../../_helper/document_console.ts'
-import { parseElement } from './parse_element.ts'
+import { test, log } from '../_helper/document_console.ts'
+import { parseText, parseElement } from './dom_parser.ts'
+
+test('parse Text Node', () => {
+  const node = document.createTextNode('Hello {{ user.name }}!')
+  const result = parseText(node).evalute([{ user: { name: 'beako' } }])
+  log('parseText', result)
+})
 
 test('parseElement:', () => {
   const html = `<p></p>`

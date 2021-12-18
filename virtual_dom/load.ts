@@ -43,6 +43,8 @@ export function load(el: Element): LinkedVirtualElement {
         case 1: // ELEMENT_NODE
           tree.children.push(load(nodeList[i] as Element))
           break
+        default:
+          console.log('other', nodeList[i])
       }
     }
   }

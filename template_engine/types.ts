@@ -2,100 +2,103 @@
 // This module is browser compatible.
 export type Variables = Array<Record<string, unknown>>
 
-export const enum TemplateType {
-  literal = 'literal',
-  variable = 'variable',
-  unary = 'unary',
-  binary = 'binary',
-  function = 'function',
-  hash = 'hash',
-  join = 'join',
-  flags = 'flags',
-  if = 'if',
-  each = 'each',
-  element = 'element',
-  custom = 'custom'
-}
+export type TemplateType =
+  'literal' |
+  'variable' |
+  'unary' |
+  'binary' |
+  'function' |
+  'hash' |
+  'join' |
+  'flags' |
+  'if' |
+  'each' |
+  'element' |
+  'custom'
 
 export interface Template {
   type: TemplateType
 }
 
+// deno-lint-ignore no-explicit-any
+export function instanceOfTemplate(object: any): object is Template {
+  return typeof object === 'object' && 'type' in object
+}
+
 export interface LiteralTemplate extends Template {
-  type: TemplateType.literal
+  type: 'literal'
   value: unknown
 }
 
 export interface VariableTemplate extends Template {
-  type: TemplateType.variable
+  type: 'variable'
   name: string
 }
 
 export interface UnaryTemplate extends Template {
-  type: TemplateType.unary
+  type: 'unary'
   operator: string,
   operand: Template
 }
 
 export interface BinaryTemplate extends Template {
-  type: TemplateType.binary
+  type: 'binary'
   operator: string,
   left: Template,
   right: Template
 }
 
 export interface FunctionTemplate extends Template {
-  type: TemplateType.function
+  type: 'function'
   name: Template,
   params: Array<Template>
 }
 
 export interface HashTemplate extends Template {
-  type: TemplateType.hash
+  type: 'hash'
   object: Template,
   key: Template
 }
 
 export interface JoinTemplate extends Template {
-  type: TemplateType.join
+  type: 'join'
   values: Array<unknown | Template>,
   separator: string
 }
 
 export interface FlagsTemplate extends Template {
-  type: TemplateType.flags
+  type: 'flags'
   value: Template
 }
 
 export interface IfTemplate extends Template {
-  type: TemplateType.if
+  type: 'if'
   condition: Template,
   truthy: Template,
   falsy?: Template | undefined
 }
 
 export interface EachTemplate extends Template {
-  type: TemplateType.each
-  eachVar: string
+  type: 'each'
+  each: string
   array: Template,
-  statement: Template
+  value: Template
 }
 
 export interface ElementTemplate extends Template {
-  type: TemplateType.element
-  template: {
+  type: 'element'
+  el: {
     tag: string,
     class: Array<Array<string> | Template>,
     part: Array<Array<string> | Template>,
     attr: Record<string, unknown | Template>,
-    style: string | Template,
-    bind: object
+    style: string | Template
   }
 }
 
-export interface CustomTemplate {
-  evalute: (stack: Variables) => unknown
-}
+export type Evalute = (template: Template, stack: Variables) => unknown
+
+export type Evaluator = Record<TemplateType, Evalute>
 
 export const enum TokenField
 {
