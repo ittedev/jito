@@ -14,7 +14,7 @@ await Deno.test('patch new class', async () => {
     assertObjectMatch({
       tag: 'div',
       class: ['class-a'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -32,7 +32,7 @@ await Deno.test('patch add class', async () => {
     assertObjectMatch({
       tag: 'div',
       class: ['class-a', 'class-b', 'class-c'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -50,7 +50,7 @@ await Deno.test('patch remove class', async () => {
     assertObjectMatch({
       tag: 'div',
       class: ['class-a', 'class-c'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -67,7 +67,7 @@ await Deno.test('patch remove all class', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchRemoveAllClass1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -84,7 +84,7 @@ await Deno.test('patch set empty class', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchSetEmptyClass1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -102,7 +102,7 @@ await Deno.test('patch no change class', async () => {
     assertObjectMatch({
       tag: 'div',
       class: ['class-a', 'class-b'],
-      el: {}
+      node: {}
     }, data)
   }
   {

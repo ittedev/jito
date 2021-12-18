@@ -4,100 +4,100 @@ import { test, log } from '../../_helper/document_console.ts'
 import { patchClass } from './patch_class.ts'
 
 test('patch new class', () => {
-  const el = document.createElement('div')
-  const tree = {
+  const node = document.createElement('div')
+  const el = {
     tag: 'div',
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     class: ['class-a']
   }
-  patchClass(tree, newTree)
-  log('patchNewClass1', tree)
-  log('patchNewClass2', [...tree.el.classList.values()])
+  patchClass(el, newEl)
+  log('patchNewClass1', el)
+  log('patchNewClass2', [...el.node.classList.values()])
 })
 
 test('patch add class', () => {
-  const el = document.createElement('div')
-  el.classList.add('class-a')
-  const tree = {
+  const node = document.createElement('div')
+  node.classList.add('class-a')
+  const el = {
     tag: 'div',
     class: ['class-a'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     class: ['class-a', 'class-b', 'class-c']
   }
-  patchClass(tree, newTree)
-  log('patchAddClass1', tree)
-  log('patchAddClass2', [...tree.el.classList.values()])
+  patchClass(el, newEl)
+  log('patchAddClass1', el)
+  log('patchAddClass2', [...el.node.classList.values()])
 })
 
 test('patch remove class', () => {
-  const el = document.createElement('div')
-  el.classList.add('class-a', 'class-b', 'class-c')
-  const tree = {
+  const node = document.createElement('div')
+  node.classList.add('class-a', 'class-b', 'class-c')
+  const el = {
     tag: 'div',
     class: ['class-a', 'class-b', 'class-c'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     class: ['class-a', 'class-c']
   }
-  patchClass(tree, newTree)
-  log('patchRemoveClass1', tree)
-  log('patchRemoveClass2', [...tree.el.classList.values()])
+  patchClass(el, newEl)
+  log('patchRemoveClass1', el)
+  log('patchRemoveClass2', [...el.node.classList.values()])
 })
 
 test('patch remove all class', () => {
-  const el = document.createElement('div')
-  el.classList.add('class-a', 'class-b', 'class-c')
-  const tree = {
+  const node = document.createElement('div')
+  node.classList.add('class-a', 'class-b', 'class-c')
+  const el = {
     tag: 'div',
     class: ['class-a', 'class-b', 'class-c'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div'
   }
-  patchClass(tree, newTree)
-  log('patchRemoveAllClass1', tree)
-  log('patchRemoveAllClass2', [...tree.el.classList.values()])
+  patchClass(el, newEl)
+  log('patchRemoveAllClass1', el)
+  log('patchRemoveAllClass2', [...el.node.classList.values()])
 })
 
 test('patch set empty class', () => {
-  const el = document.createElement('div')
-  el.classList.add('class-a', 'class-b', 'class-c')
-  const tree = {
+  const node = document.createElement('div')
+  node.classList.add('class-a', 'class-b', 'class-c')
+  const el = {
     tag: 'div',
     class: ['class-a', 'class-b', 'class-c'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     class: []
   }
-  patchClass(tree, newTree)
-  log('patchSetEmptyClass1', tree)
-  log('patchSetEmptyClass2', [...tree.el.classList.values()])
+  patchClass(el, newEl)
+  log('patchSetEmptyClass1', el)
+  log('patchSetEmptyClass2', [...el.node.classList.values()])
 })
 
 test('patch no change class', () => {
-  const el = document.createElement('div')
-  el.classList.add('class-a', 'class-b')
-  const tree = {
+  const node = document.createElement('div')
+  node.classList.add('class-a', 'class-b')
+  const el = {
     tag: 'div',
     class: ['class-a', 'class-b'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     class: ['class-a', 'class-b']
   }
-  patchClass(tree, newTree)
-  log('patchNoChangeClass1', tree)
-  log('patchNoChangeClass2', [...tree.el.classList.values()])
+  patchClass(el, newEl)
+  log('patchNoChangeClass1', el)
+  log('patchNoChangeClass2', [...el.node.classList.values()])
 })

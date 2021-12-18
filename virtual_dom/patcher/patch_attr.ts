@@ -2,9 +2,9 @@
 // This module is browser compatible.
 import { VirtualElement, LinkedVirtualElement } from '../types.ts'
 
-export function patchAttr(tree: LinkedVirtualElement, newTree: VirtualElement) {
-  const currentAttr = tree.attr || {}
-  const newAttr = newTree.attr || {}
+export function patchAttr(el: LinkedVirtualElement, newEl: VirtualElement) {
+  const currentAttr = el.attr || {}
+  const newAttr = newEl.attr || {}
   const currentAttrKeys = Object.keys(currentAttr)
   const newAttrKeys = Object.keys(newAttr)
 
@@ -12,17 +12,17 @@ export function patchAttr(tree: LinkedVirtualElement, newTree: VirtualElement) {
     !currentAttrKeys.includes(key) || currentAttr[key] !== newAttr[key]
   )
   for (const key of shortageOrUpdated) {
-      tree.el.setAttribute(key, newAttr[key])
+      el.node.setAttribute(key, newAttr[key])
   }
 
   const surplus = currentAttrKeys.filter(key => !newAttrKeys.includes(key))
   for (const key of surplus) {
-    tree.el.removeAttribute(key)
+    el.node.removeAttribute(key)
   }
   
   if (newAttrKeys.length) {
-    tree.attr = { ...newAttr }
+    el.attr = { ...newAttr }
   } else {
-    delete tree.attr
+    delete el.attr
   }
 }

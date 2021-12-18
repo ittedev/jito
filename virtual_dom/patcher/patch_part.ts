@@ -2,23 +2,23 @@
 // This module is browser compatible.
 import { VirtualElement, LinkedVirtualElement } from '../types.ts'
 
-export function patchPart(tree: LinkedVirtualElement, newTree: VirtualElement) {
-  const currentPart = tree.part || []
-  const newPart = newTree.part || []
+export function patchPart(el: LinkedVirtualElement, newEl: VirtualElement) {
+  const currentPart = el.part || []
+  const newPart = newEl.part || []
 
   const shortage = newPart.filter(part => !currentPart.includes(part))
   if (shortage.length) {
-    tree.el.part.add(...shortage)
+    el.node.part.add(...shortage)
   }
 
   const surplus = currentPart.filter(part => !newPart.includes(part))
   if (surplus.length) {
-    tree.el.part.remove(...surplus)
+    el.node.part.remove(...surplus)
   }
 
   if (newPart.length) {
-    tree.part = newPart.slice()
+    el.part = newPart.slice()
   } else {
-    delete tree.part
+    delete el.part
   }
 }

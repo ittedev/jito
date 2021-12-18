@@ -4,100 +4,100 @@ import { test, log } from '../../_helper/document_console.ts'
 import { patchStyle } from './patch_style.ts'
 
 test('patch new style', () => {
-  const el = document.createElement('div')
-  const tree = {
+  const node = document.createElement('div')
+  const el = {
     tag: 'div',
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     style: 'color: red;'
   }
-  patchStyle(tree, newTree)
-  log('patchNewStyle1', tree)
-  log('patchNewStyle2', tree.el.style.cssText)
+  patchStyle(el, newEl)
+  log('patchNewStyle1', el)
+  log('patchNewStyle2', el.node.style.cssText)
 })
 
 test('patch add style', () => {
-  const el = document.createElement('div')
-  el.style.cssText = 'color: red;'
-  const tree = {
+  const node = document.createElement('div')
+  node.style.cssText = 'color: red;'
+  const el = {
     tag: 'div',
     style: 'color: red;',
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     style: 'font-size: 1px; margin: auto; color: red;'
   }
-  patchStyle(tree, newTree)
-  log('patchAddStyle1', tree)
-  log('patchAddStyle2', tree.el.style.cssText)
+  patchStyle(el, newEl)
+  log('patchAddStyle1', el)
+  log('patchAddStyle2', el.node.style.cssText)
 })
 
 test('patch remove style', () => {
-  const el = document.createElement('div')
-  el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
-  const tree = {
+  const node = document.createElement('div')
+  node.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+  const el = {
     tag: 'div',
     style: 'font-size: 1px; margin: auto; color: red;',
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     style: 'font-size: 1px; color: red;'
   }
-  patchStyle(tree, newTree)
-  log('patchRemoveStyle1', tree)
-  log('patchRemoveStyle2', tree.el.style.cssText)
+  patchStyle(el, newEl)
+  log('patchRemoveStyle1', el)
+  log('patchRemoveStyle2', el.node.style.cssText)
 })
 
 test('patch remove All style', () => {
-  const el = document.createElement('div')
-  el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
-  const tree = {
+  const node = document.createElement('div')
+  node.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+  const el = {
     tag: 'div',
     style: 'font-size: 1px; margin: auto; color: red;',
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div'
   }
-  patchStyle(tree, newTree)
-  log('patchRemoveAllStyle1', tree)
-  log('patchRemoveAllStyle2', tree.el.style.cssText)
+  patchStyle(el, newEl)
+  log('patchRemoveAllStyle1', el)
+  log('patchRemoveAllStyle2', el.node.style.cssText)
 })
 
 test('patch set empty style', () => {
-  const el = document.createElement('div')
-  el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
-  const tree = {
+  const node = document.createElement('div')
+  node.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+  const el = {
     tag: 'div',
     style: 'font-size: 1px; margin: auto; color: red;',
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     style: ''
   }
-  patchStyle(tree, newTree)
-  log('patchSetEmptyStyle1', tree)
-  log('patchSetEmptyStyle2', tree.el.style.cssText)
+  patchStyle(el, newEl)
+  log('patchSetEmptyStyle1', el)
+  log('patchSetEmptyStyle2', el.node.style.cssText)
 })
 
 test('patch no change style', () => {
-  const el = document.createElement('div')
-  el.style.cssText = 'font-size: 1px; margin: auto;'
-  const tree = {
+  const node = document.createElement('div')
+  node.style.cssText = 'font-size: 1px; margin: auto;'
+  const el = {
     tag: 'div',
     style: 'font-size: 1px; margin: auto;',
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     style: 'font-size: 1px; margin: auto;'
   }
-  patchStyle(tree, newTree)
-  log('patchNoChangeStyle1', tree)
-  log('patchNoChangeStyle2', tree.el.style.cssText)
+  patchStyle(el, newEl)
+  log('patchNoChangeStyle1', el)
+  log('patchNoChangeStyle2', el.node.style.cssText)
 })

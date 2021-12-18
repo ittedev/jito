@@ -4,7 +4,7 @@ import { assertObjectMatch, assertStrictEquals } from 'https://deno.land/std/tes
 import { buildFor } from 'https://deno.land/x/sinco@v2.0.0/mod.ts'
 
 const fileName = 'virtual_dom/patch_style.test.browser.ts'
-buildBrowserFile(fileName)
+await buildBrowserFile(fileName)
 
 await Deno.test('patch new style', async () => {
   const Sinco = await buildFor("chrome")
@@ -14,7 +14,7 @@ await Deno.test('patch new style', async () => {
     assertObjectMatch({
       tag: 'div',
       style: 'color: red;',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -32,7 +32,7 @@ await Deno.test('patch add style', async () => {
     assertObjectMatch({
       tag: 'div',
       style: 'font-size: 1px; margin: auto; color: red;',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -50,7 +50,7 @@ await Deno.test('patch remove style', async () => {
     assertObjectMatch({
       tag: 'div',
       style: 'font-size: 1px; color: red;',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -67,7 +67,7 @@ await Deno.test('patch remove All style', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchRemoveAllStyle1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -84,7 +84,7 @@ await Deno.test('patch set empty style', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchSetEmptyStyle1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -102,7 +102,7 @@ await Deno.test('patch no change style', async () => {
     assertObjectMatch({
       tag: 'div',
       style: 'font-size: 1px; margin: auto;',
-      el: {}
+      node: {}
     }, data)
   }
   {

@@ -2,18 +2,18 @@
 // This module is browser compatible.
 import { VirtualElement, LinkedVirtualElement } from '../types.ts'
 
-export function patchStyle(tree: LinkedVirtualElement, newTree: VirtualElement) {
-  if (tree.el instanceof HTMLElement) {
-    const style = tree.style || ''
-    const newStyle = newTree.style || ''
+export function patchStyle(el: LinkedVirtualElement, newEl: VirtualElement) {
+  if (el.node instanceof HTMLElement) {
+    const style = el.style || ''
+    const newStyle = newEl.style || ''
 
     if (style != newStyle) {
-      tree.el.style.cssText = newStyle
+      el.node.style.cssText = newStyle
     
       if (newStyle != '') {
-        tree.style = newStyle
+        el.style = newStyle
       } else {
-        delete tree.style
+        delete el.style
       }
     }
   }

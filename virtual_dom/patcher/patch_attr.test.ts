@@ -16,7 +16,7 @@ await Deno.test('patch new attr', async () => {
       attr: {
         'attr-a': 'value 1'
       },
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -38,7 +38,7 @@ await Deno.test('patch add attr', async () => {
         'attr-b': 'value 2',
         'attr-c': 'value 3'
       },
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -59,7 +59,7 @@ await Deno.test('patch remove attr', async () => {
         'attr-a': 'value 1',
         'attr-c': 'value 3'
       },
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -76,7 +76,7 @@ await Deno.test('patch remove All attr', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchRemoveAllAttr1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -93,7 +93,7 @@ await Deno.test('patch set empty attr', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchSetEmptyAttr1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -114,7 +114,7 @@ await Deno.test('patch no change attr', async () => {
         'attr-a': 'value 1',
         'attr-b': 'value 2'
       },
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -134,7 +134,7 @@ await Deno.test('patch update attr', async () => {
       attr: {
         'attr-a': 'value 2'
       },
-      el: {}
+      node: {}
     }, data)
   }
   {

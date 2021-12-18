@@ -14,7 +14,7 @@ await Deno.test('patch new text', async () => {
     assertObjectMatch({
       tag: 'div',
       children: ['Hello'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -32,7 +32,7 @@ await Deno.test('patch new multi texts', async () => {
     assertObjectMatch({
       tag: 'div',
       children: ['Hello', 'world', '!'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -50,7 +50,7 @@ await Deno.test('patch update text', async () => {
     assertObjectMatch({
       tag: 'div',
       children: ['World'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -70,10 +70,10 @@ await Deno.test('patch new Element', async () => {
       children: [
         {
           tag: 'p',
-          el: {}
+          node: {}
         }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -93,18 +93,18 @@ await Deno.test('patch new multi Elements', async () => {
       children: [
         {
           tag: 'h1',
-          el: {}
+          node: {}
         },
         {
           tag: 'h2',
-          el: {}
+          node: {}
         },
         {
           tag: 'p',
-          el: {}
+          node: {}
         }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -133,10 +133,10 @@ await Deno.test('patch update Element', async () => {
         {
           tag: 'p',
           class: ['class-a'],
-          el: {}
+          node: {}
         }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -164,10 +164,10 @@ await Deno.test('patch change Element', async () => {
       children: [
         {
           tag: 'h1',
-          el: {}
+          node: {}
         }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -191,7 +191,7 @@ await Deno.test('patch new Number', async () => {
       children: [
         0
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -211,7 +211,7 @@ await Deno.test('patch new multi Numbers', async () => {
       children: [
         100, 1, 0
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -232,21 +232,21 @@ await Deno.test('patch new cross Nodes', async () => {
         'Hello',
         {
           tag: 'br',
-          el: {}
+          node: {}
         },
         'world',
         '!',
         10,
         {
           tag: 'span',
-          el: {}
+          node: {}
         },
         {
           tag: 'a',
-          el: {}
+          node: {}
         }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -278,10 +278,10 @@ await Deno.test('patch change text to Element', async () => {
       children: [
         {
           tag: 'p',
-          el: {}
+          node: {}
         }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -305,7 +305,7 @@ await Deno.test('patch change Element to text', async () => {
       children: [
         'Hello'
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -331,7 +331,7 @@ await Deno.test('patch add text to texts', async () => {
         'World',
         '!'
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -355,15 +355,15 @@ await Deno.test('patch add text to Elements', async () => {
       children: [
         {
           tag: 'h1',
-          el: {}
+          node: {}
         },
         'World',
         {
           tag: 'h2',
-          el: {}
+          node: {}
         }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -396,11 +396,11 @@ await Deno.test('patch add Element to text', async () => {
         'Hello',
         {
           tag: 'span',
-          el: {}
+          node: {}
         },
         '!'
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -428,18 +428,18 @@ await Deno.test('patch add Element to Elements', async () => {
       children: [
         {
           tag: 'h1',
-          el: {}
+          node: {}
         },
         {
           tag: 'p',
-          el: {}
+          node: {}
         },
         {
           tag: 'h2',
-          el: {}
+          node: {}
         }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -468,7 +468,7 @@ await Deno.test('patch remove text', async () => {
         'Hello',
         '!'
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -490,10 +490,10 @@ await Deno.test('patch remove Element', async () => {
     assertObjectMatch({
       tag: 'div',
       children: [
-        { tag: 'h1', el: {} },
-        { tag: 'h2', el: {} }
+        { tag: 'h1', node: {} },
+        { tag: 'h2', node: {} }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -515,10 +515,10 @@ await Deno.test('patch use key', async () => {
     assertObjectMatch({
       tag: 'div',
       children: [
-        { tag: 'h2', key: {}, el: {} },
-        { tag: 'h1', key: {}, class: ['class-a'], el: {} }
+        { tag: 'h2', key: {}, node: {} },
+        { tag: 'h1', key: {}, class: ['class-a'], node: {} }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -554,11 +554,11 @@ await Deno.test('patch use key and number', async () => {
       children: [
         'Hello',
         0,
-        { tag: 'h2', key: {}, el: {} },
+        { tag: 'h2', key: {}, node: {} },
         1,
-        { tag: 'h1', key: {}, el: {} }
+        { tag: 'h1', key: {}, node: {} }
       ],
-      el: {}
+      node: {}
     }, data)
   }
   {

@@ -1,20 +1,20 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { VirtualElement, LinkedVirtualElement } from '../types.ts'
-import { patch } from '../patch.ts'
+import { VirtualTree, LinkedVirtualTree, VirtualElement, LinkedVirtualElement } from '../types.ts'
+import { patchElement } from './patch_element.ts'
 
 // TODO: add use DocumentFragment
 
 class LinkedVirtualElementPointer {
   index = 0
   node: Node | null
-  parent: LinkedVirtualElement
+  parent: LinkedVirtualTree
   children: Array<string | LinkedVirtualElement | number>
   stock: Map<unknown, LinkedVirtualElement>
-  constructor(tree: LinkedVirtualElement) {
+  constructor(tree: LinkedVirtualTree) {
     this.stock = new Map<unknown, LinkedVirtualElement>()
     this.parent = tree
-    this.node = tree.el.firstChild
+    this.node = tree.node.firstChild
     this.children = tree.children || []
   }
   get isEnd(): boolean {
@@ -40,15 +40,15 @@ class LinkedVirtualElementPointer {
       this.index--
       this.node = this.node.previousSibling
     } else {
-      this.node = this.parent.el.lastChild
+      this.node = this.parent.node.lastChild
       if (this.node) {
         this.index--
       }
     }
   }
   add(ve: LinkedVirtualElement | string) {
-    const node = typeof ve === 'string' ? document.createTextNode(ve) : ve.el
-    this.node = this.parent.el.insertBefore(node, this.node || null)
+    const node = typeof ve === 'string' ? document.createTextNode(ve) : ve.node
+    this.node = this.parent.node.insertBefore(node, this.node || null)
     this.next()
     return ve
   }
@@ -58,12 +58,12 @@ class LinkedVirtualElementPointer {
         (this.node as Text).data = ve
       }
     } else {
-      const node = typeof ve === 'string' ? document.createTextNode(ve) : ve.el
+      const node = typeof ve === 'string' ? document.createTextNode(ve) : ve.node
       if (this.node !== node) {
         if (typeof this.ve === 'object' && 'key' in this.ve) {
           this.stock.set(this.ve.key, this.ve)
         }
-        this.parent.el.replaceChild(node, this.node as Node)
+        this.parent.node.replaceChild(node, this.node as Node)
       }
     }
     this.next()
@@ -75,12 +75,12 @@ class LinkedVirtualElementPointer {
     }
     const node = this.node
     this.node = node?.nextSibling || null
-    this.parent.el.removeChild(node as Node)
+    this.parent.node.removeChild(node as Node)
   }
   removeAll() {
     if (this.node) {
       for (let node: Node | null = this.node; node !== null; node = node.nextSibling) {
-        this.parent.el.removeChild(node)
+        this.parent.node.removeChild(node)
       }
     }
   }
@@ -90,7 +90,7 @@ class LinkedVirtualElementPointer {
   addFromKey(key: unknown, ve: VirtualElement) {
     const tmp = this.stock.get(key) as LinkedVirtualElement
     this.stock.delete(key)
-    return this.add(patch(tmp, ve))
+    return this.add(patchElement(tmp, ve))
   }
   clear() {
     this.stock.clear()
@@ -119,7 +119,7 @@ class LinkedVirtualElementPointer {
 }
 
 // use boundary numbers algorithm
-export function patchChildren(tree: LinkedVirtualElement, newTree: VirtualElement) {
+export function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: VirtualTree) {
   const newChildren = newTree.children || []
   const pointer = new LinkedVirtualElementPointer(tree)
   const numbers = newChildren.filter(ve => typeof ve === 'number').reverse() as Array<number>
@@ -149,16 +149,16 @@ export function patchChildren(tree: LinkedVirtualElement, newTree: VirtualElemen
                 }
               })
               if (isMatched) {
-                return pointer.replace(patch(pointer.ve, ve))
+                return pointer.replace(patchElement(pointer.ve, ve))
               }
             }
           }
         }
         if (typeof pointer.ve === 'object') {
-          const tmp = 'key' in pointer.ve ? { tag: ve.tag, el: document.createElement(ve.tag) } : pointer.ve
-          return pointer.replace(patch(tmp, ve))
+          const tmp = 'key' in pointer.ve ? { tag: ve.tag, node: document.createElement(ve.tag) } : pointer.ve
+          return pointer.replace(patchElement(tmp, ve))
         } else {
-          return pointer.add(patch({ tag: ve.tag, el: document.createElement(ve.tag) }, ve))
+          return pointer.add(patchElement({ tag: ve.tag, node: document.createElement(ve.tag) }, ve))
         }
       }
 

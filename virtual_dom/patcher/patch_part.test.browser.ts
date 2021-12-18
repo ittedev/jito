@@ -4,100 +4,100 @@ import { test, log } from '../../_helper/document_console.ts'
 import { patchPart } from './patch_part.ts'
 
 test('patch new part', () => {
-  const el = document.createElement('div')
-  const tree = {
+  const node = document.createElement('div')
+  const el = {
     tag: 'div',
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     part: ['part-a']
   }
-  patchPart(tree, newTree)
-  log('patchNewPart1', tree)
-  log('patchNewPart2', [...tree.el.part.values()])
+  patchPart(el, newEl)
+  log('patchNewPart1', el)
+  log('patchNewPart2', [...el.node.part.values()])
 })
 
 test('patch add part', () => {
-  const el = document.createElement('div')
-  el.part.add('part-a')
-  const tree = {
+  const node = document.createElement('div')
+  node.part.add('part-a')
+  const el = {
     tag: 'div',
     part: ['part-a'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     part: ['part-a', 'part-b', 'part-c']
   }
-  patchPart(tree, newTree)
-  log('patchAddPart1', tree)
-  log('patchAddPart2', [...tree.el.part.values()])
+  patchPart(el, newEl)
+  log('patchAddPart1', el)
+  log('patchAddPart2', [...el.node.part.values()])
 })
 
 test('patch remove part', () => {
-  const el = document.createElement('div')
-  el.part.add('part-a', 'part-b', 'part-c')
-  const tree = {
+  const node = document.createElement('div')
+  node.part.add('part-a', 'part-b', 'part-c')
+  const el = {
     tag: 'div',
     part: ['part-a', 'part-b', 'part-c'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     part: ['part-a', 'part-c']
   }
-  patchPart(tree, newTree)
-  log('patchRemovePart1', tree)
-  log('patchRemovePart2', [...tree.el.part.values()])
+  patchPart(el, newEl)
+  log('patchRemovePart1', el)
+  log('patchRemovePart2', [...el.node.part.values()])
 })
 
 test('patch remove all part', () => {
-  const el = document.createElement('div')
-  el.part.add('part-a', 'part-b', 'part-c')
-  const tree = {
+  const node = document.createElement('div')
+  node.part.add('part-a', 'part-b', 'part-c')
+  const el = {
     tag: 'div',
     part: ['part-a', 'part-b', 'part-c'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div'
   }
-  patchPart(tree, newTree)
-  log('patchRemoveAllPart1', tree)
-  log('patchRemoveAllPart2', [...tree.el.part.values()])
+  patchPart(el, newEl)
+  log('patchRemoveAllPart1', el)
+  log('patchRemoveAllPart2', [...el.node.part.values()])
 })
 
 test('patch set empty part', () => {
-  const el = document.createElement('div')
-  el.part.add('part-a', 'part-b', 'part-c')
-  const tree = {
+  const node = document.createElement('div')
+  node.part.add('part-a', 'part-b', 'part-c')
+  const el = {
     tag: 'div',
     part: ['part-a', 'part-b', 'part-c'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     part: []
   }
-  patchPart(tree, newTree)
-  log('patchSetEmptyPart1', tree)
-  log('patchSetEmptyPart2', [...tree.el.part.values()])
+  patchPart(el, newEl)
+  log('patchSetEmptyPart1', el)
+  log('patchSetEmptyPart2', [...el.node.part.values()])
 })
 
 test('patch no change part', () => {
-  const el = document.createElement('div')
-  el.part.add('part-a', 'part-b')
-  const tree = {
+  const node = document.createElement('div')
+  node.part.add('part-a', 'part-b')
+  const el = {
     tag: 'div',
     part: ['part-a', 'part-b'],
-    el
+    node
   }
-  const newTree = {
+  const newEl = {
     tag: 'div',
     part: ['part-a', 'part-b']
   }
-  patchPart(tree, newTree)
-  log('patchNoChangePart1', tree)
-  log('patchNoChangePart2', [...tree.el.part.values()])
+  patchPart(el, newEl)
+  log('patchNoChangePart1', el)
+  log('patchNoChangePart2', [...el.node.part.values()])
 })

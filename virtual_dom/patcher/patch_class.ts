@@ -2,23 +2,23 @@
 // This module is browser compatible.
 import { VirtualElement, LinkedVirtualElement } from '../types.ts'
 
-export function patchClass(tree: LinkedVirtualElement, newTree: VirtualElement) {
-  const currentClass = tree.class || []
-  const newClass = newTree.class || []
+export function patchClass(el: LinkedVirtualElement, newEl: VirtualElement) {
+  const currentClass = el.class || []
+  const newClass = newEl.class || []
 
   const shortage = newClass.filter(cls => !currentClass.includes(cls))
   if (shortage.length) {
-    tree.el.classList.add(...shortage)
+    el.node.classList.add(...shortage)
   }
 
   const surplus = currentClass.filter(cls => !newClass.includes(cls))
   if (surplus.length) {
-    tree.el.classList.remove(...surplus)
+    el.node.classList.remove(...surplus)
   }
 
   if (newClass.length) {
-    tree.class = newClass.slice()
+    el.class = newClass.slice()
   } else {
-    delete tree.class
+    delete el.class
   }
 }

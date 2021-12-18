@@ -14,7 +14,7 @@ await Deno.test('patch new part', async () => {
     assertObjectMatch({
       tag: 'div',
       part: ['part-a'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -32,7 +32,7 @@ await Deno.test('patch add part', async () => {
     assertObjectMatch({
       tag: 'div',
       part: ['part-a', 'part-b', 'part-c'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -50,7 +50,7 @@ await Deno.test('patch remove part', async () => {
     assertObjectMatch({
       tag: 'div',
       part: ['part-a', 'part-c'],
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -67,7 +67,7 @@ await Deno.test('patch remove all part', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchRemoveAllPart1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -84,7 +84,7 @@ await Deno.test('patch set empty part', async () => {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchSetEmptyPart1')?.innerText) as string)
     assertObjectMatch({
       tag: 'div',
-      el: {}
+      node: {}
     }, data)
   }
   {
@@ -102,7 +102,7 @@ await Deno.test('patch no change part', async () => {
     assertObjectMatch({
       tag: 'div',
       part: ['part-a', 'part-b'],
-      el: {}
+      node: {}
     }, data)
   }
   {
