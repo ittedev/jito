@@ -7,7 +7,7 @@ import {
 import {
   innerText,
   expression
-} from './parser.ts'
+} from './script_parser.ts'
 
 const stack = [{
   x: 1,
