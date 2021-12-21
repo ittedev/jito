@@ -1,39 +1,52 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { LinkedVirtualElement } from './types.ts'
+import { LinkedVirtualTree, LinkedVirtualElement } from './types.ts'
 
 /**
  * Create a vertual tree from a dom node.
  * @alpha
  */
-export function load(el: Element): LinkedVirtualElement {
-  const tree = {
-    tag: el.tagName.toLowerCase(),
-    el
+export function load(node: Element | DocumentFragment): LinkedVirtualTree {
+  const tree = { node } as LinkedVirtualTree
+  loadChildren(tree)
+  return tree
+}
+
+function loadElement(element: Element): LinkedVirtualElement {
+  const el = {
+    tag: element.tagName.toLowerCase(),
+    node: element
   } as LinkedVirtualElement
 
-  // attributes
-  if (el.hasAttributes()) {
+  loadAttr(el)
+  loadChildren(el)
+
+  return el
+}
+
+function loadAttr(el: LinkedVirtualElement) {
+  if (el.node.hasAttributes()) {
     const attr = {} as Record<string, string>
-    el.getAttributeNames().forEach(name => {
+    el.node.getAttributeNames().forEach(name => {
       // ignore events
       if (name.startsWith('on')) return
 
-      const value = el.getAttribute(name) as string
+      const value = el.node.getAttribute(name) as string
       switch (name) {
-        case 'class': case 'part': return tree[name] = value.split(/\s+/)
-        case 'style': return tree.style = value
+        case 'class': case 'part': return el[name] = value.split(/\s+/)
+        case 'style': return el.style = value
         default: return attr[name] = value
       }
     })
     if (Object.keys(attr).length) {
-      tree.attr = attr
+      el.attr = attr
     }
   }
+}
 
-  // children
-  if (el.hasChildNodes()) {
-    const nodeList = el.childNodes
+function loadChildren(tree: LinkedVirtualTree) {
+  if (tree.node.hasChildNodes()) {
+    const nodeList = tree.node.childNodes
     tree.children = []
     for (let i = 0; i < nodeList.length; i++) {
       switch(nodeList[i].nodeType) {
@@ -41,13 +54,10 @@ export function load(el: Element): LinkedVirtualElement {
           tree.children.push((nodeList[i] as CharacterData).data)
           break
         case 1: // ELEMENT_NODE
-          tree.children.push(load(nodeList[i] as Element))
+          tree.children.push(loadElement(nodeList[i] as Element))
           break
-        default:
-          console.log('other', nodeList[i])
+        // TODO: default:
       }
     }
   }
-
-  return tree
 }
