@@ -1,20 +1,24 @@
 import { dirname } from 'https://deno.land/std/path/mod.ts'
 
-export async function buildBrowserFile(fileName: string) {
-  const { files } = await Deno.emit(`${fileName}`, {
+export async function buildBrowserFile(fileName: string, htmlFileName?: string) {
+  const { files } = await Deno.emit(fileName, {
     bundle: "module",
   })
   try {
     await Deno.mkdir(`./public/${dirname(fileName)}`, { recursive: true })
   } catch (e) {}
+
+  const html = htmlFileName ? Deno.readTextFileSync(htmlFileName) : '<body></body>'
   
-  await Deno.writeTextFile(`./public/${fileName}.html`, `<!DOCTYPE html>
+  Deno.writeTextFileSync(`./public/${fileName}.html`, `<!DOCTYPE html>
 <title>${fileName}</title>
 <style>
 body {
   white-space: pre-wrap;
 }
 </style>
-<body></body>
+${html}
 <script>${files['deno:///bundle.js']}</script>`)
+
+  console.info('bundled:', fileName)
 }
