@@ -7,6 +7,7 @@ const data = {
   value: 1
 }
 
+watch(data)
 hack('.app', '{{ value }}', data)
 ```
 
@@ -75,10 +76,10 @@ const component = compact('{{ value }}', [watch(data)])
             @elseif="state.shift.x === null && state.shift.y === null || key.unshift"
           >
 
-<selectbox @of="options" value*="checked">
+<select onchange="value = event.target.value">
   <option value:=""></option>
-  <option @each="option" value:="option">{{ option }}</option>
-</selectbox>
+  <option @for="options" @each="option" value:="option">{{ option }}</option>
+</select>
 
 <radiogroup value*="checked">
   <radio @for="options" @each="option" value:="option">{{ option }}</radio>

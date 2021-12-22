@@ -10,7 +10,7 @@ export interface VirtualElement extends VirtualTree {
   class?: Array<string>
   part?: Array<string>
   style?: string
-  attr?: Record<string, string>
+  attr?: Record<string, unknown>
   event?: Record<string, ((event?: Event) => void)>
   key?: unknown
 }

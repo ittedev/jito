@@ -8,18 +8,19 @@ import {
   EachTemplate,
   ElementTemplate,
   TokenField,
+  TreeTemplate
 } from './types.ts'
 import { Lexer } from './lexer.ts'
-import { expression, innerText } from './parser.ts'
+import { expression, innerText } from './script_parser.ts'
 
 const parser = new DOMParser()
 
-export function parse(html: string | HTMLTemplateElement): Array<Template | string> {
+export function parse(html: string | HTMLTemplateElement): TreeTemplate {
   const node = typeof html === 'string' ? parser.parseFromString(html, 'text/html') : html.content
   if (node.hasChildNodes()) {
-    return parseChildren(node)
+    return { type: 'tree', children: parseChildren(node) }
   } else {
-    return []
+    return { type: 'tree', children: [] }
   }
 }
 
@@ -164,7 +165,7 @@ function parseElement(el: Element): ElementTemplate {
         }
       }
 
-      // bind
+      // bind attribute
       {
         const match = name.match(/^(?<name>.+)\*$/)
         if (match?.groups) {
@@ -191,5 +192,5 @@ function parseElement(el: Element): ElementTemplate {
     template.children = parseChildren(el)
   }
   
-  return { type: 'element', el: template } as ElementTemplate
+  return { type: 'element', ...template } as ElementTemplate
 }

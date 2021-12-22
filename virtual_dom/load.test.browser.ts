@@ -36,7 +36,7 @@ test('load multi element', () => {
 test('load style element', () => {
   const doc = new DOMParser().parseFromString(`<style>a { color: red; }</style>`, 'text/html')
   console.log('textContent', doc.body.textContent)
-  const vtree = load(doc)
+  const vtree = load(doc.body)
   log('loadStyleElement', vtree)
 })
 

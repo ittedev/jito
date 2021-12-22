@@ -14,10 +14,10 @@ export type TemplateType =
   'if' |
   'each' |
   'element' |
-  'custom'
+  'tree'
 
 export interface Template {
-  type: TemplateType
+  type: string
 }
 
 // deno-lint-ignore no-explicit-any
@@ -87,18 +87,22 @@ export interface EachTemplate extends Template {
 
 export interface ElementTemplate extends Template {
   type: 'element'
-  el: {
-    tag: string,
-    class: Array<Array<string> | Template>,
-    part: Array<Array<string> | Template>,
-    attr: Record<string, unknown | Template>,
-    style: string | Template
-  }
+  tag: string,
+  class: Array<Array<string> | Template>,
+  part: Array<Array<string> | Template>,
+  attr: Record<string, unknown | Template>,
+  style: string | Template
+  children: Array<Template | string>
 }
 
-export type Evalute = (template: Template, stack: Variables) => unknown
+export interface TreeTemplate extends Template {
+  type: 'tree'
+  children: Array<Template | string>
+}
 
-export type Evaluator = Record<TemplateType, Evalute>
+export type Evaluate = (template: Template, stack: Variables) => unknown
+
+export type Evaluator = Record<string, Evaluate>
 
 export const enum TokenField
 {
@@ -118,7 +122,6 @@ export const enum TokenType {
   binaryOpetator,
   assignOpetator,
   crementOpetator, // ++, --
-
   chaining,     // .
   optional,     // ?.
   leftSquare,  // [

@@ -12,8 +12,7 @@ await Deno.test('load body', async () => {
   {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('loadBody')?.innerText) as string)
     assertObjectMatch({
-      tag: 'body',
-      el: {}
+      node: {}
     }, data)
   }
   await Sinco.done()
@@ -25,9 +24,7 @@ await Deno.test('load body class', async () => {
   {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('loadBodyClass')?.innerText) as string)
     assertObjectMatch({
-      tag: 'body',
-      class: ['class-a', 'class-b'],
-      el: {}
+      node: {}
     }, data)
   }
   await Sinco.done()
@@ -39,9 +36,7 @@ await Deno.test('load body part', async () => {
   {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('loadBodyPart')?.innerText) as string)
     assertObjectMatch({
-      tag: 'body',
-      part: ['part-a', 'part-b'],
-      el: {}
+      node: {}
     }, data)
   }
   await Sinco.done()

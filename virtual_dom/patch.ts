@@ -1,6 +1,7 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { VirtualTree, LinkedVirtualTree, VirtualElement, LinkedVirtualElement } from './types.ts'
+import { Component } from '../web_components/types.ts'
 
 /**
  * Apply a patch to a dom node.
@@ -119,7 +120,7 @@ function patchAttr(el: LinkedVirtualElement, newEl: VirtualElement) {
     !currentAttrKeys.includes(key) || currentAttr[key] !== newAttr[key]
   )
   for (const key of shortageOrUpdated) {
-      el.node.setAttribute(key, newAttr[key])
+    el.node.setAttribute(key, newAttr[key] as string)
   }
 
   const surplus = currentAttrKeys.filter(key => !newAttrKeys.includes(key))
@@ -131,6 +132,9 @@ function patchAttr(el: LinkedVirtualElement, newEl: VirtualElement) {
     el.attr = { ...newAttr }
   } else {
     delete el.attr
+  }
+  if ('rawAttributes' in el.node) {
+    (el.node as Component).rawAttributes = el.attr || null
   }
 }
 
