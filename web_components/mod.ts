@@ -2,3 +2,4 @@
 // This module is browser compatible.
 
 export { compact } from './compact.ts'
+export { hack } from './hack.ts'
