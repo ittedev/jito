@@ -28,6 +28,7 @@ function loadAttr(el: LinkedVirtualElement) {
   if (el.node.hasAttributes()) {
     const attr = {} as Record<string, string>
     el.node.getAttributeNames().forEach(name => {
+      if (name.startsWith('on')) return
       const value = el.node.getAttribute(name) as string
       switch (name) {
         case 'class': case 'part': return el[name] = value.split(/\s+/)
