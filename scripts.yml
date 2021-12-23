@@ -1,8 +1,0 @@
-watch: false
-scripts:
-  serve:
-    cmd: "file_server ./public -p 2555"
-    desc: "run my app.ts file"
-  test:
-    cmd: "deno test -A --unstable --config deno.json"
-    desc: "run my app.ts file"
