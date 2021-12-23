@@ -1,7 +1,7 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { VirtualElement } from '../virtual_dom/types.ts'
+import { VirtualElement, VirtualTree } from '../virtual_dom/types.ts'
 import {
   Variables,
   Template,
@@ -23,7 +23,7 @@ import {
 } from './types.ts'
 import { operateUnary, operateBinary } from './operate.ts'
 
-export function evaluate(template: Template, stack: Variables): unknown {
+export function evaluate(template: Template, stack: Variables = []): unknown {
   return evaluator[template.type](template, stack)
 }
 
@@ -80,12 +80,12 @@ export const evaluator = {
 
   join: (
     (template: JoinTemplate, stack: Variables): string => {
-      return template.values.reduce<string>((result: string, value: unknown | Template) => {
+      return template.values.reduce<string>((result: string, value: unknown | Template, index: number) => {
         if (instanceOfTemplate(value)) {
           const text = evaluate(value, stack)
-          return result + (typeof text === 'object' ? JSON.stringify(text) : text as string)
+          return result + (index ? template.separator : '') + (typeof text === 'object' ? JSON.stringify(text) : text as string)
         } else {
-          return result + value
+          return result + (index ? template.separator : '') + value
         }
       }, '')
     }
@@ -110,18 +110,38 @@ export const evaluator = {
 
   element: (
     (template: ElementTemplate, stack: Variables): VirtualElement => {
-      // TODO
-      const tree = { tag: template.tag } as VirtualElement
+      const el = evaluator.tree(template as TreeTemplate, stack) as VirtualElement
+      el.tag = template.tag
+
       if (template.style) {
-        tree.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
+        el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
       }
-      return tree
+
+      // TODO
+      return el
     }
   ) as Evaluate,
   
   tree: (
-    (_template: TreeTemplate, _stack: Variables): VirtualElement => {
-      return ''
+    (template: TreeTemplate, stack: Variables): VirtualTree => {
+      let children = [] as Array<string | VirtualElement | number>
+      template.children?.forEach(child => {
+        if (typeof child === 'string') {
+          children.push(child)
+        } else {
+          const value = evaluate(child, stack)
+          if (Array.isArray(value)) {
+            children = children.concat(value)
+          } else {
+            children.push(value as string | VirtualElement | number)
+          }
+        }
+      })
+      if (children.length) {
+        return { children }
+      } else {
+        return {}
+      }
     }
   ) as Evaluate
 

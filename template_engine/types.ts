@@ -85,19 +85,19 @@ export interface EachTemplate extends Template {
   value: Template
 }
 
-export interface ElementTemplate extends Template {
-  type: 'element'
-  tag: string,
-  class: Array<Array<string> | Template>,
-  part: Array<Array<string> | Template>,
-  attr: Record<string, unknown | Template>,
-  style: string | Template
-  children: Array<Template | string>
+export interface TreeTemplate extends Template {
+  type: 'tree' | 'element'
+  children?: Array<Template | string>
 }
 
-export interface TreeTemplate extends Template {
-  type: 'tree'
-  children: Array<Template | string>
+export interface ElementTemplate extends TreeTemplate {
+  type: 'element'
+  tag: string,
+  class?: Array<Array<string> | Template>,
+  part?: Array<Array<string> | Template>,
+  attr?: Record<string, unknown | Template>,
+  style?: string | Template
+  children?: Array<Template | string>
 }
 
 export type Evaluate = (template: Template, stack: Variables) => unknown

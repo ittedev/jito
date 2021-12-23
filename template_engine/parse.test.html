@@ -22,7 +22,7 @@ import { parse } from './parse.js'
 
 mocha.setup('bdd')
 
-describe('patch(): overload', function() {
+describe('parse(): overload', function() {
   it('parse string', () => {
     const template = parse('<style></style><p></p>')
     equal(template, {
@@ -58,7 +58,7 @@ describe('patch(): overload', function() {
   })
 })
 
-describe('patch(): text', function() {
+describe('parse(): text', function() {
   it('parse Text Node', () => {
     const template = parse('Hello {{ name }}!')
     equal(template, {
@@ -113,7 +113,7 @@ describe('patch(): text', function() {
   })
 })
 
-describe('patch(): style', function() {
+describe('parse(): style', function() {
   it('parse: style', () => {
     const template = parse('<p style="color: red"></p>')
     equal(template, {
