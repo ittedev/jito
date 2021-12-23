@@ -14,6 +14,6 @@ export interface ComponentTemplate extends Template {
   children: Array<Template | string>
 }
 
-export interface Component extends HTMLElement {
+export interface Component extends CustomElementConstructor, HTMLElement {
   rawAttributes: Record<string, unknown> | null
 }

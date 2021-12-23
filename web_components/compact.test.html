@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<title>virtual_dom/load.test.js</title>
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<div id="mocha"></div><div id="target" style="display: none;"></div>
+<script src="https://unpkg.com/chai/chai.js"></script>
+<script>
+var i = 0
+var equal = (v, p) => {
+  try {
+    chai.expect(JSON.parse(JSON.stringify(v))).deep.equal(p)
+  } catch (e) {
+    setTimeout(() => document.querySelectorAll('pre.error')[i++].innerHTML += '\n\n' + Diff.diffJson(v, p).map(p => `<span style="color: ${p.added ? 'red' : p.removed ? 'green' : '#000'}">${p.value}</span>`).join(''), 100)
+    throw e
+  }
+}
+</script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.0.0/diff.min.js"></script>
+<script type="module">
+import { compact } from './compact.js'
+
+mocha.setup('bdd')
+
+describe('compact()', function() {
+  it('compact text node', () => {
+    customElements.define('test-1', compact(`Hello beako!`))
+    document.getElementById('target').innerHTML = '<test-1>Hello world!</test-1>'
+    const root = document.querySelector('test-1')
+    equal(root.tagName, 'TEST-1')
+    equal(root.shadowRoot.innerHTML, 'Hello beako!')
+  })
+  it('compact use variable in text node', () => {
+    customElements.define('test-2', compact(`Hello {{ name }}!`, [{ name: 'beako' }]))
+    document.getElementById('target').innerHTML = '<test-2>Hello world!</test-2>'
+    const root = document.querySelector('test-2')
+    equal(root.tagName, 'TEST-2')
+    equal(root.shadowRoot.innerHTML, 'Hello beako!')
+  })
+})
+
+mocha.run()
+</script>

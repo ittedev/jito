@@ -3,5 +3,5 @@
 export type { Variables, Template, TreeTemplate } from './types.ts'
 
 export { parse } from './parse.ts'
-export { evalute } from './evalute.ts'
+export { evaluate } from './evaluate.ts'
 // export { render } from './render.ts'

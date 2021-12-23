@@ -1,6 +1,13 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-export function define(name: string, template: string | TreeTemplate | Component, stack?: Variables): void {
+import { Component } from './types.ts'
+import { compact } from './compact.ts'
+import { Variables, TreeTemplate } from '../template_engine/mod.ts'
 
-  customElements.define(name, ExpandingList, { extends: "ul" });
+export function define(name: string, template: string | TreeTemplate | Component, stack?: Variables): void {
+  if (typeof template === 'object' && 'rawAttributes' in template) {
+    customElements.define(name, template as Component);
+  } else {
+    customElements.define(name, compact(template as string | TreeTemplate, stack));
+  }
 }
