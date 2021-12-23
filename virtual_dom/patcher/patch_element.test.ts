@@ -11,14 +11,11 @@ await Deno.test('patch change tag', async () => {
   await Sinco.goTo(`http://0.0.0.0:2555/${fileName}.html`)
   {
     const data = JSON.parse(await Sinco.evaluatePage(() => document.getElementById('patchChangeTag1')?.innerText) as string)
-    assertObjectMatch({
-      tag: 'p',
-      node: {}
-    }, data)
+    assertObjectMatch(, data)
   }
   {
     const data = await Sinco.evaluatePage(() => document.getElementById('patchChangeTag2')?.innerText) as string
-    assertStrictEquals('P', data)
+    assertStrictEquals(, data)
   }
   await Sinco.done()
 })

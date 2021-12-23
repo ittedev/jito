@@ -235,7 +235,6 @@ class LinkedVirtualElementPointer {
   }
   // true is match, false is stop, void is continue
   search(cond: () => boolean | void): boolean {
-    console.log('search:', this.index, this.children[this.index], this.node)
     if (this.isEnd) {
       return false
     }
