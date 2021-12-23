@@ -20,7 +20,7 @@ function must(token: Token | null, type: TokenType, message = ''): void {
   if (!token || token.type !== type) throw Error(message)
 }
 
-export function innerText(lexer: Lexer): Template {
+export function innerText(lexer: Lexer): Template | string {
   const texts = [] as Array<string | Template>
   texts.push(lexer.skip())
   while (lexer.nextType()) {
@@ -35,8 +35,14 @@ export function innerText(lexer: Lexer): Template {
       lexer.pop()
     }
   }
-  
-  return { type: 'join', values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
+
+  // optimize
+  const values = texts.filter(value => value !== '')
+  if (values.length === 1 && typeof values[0] === 'string') {
+    return values[0]
+  } else {
+    return { type: 'join', values, separator: '' } as JoinTemplate
+  }
 }
 
 /**

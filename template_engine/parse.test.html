@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<title>virtual_dom/load.test.js</title>
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<div id="mocha"></div>
+<template id="template"><style></style><p></p></template>
+<script src="https://unpkg.com/chai/chai.js"></script>
+<script>
+var i = 0
+var equal = (v, p) => {
+  try {
+    chai.expect(JSON.parse(JSON.stringify(v))).deep.equal(p)
+  } catch (e) {
+    setTimeout(() => document.querySelectorAll('pre.error')[i++].innerHTML += '\n\n' + Diff.diffJson(v, p).map(p => `<span style="color: ${p.added ? 'red' : p.removed ? 'green' : '#000'}">${p.value}</span>`).join(''), 100)
+    throw e
+  }
+}
+</script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.0.0/diff.min.js"></script>
+<script type="module">
+import { parse } from './parse.js'
+
+mocha.setup('bdd')
+
+describe('patch(): overload', function() {
+  it('parse string', () => {
+    const template = parse('<style></style><p></p>')
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "style",
+          type: "element"
+        },
+        {
+          tag: "p",
+          type: "element"
+        }
+      ]
+    })
+  })
+
+  it('parse template', () => {
+    const template = parse(document.getElementById('template'))
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "style",
+          type: "element"
+        },
+        {
+          tag: "p",
+          type: "element"
+        }
+      ]
+    })
+  })
+})
+
+describe('patch(): text', function() {
+  it('parse Text Node', () => {
+    const template = parse('Hello {{ name }}!')
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          type: "join",
+          separator: "",
+          values: [
+            "Hello ",
+            {
+              type: "variable",
+              name: "name"
+            },
+            "!"
+          ]
+        }
+      ]
+    })
+  })
+  it('parse Text Node in element', () => {
+    const template = parse('<p>Hello beako!</p>')
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "p",
+          type: "element",
+          children: [
+            "Hello beako!"
+          ]
+        }
+      ]
+    })
+  })
+  it('parse a element in Text Node', () => {
+    const template = parse('Hello <span>beako</span>!')
+    equal(template, {
+      type: 'tree',
+      children: [
+        "Hello ",
+        {
+          tag: "span",
+          type: "element",
+          children: [
+            "beako"
+          ]
+        },
+        "!"
+      ]
+    })
+  })
+})
+
+describe('patch(): style', function() {
+  it('parse: style', () => {
+    const template = parse('<p style="color: red"></p>')
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "p",
+          type: "element",
+          style: "color: red"
+        }
+      ]
+    })
+  })
+
+  it('parse: add style only', () => {
+    const template = parse(`<p style+="'color: red'"></p>`)
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "p",
+          type: "element",
+          style: {
+            type: "join",
+            separator: ";",
+            values: [
+              {
+                type: "literal",
+                value: "color: red"
+              }
+            ]
+          }
+        }
+      ]
+    })
+  })
+
+  it('parse: add style', () => {
+    const template = parse(`<p style="color: red" style+="\`margin-top: \${x}px\`"></p>`)
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "p",
+          type: "element",
+          style: {
+            type: "join",
+            separator: ";",
+            values: [
+              "color: red",
+              {
+                type: "join",
+                separator: "",
+                values: [
+                  "margin-top: ",
+                  {
+                    type: "variable",
+                    name: "x"
+                  },
+                  "px"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    })
+  })
+
+  it('parse: add styles', () => {
+    const template = parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`)
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "p",
+          type: "element",
+          style: {
+            type: "join",
+            separator: ";",
+            values: [
+              "color: red",
+              {
+                type: "literal",
+                value: "margin-top: 5px"
+              },
+              {
+                type: "literal",
+                value: "margin: 0 auto"
+              }
+            ]
+          }
+        }
+      ]
+    })
+  })
+})
+
+mocha.run()
+</script>

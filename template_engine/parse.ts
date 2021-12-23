@@ -16,11 +16,12 @@ import { expression, innerText } from './script_parser.ts'
 const parser = new DOMParser()
 
 export function parse(html: string | HTMLTemplateElement): TreeTemplate {
-  const node = typeof html === 'string' ? parser.parseFromString(html, 'text/html') : html.content
-  if (node.hasChildNodes()) {
-    return { type: 'tree', children: parseChildren(node) }
+  if (typeof html === 'string') {
+    const doc = parser.parseFromString(html, 'text/html')
+    return { type: 'tree', children: parseChildren(doc.head).concat(parseChildren(doc.body)) }
   } else {
-    return { type: 'tree', children: [] }
+    const node = html.content
+    return { type: 'tree', children: parseChildren(node) }
   }
 }
 
@@ -28,9 +29,6 @@ class DomLexer {
   constructor(
     public node: Node | null
   ) {}
-  next(): Node | null {
-    return this.node ? this.node.nextSibling : null
-  }
   hasAttribute(attr: string): boolean {
     return !!(
       this.node &&
@@ -39,7 +37,9 @@ class DomLexer {
     )
   }
   pop(): Node | null {
-    return this.node = this.node ? this.node.nextSibling : null
+    const node = this.node
+    this.node = this.node ? this.node.nextSibling : null
+    return node
   }
 }
 
@@ -53,7 +53,7 @@ function parseChildren(node: Node): Array<Template | string> {
 }
 
 function parseNode(lexer: DomLexer): Template | string {
-  switch ((lexer.next() as Node).nodeType) {
+  switch ((lexer.node as Node).nodeType) {
     case 3: // TEXT_NODE
       return parseText(lexer.pop() as Text)
     case 1: { // ELEMENT_NODE
@@ -64,7 +64,7 @@ function parseNode(lexer: DomLexer): Template | string {
   }
 }
 
-function parseText(node: Text): Template {
+function parseText(node: Text): Template | string {
   return innerText(new Lexer(node.data, TokenField.innerText))
 }
 
@@ -117,14 +117,9 @@ function parseRegion(el: Element): Template {
 
 function parseElement(el: Element): ElementTemplate {
   const template = {
+    type: 'element',
     tag: el.tagName.toLowerCase(),
-    class: [] as Array<Array<string> | Template>,
-    part: [] as Array<Array<string> | Template>,
-    attr: {} as Record<string, unknown | Template>,
-    style: '' as string | Template,
-    bind: {},
-    children: [] as Array<Template | string>
-  }
+  } as ElementTemplate
   
   if (el.hasAttributes()) {
     const style = [] as Array<string | Template>
@@ -133,7 +128,10 @@ function parseElement(el: Element): ElementTemplate {
       switch (name) {
         case 'class':
         case 'part': {
-          return template[name].push(value.split(/\s+/))
+          if (!(name in template)) {
+            template[name] = [] as Array<Array<string> | Template>
+          }
+          return (template[name] as Array<Array<string> | Template>).push(value.split(/\s+/))
         }
         case 'style': {
           return style.push(value)
@@ -147,7 +145,10 @@ function parseElement(el: Element): ElementTemplate {
           switch (match.groups.name) {
             case 'class':
             case 'part': {
-              return template[match.groups.name].push({ type: 'flags', value: expression(new Lexer(value, TokenField.script)) } as FlagsTemplate)
+              if (!(match.groups.name in template)) {
+                template[match.groups.name] = [] as Array<Array<string> | Template>
+              }
+              return (template[match.groups.name] as Array<Array<string> | Template>).push({ type: 'flags', value: expression(new Lexer(value, TokenField.script)) } as FlagsTemplate)
             }
             case 'style': {
               return style.push(expression(new Lexer(value, TokenField.script)))
@@ -161,7 +162,10 @@ function parseElement(el: Element): ElementTemplate {
       {
         const match = name.match(/^(?<name>.+):$/)
         if (match?.groups) {
-          return template.attr[match.groups.name] = expression(new Lexer(value, TokenField.script))
+          if (!('attr' in template)) {
+            template.attr = {} as Record<string, unknown | Template>
+          }
+          return (template.attr as Record<string, unknown | Template>)[match.groups.name] = expression(new Lexer(value, TokenField.script))
         }
       }
 
@@ -178,19 +182,25 @@ function parseElement(el: Element): ElementTemplate {
       if (name.match(/^@.+$/)) return
 
       // string attribute
-      if (!(name in template.attr)) {
-        return template.attr[name] = value
+      if (!('attr' in template)) {
+        template.attr = {} as Record<string, unknown | Template>
+      }
+      if (!(name in (template.attr as Record<string, unknown | Template>))) {
+        return (template.attr as Record<string, unknown | Template>)[name] = value
       }
       return
     })
     if (style.length) {
-      
-      template.style = { type: 'join', values: style.filter(value => value !== ''), separator: ';' } as JoinTemplate
+      if (style.length === 1 && typeof style[0] === 'string') {
+        template.style = style[0]
+      } else {
+        template.style = { type: 'join', values: style.filter(value => value !== ''), separator: ';' } as JoinTemplate
+      }
     }
   }
   if (el.hasChildNodes()) {
     template.children = parseChildren(el)
   }
   
-  return { type: 'element', ...template } as ElementTemplate
+  return template
 }
