@@ -47,7 +47,9 @@ const component = compact('{{ value }}', [watch(data)])
 
 <header props*="{ props }"></header>
 
-<header with*=""></header>
+<component is:=""></component>
+
+<beako-component is:=""></beako-component>
 
 <slot name=""></slot>
 
@@ -110,19 +112,16 @@ const component = compact(tree, {
 ```
 
 ``` ts
-import { compact, watch } from 'bearko/mod.ts'
+import { compact, watch, receive } from 'bearko/mod.ts'
 
-const component = compact(
-  '{{ data.value }}',
-  props => {
-    const data = watch({
-      value: 1
+const component = compact('{{ data.value }}',
+  async ({ attr, lifecycle }) => {
+    const { id, value } = await receive(attr, ['id', 'value'])
+
+    watch(attr, 'id', () => {
     })
-
-    watch(props, 'name', value => {
-    })
-
-    watch(props, 'unmount', () => {
+    
+    watch(lifecycle, 'connected', () => {
     })
 
     return [data]
