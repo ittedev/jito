@@ -1,8 +1,8 @@
 <!DOCTYPE html>
+<meta charset="UTF-8">
 <title>virtual_dom/load.test.js</title>
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <div id="mocha"></div>
-<template id="template"><style></style><p></p></template>
 <script src="https://unpkg.com/chai/chai.js"></script>
 <script>
 var i = 0
@@ -25,8 +25,26 @@ mocha.setup('bdd')
 
 describe('evaluate(): text', function() {
   it('evaluate Text Node', () => {
-    const template = evaluate(parse('Hello {{ name }}!'), [{ name: 'beako' }])
-    equal(template, {
+    const tree = evaluate(parse('Hello beako!'), [])
+    equal(tree, {
+      children: [
+        "Hello beako!"
+      ]
+    })
+  })
+
+  it('evaluate unicode', () => {
+    const tree = evaluate(parse('مرحبا ベア子😆'), [])
+    equal(tree, {
+      children: [
+        "مرحبا ベア子😆"
+      ]
+    })
+  })
+
+  it('evaluate a variable in Text Node', () => {
+    const tree = evaluate(parse('Hello {{ name }}!'), [{ name: 'beako' }])
+    equal(tree, {
       children: [
         "Hello beako!"
       ]
@@ -34,8 +52,8 @@ describe('evaluate(): text', function() {
   })
 
   it('evaluate Text Node in element', () => {
-    const template = evaluate(parse('<p>Hello beako!</p>'))
-    equal(template, {
+    const tree = evaluate(parse('<p>Hello beako!</p>'))
+    equal(tree, {
       children: [
         {
           tag: "p",
@@ -47,8 +65,8 @@ describe('evaluate(): text', function() {
     })
   })
   it('evaluate a element in Text Node', () => {
-    const template = evaluate(parse('Hello <span>beako</span>!'))
-    equal(template, {
+    const tree = evaluate(parse('Hello <span>beako</span>!'))
+    equal(tree, {
       children: [
         "Hello ",
         {
@@ -65,8 +83,8 @@ describe('evaluate(): text', function() {
 
 describe('evaluate(): style', function() {
   it('evaluate: style', () => {
-    const template = evaluate(parse('<p style="color: red"></p>'))
-    equal(template, {
+    const tree = evaluate(parse('<p style="color: red"></p>'))
+    equal(tree, {
       children: [
         {
           tag: "p",
@@ -77,8 +95,8 @@ describe('evaluate(): style', function() {
   })
 
   it('evaluate: add style only', () => {
-    const template = evaluate(parse(`<p style+="'color: red'"></p>`))
-    equal(template, {
+    const tree = evaluate(parse(`<p style+="'color: red'"></p>`))
+    equal(tree, {
       children: [
         {
           tag: "p",
@@ -89,8 +107,8 @@ describe('evaluate(): style', function() {
   })
 
   it('evaluate: add style', () => {
-    const template = evaluate(parse(`<p style="color: red" style+="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
-    equal(template, {
+    const tree = evaluate(parse(`<p style="color: red" style+="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
+    equal(tree, {
       children: [
         {
           tag: "p",
@@ -101,12 +119,72 @@ describe('evaluate(): style', function() {
   })
 
   it('evaluate: add styles', () => {
-    const template = evaluate(parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`))
-    equal(template, {
+    const tree = evaluate(parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`))
+    equal(tree, {
       children: [
         {
           tag: "p",
           style: "color: red;margin-top: 5px;margin: 0 auto"
+        }
+      ]
+    })
+  })
+})
+
+describe('evaluate(): attr', function() {
+  it('evaluate: attr', () => {
+    const tree = evaluate(parse('<p id="beako"></p>'))
+    equal(tree, {
+      children: [
+        {
+          tag: "p",
+          attr: {
+            id: "beako"
+          }
+        }
+      ]
+    })
+  })
+
+  it('evaluate: add attr variable', () => {
+    const tree = evaluate(parse(`<p id:="id"></p>`), [{ id: 'beako' }])
+    equal(tree, {
+      children: [
+        {
+          tag: "p",
+          attr: {
+            id: "beako"
+          }
+        }
+      ]
+    })
+  })
+
+  it('evaluate: multi attr is not string', () => {
+    const tree = evaluate(parse('<p value:="value"></p>'), [{ value: 10 }])
+    equal(tree, {
+      children: [
+        {
+          tag: "p",
+          attr: {
+            value: 10
+          }
+        }
+      ]
+    })
+  })
+
+  it('evaluate: multi attr', () => {
+    const tree = evaluate(parse('<p id:="id" slot="my-slot" value:="value"></p>'), [{ id: 'beako', value: 10 }])
+    equal(tree, {
+      children: [
+        {
+          tag: "p",
+          attr: {
+            id: "beako",
+            slot: "my-slot",
+            value: 10
+          }
         }
       ]
     })

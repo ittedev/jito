@@ -117,6 +117,14 @@ export const evaluator = {
         el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
       }
 
+      if (template.attr) {
+        el.attr = {}
+        for (const key in template.attr) {
+          const attr = template.attr[key]
+          el.attr[key] = typeof attr === 'string' ? attr : evaluate(attr as Template, stack)
+        }
+      }
+
       // TODO
       return el
     }
