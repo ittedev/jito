@@ -1,44 +1,56 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
+import { dictionary, ChangeCallback, ReactiveCallback, BearkoObject, Bio, Spy } from './types.ts'
+import { invade } from './invade.ts'
 
-import { dictionary, Callback, DictionaryPage, Dictionary, BearkoObject } from './types.ts'
-
-export function watch(data: unknown, path?: string | string[], callback?: Callback): unknown {
+export function watch(data: unknown): unknown
+export function watch(data: unknown, callback: ReactiveCallback): unknown
+export function watch(data: unknown, bio: Bio): unknown
+export function watch(data: unknown, key: string, callback: ChangeCallback): unknown
+export function watch(data: unknown, key: string, spy: Spy): unknown
+export function watch(data: unknown, keys: string[], callback: ChangeCallback): unknown
+export function watch(data: unknown, keys: string[], spy: Spy): unknown
+export function watch(data: unknown, keyOrCallback?:  ReactiveCallback | Bio | string | string[], callback?: ChangeCallback | Spy): unknown {
   if (typeof data === 'object' && data !== null) {
-    if (Array.isArray(data)) {
-      // TODO: watch Array
-      return data
-    } else {
-      const pathes = callback && path ? [path].flat() : []
-      const obj = data as BearkoObject
-      if (!(dictionary in obj)) {
-        obj[dictionary] = {} as Dictionary
-      }
+    const obj = data as BearkoObject
+    invade(obj)
+    if (callback === undefined) { // bio
+      // Set bio to all properties
+      const bio = keyOrCallback ? (typeof keyOrCallback === 'function' ? ['bio', keyOrCallback] as Bio : keyOrCallback as Bio) : undefined
       for (const key in obj) {
-        if (!(key in obj[dictionary])) {
-          obj[dictionary][key] = {
-            v: watch(
-              obj[key],
-              pathes.flatMap(path => path.startsWith(key + '.') ? path.slice(key.length + 1) : []),
-              callback
-            ),
-            f: new Set<Callback>()
+        invade(obj, key, bio)
+      }
+
+      // Change all child objects to beako objects
+      // and set parent bio to all child object 
+      if (Array.isArray(obj)) {
+        // TODO: watch Array
+        // [index]
+        // push()
+        // pop()
+        // shift()
+        // unshift()
+        // sort()
+        // reverse()
+        // splice()
+        // copyWithin()
+        return obj
+      } else {
+        for (const key in obj) {
+          const bios = [...obj[dictionary][key].arms].filter(arm => arm[0] === 'bio')
+          if (bios.length) {
+            bios.forEach(arm => watch(obj[key], arm as Bio))
+          } else {
+            watch(obj[key])
           }
-          Object.defineProperty(obj, key, {
-            get: function() { return this[dictionary][key].v },
-            set: function(val) {
-              const page = this[dictionary][key] as DictionaryPage
-              const old = page.v
-              page.v = watch(val)
-              if (old !== val) {
-                page.f.forEach(callback => callback(val, old))
-              }
-            }
-          })
         }
-        if (pathes.some(path => path === key)) {
-          obj[dictionary][key].f.add(callback as Callback)
-        }
+      }
+    } else { // spy
+      const spy = typeof callback === 'function' ? ['spy', callback] as Spy : callback as Spy
+      if (Array.isArray(keyOrCallback)) {
+        keyOrCallback.forEach(key => invade(obj, key as string, spy))
+      } else {
+        invade(obj, keyOrCallback as string, spy)
       }
     }
   }
