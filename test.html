@@ -24,7 +24,12 @@ import {
   unwatch,
   reach,
   load,
-  patch
+  patch,
+  Lexer,
+  expression,
+  innerText,
+  parse,
+  evaluate,
 } from './beako.js'
 
 mocha.setup('bdd')
@@ -1460,6 +1465,627 @@ describe('patch() function', function() {
 //     equal(, )
 //   })
 // })
+})
+
+describe('Lexer class', function() {
+  it('Lexer class: script', () => {
+    const lexer = new Lexer('1+ x', 'script')
+    equal(lexer.pop(), { type: 'number', value: '1' })
+    equal(lexer.skip(), '')
+    equal(lexer.skip(), '')
+    equal(lexer.pop(), { type: 'multiOpetator', value: '+' })
+    equal(lexer.skip(), ' ')
+    equal(lexer.pop(), { type: 'word', value: 'x' })
+  })
+
+  it('Lexer class: innerText only', () => {
+    const lexer = new Lexer('Hello { name }', 'innerText')
+    equal(lexer.skip(), 'Hello { name }')
+  })
+
+  it('Lexer class: innerText has script', () => {
+    const lexer = new Lexer('Hello {{ { name } }}', 'innerText')
+    equal(lexer.skip(), 'Hello ')
+    equal(lexer.skip(), '')
+    equal(lexer.pop(), { type: 'leftMustache', value: '{{' })
+    equal(lexer.skip(), ' { name } ')
+    equal(lexer.pop(), { type: 'rightMustache', value: '}}' })
+  })
+})
+
+
+describe('Script parser', function() {
+  const stack = [{
+    x: 1,
+    y: 10,
+    s: 's',
+    h: { x: 2, y: { x: 3 }, z: [7] },
+    a: [4, 5, [6], { x: 8 }],
+    text: 'x'
+  }]
+
+  it('expression: number', () => {
+    equal(evaluate(expression(new Lexer('50.5', 'script')), stack), 50.5)
+  })
+
+  it('expression: true', () => {
+    equal(evaluate(expression(new Lexer('true', 'script')), stack), true)
+  })
+
+  it('expression: string: single', () => {
+    equal(evaluate(expression(new Lexer('\'string\'', 'script')), stack), 'string')
+  })
+
+  it('expression: string: double', () => {
+    equal(evaluate(expression(new Lexer('"string"', 'script')), stack), 'string')
+  })
+
+  it('expression: string tenplate: string only', () => {
+    equal(evaluate(expression(new Lexer('`string`', 'script')), stack), 'string')
+  })
+
+  it('expression: string tenplate: has expression', () => {
+    equal(evaluate(expression(new Lexer('`Hello ${text}!`', 'script')), stack), 'Hello x!')
+  })
+  // TODO: test escape char
+  // TODO: test return
+
+  it('expression: word', () => {
+    equal(evaluate(expression(new Lexer('x', 'script')), stack), 1)
+    equal(evaluate(expression(new Lexer('text', 'script')), stack), 'x')
+  })
+
+  it('expression: hash h.x', () => {
+    equal(evaluate(expression(new Lexer('h.x', 'script')), stack), 2)
+  })
+
+  it('expression: hash h[text]', () => {
+    equal(evaluate(expression(new Lexer('h[text]', 'script')), stack), 2)
+  })
+
+  it('expression: hash h.y.x', () => {
+    equal(evaluate(expression(new Lexer('h.y.x', 'script')), stack), 3)
+  })
+
+  it('expression: hash a[0]', () => {
+    equal(evaluate(expression(new Lexer('a[0]', 'script')), stack), 4)
+  })
+
+  it('expression: hash a[2][0]', () => {
+    equal(evaluate(expression(new Lexer('a[2][0]', 'script')), stack), 6)
+  })
+
+  it('expression: hash a[2-1]', () => {
+    equal(evaluate(expression(new Lexer('a[2-1]', 'script')), stack), 5)
+  })
+
+  it('expression: hash h.z[0]', () => {
+    equal(evaluate(expression(new Lexer('h.z[0]', 'script')), stack), 7)
+  })
+
+  it('expression: hash a[3].x', () => {
+    equal(evaluate(expression(new Lexer('a[3].x', 'script')), stack), 8)
+  })
+
+  it('expression: oparate +', () => {
+    equal(evaluate(expression(new Lexer('x + 1', 'script')), stack), 2)
+  })
+
+  it('expression: oparate -', () => {
+    equal(evaluate(expression(new Lexer('x - 2', 'script')), stack), -1)
+  })
+
+  it('expression: oparate *', () => {
+    equal(evaluate(expression(new Lexer('x * 2', 'script')), stack), 2)
+  })
+
+  it('expression: oparate /', () => {
+    equal(evaluate(expression(new Lexer('x / 2', 'script')), stack), 0.5)
+  })
+
+  it('expression: oparate %', () => {
+    equal(evaluate(expression(new Lexer('y % 7', 'script')), stack), 3)
+  })
+
+  it('expression: oparate ==', () => {
+    equal(evaluate(expression(new Lexer('x == 1', 'script')), stack), true)
+  })
+
+  it('expression: oparate !=', () => {
+    equal(evaluate(expression(new Lexer('x != 1', 'script')), stack), false)
+  })
+
+  it('expression: oparate ===', () => {
+    equal(evaluate(expression(new Lexer('x === 1', 'script')), stack), true)
+  })
+
+  it('expression: oparate !==', () => {
+    equal(evaluate(expression(new Lexer('x !== 1', 'script')), stack), false)
+  })
+
+  it('expression: oparate <', () => {
+    equal(evaluate(expression(new Lexer('x < 1', 'script')), stack), false)
+    equal(evaluate(expression(new Lexer('x < 2', 'script')), stack), true)
+  })
+
+  it('expression: oparate <=', () => {
+    equal(evaluate(expression(new Lexer('x <= 1', 'script')), stack), true)
+  })
+
+  it('expression: oparate >', () => {
+    equal(evaluate(expression(new Lexer('x > 1', 'script')), stack), false)
+    equal(evaluate(expression(new Lexer('x > -1', 'script')), stack), true)
+    equal(evaluate(expression(new Lexer('x >= 1', 'script')), stack), true)
+    equal(evaluate(expression(new Lexer('true || false', 'script')), stack), true)
+    equal(evaluate(expression(new Lexer('true && false', 'script')), stack), false)
+  })
+
+  it('expression: oparate >=', () => {
+    equal(evaluate(expression(new Lexer('x >= 1', 'script')), stack), true)
+    equal(evaluate(expression(new Lexer('true || false', 'script')), stack), true)
+    equal(evaluate(expression(new Lexer('true && false', 'script')), stack), false)
+  })
+
+  it('expression: oparate ||', () => {
+    equal(evaluate(expression(new Lexer('true || false', 'script')), stack), true)
+  })
+
+  it('expression: oparate &&', () => {
+    equal(evaluate(expression(new Lexer('true && false', 'script')), stack), false)
+  })
+
+  it('expression: oparate ?:', () => {
+    equal(evaluate(expression(new Lexer('1?2:3', 'script')), stack), 2)
+    equal(evaluate(expression(new Lexer('0?1:2?3:4', 'script')), stack), 3)
+  })
+
+  // it('innerText: text only', () => {
+  //   equal(evaluate(innerText(new Lexer('Hello world!', 'innerText')), stack), 'Hello world!')
+  // })
+
+  // it('innerText: expression in text', () => {
+  //   equal(evaluate(innerText(new Lexer('x + 1 = {{ x + 1 }}.', 'innerText')), stack), 'x + 1 = 2.')
+  // })
+})
+
+describe('parse()', function() {
+  describe('parse(): overload', function() {
+    it('parse string', () => {
+      const template = parse('<style></style><p></p>')
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "style",
+            type: "element"
+          },
+          {
+            tag: "p",
+            type: "element"
+          }
+        ]
+      })
+    })
+
+    it('parse template', () => {
+      const template = parse(document.getElementById('template'))
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "style",
+            type: "element"
+          },
+          {
+            tag: "p",
+            type: "element"
+          }
+        ]
+      })
+    })
+  })
+
+  describe('parse(): text', function() {
+    it('parse Text Node', () => {
+      const template = parse('Hello beako!')
+      equal(template, {
+        type: 'tree',
+        children: [
+          "Hello beako!"
+        ]
+      })
+    })
+
+    it('parse unicode', () => {
+      const template = parse('مرحبا ベア子😆')
+      equal(template, {
+        type: 'tree',
+        children: [
+          "مرحبا ベア子😆"
+        ]
+      })
+    })
+
+    it('parse a variable in Text Node', () => {
+      const template = parse('Hello {{ name }}!')
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            type: "join",
+            separator: "",
+            values: [
+              "Hello ",
+              {
+                type: "variable",
+                name: "name"
+              },
+              "!"
+            ]
+          }
+        ]
+      })
+    })
+    it('parse Text Node in element', () => {
+      const template = parse('<p>Hello beako!</p>')
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "p",
+            type: "element",
+            children: [
+              "Hello beako!"
+            ]
+          }
+        ]
+      })
+    })
+    it('parse a element in Text Node', () => {
+      const template = parse('Hello <span>beako</span>!')
+      equal(template, {
+        type: 'tree',
+        children: [
+          "Hello ",
+          {
+            tag: "span",
+            type: "element",
+            children: [
+              "beako"
+            ]
+          },
+          "!"
+        ]
+      })
+    })
+  })
+
+  describe('parse(): style', function() {
+    it('parse: style', () => {
+      const template = parse('<p style="color: red"></p>')
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "p",
+            type: "element",
+            style: "color: red"
+          }
+        ]
+      })
+    })
+
+    it('parse: add style only', () => {
+      const template = parse(`<p style+="'color: red'"></p>`)
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "p",
+            type: "element",
+            style: {
+              type: "join",
+              separator: ";",
+              values: [
+                {
+                  type: "literal",
+                  value: "color: red"
+                }
+              ]
+            }
+          }
+        ]
+      })
+    })
+
+    it('parse: add style', () => {
+      const template = parse(`<p style="color: red" style+="\`margin-top: \${x}px\`"></p>`)
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "p",
+            type: "element",
+            style: {
+              type: "join",
+              separator: ";",
+              values: [
+                "color: red",
+                {
+                  type: "join",
+                  separator: "",
+                  values: [
+                    "margin-top: ",
+                    {
+                      type: "variable",
+                      name: "x"
+                    },
+                    "px"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      })
+    })
+
+    it('parse: add styles', () => {
+      const template = parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`)
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "p",
+            type: "element",
+            style: {
+              type: "join",
+              separator: ";",
+              values: [
+                "color: red",
+                {
+                  type: "literal",
+                  value: "margin-top: 5px"
+                },
+                {
+                  type: "literal",
+                  value: "margin: 0 auto"
+                }
+              ]
+            }
+          }
+        ]
+      })
+    })
+  })
+
+  describe('parse(): attr', function() {
+    it('parse: attr', () => {
+      const template = parse('<p id="beako"></p>')
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "p",
+            type: "element",
+            attr: {
+              id: "beako"
+            }
+          }
+        ]
+      })
+    })
+
+    it('parse: add attr variable', () => {
+      const template = parse(`<p id:="id"></p>`)
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "p",
+            type: "element",
+            attr: {
+              id: {
+                type: "variable",
+                name: "id"
+              }
+            }
+          }
+        ]
+      })
+    })
+
+    it('parse: multi attr', () => {
+      const template = parse('<p id:="id" slot="my-slot"></p>')
+      equal(template, {
+        type: 'tree',
+        children: [
+          {
+            tag: "p",
+            type: "element",
+            attr: {
+              id: {
+                type: "variable",
+                name: "id"
+              },
+              slot: "my-slot"
+            }
+          }
+        ]
+      })
+    })
+  })
+})
+
+
+describe('evaluate()', function() {
+  describe('evaluate(): text', function() {
+    it('evaluate Text Node', () => {
+      const tree = evaluate(parse('Hello beako!'), [])
+      equal(tree, {
+        children: [
+          "Hello beako!"
+        ]
+      })
+    })
+
+    it('evaluate unicode', () => {
+      const tree = evaluate(parse('مرحبا ベア子😆'), [])
+      equal(tree, {
+        children: [
+          "مرحبا ベア子😆"
+        ]
+      })
+    })
+
+    it('evaluate a variable in Text Node', () => {
+      const tree = evaluate(parse('Hello {{ name }}!'), [{ name: 'beako' }])
+      equal(tree, {
+        children: [
+          "Hello beako!"
+        ]
+      })
+    })
+
+    it('evaluate Text Node in element', () => {
+      const tree = evaluate(parse('<p>Hello beako!</p>'))
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            children: [
+              "Hello beako!"
+            ]
+          }
+        ]
+      })
+    })
+    it('evaluate a element in Text Node', () => {
+      const tree = evaluate(parse('Hello <span>beako</span>!'))
+      equal(tree, {
+        children: [
+          "Hello ",
+          {
+            tag: "span",
+            children: [
+              "beako"
+            ]
+          },
+          "!"
+        ]
+      })
+    })
+  })
+
+  describe('evaluate(): style', function() {
+    it('evaluate: style', () => {
+      const tree = evaluate(parse('<p style="color: red"></p>'))
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            style: "color: red"
+          }
+        ]
+      })
+    })
+
+    it('evaluate: add style only', () => {
+      const tree = evaluate(parse(`<p style+="'color: red'"></p>`))
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            style: "color: red"
+          }
+        ]
+      })
+    })
+
+    it('evaluate: add style', () => {
+      const tree = evaluate(parse(`<p style="color: red" style+="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            style: "color: red;margin-top: 10px"
+          }
+        ]
+      })
+    })
+
+    it('evaluate: add styles', () => {
+      const tree = evaluate(parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`))
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            style: "color: red;margin-top: 5px;margin: 0 auto"
+          }
+        ]
+      })
+    })
+  })
+
+  describe('evaluate(): attr', function() {
+    it('evaluate: attr', () => {
+      const tree = evaluate(parse('<p id="beako"></p>'))
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            attr: {
+              id: "beako"
+            }
+          }
+        ]
+      })
+    })
+
+    it('evaluate: add attr variable', () => {
+      const tree = evaluate(parse(`<p id:="id"></p>`), [{ id: 'beako' }])
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            attr: {
+              id: "beako"
+            }
+          }
+        ]
+      })
+    })
+
+    it('evaluate: multi attr is not string', () => {
+      const tree = evaluate(parse('<p value:="value"></p>'), [{ value: 10 }])
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            attr: {
+              value: 10
+            }
+          }
+        ]
+      })
+    })
+
+    it('evaluate: multi attr', () => {
+      const tree = evaluate(parse('<p id:="id" slot="my-slot" value:="value"></p>'), [{ id: 'beako', value: 10 }])
+      equal(tree, {
+        children: [
+          {
+            tag: "p",
+            attr: {
+              id: "beako",
+              slot: "my-slot",
+              value: 10
+            }
+          }
+        ]
+      })
+    })
+  })
 })
 
 mocha.run()

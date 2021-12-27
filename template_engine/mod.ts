@@ -2,6 +2,8 @@
 // This module is browser compatible.
 export type { Variables, Template, TreeTemplate } from './types.ts'
 
-export { parse } from './parse.ts'
-export { evaluate } from './evaluate.ts'
+export * from './lexer.ts'
+export * from './script_parser.ts'
+export * from './parse.ts'
+export * from './evaluate.ts'
 // export { render } from './render.ts'

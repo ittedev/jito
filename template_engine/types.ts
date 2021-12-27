@@ -104,59 +104,112 @@ export type Evaluate = (template: Template, stack: Variables) => unknown
 
 export type Evaluator = Record<string, Evaluate>
 
-export const enum TokenField
-{
-  innerText,
-  script,
-  singleString,
-  doubleString,
-  template,
-  lineComment,
-  blockComment
-}
+//  wait for supporte const enum by deno
+// export const enum TokenField
+// {
+//   innerText,
+//   script,
+//   singleString,
+//   doubleString,
+//   template,
+//   lineComment,
+//   blockComment
+// }
 
-export const enum TokenType {
-  none = 0,
-  multiOpetator,
-  unaryOpetator,
-  binaryOpetator,
-  assignOpetator,
-  crementOpetator, // ++, --
-  chaining,     // .
-  optional,     // ?.
-  leftSquare,  // [
-  rightSquare, // ]
-  leftRound,   // (
-  rightRound,  // )
-  leftBrace,  // {
-  rightBrace, // }
-  leftMustache,  // {{
-  rightMustache, // }}
-  leftPlaceHolder,  // ${
-  rightPlaceHolder,  // }
-  lineComment,     // //~
-  leftComment,  // /*
-  rightComment,  // */
-  comma,       // ,
-  exclamation, // !
-  question,    // ?
-  colon,       // :
-  singleQuote,
-  doubleQuote,
-  backQuote,
-  spread,
-  return,
-  null,        // null
-  undefined,   // undefined
-  boolean,     // false, true
-  kwyword,
-  number,      // 0, 1, 2, etc.,
-  string,      // "~", '~'
-  word,        // x
-  escape,
-  partial,
-  other
-}
+export type TokenField =
+  'innerText' |
+  'script' |
+  'singleString' |
+  'doubleString' |
+  'template' |
+  'lineComment' |
+  'blockComment'
+
+//  wait for supporte const enum by deno
+// export const enum TokenType {
+//   none = 0,
+//   multiOpetator,
+//   unaryOpetator,
+//   binaryOpetator,
+//   assignOpetator,
+//   crementOpetator, // ++, --
+//   chaining,     // .
+//   optional,     // ?.
+//   leftSquare,  // [
+//   rightSquare, // ]
+//   leftRound,   // (
+//   rightRound,  // )
+//   leftBrace,  // {
+//   rightBrace, // }
+//   leftMustache,  // {{
+//   rightMustache, // }}
+//   leftPlaceHolder,  // ${
+//   rightPlaceHolder,  // }
+//   lineComment,     // //~
+//   leftComment,  // /*
+//   rightComment,  // */
+//   comma,       // ,
+//   exclamation, // !
+//   question,    // ?
+//   colon,       // :
+//   singleQuote,
+//   doubleQuote,
+//   backQuote,
+//   spread,
+//   return,
+//   null,        // null
+//   undefined,   // undefined
+//   boolean,     // false, true
+//   kwyword,
+//   number,      // 0, 1, 2, etc.,
+//   string,      // "~", '~'
+//   word,        // x
+//   escape,
+//   partial,
+//   other
+// }
+export type TokenType = 
+  'none' |
+  'multiOpetator' |
+  'unaryOpetator' |
+  'binaryOpetator' |
+  'assignOpetator' |
+  'crementOpetator' | // ++' | --
+  'chaining' |     // .
+  'optional' |     // ?.
+  'leftSquare' |  // [
+  'rightSquare' | // ]
+  'leftRound' |   // (
+  'rightRound' |  // )
+  'leftBrace' |  // {
+  'rightBrace' | // }
+  'leftMustache' |  // {{
+  'rightMustache' | // }}
+  'leftPlaceHolder' |  // ${
+  'rightPlaceHolder' |  // }
+  'lineComment' |     // //~
+  'leftComment' |  // /*
+  'rightComment' |  // */
+  'comma' |       // ' |
+  'exclamation' | // !
+  'question' |    // ?
+  'colon' |       // :
+  'singleQuote' |
+  'doubleQuote' |
+  'backQuote' |
+  'spread' |
+  'return' |
+  'null' |        // null
+  'undefined' |   // undefined
+  'boolean' |     // false' | true
+  'kwyword' |
+  'number' |      // 0' | 1' | 2' | etc.' |
+  'string' |      // "~"' | '~'
+  'word' |        // x
+  'escape' |
+  'partial' |
+  'other'
+
 
 export interface Token extends Record<PropertyKey, unknown> {
   type: TokenType
