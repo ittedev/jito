@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="UTF-8">
 <title>virtual_dom/load.test.js</title>
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <div id="mocha"></div>
@@ -60,6 +61,26 @@ describe('parse(): overload', function() {
 
 describe('parse(): text', function() {
   it('parse Text Node', () => {
+    const template = parse('Hello beako!')
+    equal(template, {
+      type: 'tree',
+      children: [
+        "Hello beako!"
+      ]
+    })
+  })
+
+  it('parse unicode', () => {
+    const template = parse('مرحبا ベア子😆')
+    equal(template, {
+      type: 'tree',
+      children: [
+        "مرحبا ベア子😆"
+      ]
+    })
+  })
+
+  it('parse a variable in Text Node', () => {
     const template = parse('Hello {{ name }}!')
     equal(template, {
       type: 'tree',
@@ -212,5 +233,61 @@ describe('parse(): style', function() {
   })
 })
 
+describe('parse(): attr', function() {
+  it('parse: attr', () => {
+    const template = parse('<p id="beako"></p>')
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "p",
+          type: "element",
+          attr: {
+            id: "beako"
+          }
+        }
+      ]
+    })
+  })
+
+  it('parse: add attr variable', () => {
+    const template = parse(`<p id:="id"></p>`)
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "p",
+          type: "element",
+          attr: {
+            id: {
+              type: "variable",
+              name: "id"
+            }
+          }
+        }
+      ]
+    })
+  })
+
+  it('parse: multi attr', () => {
+    const template = parse('<p id:="id" slot="my-slot"></p>')
+    equal(template, {
+      type: 'tree',
+      children: [
+        {
+          tag: "p",
+          type: "element",
+          attr: {
+            id: {
+              type: "variable",
+              name: "id"
+            },
+            slot: "my-slot"
+          }
+        }
+      ]
+    })
+  })
+})
 mocha.run()
 </script>
