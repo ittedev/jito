@@ -4,13 +4,13 @@ import { TokenField, TokenType, Token } from './types.ts'
 
 function distinguish(field: TokenField, value: string): TokenType {
   switch (field) {
-    case TokenField.script:
+    case 'script':
       switch (value) {
         case '+': case '-':
-          return TokenType.multiOpetator
+          return 'multiOpetator'
 
         case 'void': case 'typeof': case '~': case '!':
-          return TokenType.unaryOpetator
+          return 'unaryOpetator'
 
         case '/': case '*': case '%': case '**': // Arithmetic operators
         case 'in': case 'instanceof': case '<': case '>': case '<=': case '>=': // Relational operators
@@ -18,80 +18,80 @@ function distinguish(field: TokenField, value: string): TokenType {
         case '<<': case '>>': case '>>>': // Bitwise shift operators
         case '&': case '|': case '^': // Binary bitwise operators
         case '&&': case '||': case '??': // Binary logical operators
-          return TokenType.binaryOpetator
+          return 'binaryOpetator'
 
         case '=': case '*=': case '**=': case '/=': case '%=': case '+=': case '-=':
         case '<<=': case '>>=': case '>>>=': case '&=': case '^=': case '|=':
         case '&&=': case '||=': case '??=':
-          return TokenType.assignOpetator
+          return 'assignOpetator'
 
         case '++': case '--':
-          return TokenType.crementOpetator
+          return 'crementOpetator'
 
         case 'false': case 'true':
-          return TokenType.boolean
+          return 'boolean'
 
-        case 'null': return TokenType.null
-        case 'undefined': return TokenType.undefined
-        case '.': return TokenType.chaining
-        case '?.': return TokenType.optional
-        case '[': return TokenType.leftSquare
-        case ']': return TokenType.rightSquare
-        case '{': return TokenType.leftBrace
-        case '}': return TokenType.rightBrace
-        case '(': return TokenType.leftRound
-        case ')': return TokenType.rightRound
-        case '...': return TokenType.spread
-        case '?': return TokenType.question
-        case ':': return TokenType.colon
-        case ',': return TokenType.comma
-        case '\'': return TokenType.singleQuote
-        case '\"': return TokenType.doubleQuote
-        case '`': return TokenType.backQuote
+        case 'null': return 'null'
+        case 'undefined': return 'undefined'
+        case '.': return 'chaining'
+        case '?.': return 'optional'
+        case '[': return 'leftSquare'
+        case ']': return 'rightSquare'
+        case '{': return 'leftBrace'
+        case '}': return 'rightBrace'
+        case '(': return 'leftRound'
+        case ')': return 'rightRound'
+        case '...': return 'spread'
+        case '?': return 'question'
+        case ':': return 'colon'
+        case ',': return 'comma'
+        case '\'': return 'singleQuote'
+        case '\"': return 'doubleQuote'
+        case '`': return 'backQuote'
       }
       switch (true) {
-        case /^\/\/.*$/.test(value): return TokenType.lineComment
-        case /^[_\$a-zA-Z][_\$a-zA-Z0-9]*$/.test(value): return TokenType.word
-        case /^\d+\.?\d*$|^\.?\d+$/.test(value): return TokenType.number
+        case /^\/\/.*$/.test(value): return 'lineComment'
+        case /^[_\$a-zA-Z][_\$a-zA-Z0-9]*$/.test(value): return 'word'
+        case /^\d+\.?\d*$|^\.?\d+$/.test(value): return 'number'
       }
       break
     // deno-lint-ignore no-fallthrough
-    case TokenField.template:
+    case 'template':
       switch (value) {
-        case '$': return TokenType.partial
-        case '${': return TokenType.leftPlaceHolder
-        case '}': return TokenType.rightPlaceHolder
-        case '`': return TokenType.backQuote
+        case '$': return 'partial'
+        case '${': return 'leftPlaceHolder'
+        case '}': return 'rightPlaceHolder'
+        case '`': return 'backQuote'
         case '\r': case '\n': case '\r\n':
-          return TokenType.other
+          return 'other'
       }
-    case TokenField.singleString:
-    case TokenField.doubleString:
+    case 'singleString':
+    case 'doubleString':
       switch (value) {
-        case '\\': return TokenType.partial
-        case '\r': case '\n': case '\r\n': return TokenType.return
-        case '\\\r\n': return TokenType.escape
+        case '\\': return 'partial'
+        case '\r': case '\n': case '\r\n': return 'return'
+        case '\\\r\n': return 'escape'
         case '\'':
-          if (field === TokenField.singleString) return TokenType.singleQuote
+          if (field === 'singleString') return 'singleQuote'
           break
         case '\"':
-          if (field === TokenField.doubleString) return TokenType.doubleQuote
+          if (field === 'doubleString') return 'doubleQuote'
           break
       }
       switch (true) {
-        case /^\\(x|u)$/.test(value): return TokenType.partial
-        case /^\\.$/.test(value): return TokenType.escape
+        case /^\\(x|u)$/.test(value): return 'partial'
+        case /^\\.$/.test(value): return 'escape'
       }
       break
-    case TokenField.innerText:
+    case 'innerText':
       switch (value) {
-        case '{': case '}': return TokenType.partial
-        case '{{': return TokenType.leftMustache
-        case '}}': return TokenType.rightMustache
+        case '{': case '}': return 'partial'
+        case '{{': return 'leftMustache'
+        case '}}': return 'rightMustache'
       }
       break
   }
-  return TokenType.other
+  return 'other'
 }
 
 export class Lexer {
@@ -102,27 +102,27 @@ export class Lexer {
     private field: TokenField
   ) {}
   private _next(start: number): Token | null {
-    const token = { type: TokenType.none, value: '' }
+    const token = { type: 'none', value: '' }
     for (this.index = start; this.index < this.text.length; this.index++) {
       const nextType = distinguish(this.field, token.value + this.text[this.index])
-      if (nextType === TokenType.other) {
-        return token
+      if (nextType === 'other') {
+        return token as Token
       } else {
         token.type = nextType
         token.value = token.value + this.text[this.index]
       }
     }
-    return token
+    return token as Token
   }
   skip(): string {
     let value = ''
     if (!this.token) {
       for (let i = this.index; i < this.text.length; i++) {
-        if (distinguish(this.field, this.text[i]) === TokenType.other) {
+        if (distinguish(this.field, this.text[i]) === 'other') {
           value += this.text[i]
         } else {
           this.token = this._next(i)
-          if (this.token?.type === TokenType.partial) {
+          if (this.token?.type === 'partial') {
             value += this.token.value
             this.token = null
           } else {
@@ -135,7 +135,7 @@ export class Lexer {
   }
   nextType(): TokenType {
     this.skip()
-    return this.token ? this.token.type : TokenType.none
+    return this.token ? this.token.type : 'none'
   }
   pop(): Token | null {
     this.skip()

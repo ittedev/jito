@@ -24,12 +24,12 @@ export function innerText(lexer: Lexer): Template | string {
   const texts = [] as Array<string | Template>
   texts.push(lexer.skip())
   while (lexer.nextType()) {
-    if (lexer.nextType() === TokenType.leftMustache) {
+    if (lexer.nextType() === 'leftMustache') {
       lexer.pop()
-      lexer.expand(TokenField.script, () => {
+      lexer.expand('script', () => {
         texts.push(expression(lexer))
       })
-      must(lexer.pop(), TokenType.rightMustache)
+      must(lexer.pop(), 'rightMustache')
       texts.push(lexer.skip())
     } else {
       lexer.pop()
@@ -63,10 +63,10 @@ export function expression(lexer: Lexer): Template {
 // 
 function conditional(lexer: Lexer): Template {
   let condition = arithmetic(lexer)
-  while (lexer.nextType() === TokenType.question) {
+  while (lexer.nextType() === 'question') {
     lexer.pop()
     const truthy = expression(lexer)
-    must(lexer.pop(), TokenType.colon)
+    must(lexer.pop(), 'colon')
     const falsy = arithmetic(lexer)
     condition = { type: 'if', condition, truthy, falsy } as IfTemplate
   }
@@ -81,7 +81,7 @@ function conditional(lexer: Lexer): Template {
  function arithmetic(lexer: Lexer): Template {
   const list = new Array<Template | string>()
   list.push(unary(lexer))
-  while(lexer.nextType() === TokenType.multiOpetator || lexer.nextType() === TokenType.binaryOpetator) {
+  while(lexer.nextType() === 'multiOpetator' || lexer.nextType() === 'binaryOpetator') {
     list.push((lexer.pop() as Token).value)
     list.push(unary(lexer))
   }
@@ -123,8 +123,8 @@ function precedence(operator: string): number {
  */
 function unary(lexer: Lexer): Template {
   switch (lexer.nextType()) {
-    case TokenType.multiOpetator: 
-    case TokenType.exclamation:
+    case 'multiOpetator': 
+    case 'exclamation':
       return { type: 'unary', operator: lexer.pop()?.value as string, operand:unary(lexer) } as UnaryTemplate
     default:
       return func(lexer)
@@ -140,30 +140,30 @@ function func(lexer: Lexer): Template {
   let template = term(lexer)
   while (true) {
     switch (lexer.nextType()) {
-      case TokenType.leftRound: {
+      case 'leftRound': {
         lexer.pop()
         const params = [] as Array<Template>
-          while (lexer.nextType() !== TokenType.rightRound) {
+          while (lexer.nextType() !== 'rightRound') {
           params.push(expression(lexer))
-          if (lexer.nextType() === TokenType.comma) lexer.pop()
+          if (lexer.nextType() === 'comma') lexer.pop()
           else break
         }
-        must(lexer.pop(), TokenType.rightRound)
+        must(lexer.pop(), 'rightRound')
         template = { type: 'function', name: template, params } as FunctionTemplate
         continue
       }
-      case TokenType.chaining: {
+      case 'chaining': {
         lexer.pop()
         const key = lexer.pop() as Token
-        must(key, TokenType.word)
+        must(key, 'word')
         
         template = { type: 'hash', object: template, key: { type: 'literal', value: key.value } as LiteralTemplate } as HashTemplate
         continue
       }
-      case TokenType.leftSquare: {
+      case 'leftSquare': {
         lexer.pop()
         const key = expression(lexer)
-        must(lexer.pop(), TokenType.rightSquare)
+        must(lexer.pop(), 'rightSquare')
         template = { type: 'hash', object: template, key } as HashTemplate
         continue
       }
@@ -182,23 +182,23 @@ function term(lexer: Lexer): Template {
   const token = lexer.pop() as Token
   switch (token.type) {
     // w
-    case TokenType.word:
+    case 'word':
       return { type: 'variable', name: token.value } as VariableTemplate
 
     // L = n | s | b | undefined | null
     
-    case TokenType.number: return { type: 'literal', value: Number(token.value) } as LiteralTemplate
-    case TokenType.boolean: return { type: 'literal', value: token.value === 'true' ? true : false } as LiteralTemplate
-    case TokenType.undefined: return { type: 'literal', value: undefined } as LiteralTemplate
-    case TokenType.null: return { type: 'literal', value: null } as LiteralTemplate
-    case TokenType.doubleQuote: return stringLiteral(lexer, TokenField.doubleString, token.type)
-    case TokenType.singleQuote: return stringLiteral(lexer, TokenField.singleString, token.type)
-    case TokenType.backQuote: return stringLiteral(lexer, TokenField.template, token.type)
+    case 'number': return { type: 'literal', value: Number(token.value) } as LiteralTemplate
+    case 'boolean': return { type: 'literal', value: token.value === 'true' ? true : false } as LiteralTemplate
+    case 'undefined': return { type: 'literal', value: undefined } as LiteralTemplate
+    case 'null': return { type: 'literal', value: null } as LiteralTemplate
+    case 'doubleQuote': return stringLiteral(lexer, 'doubleString', token.type)
+    case 'singleQuote': return stringLiteral(lexer, 'singleString', token.type)
+    case 'backQuote': return stringLiteral(lexer, 'template', token.type)
 
     // (E)
-    case TokenType.leftRound: {
+    case 'leftRound': {
       const node = expression(lexer)
-      must(lexer.pop(), TokenType.rightRound)
+      must(lexer.pop(), 'rightRound')
       return node
     }
     default: throw new Error(JSON.stringify(token))
@@ -218,15 +218,15 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
       const token = lexer.pop() as Token
       switch (token.type) {
         case type: break loop
-        case TokenType.return: throw Error()
-        case TokenType.escape:
+        case 'return': throw Error()
+        case 'escape':
           texts[i] += token.value // TODO: escape char
           continue
-        case TokenType.leftPlaceHolder:
-          lexer.expand(TokenField.script, () => {
+        case 'leftPlaceHolder':
+          lexer.expand('script', () => {
             texts.push(expression(lexer))
           })
-          must(lexer.pop(), TokenType.rightPlaceHolder)
+          must(lexer.pop(), 'rightPlaceHolder')
           texts.push(lexer.skip())
           i += 2
       }

@@ -65,7 +65,7 @@ function parseNode(lexer: DomLexer): Template | string {
 }
 
 function parseText(node: Text): Template | string {
-  return innerText(new Lexer(node.data, TokenField.innerText))
+  return innerText(new Lexer(node.data, 'innerText'))
 }
 
 function parseChild(lexer: DomLexer): Template {
@@ -91,7 +91,7 @@ function parseEach(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@for')) {
     const each = el.getAttribute('@each')
-    const array = expression(new Lexer(el.getAttribute('@for') as string, TokenField.script))
+    const array = expression(new Lexer(el.getAttribute('@for') as string, 'script'))
     return { type: 'each', each, array, value: parseIf(lexer) } as EachTemplate
   } else {
     return parseIf(lexer)
@@ -101,7 +101,7 @@ function parseEach(lexer: DomLexer): Template {
 function parseIf(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@if')) {
-    const condition = expression(new Lexer(el.getAttribute('@if') as string, TokenField.script))
+    const condition = expression(new Lexer(el.getAttribute('@if') as string, 'script'))
     const truthy = parseRegion(el)
     lexer.pop()
     const falsy = lexer.hasAttribute('@else') ? parseChild(lexer) : undefined
@@ -148,10 +148,10 @@ function parseElement(el: Element): ElementTemplate {
               if (!(match.groups.name in template)) {
                 template[match.groups.name] = [] as Array<Array<string> | Template>
               }
-              return (template[match.groups.name] as Array<Array<string> | Template>).push({ type: 'flags', value: expression(new Lexer(value, TokenField.script)) } as FlagsTemplate)
+              return (template[match.groups.name] as Array<Array<string> | Template>).push({ type: 'flags', value: expression(new Lexer(value, 'script')) } as FlagsTemplate)
             }
             case 'style': {
-              return style.push(expression(new Lexer(value, TokenField.script)))
+              return style.push(expression(new Lexer(value, 'script')))
             }
             // events
           }
@@ -165,7 +165,7 @@ function parseElement(el: Element): ElementTemplate {
           if (!('attr' in template)) {
             template.attr = {} as Record<string, unknown | Template>
           }
-          return (template.attr as Record<string, unknown | Template>)[match.groups.name] = expression(new Lexer(value, TokenField.script))
+          return (template.attr as Record<string, unknown | Template>)[match.groups.name] = expression(new Lexer(value, 'script'))
         }
       }
 
