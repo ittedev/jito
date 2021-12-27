@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <div id="mocha"></div>
 <template id="template"><style></style><p></p></template>
+<div id="target"></div>
 <script src="https://unpkg.com/chai/chai.js"></script>
 <script>
 var i = 0
@@ -15,6 +16,7 @@ var equal = (v, p) => {
     throw e
   }
 }
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
 </script>
 <script src="https://unpkg.com/mocha/mocha.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.0.0/diff.min.js"></script>
@@ -2103,25 +2105,36 @@ describe('compact()', function() {
     customElements.define('test-2', compact(`Hello {{ name }}!`, [{ name: 'beako' }]))
     document.getElementById('target').innerHTML = '<test-2>Hello world!</test-2>'
     const root = document.querySelector('test-2')
-    equal(root.tagName, 'TEST-2')
     equal(root.shadowRoot.innerHTML, 'Hello beako!')
   })
 
   it('compact slot', () => {
-    customElements.define('test-3', compact(`<slot name="my-text">デフォルトテキスト</slot>`, [{ name: 'beako' }]))
+    customElements.define('test-3', compact(`<slot name="my-text">Hello world!</slot>`, [{ name: 'beako' }]))
     document.getElementById('target').innerHTML = `<test-3><span slot="my-text">Hello beako!</span></test-3>`
     const root = document.querySelector('test-3')
-    equal(root.tagName, 'TEST-3')
-    equal(root.shadowRoot.innerHTML, 'Hello beako!')
+    equal(root.innerText, 'Hello beako!')
+    equal(root.shadowRoot.innerHTML, 'Hello world!')
   })
 
-  it('compact use construct', () => {
+  it('compact use constructer', async () => {
     customElements.define('test-4', compact(`Hello {{ name }}!`, () => {
       return [{ name: 'beako' }]
     }))
     document.getElementById('target').innerHTML = '<test-4>Hello world!</test-4>'
+    await sleep()
     const root = document.querySelector('test-4')
-    equal(root.tagName, 'TEST-4')
+    equal(root.shadowRoot.innerHTML, 'Hello beako!')
+  })
+
+  it('compact use constructer with receive', async () => {
+    customElements.define('test-5', compact(`Hello {{ name }}!`, async attr => {
+      const { name } = await receive(attr, ['name'])
+      console.log('name:', name)
+      return [{ name }]
+    }))
+    document.getElementById('target').innerHTML = '<test-5 name="beako"></test-5>'
+    await sleep()
+    const root = document.querySelector('test-5')
     equal(root.shadowRoot.innerHTML, 'Hello beako!')
   })
 })

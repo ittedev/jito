@@ -1,7 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { VirtualTree, LinkedVirtualTree, VirtualElement, LinkedVirtualElement } from './types.ts'
-import { Component } from '../web_components/types.ts'
 
 /**
  * Apply a patch to a dom node.
@@ -132,9 +131,6 @@ function patchAttr(el: LinkedVirtualElement, newEl: VirtualElement) {
     el.attr = { ...newAttr }
   } else {
     delete el.attr
-  }
-  if ('rawAttributes' in el.node) {
-    (el.node as Component).rawAttributes = el.attr || null
   }
 }
 

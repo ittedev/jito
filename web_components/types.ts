@@ -1,6 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { TemplateType, Template } from '../template_engine/types.ts'
+import { Variables, TemplateType, Template } from '../template_engine/types.ts'
 
 export type ExpandedTemplateType = TemplateType | 'component'
 
@@ -14,6 +14,4 @@ export interface ComponentTemplate extends Template {
   children: Array<Template | string>
 }
 
-export interface Component extends CustomElementConstructor, HTMLElement {
-  rawAttributes: Record<string, unknown> | null
-}
+export type Construct = (attr?: Record<string, unknown | Template>) => Variables | Record<string, unknown> | void | Promise<Variables | Record<string, unknown> | void>
