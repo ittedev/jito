@@ -102,7 +102,7 @@ export class Lexer {
     private field: TokenField
   ) {}
   private _next(start: number): Token | null {
-    const token = { type: 'none', value: '' }
+    const token = { type: '', value: '' }
     for (this.index = start; this.index < this.text.length; this.index++) {
       const nextType = distinguish(this.field, token.value + this.text[this.index])
       if (nextType === 'other') {
@@ -135,7 +135,7 @@ export class Lexer {
   }
   nextType(): TokenType {
     this.skip()
-    return this.token ? this.token.type : 'none'
+    return this.token ? this.token.type : ''
   }
   pop(): Token | null {
     this.skip()

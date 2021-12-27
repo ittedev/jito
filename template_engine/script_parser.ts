@@ -24,6 +24,7 @@ export function innerText(lexer: Lexer): Template | string {
   const texts = [] as Array<string | Template>
   texts.push(lexer.skip())
   while (lexer.nextType()) {
+    console.log('lexer.nextType():', lexer.nextType())
     if (lexer.nextType() === 'leftMustache') {
       lexer.pop()
       lexer.expand('script', () => {

@@ -169,7 +169,7 @@ export type TokenField =
 //   other
 // }
 export type TokenType = 
-  'none' |
+  '' |
   'multiOpetator' |
   'unaryOpetator' |
   'binaryOpetator' |
