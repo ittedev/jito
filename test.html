@@ -22,7 +22,9 @@ import {
   watch,
   receive,
   unwatch,
-  reach
+  reach,
+  load,
+  patch
 } from './beako.js'
 
 mocha.setup('bdd')
@@ -141,7 +143,7 @@ describe('receive()', function() {
 
   it('receive undefined', async () => {
     const data = {}
-    setTimeout(() => data.x = 1, 500)
+    setTimeout(() => data.x = 1, 100)
     const data2 = await receive(data, 'x')
     equal(data2.x, 1)
   })
@@ -150,7 +152,7 @@ describe('receive()', function() {
     const data = {
       x: undefined
     }
-    setTimeout(() => data.x = 1, 500)
+    setTimeout(() => data.x = 1, 100)
     const data2 = await receive(data, 'x')
     equal(data2.x, 1)
   })
@@ -294,6 +296,1170 @@ describe('reach()', function() {
     data.x++
     equal(y, 0)
   })
+})
+
+// Test load() function
+describe('load function', function() {
+  it('load body', () => {
+    const doc = new DOMParser().parseFromString(`<body></body>`, 'text/html')
+    const vtree = load(doc.body)
+    equal(vtree, {
+      node: {}
+    })
+  })
+
+  it('load body class', () => {
+    const doc = new DOMParser().parseFromString(`<body class="class-a class-b"></body>`, 'text/html')
+    const vtree = load(doc.body)
+    equal(vtree, {
+      node: {}
+    })
+  })
+
+  it('load body part', () => {
+    const doc = new DOMParser().parseFromString(`<body part="part-a part-b"></body>`, 'text/html')
+    const vtree = load(doc.body)
+    equal(vtree, {
+      node: {}
+    })
+  })
+
+  it('load single element', () => {
+    const doc = new DOMParser().parseFromString(`<p></p>`, 'text/html')
+    const vtree = load(doc.body)
+    equal(vtree, {
+      children: [
+        {
+          tag: 'p',
+          node: {}
+        }
+      ],
+      node: {}
+    })
+  })
+
+  it('load multi element', () => {
+    const doc = new DOMParser().parseFromString(`<p></p><p></p>`, 'text/html')
+    const vtree = load(doc.body)
+  })
+
+  it('load style element', () => {
+    const doc = new DOMParser().parseFromString(`<style>a { color: red; }</style>`, 'text/html')
+    console.log('textContent', doc.body.textContent)
+    const vtree = load(doc.body)
+  })
+
+  it('load script element', () => {
+    const doc = new DOMParser().parseFromString(`<script>console.log('hello');<\/script>`, 'text/html')
+    const vtree = load(doc.body)
+  })
+})
+
+
+// Test load() function
+describe('patch() function', function() {
+  describe('patch(): element', function() {
+    it('patch change tag', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      const tree = { node: parent, children: [{ tag: 'div', node }] }
+      const newTree = { children: [{ tag: 'p' }] }
+      const patchedTree = patch(tree, newTree)
+      equal(patchedTree, {
+        children: [{
+          tag: 'p',
+          node: {}
+        }],
+        node: {}
+      })
+      equal(parent.firstChild.tagName, 'P')
+    })
+  })
+
+  describe('patch(): class', function() {
+    it('patch new class', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      const tree = { node: parent, children: [{ tag: 'div', node }] }
+      const newTree = { children: [{ tag: 'div', class: ['class-a'] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+          tag: 'div',
+          class: ['class-a'],
+          node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.classList.values()], ['class-a'])
+    })
+
+    it('patch add class', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.classList.add('class-a')
+      const tree = { node: parent, children: [{ tag: 'div', class: ['class-a'], node }] }
+      const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+          tag: 'div',
+          class: ['class-a', 'class-b', 'class-c'],
+          node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.classList.values()], ['class-a', 'class-b', 'class-c'])
+    })
+
+    it('patch remove class', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.classList.add('class-a', 'class-b', 'class-c')
+      const tree = { node: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], node }] }
+      const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-c'] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+        tag: 'div',
+        class: ['class-a', 'class-c'],
+        node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.classList.values()], ['class-a', 'class-c'])
+    })
+
+    it('patch remove all class', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.classList.add('class-a', 'class-b', 'class-c')
+      const tree = { node: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], node }] }
+        const newTree = { children: [{ tag: 'div' }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+        tag: 'div',
+        node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.classList.values()], [])
+    })
+
+    it('patch set empty class', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.classList.add('class-a', 'class-b', 'class-c')
+      const tree = { node: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], node }] }
+      const newTree = { children: [{ tag: 'div', class: [] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+        tag: 'div',
+        node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.classList.values()], [])
+    })
+
+    it('patch no change class', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.classList.add('class-a', 'class-b')
+      const tree = { node: parent, children: [{ tag: 'div', class: ['class-a', 'class-b'], node }] }
+      const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-b'] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+        tag: 'div',
+        class: ['class-a', 'class-b'],
+        node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.classList.values()], ['class-a', 'class-b'])
+    })
+  })
+
+  describe('patch(): part', function() {
+    it('patch new part', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      const tree = { node: parent, children: [{ tag: 'div', node }] }
+      const newTree = { children: [{ tag: 'div', part: ['part-a'] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+          tag: 'div',
+          part: ['part-a'],
+          node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.part.values()], ['part-a'])
+    })
+
+    it('patch add part', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.part.add('part-a')
+      const tree = { node: parent, children: [{ tag: 'div', part: ['part-a'], node }] }
+      const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+          tag: 'div',
+          part: ['part-a', 'part-b', 'part-c'],
+          node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.part.values()], ['part-a', 'part-b', 'part-c'])
+    })
+
+    it('patch remove part', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.part.add('part-a', 'part-b', 'part-c')
+      const tree = { node: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], node }] }
+      const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-c'] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+        tag: 'div',
+        part: ['part-a', 'part-c'],
+        node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.part.values()], ['part-a', 'part-c'])
+    })
+
+    it('patch remove all part', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.part.add('part-a', 'part-b', 'part-c')
+      const tree = { node: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], node }] }
+        const newTree = { children: [{ tag: 'div' }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+        tag: 'div',
+        node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.part.values()], [])
+    })
+
+    it('patch set empty part', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.part.add('part-a', 'part-b', 'part-c')
+      const tree = { node: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], node }] }
+      const newTree = { children: [{ tag: 'div', part: [] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+        tag: 'div',
+        node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.part.values()], [])
+    })
+
+    it('patch no change part', () => {
+      const parent = document.createElement('div')
+      const node = document.createElement('div')
+      parent.appendChild(node)
+      node.part.add('part-a', 'part-b')
+      const tree = { node: parent, children: [{ tag: 'div', part: ['part-a', 'part-b'], node }] }
+      const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-b'] }] }
+      patch(tree, newTree)
+      equal(tree, {
+        children: [{
+        tag: 'div',
+        part: ['part-a', 'part-b'],
+        node: {}
+        }],
+        node: {}
+      })
+      equal([...parent.firstChild.part.values()], ['part-a', 'part-b'])
+    })
+  })
+
+  // describe('patch function: style', function() {
+  //   it('patch new style', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       style: 'color: red;'
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewStyle1', tree)
+  //     equal(, )
+  //     log('patchNewStyle2', tree.node.style.cssText)
+  //     equal(, )
+  //   })
+
+  //   it('patch add style', () => {
+  //     const node = document.createElement('div')
+  //     node.style.cssText = 'color: red;'
+  //     const tree = {
+  //       tag: 'div',
+  //       style: 'color: red;',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       style: 'font-size: 1px; margin: auto; color: red;'
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchAddStyle1', tree)
+  //     equal(, )
+  //     log('patchAddStyle2', tree.node.style.cssText)
+  //     equal(, )
+  //   })
+
+  //   it('patch remove style', () => {
+  //     const node = document.createElement('div')
+  //     node.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+  //     const tree = {
+  //       tag: 'div',
+  //       style: 'font-size: 1px; margin: auto; color: red;',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       style: 'font-size: 1px; color: red;'
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchRemoveStyle1', tree)
+  //     equal(, )
+  //     log('patchRemoveStyle2', tree.node.style.cssText)
+  //     equal(, )
+  //   })
+
+  //   it('patch remove All style', () => {
+  //     const node = document.createElement('div')
+  //     node.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+  //     const tree = {
+  //       tag: 'div',
+  //       style: 'font-size: 1px; margin: auto; color: red;',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div'
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchRemoveAllStyle1', tree)
+  //     equal(, )
+  //     log('patchRemoveAllStyle2', tree.node.style.cssText)
+  //     equal(, )
+  //   })
+
+  //   it('patch set empty style', () => {
+  //     const node = document.createElement('div')
+  //     node.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+  //     const tree = {
+  //       tag: 'div',
+  //       style: 'font-size: 1px; margin: auto; color: red;',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       style: ''
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchSetEmptyStyle1', tree)
+  //     equal(, )
+  //     log('patchSetEmptyStyle2', tree.node.style.cssText)
+  //     equal(, )
+  //   })
+
+  //   it('patch no change style', () => {
+  //     const node = document.createElement('div')
+  //     node.style.cssText = 'font-size: 1px; margin: auto;'
+  //     const tree = {
+  //       tag: 'div',
+  //       style: 'font-size: 1px; margin: auto;',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       style: 'font-size: 1px; margin: auto;'
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNoChangeStyle1', tree)
+  //     equal(, )
+  //     log('patchNoChangeStyle2', tree.node.style.cssText)
+  //     equal(, )
+  //   })
+  // })
+
+  // describe('patch function: attr', function() {
+  //   it('patch new attr', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1'
+  //       }
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewAttr1', tree)
+  //     equal(, )
+  //     let output = ''
+  //     for(const attr of tree.node.attributes) {
+  //       output += attr.name + ': ' + attr.value + ';';
+  //     }
+  //     log('patchNewAttr2', output)
+  //     equal(, )
+  //   })
+
+  //   it('patch add attr', () => {
+  //     const node = document.createElement('div')
+  //     node.setAttribute('attr-a', 'value 1')
+  //     const tree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1'
+  //       },
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1',
+  //         'attr-b': 'value 2',
+  //         'attr-c': 'value 3'
+  //       }
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchAddAttr1', tree)
+  //     equal(, )
+  //     let output = ''
+  //     for(const attr of tree.node.attributes) {
+  //       output += attr.name + ': ' + attr.value + ';';
+  //     }
+  //     log('patchAddAttr2', output)
+  //     equal(, )
+  //   })
+
+  //   it('patch remove attr', () => {
+  //     const node = document.createElement('div')
+  //     node.setAttribute('attr-a', 'value 1')
+  //     node.setAttribute('attr-b', 'value 2')
+  //     node.setAttribute('attr-c', 'value 3')
+  //     const tree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1',
+  //         'attr-b': 'value 2',
+  //         'attr-c': 'value 3'
+  //       },
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1',
+  //         'attr-c': 'value 3'
+  //       }
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchRemoveAttr1', tree)
+  //     equal(, )
+  //     let output = ''
+  //     for(const attr of tree.node.attributes) {
+  //       output += attr.name + ': ' + attr.value + ';';
+  //     }
+  //     log('patchRemoveAttr2', output)
+  //     equal(, )
+  //   })
+
+  //   it('patch remove all attr', () => {
+  //     const node = document.createElement('div')
+  //     node.setAttribute('attr-a', 'value 1')
+  //     node.setAttribute('attr-b', 'value 2')
+  //     node.setAttribute('attr-c', 'value 3')
+  //     const tree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1',
+  //         'attr-b': 'value 2',
+  //         'attr-c': 'value 3'
+  //       },
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div'
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchRemoveAllAttr1', tree)
+  //     equal(, )
+  //     let output = ''
+  //     for(const attr of tree.node.attributes) {
+  //       output += attr.name + ': ' + attr.value + ';';
+  //     }
+  //     log('patchRemoveAllAttr2', output)
+  //     equal(, )
+  //   })
+
+  //   it('patch set empty attr', () => {
+  //     const node = document.createElement('div')
+  //     node.setAttribute('attr-a', 'value 1')
+  //     node.setAttribute('attr-b', 'value 2')
+  //     node.setAttribute('attr-c', 'value 3')
+  //     const tree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1',
+  //         'attr-b': 'value 2',
+  //         'attr-c': 'value 3'
+  //       },
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       attr: {}
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchSetEmptyAttr1', tree)
+  //     equal(, )
+  //     let output = ''
+  //     for(const attr of tree.node.attributes) {
+  //       output += attr.name + ': ' + attr.value + ';';
+  //     }
+  //     log('patchSetEmptyAttr2', output)
+  //     equal(, )
+  //   })
+
+  //   it('patch no change attr', () => {
+  //     const node = document.createElement('div')
+  //     node.setAttribute('attr-a', 'value 1')
+  //     node.setAttribute('attr-b', 'value 2')
+  //     const tree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1',
+  //         'attr-b': 'value 2'
+  //       },
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1',
+  //         'attr-b': 'value 2'
+  //       }
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNoChangeAttr1', tree)
+  //     equal(, )
+  //     let output = ''
+  //     for(const attr of tree.node.attributes) {
+  //       output += attr.name + ': ' + attr.value + ';';
+  //     }
+  //     log('patchNoChangeAttr2', output)
+  //     equal(, )
+  //   })
+
+  //   it('patch update attr', () => {
+  //     const node = document.createElement('div')
+  //     node.setAttribute('attr-a', 'value 1')
+  //     const tree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 1'
+  //       },
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       attr: {
+  //         'attr-a': 'value 2'
+  //       }
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchUpdateAttr1', tree)
+  //     equal(, )
+  //     let output = ''
+  //     for(const attr of tree.node.attributes) {
+  //       output += attr.name + ': ' + attr.value + ';';
+  //     }
+  //     log('patchUpdateAttr2', output)
+  //     equal(, )
+  //   })
+  // })
+
+  // describe('patch function: children', function() {
+  //   it('patch new text', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: ['Hello']
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewText1', tree)
+  //     equal(, )
+  //     log('patchNewText2', tree.node.innerHTML)
+  //     equal(, )
+  //   })
+
+  //   it('patch new multi texts', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: ['Hello', 'world', '!']
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewMultiText1', tree)
+  //     equal(, )
+  //     log('patchNewMultiText2', tree.node.innerHTML)
+  //     equal(, )
+  //   })
+
+
+  //   it('test: patch update text', () => {
+  //     const node = document.createElement('div')
+  //     node.innerHTML = 'Hello'
+  //     const tree = {
+  //       tag: 'div',
+  //       children: ['Hello'],
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: ['World'],
+  //       node
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchUpdateText1', tree)
+  //     equal(, )
+  //     log('patchUpdateText2', tree.node.innerHTML)
+  //     equal(, )
+  //   })
+
+
+  //   it('patch new Element', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: [
+  //         { tag: 'p' }
+  //       ]
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewEl1', tree)
+  //     equal(, )
+  //     log('patchNewEl2', tree.node.firstElementChild?.tagName)
+  //     equal(, )
+  //   })
+
+  //   it('patch new multi Elements', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: [
+  //         { tag: 'h1' },
+  //         { tag: 'h2' },
+  //         { tag: 'p' }
+  //       ]
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewMultiEl1', tree)
+  //     equal(, )
+  //     log('patchNewMultiEl2', tree.node.children[0].tagName)
+  //     equal(, )
+  //     log('patchNewMultiEl3', tree.node.children[1].tagName)
+  //     equal(, )
+  //     log('patchNewMultiEl4', tree.node.children[2].tagName)
+  //     equal(, )
+  //   })
+
+  //   it('patch update Element', () => {
+  //     const node = document.createElement('div')
+  //     const p = document.createElement('p')
+  //     node.insertAdjacentElement('beforeend', p)
+  //     const tree = {
+  //       tag: 'div',
+  //       children: [
+  //         { tag: 'p', node: p }
+  //       ],
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: [
+  //         { tag: 'p', class: ['class-a'] }
+  //       ]
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchUpdateEl1', tree)
+  //     equal(, )
+  //     log('patchUpdateEl2', tree.node.firstElementChild?.tagName)
+  //     equal(, )
+  //     log('patchUpdateEl3', tree.node.firstElementChild?.classList.length)
+  //     equal(, )
+  //     log('patchUpdateEl4', tree.node.firstElementChild === p)
+  //     equal(, )
+  //   })
+
+  //   it('patch change Element', () => {
+  //     const node = document.createElement('div')
+  //     const p = document.createElement('p')
+  //     node.insertAdjacentElement('beforeend', p)
+  //     const tree = {
+  //       tag: 'div',
+  //       children: [
+  //         { tag: 'p', node: p }
+  //       ],
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: [
+  //         { tag: 'h1' }
+  //       ]
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchChangeEl1', tree)
+  //     equal(, )
+  //     log('patchChangeEl2', tree.node.firstElementChild?.tagName)
+  //     equal(, )
+  //     log('patchChangeEl3', tree.node.firstElementChild === p)
+  //     equal(, )
+  //   })
+
+  //   it('patch new Number', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: [
+  //         0
+  //       ]
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewNumber1', tree)
+  //     equal(, )
+  //     log('patchNewNumber2', tree.node.childElementCount)
+  //     equal(, )
+  //   })
+
+  //   it('patch new multi Numbers', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: [
+  //         100, 1, 0
+  //       ]
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewMultiNumber1', tree)
+  //     equal(, )
+  //     log('patchNewMultiNumber2', tree.node.childElementCount)
+  //     equal(, )
+  //   })
+
+  //   it('patch new cross Nodes', () => {
+  //     const node = document.createElement('div')
+  //     const tree = {
+  //       tag: 'div',
+  //       node
+  //     }
+  //     const newTree = {
+  //       tag: 'div',
+  //       children: [
+  //         'Hello',
+  //         { tag: 'br' },
+  //         'world',
+  //         '!',
+  //         10,
+  //         { tag: 'span' },
+  //         { tag: 'a' }
+  //       ]
+  //     }
+  //     patch(tree, newTree)
+  //     log('patchNewCrossNode1', tree)
+//     equal(, )
+//     log('patchNewCrossNode2', tree.node.innerHTML)
+//     equal(, )
+//     log('patchNewCrossNode3', tree.node.children[0].tagName)
+//     equal(, )
+//     log('patchNewCrossNode4', tree.node.children[1].tagName)
+//     equal(, )
+//     log('patchNewCrossNode5', tree.node.children[2].tagName)
+//     equal(, )
+//   })
+
+//   it('patch change text to Element', () => {
+//     const node = document.createElement('div')
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         'Hello'
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'p' }
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchChangeTextToEl1', tree)
+//     equal(, )
+//     log('patchChangeTextToEl2', tree.node.firstElementChild?.tagName)
+//     equal(, )
+//     log('patchChangeTextToEl3', tree.node.childNodes.length)
+//     equal(, )
+//   })
+
+//   it('patch change Element to text', () => {
+//     const node = document.createElement('div')
+//     const p = document.createElement('p')
+//     node.insertAdjacentElement('beforeend', p)
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'p', node: p }
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         'Hello'
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchChangeElToText1', tree)
+//     equal(, )
+//     log('patchChangeElToText2', tree.node.innerHTML)
+//     equal(, )
+//     log('patchChangeElToText3', tree.node.childNodes.length)
+//     equal(, )
+//   })
+
+//   it('patch add text to texts', () => {
+//     const node = document.createElement('div')
+//     node.insertAdjacentText('beforeend', 'Hello')
+//     node.insertAdjacentText('beforeend', '!')
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         'Hello',
+//         '!'
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         'Hello',
+//         'World',
+//         '!'
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchAddTextToText1', tree)
+//     equal(, )
+//     log('patchAddTextToText2', tree.node.innerHTML)
+//     equal(, )
+//     log('patchAddTextToText3', tree.node.childNodes.length)
+//     equal(, )
+//   })
+
+//   it('patch add text to Elements', () => {
+//     const node = document.createElement('div')
+//     const h1 = document.createElement('h1')
+//     node.insertAdjacentElement('beforeend', h1)
+//     const h2 = document.createElement('h2')
+//     node.insertAdjacentElement('beforeend', h2)
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'h1', node: h1 },
+//         { tag: 'h2', node: h2 }
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'h1' },
+//         'World',
+//         { tag: 'h2' }
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchAddTextToEl1', tree)
+//     equal(, )
+//     log('patchAddTextToEl2', tree.node.innerHTML)
+//     equal(, )
+//     log('patchAddTextToEl3', tree.node.childNodes.length)
+//     equal(, )
+//     log('patchAddTextToEl4', (tree.node.childNodes[0] as Element).tagName)
+//     equal(, )
+//     log('patchAddTextToEl5', (tree.node.childNodes[2] as Element).tagName)
+//     equal(, )
+//   })
+
+//   it('patch add Element to texts', () => {
+//     const node = document.createElement('div')
+//     node.insertAdjacentText('beforeend', 'Hello')
+//     node.insertAdjacentText('beforeend', '!')
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         'Hello',
+//         '!'
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         'Hello',
+//         { tag: 'span' },
+//         '!'
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchAddElToText1', tree)
+//     equal(, )
+//     log('patchAddElToText2', tree.node.innerHTML)
+//     equal(, )
+//     log('patchAddElToText3', tree.node.childNodes.length)
+//     equal(, )
+//     log('patchAddElToText4', (tree.node.childNodes[1] as Element).tagName)
+//     equal(, )
+//   })
+
+//   it('patch add Element to Elements', () => {
+//     const node = document.createElement('div')
+//     const h1 = document.createElement('h1')
+//     node.insertAdjacentElement('beforeend', h1)
+//     const h2 = document.createElement('h2')
+//     node.insertAdjacentElement('beforeend', h2)
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'h1', node: h1 },
+//         { tag: 'h2', node: h2 }
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'h1' },
+//         { tag: 'p' },
+//         { tag: 'h2' }
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchAddElToEl1', tree)
+//     equal(, )
+//     log('patchAddElToEl2', (tree.node.childNodes[0] as Element).tagName)
+//     equal(, )
+//     log('patchAddElToEl3', (tree.node.childNodes[1] as Element).tagName)
+//     equal(, )
+//     log('patchAddElToEl4', (tree.node.childNodes[2] as Element).tagName)
+//     equal(, )
+//   })
+
+//   it('patch remove text', () => {
+//     const node = document.createElement('div')
+//     node.insertAdjacentText('beforeend', 'Hello')
+//     node.insertAdjacentText('beforeend', '!')
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         'Hello',
+//         'World',
+//         '!'
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         'Hello',
+//         '!'
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchRemoveText1', tree)
+//     equal(, )
+//     log('patchRemoveText2', tree.node.innerHTML)
+//     equal(, )
+//     log('patchRemoveText3', tree.node.childNodes.length)
+//     equal(, )
+//   })
+
+//   it('patch remove Element', () => {
+//     const node = document.createElement('div')
+//     const h1 = document.createElement('h1')
+//     node.insertAdjacentElement('beforeend', h1)
+//     const p = document.createElement('p')
+//     node.insertAdjacentElement('beforeend', p)
+//     const h2 = document.createElement('h2')
+//     node.insertAdjacentElement('beforeend', h2)
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'h1', node: h1 },
+//         { tag: 'p', node: p },
+//         { tag: 'h2', node: h2 }
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'h1' },
+//         { tag: 'h2' }
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchRemoveEl1', tree)
+//     equal(, )
+//     log('patchRemoveEl2', (tree.node.childNodes[0] as Element).tagName)
+//     equal(, )
+//     log('patchRemoveEl3', (tree.node.childNodes[1] as Element).tagName)
+//     equal(, )
+//   })
+
+//   it('patch use key', () => {
+//     const node = document.createElement('div')
+//     const h1 = document.createElement('h1')
+//     node.insertAdjacentElement('beforeend', h1)
+//     const h2 = document.createElement('h2')
+//     node.insertAdjacentElement('beforeend', h2)
+//     const h1key = {}
+//     const h2key = {}
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'h1', node: h1, key: h1key },
+//         { tag: 'h2', node: h2, key: h2key }
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'h2', key: h2key },
+//         { tag: 'h1', key: h1key, class: ['class-a'] }
+//       ]
+//     } as VirtualElement
+//     patch(tree, newTree)
+//     log('patchUseKey1', tree)
+//     equal(, )
+//     log('patchUseKey2', (tree.node.childNodes[0] as Element).tagName)
+//     equal(, )
+//     log('patchUseKey3', (tree.node.childNodes[1] as Element).tagName)
+//     equal(, )
+//     log('patchUseKey4', tree.node.lastElementChild?.classList.length)
+//     equal(, )
+//     log('patchUseKey5', tree.node.childNodes[0] === h2)
+//     equal(, )
+//     log('patchUseKey6', tree.node.childNodes[1] === h1)
+//     equal(, )
+//   })
+
+//   it('patch use key and number', () => {
+//     const node = document.createElement('div')
+//     const p = document.createElement('p')
+//     node.insertAdjacentElement('beforeend', p)
+//     const h1 = document.createElement('h1')
+//     node.insertAdjacentElement('beforeend', h1)
+//     const h2 = document.createElement('h2')
+//     node.insertAdjacentElement('beforeend', h2)
+//     const h1key = {}
+//     const h2key = {}
+//     const tree = {
+//       tag: 'div',
+//       children: [
+//         { tag: 'p', node: p },
+//         0,
+//         { tag: 'h1', node: h1, key: h1key },
+//         { tag: 'h2', node: h2, key: h2key },
+//         1
+//       ],
+//       node
+//     }
+//     const newTree = {
+//       tag: 'div',
+//       children: [
+//         'Hello',
+//         0,
+//         { tag: 'h2', key: h2key },
+//         1,
+//         { tag: 'h1', key: h1key }
+//       ]
+//     }
+//     patch(tree, newTree)
+//     log('patchUseKeyAndNumber1', tree)
+//     equal(, )
+//     log('patchUseKeyAndNumber2', tree.node.innerHTML)
+//     equal(, )
+//     log('patchUseKeyAndNumber3', tree.node.childNodes[1] === h2)
+//     equal(, )
+//     log('patchUseKeyAndNumber4', tree.node.childNodes[2] !== h1)
+//     equal(, )
+//   })
+// })
 })
 
 mocha.run()
