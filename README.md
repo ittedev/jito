@@ -2,26 +2,48 @@
 
 Beako is web component tools with Data Binding, Template Engine and Virtual Dom.
 She support Deno, Web browsers and Node.js
- 
-``` ts
-import { hack, watch } from 'beako/client.ts'
 
+
+## What is Beako?
+
+
+
+``` ts
 const data = {
   value: 1
 }
 
 watch(data)
-hack('.app', '{{ value }}', data)
+
+hack('#app', '<span>{{ value }}</span>', data)
 ```
 
+## Usage
+
+### CDN
+
+``` html
+<script type="module">
+import { ... } as website from "beako.js";
+</script>
+```
+
+### Deno
+
 ``` ts
-import { compact, watch } from 'beako/mod.ts'
+import { ... } from "https://deno.land/x/beako@v0.9.0/mod.ts";
+```
 
-const data = watch({
-  value: 1
-})
+### Node.js
 
-const component = compact('{{ data.value }}', { data })
+``` shell
+npm install beako
+```
+
+And,
+
+``` ts
+import { ... } from 'beako'
 ```
 
 ``` ts
