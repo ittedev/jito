@@ -1,6 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { reach } from '../observer/mod.ts'
+import { reach } from '../data_binding/mod.ts'
 import { Variables, TreeTemplate, parse, evaluate } from '../template_engine/mod.ts'
 import { patch, load, VirtualTree } from '../virtual_dom/mod.ts'
 
