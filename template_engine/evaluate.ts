@@ -165,7 +165,7 @@ export const evaluator = {
 
   lazy: (
     (template: LazyTemplate, stack: Variables): EvaluationTemplate => ({
-      type: 'evaluate',
+      type: 'evaluation',
       template: template.template,
       stack
     })
