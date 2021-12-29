@@ -8,7 +8,13 @@
 	},
 
 	// Set *default* container specific settings.json values on container create.
-	"settings": {},
+	"settings": {
+		"editor.tabSize": 2,
+    "deno.enable": true,
+    "deno.lint": true,
+    "deno.unstable": true,
+    "deno.config": "deno.json"
+	},
 
 
 	// Add the IDs of extensions you want installed when the container is created.

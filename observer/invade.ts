@@ -1,6 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { dictionary, ReactiveCallback, Page, Arm, Dictionary, BearkoObject } from './types.ts'
+import { dictionary, ReactiveCallback, Page, Arm, Dictionary, BeakoObject } from './types.ts'
 
 function attack(page: Page, value: unknown) {
   const old = page.value
@@ -22,7 +22,7 @@ function attack(page: Page, value: unknown) {
   page.value = value
 }
 
-export function invade(obj: BearkoObject, key?: string, arm?: Arm) {
+export function invade(obj: BeakoObject, key?: string, arm?: Arm) {
   if (!(dictionary in obj)) {
     obj[dictionary] = {} as Dictionary
   }

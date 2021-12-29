@@ -1,6 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { ChangeCallback, ReactiveCallback, BearkoObject } from './types.ts'
+import { ChangeCallback, ReactiveCallback, BeakoObject } from './types.ts'
 import { retreat } from './retreat.ts'
 
 export function unwatch(data: unknown): unknown
@@ -9,7 +9,7 @@ export function unwatch(data: unknown, key: string, callback: ChangeCallback): u
 export function unwatch(data: unknown, keys: string[], callback: ChangeCallback): unknown
 export function unwatch(data: unknown, keyOrCallback?:  ReactiveCallback | string | string[], callback?: ChangeCallback): unknown {
   if (typeof data === 'object' && data !== null) {
-    const obj = data as BearkoObject
+    const obj = data as BeakoObject
     if (callback === undefined) { // ReactiveCallback
       if (keyOrCallback) {
         // Remove bio from all properties

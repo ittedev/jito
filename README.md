@@ -1,7 +1,7 @@
-# bearko
+# beako
 
 ``` ts
-import { hack, watch } from 'bearko/client.ts'
+import { hack, watch } from 'beako/client.ts'
 
 const data = {
   value: 1
@@ -12,7 +12,7 @@ hack('.app', '{{ value }}', data)
 ```
 
 ``` ts
-import { compact, watch } from 'bearko/mod.ts'
+import { compact, watch } from 'beako/mod.ts'
 
 const data = watch({
   value: 1
@@ -22,7 +22,7 @@ const component = compact('{{ data.value }}', { data })
 ```
 
 ``` ts
-import { compact, watch } from 'bearko/mod.ts'
+import { compact, watch } from 'beako/mod.ts'
 
 const data = {
   value: 1
@@ -105,7 +105,7 @@ const component = compact('{{ value }}', [watch(data)])
 ```
 
 ``` ts
-import { create } from 'bearko/mod.ts'
+import { create } from 'beako/mod.ts'
 
 const html = `{{ value }}`
 const template = parse(html)
@@ -116,7 +116,7 @@ const component = compact(tree, {
 ```
 
 ``` ts
-import { compact, watch, receive } from 'bearko/mod.ts'
+import { compact, watch, receive } from 'beako/mod.ts'
 
 const component = compact('{{ data.value }}',
   async ({ attr, lifecycle }) => {
@@ -134,7 +134,7 @@ const component = compact('{{ data.value }}',
 ```
 
 ``` ts
-import { compact, watch } from 'bearko/mod.ts'
+import { compact, watch } from 'beako/mod.ts'
 
 const data = {
   value: 1

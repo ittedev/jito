@@ -1,8 +1,8 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { dictionary, Callback, BearkoObject } from './types.ts'
+import { dictionary, Callback, BeakoObject } from './types.ts'
 
-export function retreat(obj: BearkoObject, key?: string, callback?: Callback) {
+export function retreat(obj: BeakoObject, key?: string, callback?: Callback) {
   if (key !== undefined) {
     if (dictionary in obj) {
       if (key in obj[dictionary]) {

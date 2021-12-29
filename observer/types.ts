@@ -23,7 +23,7 @@ export type ReactiveCallback = () => void
 export type ChangeCallback = ((newValue: any, oldValue: any) => void)
 export type Callback = ReactiveCallback | ChangeCallback
 
-export interface BearkoObject {
+export interface BeakoObject {
   [key: string]: unknown
   [dictionary]: Dictionary
 }

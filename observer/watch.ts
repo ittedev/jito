@@ -1,6 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { dictionary, ChangeCallback, ReactiveCallback, BearkoObject, Bio, Spy } from './types.ts'
+import { dictionary, ChangeCallback, ReactiveCallback, BeakoObject, Bio, Spy } from './types.ts'
 import { invade } from './invade.ts'
 
 export function watch(data: unknown): unknown
@@ -12,7 +12,7 @@ export function watch(data: unknown, keys: string[], callback: ChangeCallback): 
 export function watch(data: unknown, keys: string[], spy: Spy): unknown
 export function watch(data: unknown, keyOrCallback?:  ReactiveCallback | Bio | string | string[], callback?: ChangeCallback | Spy): unknown {
   if (typeof data === 'object' && data !== null) {
-    const obj = data as BearkoObject
+    const obj = data as BeakoObject
     invade(obj)
     if (callback === undefined) { // bio
       // Set bio to all properties
