@@ -1475,12 +1475,12 @@ describe('patch() function', function() {
 describe('Lexer class', function() {
   it('Lexer class: script', () => {
     const lexer = new Lexer('1+ x', 'script')
-    equal(lexer.pop(), { type: 'number', value: '1' })
+    equal(lexer.pop(), ['number', '1'])
     equal(lexer.skip(), '')
     equal(lexer.skip(), '')
-    equal(lexer.pop(), { type: 'multiOpetator', value: '+' })
+    equal(lexer.pop(), ['multi', '+'])
     equal(lexer.skip(), ' ')
-    equal(lexer.pop(), { type: 'word', value: 'x' })
+    equal(lexer.pop(), ['word', 'x'])
   })
 
   it('Lexer class: innerText only', () => {
@@ -1492,9 +1492,9 @@ describe('Lexer class', function() {
     const lexer = new Lexer('Hello {{ { name } }}', 'innerText')
     equal(lexer.skip(), 'Hello ')
     equal(lexer.skip(), '')
-    equal(lexer.pop(), { type: 'leftMustache', value: '{{' })
+    equal(lexer.pop(), ['{{', '{{'])
     equal(lexer.skip(), ' { name } ')
-    equal(lexer.pop(), { type: 'rightMustache', value: '}}' })
+    equal(lexer.pop(), ['}}', '}}'])
   })
 })
 

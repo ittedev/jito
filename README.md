@@ -56,7 +56,11 @@ const component = compact('{{ value }}', [watch(data)])
 <c>
   <span slot="header">
   </span>
+  <span @as="header">
+  </span>
 </c>
+
+<span @expand="content"></span>
 
 <div class="button" class+="active && 'active'" style+=""></div>
   
