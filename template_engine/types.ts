@@ -14,7 +14,9 @@ export type TemplateType =
   'if' |
   'each' |
   'element' |
-  'tree'
+  'tree' |
+  'evaluate' |
+  'lazy'
 
 export interface Template {
   type: string
@@ -37,32 +39,32 @@ export interface VariableTemplate extends Template {
 
 export interface UnaryTemplate extends Template {
   type: 'unary'
-  operator: string,
+  operator: string
   operand: Template
 }
 
 export interface BinaryTemplate extends Template {
   type: 'binary'
-  operator: string,
-  left: Template,
+  operator: string
+  left: Template
   right: Template
 }
 
 export interface FunctionTemplate extends Template {
   type: 'function'
-  name: Template,
+  name: Template
   params: Array<Template>
 }
 
 export interface HashTemplate extends Template {
   type: 'hash'
-  object: Template,
+  object: Template
   key: Template
 }
 
 export interface JoinTemplate extends Template {
   type: 'join'
-  values: Array<unknown | Template>,
+  values: Array<unknown | Template>
   separator: string
 }
 
@@ -73,15 +75,15 @@ export interface FlagsTemplate extends Template {
 
 export interface IfTemplate extends Template {
   type: 'if'
-  condition: Template,
-  truthy: Template,
+  condition: Template
+  truthy: Template
   falsy?: Template | undefined
 }
 
 export interface EachTemplate extends Template {
   type: 'each'
   each: string
-  array: Template,
+  array: Template
   value: Template
 }
 
@@ -92,12 +94,23 @@ export interface TreeTemplate extends Template {
 
 export interface ElementTemplate extends TreeTemplate {
   type: 'element'
-  tag: string,
-  class?: Array<Array<string> | Template>,
-  part?: Array<Array<string> | Template>,
-  attr?: Record<string, unknown | Template>,
+  tag: string
+  class?: Array<Array<string> | Template>
+  part?: Array<Array<string> | Template>
+  attr?: Record<string, unknown | Template>
   style?: string | Template
   children?: Array<Template | string>
+}
+
+export interface EvaluationTemplate extends Template {
+  type: 'evaluation'
+  template: Template
+  stack?: Variables
+}
+
+export interface LazyTemplate extends Template {
+  type: 'lazy'
+  template: Template
 }
 
 export type Evaluate = (template: Template, stack: Variables) => unknown

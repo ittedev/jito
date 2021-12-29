@@ -18,6 +18,8 @@ import {
   EachTemplate,
   ElementTemplate,
   TreeTemplate,
+  EvaluationTemplate,
+  LazyTemplate,
   Evaluate,
   Evaluator
 } from './types.ts'
@@ -151,6 +153,22 @@ export const evaluator = {
         return {}
       }
     }
+  ) as Evaluate,
+
+  evaluation: (
+    (template: EvaluationTemplate, stack: Variables): unknown =>
+      evaluate(
+        template.template,
+        template.stack ? template.stack.concat(stack) : stack
+      )
+  ) as Evaluate,
+
+  lazy: (
+    (template: LazyTemplate, stack: Variables): EvaluationTemplate => ({
+      type: 'evaluate',
+      template: template.template,
+      stack
+    })
   ) as Evaluate
 
 } as Evaluator
