@@ -7,10 +7,10 @@ function distinguish(field: TokenField, value: string): TokenType {
     case 'script':
       switch (value) {
         case '+': case '-':
-          return 'multiOpetator'
+          return 'multi'
 
         case 'void': case 'typeof': case '~': case '!':
-          return 'unaryOpetator'
+          return 'unary'
 
         case '/': case '*': case '%': case '**': // Arithmetic operators
         case 'in': case 'instanceof': case '<': case '>': case '<=': case '>=': // Relational operators
@@ -18,36 +18,25 @@ function distinguish(field: TokenField, value: string): TokenType {
         case '<<': case '>>': case '>>>': // Bitwise shift operators
         case '&': case '|': case '^': // Binary bitwise operators
         case '&&': case '||': case '??': // Binary logical operators
-          return 'binaryOpetator'
+          return 'binary'
 
         case '=': case '*=': case '**=': case '/=': case '%=': case '+=': case '-=':
         case '<<=': case '>>=': case '>>>=': case '&=': case '^=': case '|=':
         case '&&=': case '||=': case '??=':
-          return 'assignOpetator'
+          return 'assign'
 
         case '++': case '--':
-          return 'crementOpetator'
+          return 'crement'
 
         case 'false': case 'true':
           return 'boolean'
 
-        case 'null': return 'null'
-        case 'undefined': return 'undefined'
-        case '.': return 'chaining'
-        case '?.': return 'optional'
-        case '[': return 'leftSquare'
-        case ']': return 'rightSquare'
-        case '{': return 'leftBrace'
-        case '}': return 'rightBrace'
-        case '(': return 'leftRound'
-        case ')': return 'rightRound'
-        case '...': return 'spread'
-        case '?': return 'question'
-        case ':': return 'colon'
-        case ',': return 'comma'
-        case '\'': return 'singleQuote'
-        case '\"': return 'doubleQuote'
-        case '`': return 'backQuote'
+        case 'null': case 'undefined':
+        case '.': case '?.':
+        case '[': case ']': case '{': case '}': case '(': case ')':
+        case '...': case '?': case ':': case ',':
+        case "'": case '"': case '`':
+          return value
       }
       switch (true) {
         case /^\/\/.*$/.test(value): return 'lineComment'
@@ -59,9 +48,9 @@ function distinguish(field: TokenField, value: string): TokenType {
     case 'template':
       switch (value) {
         case '$': return 'partial'
-        case '${': return 'leftPlaceHolder'
-        case '}': return 'rightPlaceHolder'
-        case '`': return 'backQuote'
+        case '${': return value
+        case '}': return value
+        case '`': return '`'
         case '\r': case '\n': case '\r\n':
           return 'other'
       }
@@ -72,10 +61,10 @@ function distinguish(field: TokenField, value: string): TokenType {
         case '\r': case '\n': case '\r\n': return 'return'
         case '\\\r\n': return 'escape'
         case '\'':
-          if (field === 'singleString') return 'singleQuote'
+          if (field === 'singleString') return value
           break
         case '\"':
-          if (field === 'doubleString') return 'doubleQuote'
+          if (field === 'doubleString') return value
           break
       }
       switch (true) {
@@ -86,8 +75,7 @@ function distinguish(field: TokenField, value: string): TokenType {
     case 'innerText':
       switch (value) {
         case '{': case '}': return 'partial'
-        case '{{': return 'leftMustache'
-        case '}}': return 'rightMustache'
+        case '{{': case '}}': return value
       }
       break
   }
@@ -95,21 +83,21 @@ function distinguish(field: TokenField, value: string): TokenType {
 }
 
 export class Lexer {
-  index = 0
-  token: Token | null = null
   constructor(
     private text: string,
-    private field: TokenField
+    private field: TokenField,
+    private index = 0,
+    private token: Token | null = null
   ) {}
   private _next(start: number): Token | null {
-    const token = { type: '', value: '' }
+    const token = ['', '']
     for (this.index = start; this.index < this.text.length; this.index++) {
-      const nextType = distinguish(this.field, token.value + this.text[this.index])
+      const nextType = distinguish(this.field, token[1] + this.text[this.index])
       if (nextType === 'other') {
         return token as Token
       } else {
-        token.type = nextType
-        token.value = token.value + this.text[this.index]
+        token[0] = nextType
+        token[1] = token[1] + this.text[this.index]
       }
     }
     return token as Token
@@ -122,8 +110,8 @@ export class Lexer {
           value += this.text[i]
         } else {
           this.token = this._next(i)
-          if (this.token?.type === 'partial') {
-            value += this.token.value
+          if (this.token && this.token[0] === 'partial') {
+            value += this.token[1]
             this.token = null
           } else {
             return value
@@ -135,7 +123,7 @@ export class Lexer {
   }
   nextType(): TokenType {
     this.skip()
-    return this.token ? this.token.type : ''
+    return this.token ? this.token[0] : ''
   }
   pop(): Token | null {
     this.skip()
@@ -148,7 +136,7 @@ export class Lexer {
     this.field = field
     func()
     if (this.token) {
-      this.index -= this.token.value.length
+      this.index -= this.token[1].length
       this.token = null
     }
     this.field = parent

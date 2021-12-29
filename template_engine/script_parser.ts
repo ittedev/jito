@@ -17,7 +17,7 @@ import {
 import { Lexer } from './lexer.ts'
 
 function must(token: Token | null, type: TokenType, message = ''): void {
-  if (!token || token.type !== type) throw Error(message)
+  if (!token || token[0] !== type) throw Error(message)
 }
 
 export function innerText(lexer: Lexer): Template | string {
@@ -25,12 +25,12 @@ export function innerText(lexer: Lexer): Template | string {
   texts.push(lexer.skip())
   while (lexer.nextType()) {
     console.log('lexer.nextType():', lexer.nextType())
-    if (lexer.nextType() === 'leftMustache') {
+    if (lexer.nextType() === '{{') {
       lexer.pop()
       lexer.expand('script', () => {
         texts.push(expression(lexer))
       })
-      must(lexer.pop(), 'rightMustache')
+      must(lexer.pop(), '}}')
       texts.push(lexer.skip())
     } else {
       lexer.pop()
@@ -64,10 +64,10 @@ export function expression(lexer: Lexer): Template {
 // 
 function conditional(lexer: Lexer): Template {
   let condition = arithmetic(lexer)
-  while (lexer.nextType() === 'question') {
+  while (lexer.nextType() === '?') {
     lexer.pop()
     const truthy = expression(lexer)
-    must(lexer.pop(), 'colon')
+    must(lexer.pop(), ':')
     const falsy = arithmetic(lexer)
     condition = { type: 'if', condition, truthy, falsy } as IfTemplate
   }
@@ -82,8 +82,8 @@ function conditional(lexer: Lexer): Template {
  function arithmetic(lexer: Lexer): Template {
   const list = new Array<Template | string>()
   list.push(unary(lexer))
-  while(lexer.nextType() === 'multiOpetator' || lexer.nextType() === 'binaryOpetator') {
-    list.push((lexer.pop() as Token).value)
+  while(lexer.nextType() === 'multi' || lexer.nextType() === 'binary') {
+    list.push((lexer.pop() as Token)[1])
     list.push(unary(lexer))
   }
 
@@ -124,9 +124,9 @@ function precedence(operator: string): number {
  */
 function unary(lexer: Lexer): Template {
   switch (lexer.nextType()) {
-    case 'multiOpetator': 
-    case 'exclamation':
-      return { type: 'unary', operator: lexer.pop()?.value as string, operand:unary(lexer) } as UnaryTemplate
+    case 'multi': 
+    case '!':
+      return { type: 'unary', operator: (lexer.pop() as Token)[1] as string, operand:unary(lexer) } as UnaryTemplate
     default:
       return func(lexer)
   }
@@ -141,30 +141,30 @@ function func(lexer: Lexer): Template {
   let template = term(lexer)
   while (true) {
     switch (lexer.nextType()) {
-      case 'leftRound': {
+      case '(': {
         lexer.pop()
         const params = [] as Array<Template>
-          while (lexer.nextType() !== 'rightRound') {
+          while (lexer.nextType() !== ')') {
           params.push(expression(lexer))
-          if (lexer.nextType() === 'comma') lexer.pop()
+          if (lexer.nextType() === ',') lexer.pop()
           else break
         }
-        must(lexer.pop(), 'rightRound')
+        must(lexer.pop(), ')')
         template = { type: 'function', name: template, params } as FunctionTemplate
         continue
       }
-      case 'chaining': {
+      case '.': {
         lexer.pop()
         const key = lexer.pop() as Token
         must(key, 'word')
         
-        template = { type: 'hash', object: template, key: { type: 'literal', value: key.value } as LiteralTemplate } as HashTemplate
+        template = { type: 'hash', object: template, key: { type: 'literal', value: key[1] } as LiteralTemplate } as HashTemplate
         continue
       }
-      case 'leftSquare': {
+      case '[': {
         lexer.pop()
         const key = expression(lexer)
-        must(lexer.pop(), 'rightSquare')
+        must(lexer.pop(), ']')
         template = { type: 'hash', object: template, key } as HashTemplate
         continue
       }
@@ -181,25 +181,25 @@ function func(lexer: Lexer): Template {
  */
 function term(lexer: Lexer): Template {
   const token = lexer.pop() as Token
-  switch (token.type) {
+  switch (token[0]) {
     // w
     case 'word':
-      return { type: 'variable', name: token.value } as VariableTemplate
+      return { type: 'variable', name: token[1] } as VariableTemplate
 
     // L = n | s | b | undefined | null
     
-    case 'number': return { type: 'literal', value: Number(token.value) } as LiteralTemplate
-    case 'boolean': return { type: 'literal', value: token.value === 'true' ? true : false } as LiteralTemplate
+    case 'number': return { type: 'literal', value: Number(token[1]) } as LiteralTemplate
+    case 'boolean': return { type: 'literal', value: token[1] === 'true' ? true : false } as LiteralTemplate
     case 'undefined': return { type: 'literal', value: undefined } as LiteralTemplate
     case 'null': return { type: 'literal', value: null } as LiteralTemplate
-    case 'doubleQuote': return stringLiteral(lexer, 'doubleString', token.type)
-    case 'singleQuote': return stringLiteral(lexer, 'singleString', token.type)
-    case 'backQuote': return stringLiteral(lexer, 'template', token.type)
+    case '"': return stringLiteral(lexer, 'doubleString', token[0])
+    case "'": return stringLiteral(lexer, 'singleString', token[0])
+    case '`': return stringLiteral(lexer, 'template', token[0])
 
     // (E)
-    case 'leftRound': {
+    case '(': {
       const node = expression(lexer)
-      must(lexer.pop(), 'rightRound')
+      must(lexer.pop(), ')')
       return node
     }
     default: throw new Error(JSON.stringify(token))
@@ -217,17 +217,17 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
     loop: while (true) {
       texts[i] += lexer.skip()
       const token = lexer.pop() as Token
-      switch (token.type) {
+      switch (token[0]) {
         case type: break loop
         case 'return': throw Error()
         case 'escape':
-          texts[i] += token.value // TODO: escape char
+          texts[i] += token[1] // TODO: escape char
           continue
-        case 'leftPlaceHolder':
+        case '${':
           lexer.expand('script', () => {
             texts.push(expression(lexer))
           })
-          must(lexer.pop(), 'rightPlaceHolder')
+          must(lexer.pop(), '}')
           texts.push(lexer.skip())
           i += 2
       }

@@ -125,82 +125,39 @@ export type TokenField =
   'lineComment' |
   'blockComment'
 
-//  wait for supporte const enum by deno
-// export const enum TokenType {
-//   none = 0,
-//   multiOpetator,
-//   unaryOpetator,
-//   binaryOpetator,
-//   assignOpetator,
-//   crementOpetator, // ++, --
-//   chaining,     // .
-//   optional,     // ?.
-//   leftSquare,  // [
-//   rightSquare, // ]
-//   leftRound,   // (
-//   rightRound,  // )
-//   leftBrace,  // {
-//   rightBrace, // }
-//   leftMustache,  // {{
-//   rightMustache, // }}
-//   leftPlaceHolder,  // ${
-//   rightPlaceHolder,  // }
-//   lineComment,     // //~
-//   leftComment,  // /*
-//   rightComment,  // */
-//   comma,       // ,
-//   exclamation, // !
-//   question,    // ?
-//   colon,       // :
-//   singleQuote,
-//   doubleQuote,
-//   backQuote,
-//   spread,
-//   return,
-//   null,        // null
-//   undefined,   // undefined
-//   boolean,     // false, true
-//   kwyword,
-//   number,      // 0, 1, 2, etc.,
-//   string,      // "~", '~'
-//   word,        // x
-//   escape,
-//   partial,
-//   other
-// }
 export type TokenType = 
   '' |
-  'multiOpetator' |
-  'unaryOpetator' |
-  'binaryOpetator' |
-  'assignOpetator' |
-  'crementOpetator' | // ++' | --
-  'chaining' |     // .
-  'optional' |     // ?.
-  'leftSquare' |  // [
-  'rightSquare' | // ]
-  'leftRound' |   // (
-  'rightRound' |  // )
-  'leftBrace' |  // {
-  'rightBrace' | // }
-  'leftMustache' |  // {{
-  'rightMustache' | // }}
-  'leftPlaceHolder' |  // ${
-  'rightPlaceHolder' |  // }
+  'multi' |
+  'unary' |
+  'binary' |
+  'assign' |
+  'crement' | // ++' | --
+  '.' |
+  '?.' |
+  '[' |
+  ']' |
+  '(' |
+  ')' |
+  '{' |
+  '}' |
+  '{{' |
+  '}}' |
+  '${' |
+  '}' |
   'lineComment' |     // //~
   'leftComment' |  // /*
   'rightComment' |  // */
-  'comma' |       // ' |
-  'exclamation' | // !
-  'question' |    // ?
-  'colon' |       // :
-  'singleQuote' |
-  'doubleQuote' |
-  'backQuote' |
-  'spread' |
+  ',' |
+  '!' |
+  '?' |
+  ':' |
+  "'" |
+  '"' |
+  '`' |
+  '...' |
   'return' |
-  'null' |        // null
-  'undefined' |   // undefined
+  'null' |
+  'undefined' |
   'boolean' |     // false' | true
   'kwyword' |
   'number' |      // 0' | 1' | 2' | etc.' |
@@ -211,7 +168,4 @@ export type TokenType =
   'other'
 
 
-export interface Token extends Record<PropertyKey, unknown> {
-  type: TokenType
-  value: string
-}
+export type Token = [TokenType, string]
