@@ -1,5 +1,8 @@
-# beako
+# Beako
 
+Beako is web component tools with Data Binding, Template Engine and Virtual Dom.
+She support Deno, Web browsers and Node.js
+ 
 ``` ts
 import { hack, watch } from 'beako/client.ts'
 
