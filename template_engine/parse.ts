@@ -7,8 +7,8 @@ import {
   IfTemplate,
   EachTemplate,
   ElementTemplate,
-  TokenField,
-  TreeTemplate
+  TreeTemplate,
+  ExpandTemplate
 } from './types.ts'
 import { Lexer } from './lexer.ts'
 import { expression, innerText } from './script_parser.ts'
@@ -59,6 +59,7 @@ function parseNode(lexer: DomLexer): Template | string {
     case 1: { // ELEMENT_NODE
       return parseEach(lexer)
     }
+    // TODO: parse svg
     default:
       return ''
   }
@@ -102,16 +103,26 @@ function parseIf(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@if')) {
     const condition = expression(new Lexer(el.getAttribute('@if') as string, 'script'))
-    const truthy = parseRegion(el)
+    const truthy = parseExpand(el)
     lexer.pop()
     const falsy = lexer.hasAttribute('@else') ? parseChild(lexer) : undefined
     return { type: 'if', condition, truthy, falsy } as IfTemplate
   } else {
-    return parseRegion(lexer.pop() as Element)
+    return parseExpand(lexer.pop() as Element)
   }
 }
 
-function parseRegion(el: Element): Template {
+function parseExpand(el: Element): Template {
+  if (el.hasAttribute('@expand')) {
+    const template = expression(new Lexer(el.getAttribute('@expand') as string, 'script'))
+    const def = parseGroup(el)
+    return { type: 'expand', template, default: def } as ExpandTemplate
+  } else {
+    return parseGroup(el)
+  }
+}
+// TODO: parse Group
+function parseGroup(el: Element): Template {
   return parseElement(el)
 }
 
@@ -126,6 +137,12 @@ function parseElement(el: Element): ElementTemplate {
     el.getAttributeNames().forEach(name => {
       const value = el.getAttribute(name) as string
       switch (name) {
+        case 'is': {
+          if (!(name in template)) {
+            template.is = value
+          }
+          return
+        }
         case 'class':
         case 'part': {
           if (!(name in template)) {
@@ -142,16 +159,21 @@ function parseElement(el: Element): ElementTemplate {
       {
         const match = name.match(/^(?<name>.+)(\+.*)$/)
         if (match?.groups) {
-          switch (match.groups.name) {
+          const name = match.groups.name
+          const exp = expression(new Lexer(value, 'script'))
+          switch (name) {
+            case 'is': {
+              return template.is = exp
+            }
             case 'class':
             case 'part': {
-              if (!(match.groups.name in template)) {
-                template[match.groups.name] = [] as Array<Array<string> | Template>
+              if (!(name in template)) {
+                template[name] = [] as Array<Array<string> | Template>
               }
-              return (template[match.groups.name] as Array<Array<string> | Template>).push({ type: 'flags', value: expression(new Lexer(value, 'script')) } as FlagsTemplate)
+              return (template[name] as Array<Array<string> | Template>).push({ type: 'flags', value: exp } as FlagsTemplate)
             }
             case 'style': {
-              return style.push(expression(new Lexer(value, 'script')))
+              return style.push(exp)
             }
             // events
           }
@@ -169,17 +191,17 @@ function parseElement(el: Element): ElementTemplate {
         }
       }
 
+      // TODO: bind attribute
       // bind attribute
       {
         const match = name.match(/^(?<name>.+)\*$/)
         if (match?.groups) {
-          // TODO
           // bindFormula(value, bind, match.groups.name)
         }
       }
 
       // syntax attribute
-      if (name.match(/^@.+$/)) return
+      if (name.match(/^@(if|else|for|each|expand)$/)) return
 
       // string attribute
       if (!('attr' in template)) {

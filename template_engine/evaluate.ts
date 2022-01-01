@@ -1,6 +1,5 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-
 import { VirtualElement, VirtualTree } from '../virtual_dom/types.ts'
 import {
   Variables,
@@ -18,8 +17,8 @@ import {
   EachTemplate,
   ElementTemplate,
   TreeTemplate,
-  EvaluationTemplate,
-  LazyTemplate,
+  ExpandTemplate,
+  GroupTemplate,
   Evaluate,
   Evaluator
 } from './types.ts'
@@ -42,7 +41,23 @@ function toFlags(value: unknown) {
   return []
 }
 
+export function evaluateAttr(template: ElementTemplate, stack: Variables, el: VirtualElement): void {
+  if (template.style) {
+    el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
+  }
+
+  if (template.attr) {
+    el.attr = {}
+    for (const key in template.attr) {
+      const attr = template.attr[key]
+      el.attr[key] = typeof attr === 'string' ? attr : evaluate(attr as Template, stack)
+    }
+  }
+  // TODO: class part
+}
+
 export const evaluator = {
+   // TODO: assign evaluator
 
   literal: (
     (template: LiteralTemplate, _stack: Variables): unknown => template.value
@@ -115,36 +130,24 @@ export const evaluator = {
       const el = evaluator.tree(template as TreeTemplate, stack) as VirtualElement
       el.tag = template.tag
 
-      if (template.style) {
-        el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
+      if (template.is) {
+        el.is = typeof template.is === 'string' ? template.is : evaluate(template.is, stack) as string
       }
+      evaluateAttr(template, stack, el)
 
-      if (template.attr) {
-        el.attr = {}
-        for (const key in template.attr) {
-          const attr = template.attr[key]
-          el.attr[key] = typeof attr === 'string' ? attr : evaluate(attr as Template, stack)
-        }
-      }
-
-      // TODO
+   // TODO: evaluate event
       return el
     }
   ) as Evaluate,
   
   tree: (
     (template: TreeTemplate, stack: Variables): VirtualTree => {
-      let children = [] as Array<string | VirtualElement | number>
-      template.children?.forEach(child => {
+      const children: Array<string | VirtualElement | number> = (template.children || [])?.flatMap(child => {
         if (typeof child === 'string') {
-          children.push(child)
+          return [child]
         } else {
           const value = evaluate(child, stack)
-          if (Array.isArray(value)) {
-            children = children.concat(value)
-          } else {
-            children.push(value as string | VirtualElement | number)
-          }
+          return Array.isArray(value) ? value as Array<string | VirtualElement | number> : [value as string | VirtualElement | number]
         }
       })
       if (children.length) {
@@ -155,20 +158,20 @@ export const evaluator = {
     }
   ) as Evaluate,
 
-  evaluation: (
-    (template: EvaluationTemplate, stack: Variables): unknown =>
-      evaluate(
-        template.template,
-        template.stack ? template.stack.concat(stack) : stack
-      )
+  expand: (
+    (template: ExpandTemplate, stack: Variables): unknown => {
+      const result = evaluate(template.template, stack)
+      if (instanceOfTemplate(result)) {
+        return {}
+      } else {
+        return evaluate(template.default, stack)
+      }
+    }
   ) as Evaluate,
 
-  lazy: (
-    (template: LazyTemplate, stack: Variables): EvaluationTemplate => ({
-      type: 'evaluation',
-      template: template.template,
-      stack
-    })
+  group: (
+    (template: GroupTemplate, stack: Variables): Array<unknown> =>
+      template.values.map(value => instanceOfTemplate(value) ? evaluate(value, stack) : value)
   ) as Evaluate
 
 } as Evaluator

@@ -41,7 +41,7 @@ function distinguish(field: TokenField, value: string): TokenType {
       switch (true) {
         case /^\/\/.*$/.test(value): return 'lineComment'
         case /^[_\$a-zA-Z][_\$a-zA-Z0-9]*$/.test(value): return 'word'
-        case /^\d+\.?\d*$|^\.?\d+$/.test(value): return 'number'
+        case /^\d+\.?\d*$|^\.?\d+$/.test(value): return 'number' // TODO: lex number
       }
       break
     // deno-lint-ignore no-fallthrough
@@ -69,7 +69,7 @@ function distinguish(field: TokenField, value: string): TokenType {
       }
       switch (true) {
         case /^\\(x|u)$/.test(value): return 'partial'
-        case /^\\.$/.test(value): return 'escape'
+        case /^\\.$/.test(value): return 'escape' // TODO: lex unicode
       }
       break
     case 'innerText':

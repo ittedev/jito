@@ -32,7 +32,7 @@ function loadAttr(el: LinkedVirtualElement) {
       const value = el.node.getAttribute(name) as string
       switch (name) {
         case 'class': case 'part': return el[name] = value.split(/\s+/)
-        case 'style': return el.style = value
+        case 'style': case 'is': return el[name] = value
         default: return attr[name] = value
       }
     })
@@ -54,7 +54,7 @@ function loadChildren(tree: LinkedVirtualTree) {
         case 1: // ELEMENT_NODE
           tree.children.push(loadElement(nodeList[i] as Element))
           break
-        // TODO: default:
+        // TODO: load svg
       }
     }
   }

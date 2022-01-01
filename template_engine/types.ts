@@ -13,10 +13,10 @@ export type TemplateType =
   'flags' |
   'if' |
   'each' |
+  'expand' |
   'element' |
   'tree' |
-  'evaluate' |
-  'lazy'
+  'group'
 
 export interface Template {
   type: string
@@ -92,9 +92,14 @@ export interface TreeTemplate extends Template {
   children?: Array<Template | string>
 }
 
-export interface ElementTemplate extends TreeTemplate {
+export interface HasAttrTemplate extends Template {
+  attr?: Record<string, unknown | Template>
+}
+
+export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   type: 'element'
   tag: string
+  is?: string | Template
   class?: Array<Array<string> | Template>
   part?: Array<Array<string> | Template>
   attr?: Record<string, unknown | Template>
@@ -102,15 +107,16 @@ export interface ElementTemplate extends TreeTemplate {
   children?: Array<Template | string>
 }
 
-export interface EvaluationTemplate extends Template {
-  type: 'evaluation'
+export interface ExpandTemplate extends Template {
+  type: 'expand'
   template: Template
-  stack?: Variables
+  default: Template
 }
 
-export interface LazyTemplate extends Template {
-  type: 'lazy'
-  template: Template
+export interface GroupTemplate extends HasAttrTemplate {
+  type: 'group'
+  attr?: Record<string, unknown | Template>
+  values: Array<Template | string>
 }
 
 export type Evaluate = (template: Template, stack: Variables) => unknown

@@ -3,6 +3,7 @@
 import { BeakoObject } from './types.ts'
 import { invade } from './invade.ts'
 
+// TODO: receive callback
 export async function receive(obj: BeakoObject, key: string | string[]): Promise<Record<string, unknown>> {
   const keys = Array.isArray(key) ? key : [key]
   const values = await Promise.all(keys.map(key => {

@@ -27,10 +27,10 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
  */
  export function patchElement(el: LinkedVirtualElement, newEl: VirtualElement): LinkedVirtualElement {
   // if tag is different, new element
-  if (el.tag !== newEl.tag) {
+  if (el.tag !== newEl.tag || el.is !== newEl.is) {
     return patchElement({
       tag: newEl.tag,
-      node: document.createElement(newEl.tag)
+      node: newEl.is ? document.createElement(newEl.tag, { is : newEl.is }) : document.createElement(newEl.tag)
     }, newEl)
   }
 
@@ -134,11 +134,11 @@ function patchAttr(el: LinkedVirtualElement, newEl: VirtualElement) {
   }
 }
 
+// TODO: patchEvent
 function patchEvent(tree: LinkedVirtualElement, newTree: VirtualElement) {
 }
 
 // TODO: add use DocumentFragment
-
 class LinkedVirtualElementPointer {
   index = 0
   node: Node | null

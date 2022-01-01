@@ -1,6 +1,6 @@
 // Copyright 2021 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Component } from './types.ts'
+import { Component } from './component.ts'
 import { compact } from './compact.ts'
 import { Variables, TreeTemplate } from '../template_engine/mod.ts'
 

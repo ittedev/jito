@@ -7,6 +7,7 @@ export interface VirtualTree {
 
 export interface VirtualElement extends VirtualTree {
   tag: string
+  is?: string
   class?: Array<string>
   part?: Array<string>
   style?: string

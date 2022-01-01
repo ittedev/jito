@@ -68,13 +68,11 @@ const component = compact('{{ value }}', [watch(data)])
 <div @try></div>
 <div @catch="error"></div>
 
-<region></region>
+<group></group>
 
 <header props*="{ props }"></header>
 
-<component is:=""></component>
-
-<beako-component is:=""></beako-component>
+<beako-entity component:=""></beako-entity>
 
 <slot name=""></slot>
 
