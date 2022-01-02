@@ -7,6 +7,7 @@ export type TemplateType =
   'variable' |
   'unary' |
   'binary' |
+  'assign' |
   'function' |
   'hash' |
   'join' |
@@ -50,6 +51,13 @@ export interface BinaryTemplate extends Template {
   right: Template
 }
 
+export interface AssignTemplate extends Template {
+  type: 'assign'
+  operator: string
+  left: VariableTemplate | HashTemplate
+  right: Template
+}
+
 export interface FunctionTemplate extends Template {
   type: 'function'
   name: Template
@@ -60,6 +68,11 @@ export interface HashTemplate extends Template {
   type: 'hash'
   object: Template
   key: Template
+}
+
+export interface GetTemplate extends Template {
+  type: 'get'
+  value: Template
 }
 
 export interface JoinTemplate extends Template {
@@ -118,6 +131,8 @@ export interface GroupTemplate extends HasAttrTemplate {
   attr?: Record<string, unknown | Template>
   values: Array<Template | string>
 }
+
+export type Ref = [Record<PropertyKey, unknown>, PropertyKey]
 
 export type Evaluate = (template: Template, stack: Variables) => unknown
 

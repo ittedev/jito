@@ -6,8 +6,10 @@ import {
   VariableTemplate,
   UnaryTemplate,
   BinaryTemplate,
+  AssignTemplate,
   FunctionTemplate,
   HashTemplate,
+  GetTemplate,
   JoinTemplate,
   IfTemplate,
   Token,
@@ -49,13 +51,33 @@ export function innerText(lexer: Lexer): Template | string {
 }
 
 /**
- * E = C
+ * E = I
  * Operator precedence
  * used: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
  * @alpha
  */
 export function expression(lexer: Lexer): Template {
-  return conditional(lexer)
+  return assignment(lexer)
+}
+
+/**
+ * Assignment
+ * I = C o E
+ * Precedence: 2
+ * @alpha
+ */
+function assignment(lexer: Lexer): Template {
+  const left = conditional(lexer)
+  if (lexer.nextType() === 'assign') {
+    if (left.type !== 'get') {
+      throw Error('The left operand is not variable')
+    }
+    const operator = (lexer.pop() as Token)[1]
+    const right = expression(lexer)
+    return { type: 'assign', operator, left: (left as GetTemplate).value, right } as AssignTemplate
+  } else {
+    return left
+  }
 }
 
 /**
@@ -63,7 +85,6 @@ export function expression(lexer: Lexer): Template {
  * Precedence: 3
  * @alpha
  */
-// 
 function conditional(lexer: Lexer): Template {
   let condition = arithmetic(lexer)
   while (lexer.nextType() === '?') {
@@ -160,14 +181,14 @@ function func(lexer: Lexer): Template {
         const key = lexer.pop() as Token
         must(key, 'word')
         
-        template = { type: 'hash', object: template, key: { type: 'literal', value: key[1] } as LiteralTemplate } as HashTemplate
+        template = { type: 'get', value: { type: 'hash', object: template, key: { type: 'literal', value: key[1] } as LiteralTemplate } as HashTemplate } as GetTemplate
         continue
       }
       case '[': {
         lexer.pop()
         const key = expression(lexer)
         must(lexer.pop(), ']')
-        template = { type: 'hash', object: template, key } as HashTemplate
+        template = { type: 'get', value: { type: 'hash', object: template, key } as HashTemplate } as GetTemplate
         continue
       }
     }
@@ -186,7 +207,7 @@ function term(lexer: Lexer): Template {
   switch (token[0]) {
     // w
     case 'word':
-      return { type: 'variable', name: token[1] } as VariableTemplate
+      return { type: 'get', value: { type: 'variable', name: token[1] } as VariableTemplate } as GetTemplate
 
     // L = n | s | b | undefined | null
     

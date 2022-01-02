@@ -11,6 +11,7 @@ import {
   BinaryTemplate,
   FunctionTemplate,
   HashTemplate,
+  GetTemplate,
   JoinTemplate,
   FlagsTemplate,
   IfTemplate,
@@ -19,6 +20,7 @@ import {
   TreeTemplate,
   ExpandTemplate,
   GroupTemplate,
+  Ref,
   Evaluate,
   Evaluator
 } from './types.ts'
@@ -65,7 +67,7 @@ export const evaluator = {
 
   variable: ((template: VariableTemplate, stack: Variables): unknown => {
     for (let i = stack.length - 1; i >= 0; i--) {
-      if (template.name in stack[i]) return stack[i][template.name]
+      if (template.name in stack[i]) return [ stack[i], template.name ] as Ref
     }
     throw Error(template.name + ' is not defined')
   }) as Evaluate,
@@ -79,6 +81,12 @@ export const evaluator = {
     (template: BinaryTemplate, stack: Variables): unknown =>
       operateBinary(template.operator, evaluate(template.left, stack), evaluate(template.right, stack))
   ) as Evaluate,
+  
+  assign: ((template: BinaryTemplate, stack: Variables): unknown => {
+      const [ object, key ] = evaluate(template.left, stack) as Ref
+      const right = evaluate(template.right, stack)
+      return object[key] = template.operator.length > 1 ? operateBinary(template.operator.slice(0, -1), object[key], right) : right
+  }) as Evaluate,
 
   ['function']: (
     (template: FunctionTemplate, stack: Variables): unknown => {
@@ -91,8 +99,17 @@ export const evaluator = {
   ) as Evaluate,
 
   hash: (
-    (template: HashTemplate, stack: Variables): unknown =>
-      (evaluate(template.object, stack) as Record<PropertyKey, unknown>)[evaluate(template.key, stack) as PropertyKey]
+    (template: HashTemplate, stack: Variables): unknown => ([
+      evaluate(template.object, stack) as Record<PropertyKey, unknown>,
+      evaluate(template.key, stack) as PropertyKey
+    ] as Ref)
+  ) as Evaluate,
+
+  get: (
+    (template: GetTemplate, stack: Variables): unknown => {
+      const [ object, key ] = evaluate(template.value, stack) as Ref
+      return object[key]
+    }
   ) as Evaluate,
 
   join: (

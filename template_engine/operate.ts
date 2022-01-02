@@ -1,4 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
+import { Ref } from './types.ts'
 
 export function operateUnary(operator: string, operand: any) {
   switch (operator) {
@@ -55,3 +56,4 @@ export function operateBinary(operator: string, left: any, right: any) {
     default: throw Error(operator + ' does not exist')
   }
 }
+
