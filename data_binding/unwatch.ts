@@ -1,4 +1,4 @@
-// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { ChangeCallback, ReactiveCallback, BeakoObject } from './types.ts'
 import { retreat } from './retreat.ts'

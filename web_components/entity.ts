@@ -9,8 +9,6 @@ export const entityTag = 'beako-entity'
 class ComponentEntity extends ComponentElement {
   constructor() {
     super()
-
-
   }
   setRawAttribute(name: string, value: unknown) {
     if (name === 'component') {

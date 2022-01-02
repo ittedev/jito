@@ -1,4 +1,4 @@
-// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { VirtualElement, VirtualTree } from '../virtual_dom/types.ts'
 import {
