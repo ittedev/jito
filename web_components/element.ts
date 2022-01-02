@@ -1,8 +1,8 @@
-// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Construct } from './types.ts'
-import { Variables, TreeTemplate, evaluate } from '../template_engine/mod.ts'
-import { patch,  VirtualTree, LinkedVirtualTree } from '../virtual_dom/mod.ts'
+import { Component } from './types.ts'
+import { load, LinkedVirtualTree } from '../virtual_dom/mod.ts'
+import { Core } from './core.ts'
 
 function proxyAttr(attr: Attr, setRawAttribute: (name: string, value: unknown) => void) {
   return new Proxy(attr, {
@@ -27,29 +27,24 @@ function proxyNamedNodeMap(attrs: NamedNodeMap, setRawAttribute: (name: string, 
   })
 }
 
-export class Component extends HTMLElement {
-  template: TreeTemplate | null = null
-  tree: LinkedVirtualTree | null = null
-  stack: Variables | null = null
-  attr: Record<string, unknown> = {}
-  construct: Construct | null = null
+export class ComponentElement extends HTMLElement {
+  tree: LinkedVirtualTree
+  core: Core | undefined
   constructor() {
     super()
-  }
-  patch() {
-    if (this.stack && this.tree && this.template) {
-      patch(this.tree, evaluate(this.template, this.stack) as VirtualTree)
+    this.tree = load(this.attachShadow({ mode: 'open' }))
+    if (this.hasAttributes()) {
+      this.getAttributeNames().forEach(name => {
+        this.setRawAttribute(name, this.getAttribute(name))
+      })
     }
   }
   static get observedAttributes() { return ['class', 'part', 'style'] }
-  protected setRawAttribute(name: string, value: unknown) {
-    console.log('setRawAttribute()', name, value)
-    switch (name) {
-      case 'class': case 'part': case 'style': return
-      default:
-        this.attr[name] = value
-    }
-    this.patch()
+  setRawAttribute(name: string, value: unknown) {
+    this.core?.setRawAttribute(name, value)
+  }
+  static getComponent(): Component | undefined {
+    return undefined
   }
 
   // overwraps

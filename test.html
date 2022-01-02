@@ -34,6 +34,7 @@ import {
   parse,
   evaluate,
   extend,
+  define,
   compact,
   hack
 } from './beako.js'
@@ -2417,32 +2418,32 @@ describe('Template Engine', function() {
 })
 
 describe('Web Components', function() {
-  describe('compact()', function() {
-    it('compact text node', () => {
-      customElements.define('test-1', compact(`Hello beako!`))
+  describe('define()', function() {
+    it('define text node', () => {
+      define('test-1', compact(`Hello beako!`))
       document.getElementById('target').innerHTML = '<test-1>Hello world!</test-1>'
       const root = document.querySelector('test-1')
       equal(root.tagName, 'TEST-1')
       equal(root.shadowRoot.innerHTML, 'Hello beako!')
     })
 
-    it('compact use variable in text node', () => {
-      customElements.define('test-2', compact(`Hello {{ name }}!`, [{ name: 'beako' }]))
+    it('define use variable in text node', () => {
+      define('test-2', compact(`Hello {{ name }}!`, [{ name: 'beako' }]))
       document.getElementById('target').innerHTML = '<test-2>Hello world!</test-2>'
       const root = document.querySelector('test-2')
       equal(root.shadowRoot.innerHTML, 'Hello beako!')
     })
 
     it('compact slot', () => {
-      customElements.define('test-3', compact(`<slot name="my-text">Hello world!</slot>`, [{ name: 'beako' }]))
+      define('test-3', compact(`<slot name="my-text">Hello world!</slot>`, [{ name: 'beako' }]))
       document.getElementById('target').innerHTML = `<test-3><span slot="my-text">Hello beako!</span></test-3>`
       const root = document.querySelector('test-3')
       equal(root.innerText, 'Hello beako!')
       equal(root.shadowRoot.innerHTML, 'Hello world!')
     })
 
-    it('compact use constructer', async () => {
-      customElements.define('test-4', compact(`Hello {{ name }}!`, () => {
+    it('define use constructer', async () => {
+      define('test-4', compact(`Hello {{ name }}!`, () => {
         return [{ name: 'beako' }]
       }))
       document.getElementById('target').innerHTML = '<test-4>Hello world!</test-4>'
@@ -2451,8 +2452,8 @@ describe('Web Components', function() {
       equal(root.shadowRoot.innerHTML, 'Hello beako!')
     })
 
-    it('compact use constructer with receive', async () => {
-      customElements.define('test-5', compact(`Hello {{ name }}!`, async attr => {
+    it('define use constructer with receive', async () => {
+      define('test-5', compact(`Hello {{ name }}!`, async attr => {
         const { name } = await receive(attr, ['name'])
         console.log('name:', name)
         return [{ name }]

@@ -1,11 +1,11 @@
-// Copyright 2021 itte.dev. All rights reserved. MIT license.
+// Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 // deno-lint-ignore-file no-fallthrough
 import { VirtualElement } from '../virtual_dom/types.ts'
 import { Variables, Evaluate, Template, instanceOfTemplate, TreeTemplate, ElementTemplate, HasAttrTemplate, IfTemplate, EachTemplate, GroupTemplate } from '../template_engine/types.ts'
 import { evaluate, evaluator, evaluateAttr } from '../template_engine/evaluate.ts'
-import { EvaluationTemplate, CustomElementTemplate } from './types.ts'
-import { Component } from './component.ts'
+import { EvaluationTemplate, CustomElementTemplate, instanceOfComponent } from './types.ts'
+import { ComponentElement } from './element.ts'
 import { entityTag } from './entity.ts'
 
 evaluator.evaluation = (
@@ -26,7 +26,7 @@ evaluator.custom = (
 
     let isComponent: boolean
     if (isPrimitive(template as ElementTemplate)) {
-      isComponent = customElements.get(el.is as string) instanceof Component
+      isComponent = customElements.get(el.is as string) instanceof ComponentElement
     } else {
       // local or global component
       let element: unknown
@@ -36,12 +36,12 @@ evaluator.custom = (
           break
         }
       }
-      if (element instanceof Component) {
+      if (instanceOfComponent(ComponentElement)) {
         el.tag = entityTag
         el.attr = { component: element }
         isComponent = true
       } else {
-        isComponent = customElements.get(template.tag) instanceof Component
+        isComponent = customElements.get(template.tag) instanceof ComponentElement
       }
     }
 
@@ -87,7 +87,7 @@ evaluator.custom = (
 
 
 
-export function extend(template: unknown | Template): void {
+export function extend(template: unknown | Template): unknown | Template {
   if (instanceOfTemplate(template)) {
     switch (template.type) {
       case 'element':
@@ -108,6 +108,7 @@ export function extend(template: unknown | Template): void {
       }
     }
   }
+  return template
 }
 
 
