@@ -38,7 +38,7 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
   patchPart(el, newEl)
   patchStyle(el, newEl)
   patchProps(el, newEl)
-  patchEvent(el, newEl)
+  patchEvents(el, newEl)
   patchChildren(el, newEl)
 
   if ('key' in newEl) {
@@ -110,32 +110,72 @@ function patchStyle(el: LinkedVirtualElement, newEl: VirtualElement) {
 }
 
 function patchProps(el: LinkedVirtualElement, newEl: VirtualElement) {
-  const currentAttr = el.props || {}
-  const newAttr = newEl.props || {}
-  const currentAttrKeys = Object.keys(currentAttr)
-  const newAttrKeys = Object.keys(newAttr)
+  const currentProps = el.props || {}
+  const newProps = newEl.props || {}
+  const currentPropsKeys = Object.keys(currentProps)
+  const newPropsKeys = Object.keys(newProps)
 
-  const shortageOrUpdated = newAttrKeys.filter(key =>
-    !currentAttrKeys.includes(key) || currentAttr[key] !== newAttr[key]
+  const shortageOrUpdated = newPropsKeys.filter(key =>
+    !currentPropsKeys.includes(key) || currentProps[key] !== newProps[key]
   )
   for (const key of shortageOrUpdated) {
-    el.node.setAttribute(key, newAttr[key] as string)
+    el.node.setAttribute(key, newProps[key] as string)
   }
 
-  const surplus = currentAttrKeys.filter(key => !newAttrKeys.includes(key))
+  const surplus = currentPropsKeys.filter(key => !newPropsKeys.includes(key))
   for (const key of surplus) {
     el.node.removeAttribute(key)
   }
   
-  if (newAttrKeys.length) {
-    el.props = { ...newAttr }
+  if (newPropsKeys.length) {
+    el.props = { ...newProps }
   } else {
     delete el.props
   }
 }
 
 // TODO: patchEvent
-function patchEvent(tree: LinkedVirtualElement, newTree: VirtualElement) {
+function patchEvents(el: LinkedVirtualElement, newEl: VirtualElement) {
+  const currentEvents = el.events || {}
+  const newEvents = newEl.events || {}
+  const currentEventsKeys = Object.keys(currentEvents)
+  const newEventsKeys = Object.keys(newEvents)
+
+  // shortage
+  newEventsKeys
+    .filter(type => !currentEventsKeys.includes(type))
+    .forEach(type => {
+      newEvents[type].forEach(listener => {
+        el.node.addEventListener(type, listener)
+      })
+    })
+
+  // surplus
+  currentEventsKeys
+    .filter(type => !newEventsKeys.includes(type))
+    .forEach(type => {
+      currentEvents[type].forEach(listener => {
+        el.node.removeEventListener(type, listener)
+      })
+    })
+
+  // update
+  newEventsKeys
+    .filter(type => currentEventsKeys.includes(type))
+    .forEach(type => {
+      const news = newEvents[type]
+      const currents = currentEvents[type]
+
+      // shortage
+      news
+        .filter(listener => !currents.includes(listener))
+        .forEach(listener => el.node.addEventListener(type, listener))
+
+      // surplus
+      currents
+        .filter(listener => !news.includes(listener))
+        .forEach(listener => el.node.removeEventListener(type, listener))
+    })
 }
 
 // TODO: add use DocumentFragment
