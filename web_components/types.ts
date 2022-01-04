@@ -1,6 +1,7 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { Variables, TemplateType, Template, TreeTemplate, HasAttrTemplate } from '../template_engine/types.ts'
+import { Entity } from './entity.ts'
 export type ExtendedTemplateType = TemplateType | 'evaluation' | 'lazy'
 
 export interface EvaluationTemplate extends Template {
@@ -22,7 +23,7 @@ export interface CustomElementTemplate extends HasAttrTemplate {
 
 // TODO: get refs
 // TODO: get lifecycle
-export type ComponentConstructor = (attr?: Record<string, unknown | Template>) => Variables | Record<string, unknown> | void | Promise<Variables | Record<string, unknown> | void>
+export type ComponentConstructor = (entity: Entity) => Variables | Record<string, unknown> | void | Promise<Variables | Record<string, unknown> | void>
 
 export interface Component {
   template: TreeTemplate
