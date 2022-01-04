@@ -29,11 +29,11 @@ class DomLexer {
   constructor(
     public node: Node | null
   ) {}
-  hasAttribute(attr: string): boolean {
+  hasAttribute(props: string): boolean {
     return !!(
       this.node &&
       this.node.nodeType === 1 &&
-      (this.node as Element).hasAttribute(attr)
+      (this.node as Element).hasAttribute(props)
     )
   }
   pop(): Node | null {
@@ -184,10 +184,10 @@ function parseElement(el: Element): ElementTemplate {
       {
         const match = name.match(/^(?<name>.+):$/)
         if (match?.groups) {
-          if (!('attr' in template)) {
-            template.attr = {} as Record<string, unknown | Template>
+          if (!('props' in template)) {
+            template.props = {} as Record<string, unknown | Template>
           }
-          return (template.attr as Record<string, unknown | Template>)[match.groups.name] = expression(new Lexer(value, 'script'))
+          return (template.props as Record<string, unknown | Template>)[match.groups.name] = expression(new Lexer(value, 'script'))
         }
       }
 
@@ -204,11 +204,11 @@ function parseElement(el: Element): ElementTemplate {
       if (name.match(/^@(if|else|for|each|expand)$/)) return
 
       // string attribute
-      if (!('attr' in template)) {
-        template.attr = {} as Record<string, unknown | Template>
+      if (!('props' in template)) {
+        template.props = {} as Record<string, unknown | Template>
       }
-      if (!(name in (template.attr as Record<string, unknown | Template>))) {
-        return (template.attr as Record<string, unknown | Template>)[name] = value
+      if (!(name in (template.props as Record<string, unknown | Template>))) {
+        return (template.props as Record<string, unknown | Template>)[name] = value
       }
       return
     })

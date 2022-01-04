@@ -768,8 +768,8 @@ describe('Virtual Dom', function() {
       })
     })
 
-    describe(': attr', function() {
-      it('patch new attr', () => {
+    describe(': props', function() {
+      it('patch new props', () => {
         const parent = document.createElement('div')
         const node = document.createElement('div')
         parent.appendChild(node)
@@ -779,123 +779,123 @@ describe('Virtual Dom', function() {
         }] }
         const newTree = { children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1'
+          props: {
+            'props-a': 'value 1'
           }
         }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
             tag: 'div',
-            attr: {
-              'attr-a': 'value 1'
+            props: {
+              'props-a': 'value 1'
             },
             node: {}
           }],
           node: {}
         })
         let output = ''
-        for(const attr of parent.firstChild.attributes) {
-          output += attr.name + ': ' + attr.value + ';';
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
         }
-        equal(output, 'attr-a: value 1;')
+        equal(output, 'props-a: value 1;')
       })
 
-      it('patch add attr', () => {
+      it('patch add props', () => {
         const parent = document.createElement('div')
         const node = document.createElement('div')
         parent.appendChild(node)
-        node.setAttribute('attr-a', 'value 1')
+        node.setAttribute('props-a', 'value 1')
         const tree = { node: parent, children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1'
+          props: {
+            'props-a': 'value 1'
           },
           node
         }] }
         const newTree = { children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1',
-            'attr-b': 'value 2',
-            'attr-c': 'value 3'
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2',
+            'props-c': 'value 3'
           }
         }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
             tag: 'div',
-            attr: {
-              'attr-a': 'value 1',
-              'attr-b': 'value 2',
-              'attr-c': 'value 3'
+            props: {
+              'props-a': 'value 1',
+              'props-b': 'value 2',
+              'props-c': 'value 3'
             },
             node: {}
           }],
           node: {}
         })
         let output = ''
-        for(const attr of parent.firstChild.attributes) {
-          output += attr.name + ': ' + attr.value + ';';
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
         }
-        equal(output, 'attr-a: value 1;attr-b: value 2;attr-c: value 3;')
+        equal(output, 'props-a: value 1;props-b: value 2;props-c: value 3;')
       })
 
-      it('patch remove attr', () => {
+      it('patch remove props', () => {
         const parent = document.createElement('div')
         const node = document.createElement('div')
         parent.appendChild(node)
-        node.setAttribute('attr-a', 'value 1')
-        node.setAttribute('attr-b', 'value 2')
-        node.setAttribute('attr-c', 'value 3')
+        node.setAttribute('props-a', 'value 1')
+        node.setAttribute('props-b', 'value 2')
+        node.setAttribute('props-c', 'value 3')
         const tree = { node: parent, children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1',
-            'attr-b': 'value 2',
-            'attr-c': 'value 3'
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2',
+            'props-c': 'value 3'
           },
           node
         }] }
         const newTree = { children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1',
-            'attr-c': 'value 3'
+          props: {
+            'props-a': 'value 1',
+            'props-c': 'value 3'
           }
         }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
             tag: 'div',
-            attr: {
-              'attr-a': 'value 1',
-              'attr-c': 'value 3'
+            props: {
+              'props-a': 'value 1',
+              'props-c': 'value 3'
             },
             node: {}
           }],
           node: {}
         })
         let output = ''
-        for(const attr of parent.firstChild.attributes) {
-          output += attr.name + ': ' + attr.value + ';';
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
         }
-        equal(output, 'attr-a: value 1;attr-c: value 3;')
+        equal(output, 'props-a: value 1;props-c: value 3;')
       })
 
-      it('patch remove all attr', () => {
+      it('patch remove all props', () => {
         const parent = document.createElement('div')
         const node = document.createElement('div')
         parent.appendChild(node)
-        node.setAttribute('attr-a', 'value 1')
-        node.setAttribute('attr-b', 'value 2')
-        node.setAttribute('attr-c', 'value 3')
+        node.setAttribute('props-a', 'value 1')
+        node.setAttribute('props-b', 'value 2')
+        node.setAttribute('props-c', 'value 3')
         const tree = { node: parent, children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1',
-            'attr-b': 'value 2',
-            'attr-c': 'value 3'
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2',
+            'props-c': 'value 3'
           },
           node
         }] }
@@ -911,31 +911,31 @@ describe('Virtual Dom', function() {
           node: {}
         })
         let output = ''
-        for(const attr of parent.firstChild.attributes) {
-          output += attr.name + ': ' + attr.value + ';';
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
         }
         equal(output, '')
       })
 
-      it('patch set empty attr', () => {
+      it('patch set empty props', () => {
         const parent = document.createElement('div')
         const node = document.createElement('div')
         parent.appendChild(node)
-        node.setAttribute('attr-a', 'value 1')
-        node.setAttribute('attr-b', 'value 2')
-        node.setAttribute('attr-c', 'value 3')
+        node.setAttribute('props-a', 'value 1')
+        node.setAttribute('props-b', 'value 2')
+        node.setAttribute('props-c', 'value 3')
         const tree = { node: parent, children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1',
-            'attr-b': 'value 2',
-            'attr-c': 'value 3'
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2',
+            'props-c': 'value 3'
           },
           node
         }] }
         const newTree = { children: [{
           tag: 'div',
-          attr: {}
+          props: {}
         }] }
         patch(tree, newTree)
         equal(tree, {
@@ -946,86 +946,86 @@ describe('Virtual Dom', function() {
           node: {}
         })
         let output = ''
-        for(const attr of parent.firstChild.attributes) {
-          output += attr.name + ': ' + attr.value + ';';
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
         }
         equal(output, '')
       })
 
-      it('patch no change attr', () => {
+      it('patch no change props', () => {
         const parent = document.createElement('div')
         const node = document.createElement('div')
         parent.appendChild(node)
-        node.setAttribute('attr-a', 'value 1')
-        node.setAttribute('attr-b', 'value 2')
+        node.setAttribute('props-a', 'value 1')
+        node.setAttribute('props-b', 'value 2')
         const tree = { node: parent, children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1',
-            'attr-b': 'value 2'
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2'
           },
           node
         }] }
         const newTree = { children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1',
-            'attr-b': 'value 2'
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2'
           }
         }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
             tag: 'div',
-            attr: {
-              'attr-a': 'value 1',
-              'attr-b': 'value 2'
+            props: {
+              'props-a': 'value 1',
+              'props-b': 'value 2'
             },
             node: {}
           }],
           node: {}
         })
         let output = ''
-        for(const attr of parent.firstChild.attributes) {
-          output += attr.name + ': ' + attr.value + ';';
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
         }
-        equal(output, 'attr-a: value 1;attr-b: value 2;')
+        equal(output, 'props-a: value 1;props-b: value 2;')
       })
 
-      it('patch update attr', () => {
+      it('patch update props', () => {
         const parent = document.createElement('div')
         const node = document.createElement('div')
         parent.appendChild(node)
-        node.setAttribute('attr-a', 'value 1')
+        node.setAttribute('props-a', 'value 1')
         const tree = { node: parent, children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 1'
+          props: {
+            'props-a': 'value 1'
           },
           node
         }] }
         const newTree = { children: [{
           tag: 'div',
-          attr: {
-            'attr-a': 'value 2'
+          props: {
+            'props-a': 'value 2'
           }
         }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
             tag: 'div',
-            attr: {
-              'attr-a': 'value 2'
+            props: {
+              'props-a': 'value 2'
             },
             node: {}
           }],
           node: {}
         })
         let output = ''
-        for(const attr of parent.firstChild.attributes) {
-          output += attr.name + ': ' + attr.value + ';';
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
         }
-        equal(output, 'attr-a: value 2;')
+        equal(output, 'props-a: value 2;')
       })
     })
 
@@ -2187,8 +2187,8 @@ describe('Template Engine', function() {
       })
     })
 
-    describe(': attr', function() {
-      it('parse: attr', () => {
+    describe(': props', function() {
+      it('parse: props', () => {
         const template = parse('<p id="beako"></p>')
         equal(template, {
           type: 'tree',
@@ -2196,7 +2196,7 @@ describe('Template Engine', function() {
             {
               tag: "p",
               type: "element",
-              attr: {
+              props: {
                 id: "beako"
               }
             }
@@ -2204,7 +2204,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: add attr variable', () => {
+      it('parse: add props variable', () => {
         const template = parse(`<p id:="id"></p>`)
         equal(template, {
           type: 'tree',
@@ -2212,7 +2212,7 @@ describe('Template Engine', function() {
             {
               tag: "p",
               type: "element",
-              attr: {
+              props: {
                 id: {
                   type: "variable",
                   name: "id"
@@ -2223,7 +2223,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: multi attr', () => {
+      it('parse: multi props', () => {
         const template = parse('<p id:="id" slot="my-slot"></p>')
         equal(template, {
           type: 'tree',
@@ -2231,7 +2231,7 @@ describe('Template Engine', function() {
             {
               tag: "p",
               type: "element",
-              attr: {
+              props: {
                 id: {
                   type: "variable",
                   name: "id"
@@ -2355,14 +2355,14 @@ describe('Template Engine', function() {
       })
     })
 
-    describe(': attr', function() {
-      it('evaluate: attr', () => {
+    describe(': props', function() {
+      it('evaluate: props', () => {
         const tree = evaluate(parse('<p id="beako"></p>'))
         equal(tree, {
           children: [
             {
               tag: "p",
-              attr: {
+              props: {
                 id: "beako"
               }
             }
@@ -2370,13 +2370,13 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: add attr variable', () => {
+      it('evaluate: add props variable', () => {
         const tree = evaluate(parse(`<p id:="id"></p>`), [{ id: 'beako' }])
         equal(tree, {
           children: [
             {
               tag: "p",
-              attr: {
+              props: {
                 id: "beako"
               }
             }
@@ -2384,13 +2384,13 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: multi attr is not string', () => {
+      it('evaluate: multi props is not string', () => {
         const tree = evaluate(parse('<p value:="value"></p>'), [{ value: 10 }])
         equal(tree, {
           children: [
             {
               tag: "p",
-              attr: {
+              props: {
                 value: 10
               }
             }
@@ -2398,13 +2398,13 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: multi attr', () => {
+      it('evaluate: multi props', () => {
         const tree = evaluate(parse('<p id:="id" slot="my-slot" value:="value"></p>'), [{ id: 'beako', value: 10 }])
         equal(tree, {
           children: [
             {
               tag: "p",
-              attr: {
+              props: {
                 id: "beako",
                 slot: "my-slot",
                 value: 10
@@ -2453,8 +2453,8 @@ describe('Web Components', function() {
     })
 
     it('define use constructer with receive', async () => {
-      define('test-5', compact(`Hello {{ name }}!`, async attr => {
-        const { name } = await receive(attr, ['name'])
+      define('test-5', compact(`Hello {{ name }}!`, async props => {
+        const { name } = await receive(props, ['name'])
         console.log('name:', name)
         return [{ name }]
       }))

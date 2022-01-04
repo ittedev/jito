@@ -5,8 +5,7 @@ import { VirtualElement } from '../virtual_dom/types.ts'
 import { Variables, Evaluate, Template, instanceOfTemplate, TreeTemplate, ElementTemplate, HasAttrTemplate, IfTemplate, EachTemplate, GroupTemplate } from '../template_engine/types.ts'
 import { evaluate, evaluator, evaluateAttr } from '../template_engine/evaluate.ts'
 import { EvaluationTemplate, CustomElementTemplate, instanceOfComponent } from './types.ts'
-import { ComponentElement } from './element.ts'
-import { entityTag } from './entity.ts'
+import { ComponentElement, localComponentElementTag } from './element.ts'
 
 evaluator.evaluation = (
   (template: EvaluationTemplate, stack: Variables): unknown =>
@@ -37,8 +36,8 @@ evaluator.custom = (
         }
       }
       if (instanceOfComponent(ComponentElement)) {
-        el.tag = entityTag
-        el.attr = { component: element }
+        el.tag = localComponentElementTag
+        el.props = { component: element }
         isComponent = true
       } else {
         isComponent = customElements.get(template.tag) instanceof ComponentElement
@@ -51,12 +50,12 @@ evaluator.custom = (
       const children = (template.children || [])?.flatMap(child => {
         if (!(typeof child === 'string')) {
           const temp = child as HasAttrTemplate
-          if (temp.attr) {
-            if (temp.attr['@as']) {
-              contents.push([temp.attr['@as'] as string, temp])
-              delete temp.attr['@as']
+          if (temp.props) {
+            if (temp.props['@as']) {
+              contents.push([temp.props['@as'] as string, temp])
+              delete temp.props['@as']
               return []
-            } else if(temp.attr.slot) {
+            } else if(temp.props.slot) {
               return [evaluate(child, stack) as string | VirtualElement | number]
             }
           }
@@ -67,10 +66,10 @@ evaluator.custom = (
       if (values.length) {
         contents.push(['content', { type: 'group', values } as GroupTemplate])
       }
-      if (contents.length && !template.attr) {
-        el.attr = {}
+      if (contents.length && !template.props) {
+        el.props = {}
         contents.forEach(([name, template]) => {
-          (el.attr as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
+          (el.props as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
         })
       }
       if (children.length) {

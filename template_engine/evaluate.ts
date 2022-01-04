@@ -48,11 +48,11 @@ export function evaluateAttr(template: ElementTemplate, stack: Variables, el: Vi
     el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
   }
 
-  if (template.attr) {
-    el.attr = {}
-    for (const key in template.attr) {
-      const attr = template.attr[key]
-      el.attr[key] = typeof attr === 'string' ? attr : evaluate(attr as Template, stack)
+  if (template.props) {
+    el.props = {}
+    for (const key in template.props) {
+      const props = template.props[key]
+      el.props[key] = typeof props === 'string' ? props : evaluate(props as Template, stack)
     }
   }
   // TODO: class part

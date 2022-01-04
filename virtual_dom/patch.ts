@@ -110,8 +110,8 @@ function patchStyle(el: LinkedVirtualElement, newEl: VirtualElement) {
 }
 
 function patchAttr(el: LinkedVirtualElement, newEl: VirtualElement) {
-  const currentAttr = el.attr || {}
-  const newAttr = newEl.attr || {}
+  const currentAttr = el.props || {}
+  const newAttr = newEl.props || {}
   const currentAttrKeys = Object.keys(currentAttr)
   const newAttrKeys = Object.keys(newAttr)
 
@@ -128,9 +128,9 @@ function patchAttr(el: LinkedVirtualElement, newEl: VirtualElement) {
   }
   
   if (newAttrKeys.length) {
-    el.attr = { ...newAttr }
+    el.props = { ...newAttr }
   } else {
-    delete el.attr
+    delete el.props
   }
 }
 

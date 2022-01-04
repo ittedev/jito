@@ -106,7 +106,7 @@ export interface TreeTemplate extends Template {
 }
 
 export interface HasAttrTemplate extends Template {
-  attr?: Record<string, unknown | Template>
+  props?: Record<string, unknown | Template>
 }
 
 export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
@@ -115,7 +115,7 @@ export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   is?: string | Template
   class?: Array<Array<string> | Template>
   part?: Array<Array<string> | Template>
-  attr?: Record<string, unknown | Template>
+  props?: Record<string, unknown | Template>
   style?: string | Template
   children?: Array<Template | string>
 }
@@ -128,7 +128,7 @@ export interface ExpandTemplate extends Template {
 
 export interface GroupTemplate extends HasAttrTemplate {
   type: 'group'
-  attr?: Record<string, unknown | Template>
+  props?: Record<string, unknown | Template>
   values: Array<Template | string>
 }
 

@@ -5,12 +5,12 @@ import {  } from './types.ts'
 import { load, LinkedVirtualTree } from '../virtual_dom/mod.ts'
 import { Entity } from './entity.ts'
 
-const localComponentElementTag = 'beako-entity'
+export const localComponentElementTag = 'beako-entity'
 
-function proxyAttr(attr: Attr, setRawAttribute: (name: string, value: unknown) => void) {
+function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void) {
   return new Proxy(attr, {
     set(target, prop, value) {
-      setRawAttribute(prop as string, value)
+      setProp(prop as string, value)
       if (prop === 'value') {
         return target.value = value
       }
@@ -18,13 +18,13 @@ function proxyAttr(attr: Attr, setRawAttribute: (name: string, value: unknown) =
   })
 }
 
-function proxyNamedNodeMap(attrs: NamedNodeMap, setRawAttribute: (name: string, value: unknown) => void) {
+function proxyNamedNodeMap(attrs: NamedNodeMap, setProp: (name: string, value: unknown) => void) {
   return new Proxy(attrs, {
     get: function (target, prop) {
       if (prop === 'length') {
         return target[prop]
       } else {
-        return proxyAttr(target[prop as unknown as number] as Attr, setRawAttribute)
+        return proxyAttr(target[prop as unknown as number] as Attr, setProp)
       }
     }
   })
@@ -38,13 +38,13 @@ export class ComponentElement extends HTMLElement {
     this.tree = load(this.attachShadow({ mode: 'open' }))
     if (this.hasAttributes()) {
       this.getAttributeNames().forEach(name => {
-        this.setRawAttribute(name, this.getAttribute(name))
+        this.setProp(name, this.getAttribute(name))
       })
     }
   }
   static get observedAttributes() { return ['class', 'part', 'style'] }
-  setRawAttribute(name: string, value: unknown) {
-    this.entity?.setRawAttribute(name, value)
+  setProp(name: string, value: unknown) {
+    this.entity?.setProp(name, value)
   }
   static getComponent(): Component | undefined {
     return undefined
@@ -52,10 +52,10 @@ export class ComponentElement extends HTMLElement {
 
   // overwraps
   get attributes (): NamedNodeMap {
-    return proxyNamedNodeMap(super.attributes, this.setRawAttribute)
+    return proxyNamedNodeMap(super.attributes, this.setProp)
   }
   setAttribute(name: string, value: unknown) {
-    this.setRawAttribute(name, value)
+    this.setProp(name, value)
     super.setAttribute(name, value as string)
   }
   attributeChangedCallback(name: string, oldValue: unknown, newValue: unknown) {
@@ -63,14 +63,14 @@ export class ComponentElement extends HTMLElement {
   }
   getAttributeNode(name: string): Attr | null {
     const attr = super.getAttributeNode(name)
-    return attr ? proxyAttr(attr, this.setRawAttribute) : attr
+    return attr ? proxyAttr(attr, this.setProp) : attr
   }
   removeAttribute(name: string) {
-    this.setRawAttribute(name, undefined)
+    this.setProp(name, undefined)
     return super.removeAttribute(name)
   }
   removeAttributeNode(attr: Attr) {
-    this.setRawAttribute(attr.name, undefined)
+    this.setProp(attr.name, undefined)
     return super.removeAttributeNode(attr)
   }
   // not spport
@@ -88,7 +88,7 @@ class LocalComponentElement extends ComponentElement {
   constructor() {
     super()
   }
-  setRawAttribute(name: string, value: unknown) {
+  setProp(name: string, value: unknown) {
     if (name === 'component') {
       switch (typeof value) {
         case 'string': {
@@ -109,7 +109,7 @@ class LocalComponentElement extends ComponentElement {
           break
       }
     }
-    super.setRawAttribute(name, value)
+    super.setProp(name, value)
   }
 }
 

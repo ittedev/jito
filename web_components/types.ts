@@ -16,7 +16,7 @@ export interface CustomElementTemplate extends HasAttrTemplate {
   is?: string | Template
   class?: Array<Array<string> | Template>
   part?: Array<Array<string> | Template>
-  attr?: Record<string, unknown | Template>
+  props?: Record<string, unknown | Template>
   style?: string | Template
   children?: Array<Template | string>
 }

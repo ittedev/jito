@@ -24,7 +24,7 @@ export class Entity {
   private _component: Component
   private _el: Element
   private _tree: LinkedVirtualTree
-  private _attr: Record<string, unknown> = {}
+  private _props: Record<string, unknown> = {}
   constructor( component: Component, el: Element, tree: LinkedVirtualTree ) {
     this._component = component
     this._el = el
@@ -48,17 +48,17 @@ export class Entity {
       patch(this._tree, evaluate(this.component.template, this.stack) as VirtualTree)
     }
   }
-  setRawAttribute(name: string, value: unknown) {
-    console.log('setRawAttribute()', name, value)
+  setProp(name: string, value: unknown) {
+    console.log('setProp()', name, value)
     switch (name) {
       case 'class': case 'part': case 'style': return
       default:
-        this._attr[name] = value
+        this._props[name] = value
     }
     this.patch()
   }
   get component(): Component { return this._component }
   get el(): Element { return this._el }
   get root(): Element | DocumentFragment { return this._tree.node }
-  get attr(): Record<string, unknown> { return this._attr }
+  get props(): Record<string, unknown> { return this._props }
 }

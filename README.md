@@ -142,10 +142,10 @@ const component = compact(tree, {
 import { compact, watch, receive } from 'beako/mod.ts'
 
 const component = compact('{{ data.value }}',
-  async ({ attr, lifecycle }) => {
-    const { id, value } = await receive(attr, ['id', 'value'])
+  async ({ props, lifecycle }) => {
+    const { id, value } = await receive(props, ['id', 'value'])
 
-    watch(attr, 'id', () => {
+    watch(props, 'id', () => {
     })
     
     watch(lifecycle, 'connected', () => {
@@ -163,8 +163,8 @@ const component = compact('{{ data.value }}',
 import { compact } from 'beako/mod.ts'
 
 const component = compact('{{ data.value }}',
-  async ({ attr, refs, root, el, listen, fire }) => {
-    const { id, value } = await receive(attr, ['id', 'value'])
+  async ({ props, refs, root, watch, receive, el, listen, fire }) => {
+    const { id, value } = await receive(props, ['id', 'value'])
 
     watch('name', name => {
       if (name) {
