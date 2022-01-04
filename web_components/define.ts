@@ -4,7 +4,7 @@ import { compact } from './compact.ts'
 import { Variables, TreeTemplate } from '../template_engine/mod.ts'
 import { ComponentElement } from './element.ts'
 import { ComponentConstructor, Component, instanceOfComponent } from './types.ts'
-import { Core } from './core.ts'
+import { Entity } from './entity.ts'
 
 export function define(name: string, component: Component): void
 export function define(name: string, html: string): void
@@ -18,7 +18,7 @@ export function define(name: string, template: string | TreeTemplate | Component
   customElements.define(name, class extends ComponentElement {
     constructor() {
       super()
-      this.core = new Core(component, this.tree)
+      this.entity = new Entity(component, this, this.tree)
     }
     static getComponent(): Component | undefined {
       return component

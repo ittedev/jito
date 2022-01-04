@@ -4,7 +4,7 @@ import { Variables, TreeTemplate } from '../template_engine/mod.ts'
 import { load } from '../virtual_dom/mod.ts'
 import { compact } from './compact.ts'
 import { ComponentConstructor, Component, instanceOfComponent } from './types.ts'
-import { Core } from './core.ts'
+import { Entity } from './entity.ts'
 
 export function hack(selectors: string, component: Component): void
 export function hack(selectors: string, html: string): void
@@ -34,10 +34,7 @@ export function hack(element: string | Element | Document, template: string | Tr
     element.nodeType === 9 ? // DOCUMENT_NODE
       (element as Document).body :
       element as Element
-
-  const shadow = root.attachShadow({mode: 'open'})
-  const tree = load(shadow)
+  const tree = load(root.attachShadow({mode: 'open'}))
   const component = instanceOfComponent(template) ? template : compact(template as string | TreeTemplate, stack)
-
-  new Core(component, tree)
+  new Entity(component, root, tree)
 }

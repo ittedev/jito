@@ -151,6 +151,32 @@ const component = compact('{{ data.value }}',
     watch(lifecycle, 'connected', () => {
     })
 
+    listen('destroy', () => {
+    })
+
+    return [data]
+  }
+)
+```
+
+``` ts
+import { compact } from 'beako/mod.ts'
+
+const component = compact('{{ data.value }}',
+  async ({ attr, refs, root, el, listen, fire }) => {
+    const { id, value } = await receive(attr, ['id', 'value'])
+
+    watch('name', name => {
+      if (name) {
+        fire('save', {})
+      } else {
+        
+      }
+    })
+
+    listen('destroy', () => {
+    })
+
     return [data]
   }
 )
