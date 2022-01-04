@@ -5,7 +5,7 @@ import {
   JoinTemplate,
   FlagsTemplate,
   IfTemplate,
-  EachTemplate,
+  ForTemplate,
   ElementTemplate,
   TreeTemplate,
   ExpandTemplate
@@ -57,7 +57,7 @@ function parseNode(lexer: DomLexer): Template | string {
     case 3: // TEXT_NODE
       return parseText(lexer.pop() as Text)
     case 1: { // ELEMENT_NODE
-      return parseEach(lexer)
+      return parseFor(lexer)
     }
     // TODO: parse svg
     default:
@@ -70,7 +70,7 @@ function parseText(node: Text): Template | string {
 }
 
 function parseChild(lexer: DomLexer): Template {
-  return parseEach(lexer)
+  return parseFor(lexer)
 }
 
 // function parseTry(lexer: DomLexer): Template {
@@ -88,12 +88,12 @@ function parseChild(lexer: DomLexer): Template {
 //   }
 // }
 
-function parseEach(lexer: DomLexer): Template {
+function parseFor(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@for')) {
-    const each = el.getAttribute('@each')
+    const each = el.getAttribute('@each') || undefined
     const array = expression(new Lexer(el.getAttribute('@for') as string, 'script'))
-    return { type: 'each', each, array, value: parseIf(lexer) } as EachTemplate
+    return { type: 'for', each, array, value: parseIf(lexer) } as ForTemplate
   } else {
     return parseIf(lexer)
   }

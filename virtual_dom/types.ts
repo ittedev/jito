@@ -12,7 +12,7 @@ export interface VirtualElement extends VirtualTree {
   part?: Array<string>
   style?: string
   props?: Record<string, unknown>
-  events?: Record<string, Array<EventListener>>
+  on?: Record<string, Array<EventListener>>
   key?: unknown
 }
 

@@ -15,59 +15,33 @@ import {
   JoinTemplate,
   FlagsTemplate,
   IfTemplate,
-  EachTemplate,
+  ForTemplate,
   ElementTemplate,
   TreeTemplate,
   ExpandTemplate,
   GroupTemplate,
+  CachedListenerTemplate,
   Ref,
   Evaluate,
   Evaluator
 } from './types.ts'
+import { Loop } from './loop.ts'
 import { operateUnary, operateBinary } from './operate.ts'
+import { pickup } from './pickup.ts'
 
 export function evaluate(template: Template, stack: Variables = []): unknown {
   return evaluator[template.type](template, stack)
 }
 
-function toFlags(value: unknown) {
-  if (typeof value === 'string') {
-    return value.split(/\s+/)
-  } else if (typeof value === 'object') {
-    if (Array.isArray(value)) {
-      return value
-    } else if (value) {
-      return Object.keys(value).filter(key => (value as Record<string, unknown>)[key])
-    }
-  }
-  return []
-}
-
-export function evaluateAttr(template: ElementTemplate, stack: Variables, el: VirtualElement): void {
-  if (template.style) {
-    el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
-  }
-
-  if (template.props) {
-    el.props = {}
-    for (const key in template.props) {
-      const props = template.props[key]
-      el.props[key] = typeof props === 'string' ? props : evaluate(props as Template, stack)
-    }
-  }
-  // TODO: class part
-}
-
 export const evaluator = {
-   // TODO: assign evaluator
-
   literal: (
     (template: LiteralTemplate, _stack: Variables): unknown => template.value
   ) as Evaluate,
 
   variable: ((template: VariableTemplate, stack: Variables): unknown => {
-    for (let i = stack.length - 1; i >= 0; i--) {
-      if (template.name in stack[i]) return [ stack[i], template.name ] as Ref
+    const [value, index] = pickup(stack, template.name)
+    if (value) {
+      return [ stack[index], template.name ] as Ref
     }
     throw Error(template.name + ' is not defined')
   }) as Evaluate,
@@ -126,19 +100,53 @@ export const evaluator = {
   ) as Evaluate,
 
   flags: (
-    (template: FlagsTemplate, stack: Variables): Array<string> =>
-      toFlags(evaluate(template.value, stack))
-  ) as Evaluate,
+    (template: FlagsTemplate, stack: Variables): Array<string> => {
+      const value = evaluate(template.value, stack)
+
+      if (typeof value === 'string') {
+        return value.split(/\s+/)
+      } else if (typeof value === 'object') {
+        if (Array.isArray(value)) {
+          return value
+        } else if (value) {
+          return Object.keys(value).filter(key => (value as Record<string, unknown>)[key])
+        }
+      }
+      return []
+    }) as Evaluate,
 
   ['if']: (
     (template: IfTemplate, stack: Variables): unknown =>
       evaluate(template.condition, stack) ? evaluate(template.truthy, stack) : template.falsy ? evaluate(template.falsy, stack) : null
   ) as Evaluate,
 
-  each: (
-    (template: EachTemplate, stack: Variables): unknown => {
+  for: (
+    (template: ForTemplate, stack: Variables): unknown => {
       const array = evaluate(template.array, stack)
-      return ''
+      let entries: Array<[unknown, unknown]>
+      if (typeof array === 'object' && array !== null) {
+        if (Symbol.iterator in array) {
+          if ('entries' in array) {
+            entries = [...(array as Array<unknown> | Set<unknown> | Map<unknown, unknown> /* or TypedArray etc */).entries()]
+          } else {
+            let i = 0
+            entries = []
+            for (const value of array as Iterable<unknown>){
+              entries.push([i++, value])
+            }
+          }
+        } else {
+          entries = Object.entries(array)
+        }
+      } else {
+        entries = [[0, array]] // or errer?
+      }
+      return entries.map(([key, value], index) => {
+        const loop = new Loop(key, value, index, entries, stack)
+        const result = evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]))
+        // TODO: add key
+        return result
+      })
     }
   ) as Evaluate,
 
@@ -150,9 +158,8 @@ export const evaluator = {
       if (template.is) {
         el.is = typeof template.is === 'string' ? template.is : evaluate(template.is, stack) as string
       }
-      evaluateAttr(template, stack, el)
+      evaluateProps(template, stack, el)
 
-   // TODO: evaluate event
       return el
     }
   ) as Evaluate,
@@ -189,6 +196,58 @@ export const evaluator = {
   group: (
     (template: GroupTemplate, stack: Variables): Array<unknown> =>
       template.values.map(value => instanceOfTemplate(value) ? evaluate(value, stack) : value)
+  ) as Evaluate,
+
+  listener: (
+    (template: CachedListenerTemplate, stack: Variables): EventListener => {
+      if (!template.cache) {
+        template.cache = []
+      }
+      for (const cache of template.cache) {
+        if (compareCache(cache[0], stack)) {
+          return cache[1]
+        }
+      }
+      const listener = () => evaluate(template.value, stack) as void
+      template.cache.push([stack, listener])
+      return listener
+    }
   ) as Evaluate
 
 } as Evaluator
+
+export function evaluateProps(template: ElementTemplate, stack: Variables, el: VirtualElement): void {
+  if (template.style) {
+    el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
+  }
+
+  if (template.props) {
+    el.props = {}
+    for (const key in template.props) {
+      const props = template.props[key]
+      el.props[key] = typeof props === 'string' ? props : evaluate(props as Template, stack)
+    }
+  }
+
+  if (template.on) {
+    el.on = {}
+    for (const type in template.on) {
+      el.on[type] = template.on[type].map(listener => evaluate(listener, stack) as EventListener)
+    }
+  }
+
+  // TODO: class part
+}
+
+function compareCache(cache: Variables, stack: Variables, cacheIndex: number = cache.length - 1, stackIndex: number = stack.length - 1): boolean {
+  const [cacheLoop, newCacheIndex] = pickup(cache, 'loop', cacheIndex) as [Loop | undefined, number]
+  const [stackLoop, newStackIndex] = pickup(stack, 'loop', stackIndex) as [Loop | undefined, number]
+  
+  if (!cacheLoop && !stackLoop) return true
+  if (!cacheLoop || !stackLoop) return false
+
+  return cacheLoop.index === stackLoop.index && 
+    cacheLoop.key === stackLoop.key && 
+    cacheLoop.value === stackLoop.value &&
+    compareCache(cache, stack, newCacheIndex,  newStackIndex)
+}

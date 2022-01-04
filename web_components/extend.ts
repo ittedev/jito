@@ -2,8 +2,8 @@
 // This module is browser compatible.
 // deno-lint-ignore-file no-fallthrough
 import { VirtualElement } from '../virtual_dom/types.ts'
-import { Variables, Evaluate, Template, instanceOfTemplate, TreeTemplate, ElementTemplate, HasAttrTemplate, IfTemplate, EachTemplate, GroupTemplate } from '../template_engine/types.ts'
-import { evaluate, evaluator, evaluateAttr } from '../template_engine/evaluate.ts'
+import { Variables, Evaluate, Template, instanceOfTemplate, TreeTemplate, ElementTemplate, HasAttrTemplate, IfTemplate, ForTemplate, GroupTemplate } from '../template_engine/types.ts'
+import { evaluate, evaluator, evaluateProps } from '../template_engine/evaluate.ts'
 import { EvaluationTemplate, CustomElementTemplate, instanceOfComponent } from './types.ts'
 import { ComponentElement, localComponentElementTag } from './element.ts'
 
@@ -76,7 +76,7 @@ evaluator.custom = (
         el.children = children
       }
 
-      evaluateAttr(template as ElementTemplate, stack, el)
+      evaluateProps(template as ElementTemplate, stack, el)
       
       return el
   } else {
@@ -101,8 +101,8 @@ export function extend(template: unknown | Template): unknown | Template {
         extend((template as IfTemplate).falsy)
         break
       }
-      case 'each': {
-        extend((template as EachTemplate).value)
+      case 'for': {
+        extend((template as ForTemplate).value)
         break
       }
     }

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+<script>
+  console.log(Symbol.iterator in (2))
+  console.log(Symbol.iterator in ([]))
+  console.log(Symbol.iterator in ({}))
+  console.log(Symbol.iterator in (new Map()))
+  console.log(Symbol.iterator in (new Set()))
+  console.log('entries' in ([]))
+  console.log('entries' in ({}))
+  console.log('entries' in (new Map()))
+  console.log('entries' in (new Set()))
+</script>
+</body>
+</html>

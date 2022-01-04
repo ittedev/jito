@@ -13,7 +13,7 @@ export type TemplateType =
   'join' |
   'flags' |
   'if' |
-  'each' |
+  'for' |
   'expand' |
   'element' |
   'tree' |
@@ -93,9 +93,9 @@ export interface IfTemplate extends Template {
   falsy?: Template | undefined
 }
 
-export interface EachTemplate extends Template {
-  type: 'each'
-  each: string
+export interface ForTemplate extends Template {
+  type: 'for'
+  each?: string
   array: Template
   value: Template
 }
@@ -118,6 +118,7 @@ export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   props?: Record<string, unknown | Template>
   style?: string | Template
   children?: Array<Template | string>
+  on?: Record<string, Array<Template>>
 }
 
 export interface ExpandTemplate extends Template {
@@ -130,6 +131,14 @@ export interface GroupTemplate extends HasAttrTemplate {
   type: 'group'
   props?: Record<string, unknown | Template>
   values: Array<Template | string>
+}
+
+export interface ListenerTemplate {
+  type: 'listener'
+  value: Template
+}
+export interface CachedListenerTemplate extends ListenerTemplate {
+  cache: Array<[Variables, EventListener]>
 }
 
 export type Ref = [Record<PropertyKey, unknown>, PropertyKey]

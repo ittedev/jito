@@ -38,7 +38,7 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
   patchPart(el, newEl)
   patchStyle(el, newEl)
   patchProps(el, newEl)
-  patchEvents(el, newEl)
+  patchOn(el, newEl)
   patchChildren(el, newEl)
 
   if ('key' in newEl) {
@@ -134,37 +134,36 @@ function patchProps(el: LinkedVirtualElement, newEl: VirtualElement) {
   }
 }
 
-// TODO: patchEvent
-function patchEvents(el: LinkedVirtualElement, newEl: VirtualElement) {
-  const currentEvents = el.events || {}
-  const newEvents = newEl.events || {}
-  const currentEventsKeys = Object.keys(currentEvents)
-  const newEventsKeys = Object.keys(newEvents)
+function patchOn(el: LinkedVirtualElement, newEl: VirtualElement) {
+  const currentOn = el.on || {}
+  const newOn = newEl.on || {}
+  const currentOnKeys = Object.keys(currentOn)
+  const newOnKeys = Object.keys(newOn)
 
   // shortage
-  newEventsKeys
-    .filter(type => !currentEventsKeys.includes(type))
+  newOnKeys
+    .filter(type => !currentOnKeys.includes(type))
     .forEach(type => {
-      newEvents[type].forEach(listener => {
+      newOn[type].forEach(listener => {
         el.node.addEventListener(type, listener)
       })
     })
 
   // surplus
-  currentEventsKeys
-    .filter(type => !newEventsKeys.includes(type))
+  currentOnKeys
+    .filter(type => !newOnKeys.includes(type))
     .forEach(type => {
-      currentEvents[type].forEach(listener => {
+      currentOn[type].forEach(listener => {
         el.node.removeEventListener(type, listener)
       })
     })
 
   // update
-  newEventsKeys
-    .filter(type => currentEventsKeys.includes(type))
+  newOnKeys
+    .filter(type => currentOnKeys.includes(type))
     .forEach(type => {
-      const news = newEvents[type]
-      const currents = currentEvents[type]
+      const news = newOn[type]
+      const currents = currentOn[type]
 
       // shortage
       news
