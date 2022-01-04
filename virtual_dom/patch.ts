@@ -37,7 +37,7 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
   patchClass(el, newEl)
   patchPart(el, newEl)
   patchStyle(el, newEl)
-  patchAttr(el, newEl)
+  patchProps(el, newEl)
   patchEvent(el, newEl)
   patchChildren(el, newEl)
 
@@ -109,7 +109,7 @@ function patchStyle(el: LinkedVirtualElement, newEl: VirtualElement) {
   }
 }
 
-function patchAttr(el: LinkedVirtualElement, newEl: VirtualElement) {
+function patchProps(el: LinkedVirtualElement, newEl: VirtualElement) {
   const currentAttr = el.props || {}
   const newAttr = newEl.props || {}
   const currentAttrKeys = Object.keys(currentAttr)
