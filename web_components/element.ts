@@ -1,8 +1,8 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { Component, instanceOfComponent } from './types.ts'
-import {  } from './types.ts'
-import { load, LinkedVirtualTree } from '../virtual_dom/mod.ts'
+import { LinkedVirtualTree } from '../virtual_dom/types.ts'
+import { load } from '../virtual_dom/load.ts'
 import { Entity } from './entity.ts'
 
 export const localComponentElementTag = 'beako-entity'

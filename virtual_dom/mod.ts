@@ -7,5 +7,5 @@ export type {
   LinkedVirtualTree
 } from './types.ts'
 
-export * from './load.ts'
-export * from './patch.ts'
+export { load } from './load.ts'
+export { patch } from './patch.ts'

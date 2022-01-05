@@ -1,9 +1,9 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Variables, TreeTemplate } from '../template_engine/mod.ts'
-import { load } from '../virtual_dom/mod.ts'
-import { compact } from './compact.ts'
 import { ComponentConstructor, Component, instanceOfComponent } from './types.ts'
+import { Variables, TreeTemplate } from '../template_engine/types.ts'
+import { load } from '../virtual_dom/load.ts'
+import { compact } from './compact.ts'
 import { Entity } from './entity.ts'
 
 export function hack(selectors: string, component: Component): void

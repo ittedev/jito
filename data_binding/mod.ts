@@ -2,7 +2,7 @@
 // This module is browser compatible.
 export type { ReactiveCallback, ChangeCallback, Callback } from './types.ts'
 
-export * from './watch.ts'
-export * from './receive.ts'
-export * from './unwatch.ts'
-export * from './reach.ts'
+export { watch } from './watch.ts'
+export { receive } from './receive.ts'
+export { unwatch } from './unwatch.ts'
+export { reach } from './reach.ts'

@@ -1,9 +1,36 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-export type { Variables, Template, TreeTemplate } from './types.ts'
+export type {
+  Variables,
+  Template,
+  LiteralTemplate,
+  ArrayTemplate,
+  ObjectTemplate,
+  VariableTemplate,
+  UnaryTemplate,
+  BinaryTemplate,
+  FunctionTemplate,
+  HashTemplate,
+  GetTemplate,
+  JoinTemplate,
+  FlagsTemplate,
+  IfTemplate,
+  ForTemplate,
+  ElementTemplate,
+  TreeTemplate,
+  ExpandTemplate,
+  GroupTemplate,
+  CachedListenerTemplate,
+  Ref,
+  Evaluator,
+  Evaluate,
+  TokenField,
+  TokenType,
+  Token
+} from './types.ts'
 
-export * from './lexer.ts'
-export * from './script_parser.ts'
-export * from './parse.ts'
-export * from './evaluate.ts'
+export { Lexer } from './lexer.ts'
+export { innerText, expression } from './script_parser.ts'
+export { parse } from './parse.ts'
+export { evaluate } from './evaluate.ts'
 // export { render } from './render.ts'

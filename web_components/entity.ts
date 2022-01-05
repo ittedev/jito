@@ -1,9 +1,11 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { ComponentConstructor, Component } from './types.ts'
-import { reach } from '../data_binding/mod.ts'
-import { Variables, evaluate } from '../template_engine/mod.ts'
-import { VirtualTree, LinkedVirtualTree, patch } from '../virtual_dom/mod.ts'
+import { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
+import { Variables } from '../template_engine/types.ts'
+import { reach } from '../data_binding/reach.ts'
+import { evaluate } from '../template_engine/evaluate.ts'
+import { patch } from '../virtual_dom/patch.ts'
 
 export const builtin = {
   console,

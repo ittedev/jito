@@ -19,131 +19,129 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
 /**
  * Apply a patch to a dom element.
  * 
- * @param el - A virtual element linked with real element.
- * @param newEl - A new virtual element patch el.
- * @returns If tag names are equal, then the patched el, else new LinkedVirtualElement linked with new real element.
+ * @param ve - A virtual element linked with real element.
+ * @param newVe - A new virtual element patch ve.
+ * @returns If tag names are equal, then the patched ve, else new LinkedVirtualElement linked with new real element.
  * 
  * @alpha
  */
- export function patchElement(el: LinkedVirtualElement, newEl: VirtualElement): LinkedVirtualElement {
-  console.log('el:', el)
-  console.log('el:', el.node.getAttributeNames())
+ export function patchElement(ve: LinkedVirtualElement, newVe: VirtualElement): LinkedVirtualElement {
+  console.log('ve:', ve)
+  console.log('ve:', ve.node.getAttributeNames())
   // if tag is different, new element
-  if (el.tag !== newEl.tag || el.is !== newEl.is) {
-    console.log('newEl.is:', newEl.is)
-    return patchElement(newEl.is ? {
-      tag: newEl.tag,
-      is : newEl.is,
-      node: document.createElement(newEl.tag, { is : newEl.is })
+  if (ve.tag !== newVe.tag || ve.is !== newVe.is) {
+    console.log('newVe.is:', newVe.is)
+    return patchElement(newVe.is ? {
+      tag: newVe.tag,
+      is : newVe.is,
+      node: document.createElement(newVe.tag, { is : newVe.is })
     } : {
-      tag: newEl.tag,
-      node: document.createElement(newEl.tag)
-    }, newEl)
+      tag: newVe.tag,
+      node: document.createElement(newVe.tag)
+    }, newVe)
   }
 
-  patchClass(el, newEl)
-  patchPart(el, newEl)
-  patchStyle(el, newEl)
-  patchProps(el, newEl)
-  patchOn(el, newEl)
-  patchChildren(el, newEl)
+  patchClass(ve, newVe)
+  patchPart(ve, newVe)
+  patchStyle(ve, newVe)
+  patchProps(ve, newVe)
+  patchOn(ve, newVe)
+  patchChildren(ve, newVe)
 
-  if ('key' in newEl) {
-    el.key = newEl.key
+  if ('key' in newVe) {
+    ve.key = newVe.key
   } else {
-    delete el.key
+    delete ve.key
   }
   
-  return el
+  return ve
 }
 
-function patchClass(el: LinkedVirtualElement, newEl: VirtualElement) {
-  const currentClass = el.class || []
-  const newClass = newEl.class || []
+function patchClass(ve: LinkedVirtualElement, newVe: VirtualElement) {
+  const currentClass = ve.class || []
+  const newClass = newVe.class || []
 
   const shortage = newClass.filter(cls => !currentClass.includes(cls))
   if (shortage.length) {
-    el.node.classList.add(...shortage)
+    ve.node.classList.add(...shortage)
   }
 
   const surplus = currentClass.filter(cls => !newClass.includes(cls))
   if (surplus.length) {
-    el.node.classList.remove(...surplus)
+    ve.node.classList.remove(...surplus)
   }
 
   if (newClass.length) {
-    el.class = newClass.slice()
+    ve.class = newClass.slice()
   } else {
-    delete el.class
+    delete ve.class
   }
 }
 
-function patchPart(el: LinkedVirtualElement, newEl: VirtualElement) {
-  const currentPart = el.part || []
-  const newPart = newEl.part || []
+function patchPart(ve: LinkedVirtualElement, newVe: VirtualElement) {
+  const currentPart = ve.part || []
+  const newPart = newVe.part || []
 
   const shortage = newPart.filter(part => !currentPart.includes(part))
   if (shortage.length) {
-    el.node.part.add(...shortage)
+    ve.node.part.add(...shortage)
   }
 
   const surplus = currentPart.filter(part => !newPart.includes(part))
   if (surplus.length) {
-    el.node.part.remove(...surplus)
+    ve.node.part.remove(...surplus)
   }
 
   if (newPart.length) {
-    el.part = newPart.slice()
+    ve.part = newPart.slice()
   } else {
-    delete el.part
+    delete ve.part
   }
 }
 
-function patchStyle(el: LinkedVirtualElement, newEl: VirtualElement) {
-  if (el.node instanceof HTMLElement) {
-    const style = el.style || ''
-    const newStyle = newEl.style || ''
+function patchStyle(ve: LinkedVirtualElement, newVe: VirtualElement) {
+  if (ve.node instanceof HTMLElement) {
+    const style = ve.style || ''
+    const newStyle = newVe.style || ''
 
     if (style != newStyle) {
-      el.node.style.cssText = newStyle
+      ve.node.style.cssText = newStyle
     
       if (newStyle != '') {
-        el.style = newStyle
+        ve.style = newStyle
       } else {
-        delete el.style
+        delete ve.style
       }
     }
   }
 }
 
-function patchProps(el: LinkedVirtualElement, newEl: VirtualElement) {
-  const currentProps = el.props || {}
-  const newProps = newEl.props || {}
+function patchProps(ve: LinkedVirtualElement, newVe: VirtualElement) {
+  const currentProps = ve.props || {}
+  const newProps = newVe.props || {}
   const currentPropsKeys = Object.keys(currentProps)
   const newPropsKeys = Object.keys(newProps)
 
-  const shortageOrUpdated = newPropsKeys.filter(key =>
-    !currentPropsKeys.includes(key) || currentProps[key] !== newProps[key]
-  )
-  for (const key of shortageOrUpdated) {
-    el.node.setAttribute(key, newProps[key] as string)
-  }
+  // shortageOrUpdated
+  newPropsKeys
+    .filter(key => !currentPropsKeys.includes(key) || currentProps[key] !== newProps[key])
+    .forEach(key => ve.node.setAttribute(key, newProps[key] as string))
 
-  const surplus = currentPropsKeys.filter(key => !newPropsKeys.includes(key))
-  for (const key of surplus) {
-    el.node.removeAttribute(key)
-  }
+  // surplus
+  currentPropsKeys
+    .filter(key => !newPropsKeys.includes(key))
+    .forEach(key => ve.node.removeAttribute(key))
   
   if (newPropsKeys.length) {
-    el.props = { ...newProps }
+    ve.props = { ...newProps }
   } else {
-    delete el.props
+    delete ve.props
   }
 }
 
-function patchOn(el: LinkedVirtualElement, newEl: VirtualElement) {
-  const currentOn = el.on || {}
-  const newOn = newEl.on || {}
+function patchOn(ve: LinkedVirtualElement, newVe: VirtualElement) {
+  const currentOn = ve.on || {}
+  const newOn = newVe.on || {}
   const currentOnKeys = Object.keys(currentOn)
   const newOnKeys = Object.keys(newOn)
 
@@ -152,7 +150,7 @@ function patchOn(el: LinkedVirtualElement, newEl: VirtualElement) {
     .filter(type => !currentOnKeys.includes(type))
     .forEach(type => {
       newOn[type].forEach(listener => {
-        el.node.addEventListener(type, listener)
+        ve.node.addEventListener(type, listener)
       })
     })
 
@@ -161,7 +159,7 @@ function patchOn(el: LinkedVirtualElement, newEl: VirtualElement) {
     .filter(type => !newOnKeys.includes(type))
     .forEach(type => {
       currentOn[type].forEach(listener => {
-        el.node.removeEventListener(type, listener)
+        ve.node.removeEventListener(type, listener)
       })
     })
 
@@ -175,12 +173,12 @@ function patchOn(el: LinkedVirtualElement, newEl: VirtualElement) {
       // shortage
       news
         .filter(listener => !currents.includes(listener))
-        .forEach(listener => el.node.addEventListener(type, listener))
+        .forEach(listener => ve.node.addEventListener(type, listener))
 
       // surplus
       currents
         .filter(listener => !news.includes(listener))
-        .forEach(listener => el.node.removeEventListener(type, listener))
+        .forEach(listener => ve.node.removeEventListener(type, listener))
     })
 }
 
