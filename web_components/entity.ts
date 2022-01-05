@@ -51,7 +51,6 @@ export class Entity {
     }
   }
   setProp(name: string, value: unknown) {
-    console.log('setProp()', name, value)
     switch (name) {
       case 'class': case 'part': case 'style': return
       default:

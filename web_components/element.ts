@@ -39,7 +39,6 @@ export class ComponentElement extends HTMLElement {
   }
   static get observedAttributes() { return ['class', 'part', 'style'] }
   setProp(name: string, value: unknown) {
-    console.log('this.entity', this.entity)
     this.entity?.setProp(name, value)
   }
   static getComponent(): Component | undefined {
@@ -48,7 +47,6 @@ export class ComponentElement extends HTMLElement {
   loadProps() {
     if (this.hasAttributes()) {
       this.getAttributeNames().forEach(name => {
-        console.log('name :', name )
         this.setProp(name, this.getAttribute(name))
       })
     }
@@ -63,7 +61,7 @@ export class ComponentElement extends HTMLElement {
     super.setAttribute(name, value as string)
   }
   attributeChangedCallback(name: string, oldValue: unknown, newValue: unknown) {
-    console.log('attributeChangedCallback()', name, oldValue, newValue)
+    // console.log('attributeChangedCallback()', name, oldValue, newValue)
   }
   getAttributeNode(name: string): Attr | null {
     const attr = super.getAttributeNode(name)
