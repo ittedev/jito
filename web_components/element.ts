@@ -36,18 +36,22 @@ export class ComponentElement extends HTMLElement {
   constructor() {
     super()
     this.tree = load(this.attachShadow({ mode: 'open' }))
-    if (this.hasAttributes()) {
-      this.getAttributeNames().forEach(name => {
-        this.setProp(name, this.getAttribute(name))
-      })
-    }
   }
   static get observedAttributes() { return ['class', 'part', 'style'] }
   setProp(name: string, value: unknown) {
+    console.log('this.entity', this.entity)
     this.entity?.setProp(name, value)
   }
   static getComponent(): Component | undefined {
     return undefined
+  }
+  loadProps() {
+    if (this.hasAttributes()) {
+      this.getAttributeNames().forEach(name => {
+        console.log('name :', name )
+        this.setProp(name, this.getAttribute(name))
+      })
+    }
   }
 
   // overwraps

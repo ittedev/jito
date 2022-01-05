@@ -19,6 +19,7 @@ export function define(name: string, template: string | TreeTemplate | Component
     constructor() {
       super()
       this.entity = new Entity(component, this, this.tree)
+      this.loadProps()
     }
     static getComponent(): Component | undefined {
       return component
