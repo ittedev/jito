@@ -5,6 +5,7 @@
   "author": "Nakamura",
   "description": "Beako is web component tools with Data Binding, Template Engine and Virtual Dom for Deno.",
   "main": "beako.js",
+  "type": "module",
   "files": [
     "beako.js",
     "LICENSE"
