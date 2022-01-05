@@ -26,7 +26,15 @@ Beako.js use ES Modules
 ### Deno
 
 ``` ts
-import { ... } from "https://deno.land/x/beako@v0.9.2/mod.ts";
+import { hack } from 'https://deno.land/x/beako@v0.9.2/mod.ts'
+```
+
+### CDN
+
+``` html
+<script type="module">
+import { hack } from 'https://unpkg.com/beako@0.9.2/beako.js'
+</script>
 ```
 
 ### Node.js
@@ -37,17 +45,10 @@ npm install beako
 
 And,
 
-``` ts
-import { ... } from 'beako'
+``` js
+import { hack } from 'beako'
 ```
 
-### CDN
-
-``` html
-<script type="module">
-import { ... } as website from "beako.js";
-</script>
-```
 
 
 

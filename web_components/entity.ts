@@ -32,22 +32,23 @@ export class Entity {
     this._el = el
     this._tree = tree
 
-    if (typeof this.component.stack === 'function') {
+    if (typeof this._component.stack === 'function') {
       (async () => {
-        const stack = await (this.component.stack as ComponentConstructor)(this)
+        const stack = await (component.stack as ComponentConstructor)(this)
         this.stack = stack ? (Array.isArray(stack) ? [builtin, ...stack] : [builtin, stack]) : [builtin] 
-        this.patch()
-        reach(stack, this.patch)
+        const f = () => this.patch()
+        reach(stack, f)
       })().then()
     } else {
-      reach(this.component.stack, this.patch)
-      this.stack = [builtin, ...this.component.stack]
+      this.stack = [builtin, ...this._component.stack]
+      const f = () => this.patch()
+      reach(this._component.stack, f)
       this.patch()
     }
   }
   patch() {
-    if (this.stack && this._tree && this.component.template) {
-      patch(this._tree, evaluate(this.component.template, this.stack) as VirtualTree)
+    if (this.stack && this._tree && this._component.template) {
+      patch(this._tree, evaluate(this._component.template, this.stack) as VirtualTree)
     }
   }
   setProp(name: string, value: unknown) {
