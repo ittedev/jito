@@ -26,11 +26,18 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
  * @alpha
  */
  export function patchElement(el: LinkedVirtualElement, newEl: VirtualElement): LinkedVirtualElement {
+  console.log('el:', el)
+  console.log('el:', el.node.getAttributeNames())
   // if tag is different, new element
   if (el.tag !== newEl.tag || el.is !== newEl.is) {
-    return patchElement({
+    console.log('newEl.is:', newEl.is)
+    return patchElement(newEl.is ? {
       tag: newEl.tag,
-      node: newEl.is ? document.createElement(newEl.tag, { is : newEl.is }) : document.createElement(newEl.tag)
+      is : newEl.is,
+      node: document.createElement(newEl.tag, { is : newEl.is })
+    } : {
+      tag: newEl.tag,
+      node: document.createElement(newEl.tag)
     }, newEl)
   }
 
@@ -226,7 +233,7 @@ class LinkedVirtualElementPointer {
     return ve
   }
   replace(ve: LinkedVirtualElement | string) {
-    if (typeof ve === 'string' && this.node?.nodeType === 3) {
+    if (typeof ve === 'string' && this.node?.nodeType === 3) { // TEXT_NODE
       if ((this.node as Text).data !== ve) {
         (this.node as Text).data = ve
       }
@@ -274,7 +281,6 @@ class LinkedVirtualElementPointer {
       return false
     }
     const result = cond()
-    console.log('result:', result)
     if (typeof result === 'boolean') {
       return result
     } else {

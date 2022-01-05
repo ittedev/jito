@@ -22,13 +22,10 @@ function must(token: Token | null, type: TokenType, message = ''): void {
   if (!token || token[0] !== type) throw Error(message)
 }
 
- // TODO: assign parser
-
 export function innerText(lexer: Lexer): Template | string {
   const texts = [] as Array<string | Template>
   texts.push(lexer.skip())
   while (lexer.nextType()) {
-    console.log('lexer.nextType():', lexer.nextType())
     if (lexer.nextType() === '{{') {
       lexer.pop()
       lexer.expand('script', () => {
@@ -148,7 +145,7 @@ function precedence(operator: string): number {
 function unary(lexer: Lexer): Template {
   switch (lexer.nextType()) {
     case 'multi': 
-    case '!':
+    case 'unary':
       return { type: 'unary', operator: (lexer.pop() as Token)[1] as string, operand:unary(lexer) } as UnaryTemplate
     default:
       return func(lexer)

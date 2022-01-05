@@ -1,6 +1,6 @@
+// Copyright 2022 itte.dev. All rights reserved. MIT license.
+// This module is browser compatible.
 // deno-lint-ignore-file no-explicit-any
-import { Ref } from './types.ts'
-
 export function operateUnary(operator: string, operand: any) {
   switch (operator) {
     case 'void': return void operand
