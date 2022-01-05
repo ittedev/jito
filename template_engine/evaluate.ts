@@ -6,6 +6,8 @@ import {
   Template,
   instanceOfTemplate,
   LiteralTemplate,
+  ArrayTemplate,
+  ObjectTemplate,
   VariableTemplate,
   UnaryTemplate,
   BinaryTemplate,
@@ -36,6 +38,22 @@ export function evaluate(template: Template, stack: Variables = []): unknown {
 export const evaluator = {
   literal: (
     (template: LiteralTemplate, _stack: Variables): unknown => template.value
+  ) as Evaluate,
+
+  array: (
+    (template: ArrayTemplate, stack: Variables): unknown =>
+      template.values.map((value: Template) => evaluate(value, stack))
+  ) as Evaluate,
+
+  object: (
+    (template: ObjectTemplate, stack: Variables): unknown =>
+    template.entries
+      .map(entry => entry.map(value => evaluate(value, stack)))
+      .reduce((obj, [key, value]) => {
+        obj[key as string | number] = value
+        return obj
+      }, {} as Record<string, unknown>)
+    // Object.fromEntries(template.entries.map(entry => entry.map(value => evaluate(value, stack))))
   ) as Evaluate,
 
   variable: ((template: VariableTemplate, stack: Variables): unknown => {

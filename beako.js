@@ -782,6 +782,7 @@ function innerText(lexer) {
     const texts = [];
     texts.push(lexer.skip());
     while(lexer.nextType()){
+        console.log('innerText:');
         if (lexer.nextType() === '{{') {
             lexer.pop();
             lexer.expand('script', ()=>{
@@ -829,6 +830,7 @@ function assignment(lexer) {
 function conditional(lexer) {
     let condition = arithmetic(lexer);
     while(lexer.nextType() === '?'){
+        console.log('conditional:');
         lexer.pop();
         const truthy = expression(lexer);
         must(lexer.pop(), ':');
@@ -846,10 +848,12 @@ function arithmetic(lexer) {
     const list = new Array();
     list.push(unary(lexer));
     while(lexer.nextType() === 'multi' || lexer.nextType() === 'binary'){
+        console.log('arithmetic:');
         list.push(lexer.pop()[1]);
         list.push(unary(lexer));
     }
     while(list.length > 1){
+        console.log('arithmetic2:');
         for(let index = 0; index + 1 < list.length; index += 2){
             if (index + 3 >= list.length || precedence(list[index + 1]) > precedence(list[index + 3])) {
                 const node = {
@@ -925,12 +929,14 @@ function unary(lexer) {
 function func(lexer) {
     let template = term(lexer);
     while(true){
+        console.log('func:');
         switch(lexer.nextType()){
             case '(':
                 {
                     lexer.pop();
                     const params = [];
                     while(lexer.nextType() !== ')'){
+                        console.log('func2:');
                         params.push(expression(lexer));
                         if (lexer.nextType() === ',') lexer.pop();
                         else break;
@@ -1023,6 +1029,57 @@ function term(lexer) {
                 const node = expression(lexer);
                 must(lexer.pop(), ')');
                 return node;
+            }
+        case '[':
+            {
+                const values = [];
+                while(lexer.nextType() !== ']'){
+                    values.push(expression(lexer));
+                    if (lexer.nextType() === ',') {
+                        lexer.pop();
+                    } else if (lexer.nextType() === ']') {
+                        lexer.pop();
+                        break;
+                    } else {
+                        throw Error("']' is required");
+                    }
+                }
+                return {
+                    type: 'array',
+                    values
+                };
+            }
+        case '{':
+            {
+                const entries = [];
+                while(lexer.nextType() !== '}'){
+                    const entry = Array(2);
+                    const token = lexer.pop();
+                    if (token[0] === 'word') {
+                        entry[0] = {
+                            type: 'literal',
+                            value: token[1]
+                        };
+                    } else if (token[0] === '[') {
+                        entry[0] = expression(lexer);
+                        must(lexer.pop(), ']');
+                    }
+                    must(lexer.pop(), ':');
+                    entry[1] = expression(lexer);
+                    entries.push(entry);
+                    if (lexer.nextType() === ',') {
+                        lexer.pop();
+                    } else if (lexer.nextType() === '}') {
+                        lexer.pop();
+                        break;
+                    } else {
+                        throw Error("'}' is required");
+                    }
+                }
+                return {
+                    type: 'object',
+                    entries
+                };
             }
         default:
             throw new Error(JSON.stringify(token));
@@ -1406,6 +1463,17 @@ function evaluate(template, stack = []) {
 }
 const evaluator = {
     literal: (template, _stack)=>template.value
+    ,
+    array: (template, stack)=>template.values.map((value)=>evaluate(value, stack)
+        )
+    ,
+    object: (template, stack)=>template.entries.map((entry)=>entry.map((value)=>evaluate(value, stack)
+            )
+        ).reduce((obj, [key, value])=>{
+            obj[key] = value;
+            return obj;
+        }, {
+        })
     ,
     variable: (template, stack)=>{
         const [value, index] = pickup(stack, template.name);

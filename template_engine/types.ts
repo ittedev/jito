@@ -4,6 +4,8 @@ export type Variables = Array<Record<string, unknown>>
 
 export type TemplateType =
   'literal' |
+  'array' |
+  'object' |
   'variable' |
   'unary' |
   'binary' |
@@ -31,6 +33,16 @@ export function instanceOfTemplate(object: any): object is Template {
 export interface LiteralTemplate extends Template {
   type: 'literal'
   value: unknown
+}
+
+export interface ArrayTemplate extends Template {
+  type: 'array'
+  values: Array<Template>
+}
+
+export interface ObjectTemplate extends Template {
+  type: 'object'
+  entries: Array<[Template, Template]>
 }
 
 export interface VariableTemplate extends Template {

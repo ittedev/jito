@@ -3,6 +3,8 @@
 import {
   Template,
   LiteralTemplate,
+  ArrayTemplate,
+  ObjectTemplate,
   VariableTemplate,
   UnaryTemplate,
   BinaryTemplate,
@@ -26,6 +28,7 @@ export function innerText(lexer: Lexer): Template | string {
   const texts = [] as Array<string | Template>
   texts.push(lexer.skip())
   while (lexer.nextType()) {
+    console.log('innerText:')
     if (lexer.nextType() === '{{') {
       lexer.pop()
       lexer.expand('script', () => {
@@ -85,6 +88,7 @@ function assignment(lexer: Lexer): Template {
 function conditional(lexer: Lexer): Template {
   let condition = arithmetic(lexer)
   while (lexer.nextType() === '?') {
+    console.log('conditional:')
     lexer.pop()
     const truthy = expression(lexer)
     must(lexer.pop(), ':')
@@ -103,12 +107,14 @@ function conditional(lexer: Lexer): Template {
   const list = new Array<Template | string>()
   list.push(unary(lexer))
   while(lexer.nextType() === 'multi' || lexer.nextType() === 'binary') {
+    console.log('arithmetic:')
     list.push((lexer.pop() as Token)[1])
     list.push(unary(lexer))
   }
 
   // Binary operator precedence
   while (list.length > 1) {
+    console.log('arithmetic2:')
     for (let index = 0; index + 1 < list.length; index += 2) {
     if (index + 3 >= list.length || precedence(list[index + 1] as string) > precedence(list[index + 3] as string)) {
         const node = { type: 'binary', operator: list[index + 1] as string, left:list[index] as Template, right: list[index + 2] as Template } as BinaryTemplate
@@ -160,11 +166,13 @@ function unary(lexer: Lexer): Template {
 function func(lexer: Lexer): Template {
   let template = term(lexer)
   while (true) {
+    console.log('func:')
     switch (lexer.nextType()) {
       case '(': {
         lexer.pop()
         const params = [] as Array<Template>
-          while (lexer.nextType() !== ')') {
+        while (lexer.nextType() !== ')') {
+          console.log('func2:')
           params.push(expression(lexer))
           if (lexer.nextType() === ',') lexer.pop()
           else break
@@ -222,6 +230,51 @@ function term(lexer: Lexer): Template {
       must(lexer.pop(), ')')
       return node
     }
+
+    // a = [E, ...]
+    case '[': {
+      const values = []
+      while(lexer.nextType() !== ']') {
+        values.push(expression(lexer))
+        if (lexer.nextType() === ',') {
+          lexer.pop()
+        } else if (lexer.nextType() === ']') {
+          lexer.pop()
+          break
+        } else {
+          throw Error("']' is required")
+        }
+      }
+      return { type: 'array', values } as ArrayTemplate
+    }
+
+    // r = { w: E, [E]: E, ...}
+    case '{': {
+      const entries = [] as Array<[Template, Template]>
+      while(lexer.nextType() !== '}') {
+        const entry = Array(2) as [Template, Template]
+        const token = lexer.pop() as Token
+        if (token[0] === 'word') {
+          entry[0] = { type: 'literal', value: token[1] } as LiteralTemplate
+        } else if (token[0] === '[') {
+          entry[0] = expression(lexer)
+          must(lexer.pop(), ']')
+        }
+        must(lexer.pop(), ':')
+        entry[1] = expression(lexer)
+        entries.push(entry)
+        if (lexer.nextType() === ',') {
+          lexer.pop()
+        } else if (lexer.nextType() === '}') {
+          lexer.pop()
+          break
+        } else {
+          throw Error("'}' is required")
+        }
+      }
+      return { type: 'object', entries } as ObjectTemplate
+    }
+
     default: throw new Error(JSON.stringify(token))
   }
 }
