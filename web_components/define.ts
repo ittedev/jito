@@ -13,8 +13,9 @@ export function define(name: string, html: string, construct: ComponentConstruct
 export function define(name: string, template: TreeTemplate): void
 export function define(name: string, template: TreeTemplate, stack: Variables): void
 export function define(name: string, template: TreeTemplate, construct: ComponentConstructor): void
-export function define(name: string, template: string | TreeTemplate | Component, stack?: ComponentConstructor | Variables): void {
-  const component = instanceOfComponent(template) ? template : compact(template as string | TreeTemplate, stack)
+export function define(name: string, template: string | TreeTemplate | Component, stack: Variables | Record<string, unknown> | ComponentConstructor): void
+export function define(name: string, template: string | TreeTemplate | Component, stack: Variables | Record<string, unknown> | ComponentConstructor = []): void {
+  const component = instanceOfComponent(template) ? template : compact(template, stack)
   customElements.define(name, class extends ComponentElement {
     constructor() {
       super()
