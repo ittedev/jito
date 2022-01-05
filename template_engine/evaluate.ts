@@ -213,7 +213,7 @@ export const evaluator = {
 
   group: (
     (template: GroupTemplate, stack: Variables): Array<unknown> =>
-      template.values.map(value => instanceOfTemplate(value) ? evaluate(value, stack) : value)
+      template.children ? template.children.map(child => instanceOfTemplate(child) ? evaluate(child, stack) : child) : []
   ) as Evaluate,
 
   listener: (
@@ -234,27 +234,37 @@ export const evaluator = {
 
 } as Evaluator
 
-export function evaluateProps(template: ElementTemplate, stack: Variables, el: VirtualElement): void {
+export function evaluateProps(template: ElementTemplate, stack: Variables, ve: VirtualElement): void {
   if (template.style) {
-    el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
+    ve.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
   }
 
   if (template.props) {
-    el.props = {}
+    ve.props = {}
     for (const key in template.props) {
       const props = template.props[key]
-      el.props[key] = typeof props === 'string' ? props : evaluate(props as Template, stack)
+      ve.props[key] = typeof props === 'string' ? props : evaluate(props as Template, stack)
     }
+  }
+
+  if (template.class) {
+    template.class.forEach(value =>
+      ve.class = (ve.class || []).concat(Array.isArray(value) ? value as Array<string> : evaluate(value, stack) as Array<string>)
+    )
+  }
+
+  if (template.part) {
+    template.part.forEach(value =>
+      ve.part = (ve.part || []).concat(Array.isArray(value) ? value as Array<string> : evaluate(value, stack) as Array<string>)
+    )
   }
 
   if (template.on) {
-    el.on = {}
+    ve.on = {}
     for (const type in template.on) {
-      el.on[type] = template.on[type].map(listener => evaluate(listener, stack) as EventListener)
+      ve.on[type] = template.on[type].map(listener => evaluate(listener, stack) as EventListener)
     }
   }
-
-  // TODO: class part
 }
 
 function compareCache(cache: Variables, stack: Variables, cacheIndex: number = cache.length - 1, stackIndex: number = stack.length - 1): boolean {

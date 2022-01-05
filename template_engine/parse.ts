@@ -3,6 +3,7 @@
 import {
   Template,
   JoinTemplate,
+  GroupTemplate,
   FlagsTemplate,
   IfTemplate,
   ForTemplate,
@@ -88,6 +89,8 @@ function parseChild(lexer: DomLexer): Template {
 //   }
 // }
 
+// TODO: parse boundary numbers algorithm
+
 function parseFor(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@for')) {
@@ -123,7 +126,30 @@ function parseExpand(el: Element): Template {
 }
 // TODO: parse Group
 function parseGroup(el: Element): Template {
-  return parseElement(el)
+  if (el.tagName.toLowerCase() === 'group') {
+    const template = {
+      type: 'group',
+    } as GroupTemplate
+    if (el.hasAttributes()) {
+      el.getAttributeNames().forEach(name => {
+        // syntax attribute
+        if (name.match(/^@(if|else|for|each|expand)$/)) return
+        if (name.match(/^@.*$/)) {
+          if (!template.props) {
+            template.props = {} as Record<string, unknown | Template>
+          }
+          (template.props as Record<string, unknown | Template>)[name] = el.getAttribute(name)
+        }
+      })
+    }
+    
+    if (el.hasChildNodes()) {
+      template.children = parseChildren(el)
+    }
+    return template
+  } else {
+    return parseElement(el)
+  }
 }
 
 function parseElement(el: Element): ElementTemplate {
@@ -146,7 +172,7 @@ function parseElement(el: Element): ElementTemplate {
         case 'class':
         case 'part': {
           if (!(name in template)) {
-            template[name] = [] as Array<Array<string> | Template>
+            template[name] = [] as Array<Array<string> | FlagsTemplate>
           }
           return (template[name] as Array<Array<string> | Template>).push(value.split(/\s+/))
         }
@@ -168,7 +194,7 @@ function parseElement(el: Element): ElementTemplate {
             case 'class':
             case 'part': {
               if (!(name in template)) {
-                template[name] = [] as Array<Array<string> | Template>
+                template[name] = [] as Array<Array<string> | FlagsTemplate>
               }
               return (template[name] as Array<Array<string> | Template>).push({ type: 'flags', value: exp } as FlagsTemplate)
             }
@@ -184,7 +210,7 @@ function parseElement(el: Element): ElementTemplate {
       {
         const match = name.match(/^(?<name>.+):$/)
         if (match?.groups) {
-          if (!('props' in template)) {
+          if (!template.props) {
             template.props = {} as Record<string, unknown | Template>
           }
           return (template.props as Record<string, unknown | Template>)[match.groups.name] = expression(new Lexer(value, 'script'))
@@ -204,7 +230,7 @@ function parseElement(el: Element): ElementTemplate {
       if (name.match(/^@(if|else|for|each|expand)$/)) return
 
       // string attribute
-      if (!('props' in template)) {
+      if (!template.props) {
         template.props = {} as Record<string, unknown | Template>
       }
       if (!(name in (template.props as Record<string, unknown | Template>))) {

@@ -125,10 +125,10 @@ export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   type: 'element'
   tag: string
   is?: string | Template
-  class?: Array<Array<string> | Template>
-  part?: Array<Array<string> | Template>
+  class?: Array<Array<string> | FlagsTemplate>
+  part?: Array<Array<string> | FlagsTemplate>
   props?: Record<string, unknown | Template>
-  style?: string | Template
+  style?: string | JoinTemplate
   children?: Array<Template | string>
   on?: Record<string, Array<Template>>
 }
@@ -142,7 +142,7 @@ export interface ExpandTemplate extends Template {
 export interface GroupTemplate extends HasAttrTemplate {
   type: 'group'
   props?: Record<string, unknown | Template>
-  values: Array<Template | string>
+  children?: Array<Template | string>
 }
 
 export interface ListenerTemplate {

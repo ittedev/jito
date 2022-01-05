@@ -1230,7 +1230,29 @@ function parseExpand(el) {
     }
 }
 function parseGroup(el) {
-    return parseElement(el);
+    if (el.tagName.toLowerCase() === 'group') {
+        const template = {
+            type: 'group'
+        };
+        if (el.hasAttributes()) {
+            el.getAttributeNames().forEach((name)=>{
+                if (name.match(/^@(if|else|for|each|expand)$/)) return;
+                if (name.match(/^@.*$/)) {
+                    if (!template.props) {
+                        template.props = {
+                        };
+                    }
+                    template.props[name] = el.getAttribute(name);
+                }
+            });
+        }
+        if (el.hasChildNodes()) {
+            template.children = parseChildren(el);
+        }
+        return template;
+    } else {
+        return parseElement(el);
+    }
 }
 function parseElement(el) {
     const template = {
@@ -1293,7 +1315,7 @@ function parseElement(el) {
             {
                 const match = name.match(/^(?<name>.+):$/);
                 if (match?.groups) {
-                    if (!('props' in template)) {
+                    if (!template.props) {
                         template.props = {
                         };
                     }
@@ -1306,7 +1328,7 @@ function parseElement(el) {
                 }
             }
             if (name.match(/^@(if|else|for|each|expand)$/)) return;
-            if (!('props' in template)) {
+            if (!template.props) {
                 template.props = {
                 };
             }
@@ -1620,8 +1642,8 @@ const evaluator = {
             return evaluate(template.default, stack);
         }
     },
-    group: (template, stack)=>template.values.map((value)=>instanceOfTemplate(value) ? evaluate(value, stack) : value
-        )
+    group: (template, stack)=>template.children ? template.children.map((child)=>instanceOfTemplate(child) ? evaluate(child, stack) : child
+        ) : []
     ,
     listener: (template, stack)=>{
         if (!template.cache) {
@@ -1641,23 +1663,31 @@ const evaluator = {
         return listener;
     }
 };
-function evaluateProps(template, stack, el) {
+function evaluateProps(template, stack, ve) {
     if (template.style) {
-        el.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack);
+        ve.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack);
     }
     if (template.props) {
-        el.props = {
+        ve.props = {
         };
         for(const key in template.props){
             const props = template.props[key];
-            el.props[key] = typeof props === 'string' ? props : evaluate(props, stack);
+            ve.props[key] = typeof props === 'string' ? props : evaluate(props, stack);
         }
     }
+    if (template.class) {
+        template.class.forEach((value)=>ve.class = (ve.class || []).concat(Array.isArray(value) ? value : evaluate(value, stack))
+        );
+    }
+    if (template.part) {
+        template.part.forEach((value)=>ve.part = (ve.part || []).concat(Array.isArray(value) ? value : evaluate(value, stack))
+        );
+    }
     if (template.on) {
-        el.on = {
+        ve.on = {
         };
         for(const type in template.on){
-            el.on[type] = template.on[type].map((listener)=>evaluate(listener, stack)
+            ve.on[type] = template.on[type].map((listener)=>evaluate(listener, stack)
             );
         }
     }

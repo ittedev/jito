@@ -1855,6 +1855,8 @@ describe('Virtual Dom', function() {
         equal(parent.firstChild.childNodes[2] !== h1, true)
       })
     })
+
+    // TODO: test on
   })
 })
 
@@ -1920,7 +1922,9 @@ describe('Template Engine', function() {
       equal(evaluate(expression(new Lexer('`Hello ${text}!`', 'script')), stack), 'Hello x!')
     })
     // TODO: test escape char
-    // TODO: test return
+    // TODO: test keywords
+    // TODO: test function
+    // TODO: test spread
 
     it('expression: word', () => {
       equal(evaluate(expression(new Lexer('x', 'script')), stack), 1)
