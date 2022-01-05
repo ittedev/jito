@@ -26,7 +26,7 @@ Beako.js use ES Modules
 ### Deno
 
 ``` ts
-import { ... } from "https://deno.land/x/beako@v0.9.0/mod.ts";
+import { ... } from "https://deno.land/x/beako@v0.9.1/mod.ts";
 ```
 
 ### Node.js
