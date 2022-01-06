@@ -167,10 +167,8 @@ export const evaluator = {
       }
       return entries.flatMap(([key, value], index) => {
         const loop = new Loop(key, value, index, entries, stack)
-        const result = evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]))
         // TODO: add key
-        return result === null || result === undefined ? [] : 
-          Array.isArray(result) ? result : [result]
+        return flatwrap(evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }])))
       })
     }
   ) as Evaluate,
@@ -195,12 +193,7 @@ export const evaluator = {
         if (typeof child === 'string') {
           return [child]
         } else {
-          const value = evaluate(child, stack)
-          return value === null || value === undefined ?
-              [] :
-            Array.isArray(value) ?
-              value as Array<string | VirtualElement | number> :
-              [value as string | VirtualElement | number]
+          return flatwrap(evaluate(child, stack)) as Array<string | VirtualElement | number>
         }
       })
       if (children.length) {
@@ -215,7 +208,10 @@ export const evaluator = {
     (template: ExpandTemplate, stack: Variables): unknown => {
       const result = evaluate(template.template, stack)
       if (instanceOfTemplate(result)) {
-        return {}
+        if (result.type === 'tree') {
+          result.type = 'group'
+        }
+        return evaluate(result, stack)
       } else {
         return evaluate(template.default, stack)
       }
@@ -224,7 +220,7 @@ export const evaluator = {
 
   group: (
     (template: GroupTemplate, stack: Variables): Array<unknown> =>
-      template.children ? template.children.map(child => instanceOfTemplate(child) ? evaluate(child, stack) : child) : []
+      template.children ? template.children.flatMap(child => flatwrap(instanceOfTemplate(child) ? evaluate(child, stack) : child)) : []
   ) as Evaluate,
 
   listener: (
@@ -251,7 +247,9 @@ export function evaluateProps(template: ElementTemplate, stack: Variables, ve: V
   }
 
   if (template.props) {
-    ve.props = {}
+    if (!ve.props) {
+      ve.props = {}
+    }
     for (const key in template.props) {
       const props = template.props[key]
       ve.props[key] = typeof props === 'string' ? props : evaluate(props as Template, stack)
@@ -271,7 +269,9 @@ export function evaluateProps(template: ElementTemplate, stack: Variables, ve: V
   }
 
   if (template.on) {
-    ve.on = {}
+    if (!ve.on) {
+      ve.on = {}
+    }
     for (const type in template.on) {
       ve.on[type] = template.on[type].map(listener => evaluate(listener, stack) as EventListener)
     }
@@ -289,4 +289,9 @@ function compareCache(cache: Variables, stack: Variables, cacheIndex: number = c
     cacheLoop.key === stackLoop.key && 
     cacheLoop.value === stackLoop.value &&
     compareCache(cache, stack, newCacheIndex,  newStackIndex)
+}
+function flatwrap(value: unknown): Array<unknown> {
+  return value === null || value === undefined ?
+    [] :
+    Array.isArray(value) ? value : [value]
 }

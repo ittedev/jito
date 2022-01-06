@@ -2,7 +2,18 @@
 // This module is browser compatible.
 // deno-lint-ignore-file no-fallthrough
 import { VirtualElement } from '../virtual_dom/types.ts'
-import { Variables, Evaluate, Template, instanceOfTemplate, TreeTemplate, ElementTemplate, HasAttrTemplate, IfTemplate, ForTemplate, GroupTemplate } from '../template_engine/types.ts'
+import {
+  Variables,
+  Evaluate,
+  Template,
+  instanceOfTemplate,
+  TreeTemplate,
+  ElementTemplate,
+  HasAttrTemplate,
+  IfTemplate,
+  ForTemplate,
+  GroupTemplate
+} from '../template_engine/types.ts'
 import { evaluate, evaluator, evaluateProps } from '../template_engine/evaluate.ts'
 import { EvaluationTemplate, CustomElementTemplate, instanceOfComponent } from './types.ts'
 import { ComponentElement, localComponentElementTag } from './element.ts'
@@ -64,10 +75,12 @@ evaluator.custom = (
         return []
       })
       if (values.length) {
-        contents.push(['content', { type: 'group', values } as GroupTemplate])
+        contents.push(['content', { type: 'group', children: values } as GroupTemplate])
       }
-      if (contents.length && !template.props) {
-        el.props = {}
+      if (contents.length) {
+        if (!el.props) {
+          el.props = {}
+        }
         contents.forEach(([name, template]) => {
           (el.props as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
         })
@@ -90,7 +103,7 @@ export function extend(template: unknown | Template): unknown | Template {
   if (instanceOfTemplate(template)) {
     switch (template.type) {
       case 'element':
-        if (!(isPrimitive(template as ElementTemplate) && 'is' in (template as ElementTemplate))) {
+        if (!isPrimitive(template as ElementTemplate) || 'is' in (template as ElementTemplate)) {
           template.type = 'custom'
         }
       case 'tree':

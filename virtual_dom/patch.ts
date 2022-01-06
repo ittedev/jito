@@ -239,6 +239,7 @@ class LinkedVirtualElementPointer {
           this.stock.set(this.ve.key, this.ve)
         }
         this.parent.node.replaceChild(node, this.node as Node)
+        this.node = node
       }
     }
     this.next()

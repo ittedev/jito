@@ -23,6 +23,10 @@
 <div id="sync_target3" style="display: none;"></div>
 <div id="sync_target4" style="display: none;"></div>
 <div id="sync_target5" style="display: none;"></div>
+<div id="sync_target6" style="display: none;"></div>
+<div id="sync_target7" style="display: none;"></div>
+<div id="sync_target8" style="display: none;"></div>
+<div id="sync_target9" style="display: none;"></div>
 <script src="https://unpkg.com/chai/chai.js"></script>
 <script>
 var i = 0
@@ -1767,6 +1771,51 @@ describe('Virtual Dom', function() {
         equal(parent.firstChild.childNodes[2].tagName, 'H2')
       })
 
+      it('patch add Elements to Elements', () => {
+        const parent = document.createElement('div')
+        const node = document.createElement('div')
+        parent.appendChild(node)
+        const h1 = document.createElement('h1')
+        node.insertAdjacentElement('beforeend', h1)
+        const h2 = document.createElement('h2')
+        node.insertAdjacentElement('beforeend', h2)
+        const tree = { node: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1', node: h1 },
+            { tag: 'h2', node: h2 }
+          ],
+          node
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h3' },
+            { tag: 'h4' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'h3',
+                node: {}
+              },
+              {
+                tag: 'h4',
+                node: {}
+              }
+            ],
+            node: {}
+          }],
+          node: {}
+        })
+        equal(parent.firstChild.childNodes[0].tagName, 'H3')
+        equal(parent.firstChild.childNodes[1].tagName, 'H4')
+      })
+
       it('patch remove text', () => {
         const parent = document.createElement('div')
         const node = document.createElement('div')
@@ -2594,6 +2643,7 @@ describe('Template Engine', function() {
         })
       })
     })
+
     describe(': <group>', function() {
       it('parse: group', () => {
         const template = parse('<group>Hello <span>beako</span></group>')
@@ -2630,6 +2680,32 @@ describe('Template Engine', function() {
         })
       })
     })
+    
+    describe(': @expand', function() {
+      it('parse: @expand', () => {
+        const template = parse('<p @expand="template"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "expand",
+              template: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "template"
+                }
+              },
+              default: {
+                type: "element",
+                tag: "p"
+              }
+            }
+          ]
+        })
+      })
+    })
+
     describe(': combinate', function() {
       it('parse: @if and @for', () => {
         const template = parse('<p @for="array" @if="isActive"></p>')
@@ -2796,6 +2872,128 @@ describe('Template Engine', function() {
                   type: "group",
                   children: ["Hello"]
                 }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if and @expand', () => {
+        const template = parse('<p @expand="template" @if="isActive"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                type: "expand",
+                template: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "template"
+                  }
+                },
+                default: {
+                  type: "element",
+                  tag: "p"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if, @else and @expand', () => {
+        const template = parse('<p @if="isActive"></p><div @expand="template" @else></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                type: "element",
+                tag: "p"
+              },
+              falsy: {
+                type: "expand",
+                template: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "template"
+                  }
+                },
+                default: {
+                  type: "element",
+                  tag: "div"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @for and @expand', () => {
+        const template = parse('<p @expand="template" @for="array"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "expand",
+                template: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "template"
+                  }
+                },
+                default: {
+                  type: "element",
+                  tag: "p"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @expand and <group>', () => {
+        const template = parse('<group @expand="template">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "expand",
+              template: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "template"
+                }
+              },
+              default: {
+                type: "group",
+                children: ["Hello"]
               }
             }
           ]
@@ -3230,12 +3428,13 @@ describe('Template Engine', function() {
         })
       })
     })
+
     describe(': <group>', function() {
-      it('parse: group only', () => {
+      it('evaluate: group only', () => {
         const tree = evaluate(parse('<group></group>'))
         equal(tree, {})
       })
-      it('parse: group', () => {
+      it('evaluate: group', () => {
         const tree = evaluate(parse('<group>Hello <span>beako</span></group>'))
         equal(tree, {
           children: [
@@ -3247,9 +3446,50 @@ describe('Template Engine', function() {
           ]
         })
       })
+      it('evaluate: group chain', () => {
+        const tree = evaluate(parse('<group>Hello <group>beako</group></group>'))
+        equal(tree, {
+          children: [ "Hello ", "beako" ]
+        })
+      })
     })
+    
+    describe(': @expand', function() {
+      it('evaluate: @expand no template', () => {
+        const tree = evaluate(parse('<p @expand="template"></p>'))
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: @expand template', () => {
+        const template = parse('<div></div>')
+        const tree = evaluate(parse('<p @expand="template"></p>'), [{ template }])
+        equal(tree, {
+          children: [{ tag: "div" }]
+        })
+      })
+      it('evaluate: @expand template assign data', () => {
+        const template = parse('<div>{{ name }}</div>')
+        const tree = evaluate(parse('<p @expand="template"></p>'), [{ template, name: 'beako' }])
+        equal(tree, {
+          children: [{
+            tag: "div",
+            children: ['beako']
+          }]
+        })
+      })
+      it('evaluate: @expand template chain', () => {
+        const template1 = parse('<div @expand="template2"></div>')
+        const template2 = parse('<h2></h2>')
+        const tree = evaluate(parse('<p @expand="template1"></p>'), [{ template1, template2 }])
+        equal(tree, {
+          children: [{ tag: "h2" }]
+        })
+      })
+    })
+
     describe(': combinate', function() {
-      it('parse: @if and @for', () => {
+      it('evaluate: @if and @for', () => {
         const tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
@@ -3264,7 +3504,7 @@ describe('Template Engine', function() {
           ]
         })
       })
-      it('parse: @if, @else and @for', () => {
+      it('evaluate: @if, @else and @for', () => {
         const tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p><div @else>{{ loop.value }}</div>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
@@ -3283,38 +3523,127 @@ describe('Template Engine', function() {
           ]
         })
       })
-      it('parse: @if true and <group>', () => {
+      it('evaluate: @if true and <group>', () => {
         const tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: true }])
         equal(tree, {
           children: ["Hello"]
         })
       })
-      it('parse: @if false and <group>', () => {
+      it('evaluate: @if false and <group>', () => {
         const tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: false }])
         equal(tree, {})
       })
-      it('parse: @if true, @else and <group>', () => {
+      it('evaluate: @if true, @else and <group>', () => {
         const tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: true }])
         equal(tree, {
           children: [{ tag: "p", }]
         })
       })
-      it('parse: @if false, @else and <group>', () => {
+      it('evaluate: @if false, @else and <group>', () => {
         const tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: false }])
         equal(tree, {
           children: ["Hello"]
         })
       })
-      it('parse: @for and <group>', () => {
+      it('evaluate: @for and <group>', () => {
         const tree = evaluate(parse('<group @for="array">{{ loop.value }}</group>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: ["x", "y", "z"]
         })
       })
-      it('parse: @if, @for and <group>', () => {
+      it('evaluate: @if, @for and <group>', () => {
         const tree = evaluate(parse(`<group @for="array" @if="loop.value !== 'y'">{{ loop.value }}</group>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: ["x", "z"]
+        })
+      })
+      it('evaluate: @if true and @expand no template', () => {
+        const tree = evaluate(parse('<p @expand="template" @if="isActive"></p>'), [{ isActive: true }])
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: @if true and @expand template', () => {
+        const template = parse('<div></div>')
+        const tree = evaluate(parse('<p @expand="template" @if="isActive"></p>'), [{ template, isActive: true }])
+        equal(tree, {
+          children: [{ tag: "div" }]
+        })
+      })
+      it('evaluate: @if false and @expand', () => {
+        const tree = evaluate(parse('<p @expand="template" @if="isActive"></p>'), [{ template, isActive: false }])
+        equal(tree, {})
+      })
+      it('evaluate: @if false, @else and @expand no template', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @expand="template" @else></div>'), [{ isActive: false }])
+        equal(tree, {
+          children: [{ tag: "div" }]
+        })
+      })
+      it('evaluate: @if false, @else and @expand template', () => {
+        const template = parse('<h2></h2>')
+        const tree = evaluate(parse('<p @if="isActive"></p><div @expand="template" @else></div>'), [{ template, isActive: false }])
+        equal(tree, {
+          children: [{ tag: "h2" }]
+        })
+      })
+      it('evaluate: @for and @expand no template', () => {
+        const tree = evaluate(parse('<p @expand="template" @for="array">{{ loop.value }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for and @expand template', () => {
+        const template = parse('<div>{{ loop.value }}</div>')
+        const tree = evaluate(parse('<p @expand="template" @for="array">{{ loop.value }}</p>'), [{ template, array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "div",
+              children: ["x"]
+            },
+            {
+              tag: "div",
+              children: ["y"]
+            },
+            {
+              tag: "div",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @expand no template and <group>', () => {
+        const tree = evaluate(parse('<group @expand="template">Hello</group>'))
+        equal(tree, {
+          children: ["Hello"]
+        })
+      })
+      it('evaluate: @expand template and <group>', () => {
+        const template = parse('Beako')
+        const tree = evaluate(parse('<group @expand="template">Hello</group>'), [{ template }])
+        equal(tree, {
+          children: ["Beako"]
+        })
+      })
+      it('evaluate: @expand <group> template', () => {
+        const template = parse('<group>Beako</group>')
+        const tree = evaluate(parse('<p @expand="template">Hello</p>'), [{ template }])
+        equal(tree, {
+          children: ["Beako"]
         })
       })
 
@@ -3323,6 +3652,65 @@ describe('Template Engine', function() {
 })
 
 describe('Web Components', function() {
+  describe('extend()', function() {
+    it('evaluate: evaluation', () => {
+      const template = {
+        type: 'evaluation',
+        stack: [{ name: 'Hello' }],
+        template: {
+          type: "get",
+          value: {
+            type: "variable",
+            name: "name"
+          }
+        }
+      }
+      const tree = evaluate(parse('<p @expand="template">Hello</p>'), [{ template }])
+      equal(tree, {
+        children: ["Hello"]
+      })
+    })
+    it('evaluate: evaluation override', () => {
+      const template = {
+        type: 'evaluation',
+        stack: [{ name: 'Hello' }],
+        template: {
+          type: "get",
+          value: {
+            type: "variable",
+            name: "name"
+          }
+        }
+      }
+      const tree = evaluate(parse('<p @expand="template">Hello</p>'), [{ template, name: 'Beako' }])
+      equal(tree, {
+        children: ["Beako"]
+      })
+    })
+    it('evaluate: evaluation <group>', () => {
+      const template = {
+        type: 'evaluation',
+        stack: [{ name: 'Hello' }],
+        template: {
+          type: "group",
+          children: [
+            {
+              type: "get",
+              value: {
+                type: "variable",
+                name: "name"
+              }
+            }
+          ]
+        }
+      }
+      const tree = evaluate(parse('<p @expand="template">Hello</p>'), [{ template }])
+      equal(tree, {
+        children: ["Hello"]
+      })
+    })
+  })
+
   describe('define()', function() {
     it('define string', () => {
       define('define-1', `Hello beako!`)
@@ -3425,7 +3813,7 @@ describe('Web Components', function() {
       equal(root.shadowRoot.innerHTML, 'Hello beako!')
     })
 
-    it(' compact local component', async () => {
+    it('compact local component', async () => {
       const el = document.querySelector('#compact_target5')
       const local = compact('<p>Hello {{ name }}!</p>', { name: 'beako' })
       const component = compact('<hello></hello>', { hello: local })
@@ -3436,7 +3824,7 @@ describe('Web Components', function() {
 
   describe('sync data', function() {
 
-    it(' compact share data', async () => {
+    it('compact share data on brothers', async () => {
       const el1 = document.querySelector('#sync_target1_1')
       const el2 = document.querySelector('#sync_target1_2')
       const data = {
@@ -3450,7 +3838,7 @@ describe('Web Components', function() {
       equal(el2.shadowRoot.querySelector('p').innerText, 'Welcome beako!')
     })
 
-    it(' compact share data', async () => {
+    it('compact share data on childe scope', async () => {
       const el = document.querySelector('#sync_target2')
       const component = compact(
         `
@@ -3470,10 +3858,121 @@ describe('Web Components', function() {
         }
       )
       hack(el, component)
-      await sleep(10)
+      await sleep()
       equal(el.shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
 
+    it('compact receive props', async () => {
+      const el = document.querySelector('#sync_target3')
+      const local = compact('<p>Hello {{ name }}!</p>')
+      const component = compact('<hello name:="name"></hello>', { hello: local, name: 'beako' })
+      hack(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
+    })
+
+    it('expand content', async () => {
+      const el = document.querySelector('#sync_target4')
+      const local = compact(`<p @expand="content" @for="[1, 2, 3]">{{ loop.value }}</p>`)
+      const component = compact(`
+        <local></local>
+        <local><span>{{ loop.value + add }}</span></local>
+      `, { local, add: 2 })
+      hack(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
+    })
+
+    it('expand @as', async () => {
+      const el = document.querySelector('#sync_target5')
+      const local = compact(`<p @expand="num" @for="[1, 2, 3]">{{ loop.value }}</p>`)
+      const component = compact(`
+        <local></local>
+        <local><span @as="num">{{ loop.value + add }}</span></local>
+      `, { local, add: 2 })
+      hack(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
+    })
+
+    it('expand @as and <group>', async () => {
+      const el = document.querySelector('#sync_target6')
+      const local = compact(`<div @expand="header"></div>`)
+      const component = compact(`
+        <local>
+          <group @as="header">
+            <h2>Beako.js</h2>
+            <p>Welcome!</p>
+          </group>
+        </local>
+      `, { local })
+      hack(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('h2').innerText, 'Beako.js')
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Welcome!')
+    })
+
+    it('expand content, @as and slot', async () => {
+      const el = document.querySelector('#sync_target7')
+      const local = compact(`
+        <p @expand="header"></p>
+        <p @expand="content"></p>
+        <slot name="footer"></slot>
+      `)
+      const component = compact(`
+        <local>
+          <h2 @as="header">Welcome!</h2>
+          <button>Click me</button>
+          <div slot="footer">Good bye!</div>
+        </local>
+      `, { local })
+      hack(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('h2').innerText, 'Welcome!')
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('button').innerText, 'Click me')
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Good bye!')
+    })
+
+    it('expand no content', async () => {
+      const el = document.querySelector('#sync_target8')
+      const local = compact(`<p @expand="content" @for="[1, 2, 3]">{{ loop.value }}</p>`)
+      const component = compact(`
+        <local></local>
+        <local><span @as="num">{{ loop.value + add }}</span><span slot="header">Hello</span></local>
+      `, { local, add: 2 })
+      hack(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+    })
+
+    it('expand chain', async () => {
+      const el = document.querySelector('#sync_target9')
+      const local = compact(`<p @expand="content">Hello</p>`)
+      const component = compact(`
+        <local>
+          <span @as="num">{{ add }}</span>
+          <div @expand="num">Beako</div>
+        </local>
+      `, { local, add: 2 })
+      hack(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('span').innerText, '2')
+    })
   })
 })
 

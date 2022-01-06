@@ -28,6 +28,14 @@ export class Entity {
   private _el: Element
   private _tree: LinkedVirtualTree
   private _props: Record<string, unknown> = {}
+  private _patch: () => void = () => {
+    if (this.stack && this._tree && this._component.template) {
+      const tree = evaluate(this._component.template, this.stack) as VirtualTree
+      // console.log('patch:', this._tree, tree)
+      patch(this._tree, tree)
+      // patch(this._tree, evaluate(this._component.template, this.stack) as VirtualTree)
+    }
+  }
   constructor( component: Component, el: Element, tree: LinkedVirtualTree ) {
     this._component = component
     this._el = el
@@ -36,33 +44,32 @@ export class Entity {
     if (typeof this._component.stack === 'function') {
       (async () => {
         const stack = await (component.stack as ComponentConstructor)(this)
-        this.stack = stack ? (Array.isArray(stack) ? [builtin, ...stack] : [builtin, stack]) : [builtin] 
-        const f = () => this.patch()
-        reach(stack, f)
-        this.patch()
+        this.stack = stack ? (Array.isArray(stack) ? [builtin, this._props, ...stack] : [builtin, this._props, stack]) : [builtin] 
+        reach(stack, this._patch)
+        this._patch()
       })().then()
     } else {
-      this.stack = [builtin, ...this._component.stack]
-      const f = () => this.patch()
-      reach(this._component.stack, f)
-      this.patch()
-    }
-  }
-  patch() {
-    if (this.stack && this._tree && this._component.template) {
-      patch(this._tree, evaluate(this._component.template, this.stack) as VirtualTree)
+      this.stack = [builtin, this._props, ...this._component.stack]
+      reach(this._component.stack, this._patch)
+      this._patch()
     }
   }
   setProp(name: string, value: unknown) {
     switch (name) {
-      case 'class': case 'part': case 'style': return
-      default:
+      case 'is': case 'class': case 'part': case 'style': return
+      default: {
+        // console.log('setProp:', name, value)
+        const old = this._props[name]
         this._props[name] = value
+        if (old !== value) {
+          this._patch()
+        }
+      }
     }
-    this.patch()
   }
   get component(): Component { return this._component }
   get el(): Element { return this._el }
   get root(): Element | DocumentFragment { return this._tree.node }
   get props(): Record<string, unknown> { return this._props }
+  get patch(): () => void { return this._patch }
 }
