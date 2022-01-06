@@ -3,11 +3,12 @@
 import { ComponentConstructor, Component } from './types.ts'
 import { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
 import { Variables } from '../template_engine/types.ts'
+import { lock } from '../data_binding/lock.ts'
 import { reach } from '../data_binding/reach.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
 import { patch } from '../virtual_dom/patch.ts'
 
-export const builtin = {
+export const builtin = lock({
   console,
   Object,
   Number,
@@ -19,7 +20,7 @@ export const builtin = {
   isNaN,
   isFinite,
   location
-}
+}) as Record<string, unknown>
 
 export class Entity {
   private stack?: Variables | null
@@ -30,7 +31,7 @@ export class Entity {
   constructor( component: Component, el: Element, tree: LinkedVirtualTree ) {
     this._component = component
     this._el = el
-    this._tree = tree
+    this._tree = tree as LinkedVirtualTree
 
     if (typeof this._component.stack === 'function') {
       (async () => {

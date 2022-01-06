@@ -4,19 +4,25 @@
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <div id="mocha"></div>
 <template id="template"><style></style><p></p></template>
-<div id="define_target1" style="display: hidden;"></div>
-<div id="define_target2" style="display: hidden;"></div>
-<div id="define_target3" style="display: hidden;"></div>
-<div id="define_target4" style="display: hidden;"></div>
-<div id="hack_target1" style="display: hidden;"></div>
-<div id="hack_target2" style="display: hidden;"></div>
-<div id="hack_target3" style="display: hidden;"></div>
-<div id="hack_target4" style="display: hidden;"></div>
-<div id="compact_target1" style="display: hidden;"></div>
-<div id="compact_target2" style="display: hidden;"></div>
-<div id="compact_target3" style="display: hidden;"></div>
-<div id="compact_target4" style="display: hidden;"></div>
-<div id="compact_target5" style="display: hidden;"></div>
+<div id="define_target1" style="display: none;"></div>
+<div id="define_target2" style="display: none;"></div>
+<div id="define_target3" style="display: none;"></div>
+<div id="define_target4" style="display: none;"></div>
+<div id="hack_target1" style="display: none;"></div>
+<div id="hack_target2" style="display: none;"></div>
+<div id="hack_target3" style="display: none;"></div>
+<div id="hack_target4" style="display: none;"></div>
+<div id="compact_target1" style="display: none;"></div>
+<div id="compact_target2" style="display: none;"></div>
+<div id="compact_target3" style="display: none;"></div>
+<div id="compact_target4" style="display: none;"></div>
+<div id="compact_target5" style="display: none;"></div>
+<div id="sync_target1_1" style="display: none;"></div>
+<div id="sync_target1_2" style="display: none;"></div>
+<div id="sync_target2" style="display: none;"></div>
+<div id="sync_target3" style="display: none;"></div>
+<div id="sync_target4" style="display: none;"></div>
+<div id="sync_target5" style="display: none;"></div>
 <script src="https://unpkg.com/chai/chai.js"></script>
 <script>
 var i = 0
@@ -116,6 +122,29 @@ describe('Data Binding', function() {
         data.x = 1
         equal(y, 0)
       })
+
+      it('double watch a function', () => {
+        const data = {
+          x: 1
+        }
+        let y = 0
+        const f = () => { y += 2 }
+        watch(data, f)
+        watch(data, f)
+        data.x = 2
+        equal(y, 2)
+      })
+
+      it('double watch difference functions', () => {
+        const data = {
+          x: 1
+        }
+        let y = 0
+        watch(data, () => { y += 2 })
+        watch(data, () => { y += 2 })
+        data.x = 2
+        equal(y, 4)
+      })
     })
 
     describe(': spy', function() {
@@ -141,6 +170,37 @@ describe('Data Binding', function() {
         data.x3 = 100
         equal(y, 101)
       })
+
+      it('double watch a function', () => {
+        const data = {
+          x1: 2,
+          x2: 20,
+          x3: 200
+        }
+        let y = 0
+        const f = v => { y += v }
+        watch(data, ['x1', 'x3'], f)
+        watch(data, ['x1', 'x3'], f)
+        data.x1 = 1
+        data.x2 = 10
+        data.x3 = 100
+        equal(y, 101)
+      })
+
+      it('double watch difference functions', () => {
+        const data = {
+          x1: 2,
+          x2: 20,
+          x3: 200
+        }
+        let y = 0
+        watch(data, ['x1', 'x3'], v => { y += v })
+        watch(data, ['x1', 'x3'], v => { y += v })
+        data.x1 = 1
+        data.x2 = 10
+        data.x3 = 100
+        equal(y, 202)
+      })
     })
   })
 
@@ -165,7 +225,7 @@ describe('Data Binding', function() {
 
     it('receive undefined', async () => {
       const data = {}
-      setTimeout(() => data.x = 1, 100)
+      setTimeout(() => data.x = 1, 10)
       const data2 = await receive(data, 'x')
       equal(data2.x, 1)
     })
@@ -174,7 +234,7 @@ describe('Data Binding', function() {
       const data = {
         x: undefined
       }
-      setTimeout(() => data.x = 1, 100)
+      setTimeout(() => data.x = 1, 10)
       const data2 = await receive(data, 'x')
       equal(data2.x, 1)
     })
@@ -307,6 +367,7 @@ describe('Data Binding', function() {
       let y = 0
       watch(data.y)
       reach(data, () => { y = 2 })
+      data.x += 1
       data.y.z += 1
       equal(y, 2)
     })
@@ -319,7 +380,32 @@ describe('Data Binding', function() {
       data.x++
       equal(y, 0)
     })
+    it('double reach a function', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      watch(data)
+      const f = () => { y += 2 }
+      reach(data, f)
+      reach(data, f)
+      data.x++
+      equal(y, 2)
+    })
+    it('double reach difference functions', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      watch(data)
+      reach(data, () => { y += 2 })
+      reach(data, () => { y += 2 })
+      data.x++
+      equal(y, 4)
+    })
   })
+  
+  // TODO: test lock
 })
 
 describe('Virtual Dom', function() {
@@ -3221,10 +3307,6 @@ describe('Template Engine', function() {
       })
       it('parse: @for and <group>', () => {
         const tree = evaluate(parse('<group @for="array">{{ loop.value }}</group>'), [{ array: ['x', 'y', 'z'] }])
-        console.log('tree:', tree)
-        console.log('{}:', {
-          children: ["x", "y", "z"]
-        })
         equal(tree, {
           children: ["x", "y", "z"]
         })
@@ -3350,6 +3432,48 @@ describe('Web Components', function() {
       hack(el, component)
       equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
+  })
+
+  describe('sync data', function() {
+
+    it(' compact share data', async () => {
+      const el1 = document.querySelector('#sync_target1_1')
+      const el2 = document.querySelector('#sync_target1_2')
+      const data = {
+        name: 'beako'
+      }
+      const component1 = compact('<p>Hello {{ name }}!</p>', data)
+      const component2 = compact('<p>Welcome {{ name }}!</p>', data)
+      hack(el1, component1)
+      hack(el2, component2)
+      equal(el1.shadowRoot.querySelector('p').innerText, 'Hello beako!')
+      equal(el2.shadowRoot.querySelector('p').innerText, 'Welcome beako!')
+    })
+
+    it(' compact share data', async () => {
+      const el = document.querySelector('#sync_target2')
+      const component = compact(
+        `
+          <p>Hello {{ name }}!</p>
+          <child></child>
+        `,
+        () => {
+          const data = watch({
+            name: 'world'
+          })
+        
+          const child = compact('', () => {
+            data.name = 'beako'
+          })
+          
+          return [data, { child }]
+        }
+      )
+      hack(el, component)
+      await sleep(10)
+      equal(el.shadowRoot.querySelector('p').innerText, 'Hello beako!')
+    })
+
   })
 })
 

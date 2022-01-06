@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 export const dictionary = Symbol('Beako')
+export const isLocked = Symbol('Beako-lock')
 
 export interface Dictionary {
   [key: string]: Page
@@ -26,4 +27,5 @@ export type Callback = ReactiveCallback | ChangeCallback
 export interface BeakoObject {
   [key: string]: unknown
   [dictionary]: Dictionary
+  [isLocked]: unknown
 }
