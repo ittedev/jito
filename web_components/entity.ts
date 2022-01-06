@@ -38,6 +38,7 @@ export class Entity {
         this.stack = stack ? (Array.isArray(stack) ? [builtin, ...stack] : [builtin, stack]) : [builtin] 
         const f = () => this.patch()
         reach(stack, f)
+        this.patch()
       })().then()
     } else {
       this.stack = [builtin, ...this._component.stack]

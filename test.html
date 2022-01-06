@@ -4,22 +4,26 @@
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <div id="mocha"></div>
 <template id="template"><style></style><p></p></template>
-<div id="target"></div>
+<div id="define_target1" style="display: hidden;"></div>
+<div id="define_target2" style="display: hidden;"></div>
+<div id="define_target3" style="display: hidden;"></div>
+<div id="define_target4" style="display: hidden;"></div>
+<div id="hack_target1" style="display: hidden;"></div>
+<div id="hack_target2" style="display: hidden;"></div>
+<div id="hack_target3" style="display: hidden;"></div>
+<div id="hack_target4" style="display: hidden;"></div>
+<div id="compact_target1" style="display: hidden;"></div>
+<div id="compact_target2" style="display: hidden;"></div>
+<div id="compact_target3" style="display: hidden;"></div>
+<div id="compact_target4" style="display: hidden;"></div>
+<div id="compact_target5" style="display: hidden;"></div>
 <script src="https://unpkg.com/chai/chai.js"></script>
 <script>
 var i = 0
-var equal = (v, p) => {
-  try {
-    chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
-  } catch (e) {
-    setTimeout(() => document.querySelectorAll('pre.error')[i++].innerHTML += '\n\n' + Diff.diffJson(v, p).map(p => `<span style="color: ${p.added ? 'red' : p.removed ? 'green' : '#000'}">${p.value}</span>`).join(''), 100)
-    throw e
-  }
-}
+var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
 var sleep = t => new Promise(r => setTimeout(r, t || 0))
 </script>
 <script src="https://unpkg.com/mocha/mocha.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.0.0/diff.min.js"></script>
 <script type="module">
 import {
   watch,
@@ -2365,6 +2369,354 @@ describe('Template Engine', function() {
         })
       })
     })
+
+    describe(': @if', function() {
+      it('parse: @if', () => {
+        const template = parse('<p @if="isActive"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if @else', () => {
+        const template = parse('<p @if="isActive"></p><div @else></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              },
+              falsy: {
+                tag: "div",
+                type: "element"
+              },
+            }
+          ]
+        })
+      })
+      it('parse: @if @else chain', () => {
+        const template = parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              },
+              falsy: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isNext"
+                  }
+                },
+                truthy: {
+                  tag: "div",
+                  type: "element"
+                },
+                falsy: {
+                  tag: "h2",
+                  type: "element"
+                }
+              },
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': @for', function() {
+      it('parse: @for', () => {
+        const template = parse('<p @for="array"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                tag: "p",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @for @each', () => {
+        const template = parse('<p @for="array" @each="value"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                tag: "p",
+                type: "element"
+              },
+              each: "value"
+            }
+          ]
+        })
+      })
+    })
+    describe(': <group>', function() {
+      it('parse: group', () => {
+        const template = parse('<group>Hello <span>beako</span></group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "group",
+              children: [
+                "Hello ",
+                {
+                  tag: "span",
+                  type: "element",
+                  children: ["beako"]
+                }
+              ]
+            }
+          ]
+        })
+      })
+      it('parse: group has props', () => {
+        const template = parse('<group title="name" @as="header">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "group",
+              props: {
+                ["@as"]: "header"
+              },
+              children: ["Hello"]
+            }
+          ]
+        })
+      })
+    })
+    describe(': combinate', function() {
+      it('parse: @if and @for', () => {
+        const template = parse('<p @for="array" @if="isActive"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  tag: "p",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if, @else and @for', () => {
+        const template = parse('<p @for="array" @if="isActive"></p><div @else></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  tag: "p",
+                  type: "element"
+                },
+                falsy: {
+                  tag: "div",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if and <group>', () => {
+        const template = parse('<group @if="isActive">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if, @else and <group>', () => {
+        const template = parse('<p @if="isActive"></p><group @else>Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              },
+              falsy: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @for and <group>', () => {
+        const template = parse('<group @for="array">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if, @for and <group>', () => {
+        const template = parse('<group @for="array" @if="isActive">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  type: "group",
+                  children: ["Hello"]
+                }
+              }
+            }
+          ]
+        })
+      })
+
+    })
   })
 
 
@@ -2536,73 +2888,467 @@ describe('Template Engine', function() {
         })
       })
     })
+
+    describe(': @if', function() {
+      it('evaluate: @if is true', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p>'), [{ isActive: true }])
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: @if is false', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p>'), [{ isActive: false }])
+        equal(tree, {})
+      })
+      it('evaluate: @if is true @else', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else></div>'), [{ isActive: true }])
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: @if is false @else', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else></div>'), [{ isActive: false }])
+        equal(tree, {
+          children: [{ tag: "div" }]
+        })
+      })
+      it('evaluate: @if @else chain / true true', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: true, isNext: true }])
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: @if @else chain / false true', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: false, isNext: true }])
+        equal(tree, {
+          children: [{ tag: "div" }]
+        })
+      })
+      it('evaluate: @if @else chain / false false', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: false, isNext: false }])
+        equal(tree, {
+          children: [{ tag: "h2" }]
+        })
+      })
+    })
+
+    describe(': @for', function() {
+      it('evaluate: @for array', () => {
+        const tree = evaluate(parse('<p @for="array"></p>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            { tag: "p" },
+            { tag: "p" },
+            { tag: "p" }
+          ]
+        })
+      })
+      it('evaluate: @for array: @each', () => {
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for array: loop', () => {
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["0|x|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["1|y|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["2|z|2|3|false|true"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for object: @each', () => {
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["xx"]
+            },
+            {
+              tag: "p",
+              children: ["yy"]
+            },
+            {
+              tag: "p",
+              children: ["zz"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for object: loop', () => {
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x|xx|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["y|yy|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["z|zz|2|3|false|true"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for Set: @each', () => {
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for Set: loop', () => {
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x|x|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["y|y|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["z|z|2|3|false|true"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for Map: @each', () => {
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["xx"]
+            },
+            {
+              tag: "p",
+              children: ["yy"]
+            },
+            {
+              tag: "p",
+              children: ["zz"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for Map: loop', () => {
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x|xx|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["y|yy|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["z|zz|2|3|false|true"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for iterator: @each', () => {
+        function* generate(){
+            yield 'x'
+            yield 'y'
+            yield 'z'
+        }
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: generate() }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for iterator: loop', () => {
+        function* generate(){
+            yield 'x'
+            yield 'y'
+            yield 'z'
+        }
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: generate() }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["0|x|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["1|y|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["2|z|2|3|false|true"]
+            },
+          ]
+        })
+      })
+    })
+    describe(': <group>', function() {
+      it('parse: group only', () => {
+        const tree = evaluate(parse('<group></group>'))
+        equal(tree, {})
+      })
+      it('parse: group', () => {
+        const tree = evaluate(parse('<group>Hello <span>beako</span></group>'))
+        equal(tree, {
+          children: [
+            "Hello ",
+            {
+              tag: "span",
+              children: ["beako"]
+            }
+          ]
+        })
+      })
+    })
+    describe(': combinate', function() {
+      it('parse: @if and @for', () => {
+        const tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p>`), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('parse: @if, @else and @for', () => {
+        const tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p><div @else>{{ loop.value }}</div>`), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "div",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('parse: @if true and <group>', () => {
+        const tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: true }])
+        equal(tree, {
+          children: ["Hello"]
+        })
+      })
+      it('parse: @if false and <group>', () => {
+        const tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: false }])
+        equal(tree, {})
+      })
+      it('parse: @if true, @else and <group>', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: true }])
+        equal(tree, {
+          children: [{ tag: "p", }]
+        })
+      })
+      it('parse: @if false, @else and <group>', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: false }])
+        equal(tree, {
+          children: ["Hello"]
+        })
+      })
+      it('parse: @for and <group>', () => {
+        const tree = evaluate(parse('<group @for="array">{{ loop.value }}</group>'), [{ array: ['x', 'y', 'z'] }])
+        console.log('tree:', tree)
+        console.log('{}:', {
+          children: ["x", "y", "z"]
+        })
+        equal(tree, {
+          children: ["x", "y", "z"]
+        })
+      })
+      it('parse: @if, @for and <group>', () => {
+        const tree = evaluate(parse(`<group @for="array" @if="loop.value !== 'y'">{{ loop.value }}</group>`), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: ["x", "z"]
+        })
+      })
+
+    })
   })
 })
 
 describe('Web Components', function() {
   describe('define()', function() {
-    it('define text node', () => {
-      define('define-1', compact(`Hello beako!`))
-      document.getElementById('target').innerHTML = '<define-1>Hello world!</define-1>'
-      const root = document.querySelector('define-1')
-      equal(root.tagName, 'DEFINE-1')
-      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+    it('define string', () => {
+      define('define-1', `Hello beako!`)
+      document.getElementById('define_target1').innerHTML = '<define-1>Hello world!</define-1>'
+      const el = document.querySelector('define-1')
+      equal(el.tagName, 'DEFINE-1')
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-
-    it('define use variable in text node', () => {
-      define('define-2', compact(`Hello {{ name }}!`, [{ name: 'beako' }]))
-      document.getElementById('target').innerHTML = '<define-2>Hello world!</define-2>'
-      const root = document.querySelector('define-2')
-      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+    it('define template', () => {
+      define('define-2', parse(`Hello beako!`))
+      document.getElementById('define_target2').innerHTML = '<define-2>Hello world!</define-2>'
+      const el = document.querySelector('define-2')
+      equal(el.tagName, 'DEFINE-2')
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-
-    it('compact slot', () => {
-      define('define-3', compact(`<slot name="my-text">Hello world!</slot>`, [{ name: 'beako' }]))
-      document.getElementById('target').innerHTML = `<define-3><span slot="my-text">Hello beako!</span></define-3>`
-      const node = document.querySelector('define-3>span')
-      equal(node.innerText, 'Hello beako!')
-      equal(node.assignedSlot.innerHTML, 'Hello world!')
+    it('define string and data', () => {
+      define('define-3', `Hello {{ name }}!`, { name: 'beako' })
+      document.getElementById('define_target3').innerHTML = '<define-3>Hello world!</define-3>'
+      const el = document.querySelector('define-3')
+      equal(el.tagName, 'DEFINE-3')
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-
-    it('define use constructer', async () => {
-      define('define-4', compact(`Hello {{ name }}!`, () => {
-        return [{ name: 'beako' }]
-      }))
-      document.getElementById('target').innerHTML = '<define-4>Hello world!</define-4>'
-      await sleep()
-      const root = document.querySelector('define-4')
-      equal(root.shadowRoot.innerHTML, 'Hello beako!')
-    })
-
-    it('define use constructer with receive', async () => {
-      define('define-5', compact(`Hello {{ name }}!`, async ({ props }) => {
-        const { name } = await receive(props, ['name'])
-        return [{ name }]
-      }))
-      document.getElementById('target').innerHTML = '<define-5 name="beako"></define-5>'
-      await sleep()
-      const root = document.querySelector('define-5')
-      equal(root.shadowRoot.innerHTML, 'Hello beako!')
-    })
-
-    it('define use constructer with receive, setAttribute', async () => {
-      define('define-6', compact(`Hello {{ name }}!`, async ({ props }) => {
-        const { name } = await receive(props, ['name'])
-        return [{ name }]
-      }))
-      document.getElementById('target').innerHTML = '<define-6 name="beako"></define-6>'
-      const root = document.querySelector('define-6')
-      root.setAttribute('name', 'beako')
-      await sleep()
-      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+    it('define component', () => {
+      define('define-4', compact(`Hello beako!`))
+      document.getElementById('define_target4').innerHTML = '<define-4>Hello world!</define-4>'
+      const el = document.querySelector('define-4')
+      equal(el.tagName, 'DEFINE-4')
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
   })
 
   describe('hack()', function() {
-    it('hack div', () => {
-      hack(document.getElementById('target'), `Hello beako!`, [])
-      const el = document.querySelector('#target')
+    it('hack string', () => {
+      const el = document.querySelector('#hack_target1')
+      hack(el, `Hello beako!`)
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('hack template', () => {
+      const el = document.querySelector('#hack_target2')
+      hack(el, parse(`Hello beako!`))
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('hack string and data', () => {
+      const el = document.querySelector('#hack_target3')
+      hack(el, `Hello {{ name }}!`, { name: 'beako' })
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('hack component', () => {
+      const el = document.querySelector('#hack_target4')
+      hack(el, compact(`Hello beako!`))
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+  })
+
+  describe('compact()', function() {
+    it('compact slot', () => {
+      const el = document.querySelector('#compact_target1')
+      const component = compact(`<slot name="my-text">Hello world!</slot>`)
+      hack(el, component)
+      el.innerHTML = `<span slot="my-text">Hello beako!</span>`
+      equal(el.innerText, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('slot').innerHTML, 'Hello world!')
+      equal(el.shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Hello beako!')
+    })
+
+    it('compact use constructer', async () => {
+      const el = document.querySelector('#compact_target2')
+      const component = compact(`Hello {{ name }}!`, () => {
+        return [{ name: 'beako' }]
+      })
+      hack(el, component)
+      await sleep()
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+
+    it('compact use constructer with receive from HTML', async () => {
+      const el = document.querySelector('#compact_target3')
+      const component = compact(`Hello {{ name }}!`, async ({ props }) => {
+        const { name } = await receive(props, ['name'])
+        return [{ name }]
+      })
+      define('compact-3', component)
+      el.innerHTML = '<compact-3 name="beako"></compact-5>'
+      await sleep()
+      const root = document.querySelector('compact-3')
+      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+    })
+
+    it('compact use constructer with receive from setAttribute', async () => {
+      const el = document.querySelector('#compact_target4')
+      const component = compact(`Hello {{ name }}!`, async ({ props }) => {
+        const { name } = await receive(props, ['name'])
+        return [{ name }]
+      })
+      define('compact-4', component)
+      el.innerHTML = '<compact-4 name="beako"></compact-4>'
+      const root = document.querySelector('compact-4')
+      root.setAttribute('name', 'beako')
+      await sleep()
+      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+    })
+
+    it(' compact local component', async () => {
+      const el = document.querySelector('#compact_target5')
+      const local = compact('<p>Hello {{ name }}!</p>', { name: 'beako' })
+      const component = compact('<hello></hello>', { hello: local })
+      hack(el, component)
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
   })
 })

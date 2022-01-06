@@ -11,6 +11,7 @@ import {
   VariableTemplate,
   UnaryTemplate,
   BinaryTemplate,
+  AssignTemplate,
   FunctionTemplate,
   HashTemplate,
   GetTemplate,
@@ -61,7 +62,7 @@ export const evaluator = {
     if (value) {
       return [ stack[index], template.name ] as Ref
     }
-    throw Error(template.name + ' is not defined')
+    return undefined
   }) as Evaluate,
 
   unary: (
@@ -74,8 +75,13 @@ export const evaluator = {
       operateBinary(template.operator, evaluate(template.left, stack), evaluate(template.right, stack))
   ) as Evaluate,
   
-  assign: ((template: BinaryTemplate, stack: Variables): unknown => {
-      const [ object, key ] = evaluate(template.left, stack) as Ref
+  assign: ((template: AssignTemplate, stack: Variables): unknown => {
+      const value = evaluate(template.left, stack) as Ref
+      if (!value) {
+        throw Error(template.left ? (template.left as VariableTemplate).name : 'key' + ' is not defined')
+      }
+      
+      const [ object, key ] = value
       const right = evaluate(template.right, stack)
       return object[key] = template.operator.length > 1 ? operateBinary(template.operator.slice(0, -1), object[key], right) : right
   }) as Evaluate,
@@ -99,8 +105,8 @@ export const evaluator = {
 
   get: (
     (template: GetTemplate, stack: Variables): unknown => {
-      const [ object, key ] = evaluate(template.value, stack) as Ref
-      return object[key]
+      const value = evaluate(template.value, stack) as Ref
+      return value ? value[0][value[1]] : value
     }
   ) as Evaluate,
 
@@ -159,11 +165,12 @@ export const evaluator = {
       } else {
         entries = [[0, array]] // or errer?
       }
-      return entries.map(([key, value], index) => {
+      return entries.flatMap(([key, value], index) => {
         const loop = new Loop(key, value, index, entries, stack)
         const result = evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]))
         // TODO: add key
-        return result
+        return result === null || result === undefined ? [] : 
+          Array.isArray(result) ? result : [result]
       })
     }
   ) as Evaluate,
@@ -189,7 +196,11 @@ export const evaluator = {
           return [child]
         } else {
           const value = evaluate(child, stack)
-          return Array.isArray(value) ? value as Array<string | VirtualElement | number> : [value as string | VirtualElement | number]
+          return value === null || value === undefined ?
+              [] :
+            Array.isArray(value) ?
+              value as Array<string | VirtualElement | number> :
+              [value as string | VirtualElement | number]
         }
       })
       if (children.length) {

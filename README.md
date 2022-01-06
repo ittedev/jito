@@ -51,18 +51,17 @@ To Import it into html:
 <meta charset="UTF-8">
 <body>Loading...</body>
 <script type="module">
-import { watch, hack } from 'https://unpkg.com/beako@0.9.3/beako.js'
+  import { watch, hack } from 'https://unpkg.com/beako@0.9.3/beako.js'
 
-const data = {
-  count: 1
-}
+  const data = {
+    count: 1
+  }
 
-setInterval(() => { data.count++ }, 1000)
+  setInterval(() => { data.count++ }, 1000)
 
-watch(data)
+  watch(data)
 
-hack(document, `Counter: {{ count }}`, data)
-</script>
+  hack(document, `Counter: {{ count }}`, data)
 </script>
 ```
 

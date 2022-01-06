@@ -107,9 +107,9 @@ export interface IfTemplate extends Template {
 
 export interface ForTemplate extends Template {
   type: 'for'
-  each?: string
   array: Template
   value: Template
+  each?: string
 }
 
 export interface TreeTemplate extends Template {

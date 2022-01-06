@@ -35,7 +35,7 @@ evaluator.custom = (
           break
         }
       }
-      if (instanceOfComponent(ComponentElement)) {
+      if (instanceOfComponent(element)) {
         el.tag = localComponentElementTag
         el.props = { component: element }
         isComponent = true
