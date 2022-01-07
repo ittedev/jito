@@ -31,6 +31,7 @@ export type {
 
 export { Lexer } from './lexer.ts'
 export { innerText, expression } from './script_parser.ts'
+export { Loop } from './loop.ts'
 export { parse } from './parse.ts'
 export { evaluate } from './evaluate.ts'
 // export { render } from './render.ts'

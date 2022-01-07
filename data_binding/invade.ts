@@ -5,6 +5,7 @@ import { dictionary, isLocked, ReactiveCallback, Page, Arm, Dictionary, BeakoObj
 function attack(page: Page, value: unknown) {
   const old = page.value
   page.value = value
+  // watch
   if (old !== value) {
     page.arms.forEach(arm => {
       switch(arm[0]) {

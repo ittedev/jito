@@ -58,8 +58,8 @@ export const evaluator = {
   ) as Evaluate,
 
   variable: ((template: VariableTemplate, stack: Variables): unknown => {
-    const [value, index] = pickup(stack, template.name)
-    if (value) {
+    const [, index] = pickup(stack, template.name)
+    if (index >= 0) {
       return [ stack[index], template.name ] as Ref
     }
     return undefined

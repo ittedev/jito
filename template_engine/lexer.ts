@@ -72,7 +72,7 @@ function distinguish(field: TokenField, value: string): TokenType {
         case /^\\.$/.test(value): return 'escape' // TODO: lex unicode
       }
       break
-    case 'innerText':
+    case 'text':
       switch (value) {
         case '{': case '}': return 'partial'
         case '{{': case '}}': return value

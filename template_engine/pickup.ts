@@ -6,5 +6,5 @@ export function pickup(stack: Variables, name: string, start: number = stack.len
   for (let i = start; i >= 0; i--) {
     if (name in stack[i]) return [stack[i][name], i]
   }
-  return [undefined, 0]
+  return [undefined, -1]
 }

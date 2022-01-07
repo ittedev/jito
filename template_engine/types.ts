@@ -159,20 +159,8 @@ export type Evaluate = (template: Template, stack: Variables) => unknown
 
 export type Evaluator = Record<string, Evaluate>
 
-//  wait for supporte const enum by deno
-// export const enum TokenField
-// {
-//   innerText,
-//   script,
-//   singleString,
-//   doubleString,
-//   template,
-//   lineComment,
-//   blockComment
-// }
-
 export type TokenField =
-  'innerText' |
+  'text' |
   'script' |
   'singleString' |
   'doubleString' |

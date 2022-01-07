@@ -16,13 +16,20 @@ import { expression, innerText } from './script_parser.ts'
 
 const parser = new DOMParser()
 
-export function parse(html: string | HTMLTemplateElement): TreeTemplate {
-  if (typeof html === 'string') {
-    const doc = parser.parseFromString(html, 'text/html')
-    return { type: 'tree', children: parseChildren(doc.head).concat(parseChildren(doc.body)) }
-  } else {
-    const node = html.content
-    return { type: 'tree', children: parseChildren(node) }
+export function parse(html: string | HTMLTemplateElement, field: 'tree' | 'text' | 'script' = 'tree'): string | Template {
+  switch (field) {
+    case 'tree':
+      if (typeof html === 'string') {
+        const doc = parser.parseFromString(html, 'text/html')
+        return { type: 'tree', children: parseChildren(doc.head).concat(parseChildren(doc.body)) } as TreeTemplate
+      } else {
+        const node = html.content
+        return { type: 'tree', children: parseChildren(node) } as TreeTemplate
+      }
+    case 'text':
+      return innerText(new Lexer(html as string, field))
+    case 'script':
+      return expression(new Lexer(html as string, field))
   }
 }
 
@@ -56,7 +63,7 @@ function parseChildren(node: Node): Array<Template | string> {
 function parseNode(lexer: DomLexer): Template | string {
   switch ((lexer.node as Node).nodeType) {
     case 3: // TEXT_NODE
-      return parseText(lexer.pop() as Text)
+      return parse((lexer.pop() as Text).data, 'text')
     case 1: { // ELEMENT_NODE
       return parseFor(lexer)
     }
@@ -64,10 +71,6 @@ function parseNode(lexer: DomLexer): Template | string {
     default:
       return ''
   }
-}
-
-function parseText(node: Text): Template | string {
-  return innerText(new Lexer(node.data, 'innerText'))
 }
 
 function parseChild(lexer: DomLexer): Template {
@@ -95,7 +98,7 @@ function parseFor(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@for')) {
     const each = el.getAttribute('@each') || undefined
-    const array = expression(new Lexer(el.getAttribute('@for') as string, 'script'))
+    const array = parse(el.getAttribute('@for') as string, 'script')
     return { type: 'for', each, array, value: parseIf(lexer) } as ForTemplate
   } else {
     return parseIf(lexer)
@@ -105,7 +108,7 @@ function parseFor(lexer: DomLexer): Template {
 function parseIf(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@if')) {
-    const condition = expression(new Lexer(el.getAttribute('@if') as string, 'script'))
+    const condition = parse(el.getAttribute('@if') as string, 'script')
     const truthy = parseExpand(el)
     lexer.pop()
     const falsy = lexer.hasAttribute('@else') ? parseChild(lexer) : undefined
@@ -117,7 +120,7 @@ function parseIf(lexer: DomLexer): Template {
 
 function parseExpand(el: Element): Template {
   if (el.hasAttribute('@expand')) {
-    const template = expression(new Lexer(el.getAttribute('@expand') as string, 'script'))
+    const template = parse(el.getAttribute('@expand') as string, 'script')
     const def = parseGroup(el)
     return { type: 'expand', template, default: def } as ExpandTemplate
   } else {
@@ -186,7 +189,7 @@ function parseElement(el: Element): ElementTemplate {
         const match = name.match(/^(?<name>.+)(\+.*)$/)
         if (match?.groups) {
           const name = match.groups.name
-          const exp = expression(new Lexer(value, 'script'))
+          const exp = parse(value, 'script') as Template
           switch (name) {
             case 'is': {
               return template.is = exp
@@ -201,7 +204,6 @@ function parseElement(el: Element): ElementTemplate {
             case 'style': {
               return style.push(exp)
             }
-            // events
           }
         }
       }
@@ -213,7 +215,7 @@ function parseElement(el: Element): ElementTemplate {
           if (!template.props) {
             template.props = {} as Record<string, unknown | Template>
           }
-          return (template.props as Record<string, unknown | Template>)[match.groups.name] = expression(new Lexer(value, 'script'))
+          return (template.props as Record<string, unknown | Template>)[match.groups.name] = parse(value, 'script')
         }
       }
 
