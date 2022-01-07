@@ -177,6 +177,15 @@ function patchOn(ve: LinkedVirtualElement, newVe: VirtualElement) {
         .filter(listener => !news.includes(listener))
         .forEach(listener => ve.node.removeEventListener(type, listener))
     })
+  if (newOnKeys.length) {
+    ve.on = newOnKeys.reduce((on, type) => {
+      on[type] = [...newOn[type]]
+      return on
+    }, {} as Record<string, Array<EventListener>>)
+    // fromEntries
+  } else {
+    delete ve.on
+  }
 }
 
 // TODO: add use DocumentFragment

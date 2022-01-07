@@ -23,7 +23,7 @@ import {
   TreeTemplate,
   ExpandTemplate,
   GroupTemplate,
-  CachedListenerTemplate,
+  CachedHandlerTemplate,
   Ref,
   Evaluate,
   Evaluator
@@ -106,6 +106,8 @@ export const evaluator = {
   get: (
     (template: GetTemplate, stack: Variables): unknown => {
       const value = evaluate(template.value, stack) as Ref
+      console.log('value:', value)
+      // TODO: value[0] === undefined error
       return value ? value[0][value[1]] : value
     }
   ) as Evaluate,
@@ -223,8 +225,8 @@ export const evaluator = {
       template.children ? template.children.flatMap(child => flatwrap(instanceOfTemplate(child) ? evaluate(child, stack) : child)) : []
   ) as Evaluate,
 
-  listener: (
-    (template: CachedListenerTemplate, stack: Variables): EventListener => {
+  handler: (
+    (template: CachedHandlerTemplate, stack: Variables): EventListener => {
       if (!template.cache) {
         template.cache = []
       }
@@ -233,9 +235,9 @@ export const evaluator = {
           return cache[1]
         }
       }
-      const listener = () => evaluate(template.value, stack) as void
-      template.cache.push([stack, listener])
-      return listener
+      const handler = (event: Event) => evaluate(template.value, [...stack, { event }]) as void
+      template.cache.push([stack, handler])
+      return handler
     }
   ) as Evaluate
 

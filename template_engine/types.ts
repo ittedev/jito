@@ -19,7 +19,8 @@ export type TemplateType =
   'expand' |
   'element' |
   'tree' |
-  'group'
+  'group' |
+  'handler'
 
 export interface Template {
   type: string
@@ -130,7 +131,7 @@ export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   props?: Record<string, unknown | Template>
   style?: string | JoinTemplate
   children?: Array<Template | string>
-  on?: Record<string, Array<Template>>
+  on?: Record<string, Array<HandlerTemplate>>
 }
 
 export interface ExpandTemplate extends Template {
@@ -145,11 +146,11 @@ export interface GroupTemplate extends HasAttrTemplate {
   children?: Array<Template | string>
 }
 
-export interface ListenerTemplate {
-  type: 'listener'
+export interface HandlerTemplate {
+  type: 'handler'
   value: Template
 }
-export interface CachedListenerTemplate extends ListenerTemplate {
+export interface CachedHandlerTemplate extends HandlerTemplate {
   cache: Array<[Variables, EventListener]>
 }
 

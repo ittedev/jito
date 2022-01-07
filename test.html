@@ -464,7 +464,7 @@ describe('Virtual Dom', function() {
     })
 
     it('load script element', () => {
-      const doc = new DOMParser().parseFromString(`<script>console.log('hello');<\/script>`, 'text/html')
+      const doc = new DOMParser().parseFromString(`<script>alert('hello');<\/script>`, 'text/html')
       const vtree = load(doc.body)
     })
   })
@@ -1181,6 +1181,39 @@ describe('Virtual Dom', function() {
         }
         equal(output, 'props-a: value 2;')
       })
+    })
+
+    describe(': on', function() {
+      it('patch new on', () => {
+        const f1 = () => {}
+        const parent = document.createElement('div')
+        const node = document.createElement('div')
+        parent.appendChild(node)
+        node.setAttribute('props-a', 'value 1')
+        const tree = { node: parent, children: [{
+          tag: 'div',
+          node
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          on: {
+            click: [f1]
+          }
+        }] }
+        patch(tree, newTree)
+        console.log('tree:', JSON.parse(JSON.stringify(tree)))
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            on: {
+              click: [null]
+            },
+            node: {}
+          }],
+          node: {}
+        })
+      })
+      // How to test ?
     })
 
     describe(': children', function() {
@@ -2011,12 +2044,12 @@ describe('Template Engine', function() {
     })
 
     it('Lexer class: innerText only', () => {
-      const lexer = new Lexer('Hello { name }', 'innerText')
+      const lexer = new Lexer('Hello { name }', 'text')
       equal(lexer.skip(), 'Hello { name }')
     })
 
     it('Lexer class: innerText has script', () => {
-      const lexer = new Lexer('Hello {{ { name } }}', 'innerText')
+      const lexer = new Lexer('Hello {{ { name } }}', 'text')
       equal(lexer.skip(), 'Hello ')
       equal(lexer.skip(), '')
       equal(lexer.pop(), ['{{', '{{'])
@@ -2505,6 +2538,153 @@ describe('Template Engine', function() {
       })
     })
 
+    describe(': on', function() {
+      it('parse: on', () => {
+        const template = parse('<p onclick="value"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              on: {
+                click: [
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: add on', () => {
+        const template = parse('<p onclick+="value"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              on: {
+                click: [
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: add ons', () => {
+        const template = parse('<p onclick="value" onclick+="value2" onclick+1="value3"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              on: {
+                click: [
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value"
+                      }
+                    }
+                  },
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value2"
+                      }
+                    }
+                  },
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value3"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: add reverse ons', () => {
+        const template = parse('<p onclick+="value2" onclick="value" onclick+1="value3"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              on: {
+                click: [
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value"
+                      }
+                    }
+                  },
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value2"
+                      }
+                    }
+                  },
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value3"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+    })
+
     describe(': @if', function() {
       it('parse: @if', () => {
         const template = parse('<p @if="isActive"></p>')
@@ -2528,6 +2708,7 @@ describe('Template Engine', function() {
           ]
         })
       })
+      // TODO: 空文字対策
       it('parse: @if @else', () => {
         const template = parse('<p @if="isActive"></p><div @else></div>')
         equal(template, {

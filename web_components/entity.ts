@@ -3,24 +3,10 @@
 import { ComponentConstructor, Component } from './types.ts'
 import { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
 import { Variables } from '../template_engine/types.ts'
-import { lock } from '../data_binding/lock.ts'
 import { reach } from '../data_binding/reach.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
 import { patch } from '../virtual_dom/patch.ts'
-
-export const builtin = lock({
-  console,
-  Object,
-  Number,
-  Math,
-  Date,
-  Array,
-  JSON,
-  String,
-  isNaN,
-  isFinite,
-  location
-}) as Record<string, unknown>
+import { builtin } from './builtin.ts'
 
 export class Entity {
   private stack?: Variables | null

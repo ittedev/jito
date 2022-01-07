@@ -9,7 +9,8 @@ import {
   ForTemplate,
   ElementTemplate,
   TreeTemplate,
-  ExpandTemplate
+  ExpandTemplate,
+  HandlerTemplate
 } from './types.ts'
 import { Lexer } from './lexer.ts'
 import { expression, innerText } from './script_parser.ts'
@@ -181,6 +182,27 @@ function parseElement(el: Element): ElementTemplate {
         }
         case 'style': {
           return style.push(value)
+        }
+      }
+
+      // on attribute
+      {
+        const match = name.match(/^on(?<type>[^+]+)(?<add>\+?.*)$/)
+        if (match?.groups) {
+          const type = match.groups.type
+          const handler = { type: 'handler', value: parse(value, 'script') } as HandlerTemplate
+          if (!template.on) {
+            template.on = {}
+          }
+          if (!template.on[type]) {
+            template.on[type] = []
+          }
+          if (match.groups.add) {
+            template.on[type].push(handler)
+          } else {
+            template.on[type].unshift(handler)
+          }
+          return
         }
       }
 

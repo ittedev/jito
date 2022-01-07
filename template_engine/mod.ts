@@ -20,7 +20,7 @@ export type {
   TreeTemplate,
   ExpandTemplate,
   GroupTemplate,
-  CachedListenerTemplate,
+  CachedHandlerTemplate,
   Ref,
   Evaluator,
   Evaluate,

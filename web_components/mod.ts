@@ -7,7 +7,8 @@ export type {
   Component
 } from './types.ts'
 
-export { builtin, Entity } from './entity.ts'
+export { builtin } from './builtin.ts'
+export { Entity } from './entity.ts'
 export { ComponentElement } from './element.ts'
 export { extend } from './extend.ts'
 export { compact } from './compact.ts'

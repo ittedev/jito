@@ -2,7 +2,7 @@
 
 Beako is web component tools with Data Binding, Template Engine and Virtual Dom.
 
-She support Deno, Web browsers and Node.js
+She support Deno and Web browsers.
 
 
 ## What is Beako.js?
@@ -46,7 +46,7 @@ To Import it into html:
 
 ### CDN
 
-``` html
+```html
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <body>Loading...</body>
