@@ -106,7 +106,6 @@ export const evaluator = {
   get: (
     (template: GetTemplate, stack: Variables): unknown => {
       const value = evaluate(template.value, stack) as Ref
-      console.log('value:', value)
       // TODO: value[0] === undefined error
       return value ? value[0][value[1]] : value
     }
@@ -248,13 +247,23 @@ export function evaluateProps(template: ElementTemplate, stack: Variables, ve: V
     ve.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack) as string
   }
 
+  if (template.bools) {
+    for (const key in template.bools) {
+      const value = template.bools[key]
+      const result = typeof value === 'string' ? value : evaluate(value as Template, stack)
+      if (result) {
+        (ve.props ?? (ve.props = {}))[key] = result
+      }
+    }
+  }
+
   if (template.props) {
     if (!ve.props) {
       ve.props = {}
     }
     for (const key in template.props) {
-      const props = template.props[key]
-      ve.props[key] = typeof props === 'string' ? props : evaluate(props as Template, stack)
+      const value = template.props[key]
+      ve.props[key] = typeof value === 'string' ? value : evaluate(value as Template, stack)
     }
   }
 

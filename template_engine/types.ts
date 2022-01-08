@@ -129,6 +129,7 @@ export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   class?: Array<Array<string> | FlagsTemplate>
   part?: Array<Array<string> | FlagsTemplate>
   props?: Record<string, unknown | Template>
+  bools?: Record<string, unknown | Template>
   style?: string | JoinTemplate
   children?: Array<Template | string>
   on?: Record<string, Array<HandlerTemplate>>

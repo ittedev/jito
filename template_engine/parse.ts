@@ -38,12 +38,29 @@ class DomLexer {
   constructor(
     public node: Node | null
   ) {}
-  hasAttribute(props: string): boolean {
-    return !!(
-      this.node &&
-      this.node.nodeType === 1 &&
-      (this.node as Element).hasAttribute(props)
-    )
+  isSkippable(props: string): boolean {
+    for (let node = this.node; node; node = (node as Node).nextSibling) {
+      switch (node.nodeType) {
+        default:
+          return false
+        case 1: // ELEMENT_NODE
+          return (node as Element).hasAttribute(props)
+        case 3: // TEXT_NODE
+          if (!/^\s*$/.test((node as Text).data)) {
+            return false
+          }
+      }
+    }
+    return false
+  }
+  // Warning: This method should only be called when skippable
+  skip(): this {
+    while (true) {
+      if ((this.node as Element).nodeType === 1) {
+        return this
+      }
+      this.node = (this.node as Node).nextSibling
+    }
   }
   pop(): Node | null {
     const node = this.node
@@ -112,7 +129,7 @@ function parseIf(lexer: DomLexer): Template {
     const condition = parse(el.getAttribute('@if') as string, 'script')
     const truthy = parseExpand(el)
     lexer.pop()
-    const falsy = lexer.hasAttribute('@else') ? parseChild(lexer) : undefined
+    const falsy = lexer.isSkippable('@else') ? parseChild(lexer.skip()) : undefined
     return { type: 'if', condition, truthy, falsy } as IfTemplate
   } else {
     return parseExpand(lexer.pop() as Element)
@@ -175,58 +192,30 @@ function parseElement(el: Element): ElementTemplate {
         }
         case 'class':
         case 'part': {
-          if (!(name in template)) {
-            template[name] = [] as Array<Array<string> | FlagsTemplate>
-          }
-          return (template[name] as Array<Array<string> | Template>).push(value.split(/\s+/))
+          return (template[name] ?? (template[name] = [])).push(value.split(/\s+/))
         }
         case 'style': {
           return style.push(value)
+        }
+        case 'is:':
+          return template.is = parse(value, 'script')
+        case 'class:':
+        case 'part:': {
+          const n = name.slice(0, -1) as 'class' | 'part'
+          return (template[n] ?? (template[n] = []) as Array<Array<string> | Template>).push({ type: 'flags', value: parse(value, 'script') } as FlagsTemplate)
+        }
+        case 'style:': {
+          return style.push(parse(value, 'script'))
         }
       }
 
       // on attribute
       {
-        const match = name.match(/^on(?<type>[^+]+)(?<add>\+?.*)$/)
+        const match = name.match(/^on(?<type>.+?):?$/)
         if (match?.groups) {
           const type = match.groups.type
           const handler = { type: 'handler', value: parse(value, 'script') } as HandlerTemplate
-          if (!template.on) {
-            template.on = {}
-          }
-          if (!template.on[type]) {
-            template.on[type] = []
-          }
-          if (match.groups.add) {
-            template.on[type].push(handler)
-          } else {
-            template.on[type].unshift(handler)
-          }
-          return
-        }
-      }
-
-      // addition assign attribute
-      {
-        const match = name.match(/^(?<name>.+)(\+.*)$/)
-        if (match?.groups) {
-          const name = match.groups.name
-          const exp = parse(value, 'script') as Template
-          switch (name) {
-            case 'is': {
-              return template.is = exp
-            }
-            case 'class':
-            case 'part': {
-              if (!(name in template)) {
-                template[name] = [] as Array<Array<string> | FlagsTemplate>
-              }
-              return (template[name] as Array<Array<string> | Template>).push({ type: 'flags', value: exp } as FlagsTemplate)
-            }
-            case 'style': {
-              return style.push(exp)
-            }
-          }
+          return ((template.on ?? (template.on = {}))[type] ?? (template.on[type] = [])).push(handler)
         }
       }
 
@@ -234,10 +223,7 @@ function parseElement(el: Element): ElementTemplate {
       {
         const match = name.match(/^(?<name>.+):$/)
         if (match?.groups) {
-          if (!template.props) {
-            template.props = {} as Record<string, unknown | Template>
-          }
-          return (template.props as Record<string, unknown | Template>)[match.groups.name] = parse(value, 'script')
+          return (template.props ?? (template.props = {}))[match.groups.name] = parse(value, 'script')
         }
       }
 
@@ -247,6 +233,7 @@ function parseElement(el: Element): ElementTemplate {
         const match = name.match(/^(?<name>.+)\*$/)
         if (match?.groups) {
           // bindFormula(value, bind, match.groups.name)
+          return
         }
       }
 
@@ -254,14 +241,11 @@ function parseElement(el: Element): ElementTemplate {
       if (name.match(/^@(if|else|for|each|expand)$/)) return
 
       // string attribute
-      if (!template.props) {
-        template.props = {} as Record<string, unknown | Template>
-      }
-      if (!(name in (template.props as Record<string, unknown | Template>))) {
+      if (!(name in (template.props ?? (template.props = {}) as Record<string, unknown | Template>))) {
         return (template.props as Record<string, unknown | Template>)[name] = value
       }
-      return
     })
+
     if (style.length) {
       if (style.length === 1 && typeof style[0] === 'string') {
         template.style = style[0]
@@ -269,7 +253,25 @@ function parseElement(el: Element): ElementTemplate {
         template.style = { type: 'join', values: style.filter(value => value !== ''), separator: ';' } as JoinTemplate
       }
     }
+
+    if (template.props) {
+      // boolean attribute
+      for (const key in template.props) {
+        const match = key.match(/^(?<name>.+)&$/)
+        if (match?.groups) {
+          const name = match.groups.name as string
+          (template.bools ?? (template.bools = {}) as Record<string, unknown | Template>)[name] = parse(template.props[key] as string, 'script')
+          delete template.props[name]
+          delete template.props[key]
+          delete template.props[name + ':']
+        }
+      }
+      if (!Object.keys(template.props).length) {
+        delete template.props
+      }
+    }
   }
+
   if (el.hasChildNodes()) {
     template.children = parseChildren(el)
   }

@@ -48,11 +48,11 @@ function loadChildren(tree: LinkedVirtualTree) {
     tree.children = []
     for (let i = 0; i < nodeList.length; i++) {
       switch(nodeList[i].nodeType) {
-        case 3: // TEXT_NODE
-          tree.children.push((nodeList[i] as CharacterData).data)
-          break
         case 1: // ELEMENT_NODE
           tree.children.push(loadElement(nodeList[i] as Element))
+          break
+        case 3: // TEXT_NODE
+          tree.children.push((nodeList[i] as CharacterData).data)
           break
         // TODO: load svg
       }
