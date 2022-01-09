@@ -276,8 +276,10 @@ export function evaluateProps(template: ElementTemplate, stack: Variables, ve: V
       ve.props = {}
     }
     for (const key in template.props) {
-      const value = template.props[key]
-      ve.props[key] = typeof value === 'string' ? value : evaluate(value as Template, stack)
+      if (!key.startsWith('@')) { // Remove syntax attributes
+        const value = template.props[key]
+        ve.props[key] = typeof value === 'string' ? value : evaluate(value as Template, stack)
+      }
     }
   }
 

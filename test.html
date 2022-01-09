@@ -69,7 +69,6 @@ describe('Data Binding', function() {
           x: 1
         }
         watch(data)
-        console.log('data:', data)
         equal(data.x, 1)
         data.x++
         equal(data.x, 2)
@@ -468,6 +467,9 @@ describe('Virtual Dom', function() {
     it('load script element', () => {
       const doc = new DOMParser().parseFromString(`<script>alert('hello');<\/script>`, 'text/html')
       const vtree = load(doc.body)
+      equal(vtree, {
+        node: {}
+      })
     })
   })
 
@@ -2279,7 +2281,7 @@ describe('Template Engine', function() {
       })
 
       it('parse template', () => {
-        const template = parse(document.getElementById('template'))
+        const template = parse(document.getElementById('template').content)
         equal(template, {
           type: 'tree',
           children: [
@@ -3474,7 +3476,6 @@ describe('Template Engine', function() {
 
       it('evaluate: truthy props variable', () => {
         const tree = evaluate(parse(`<p id&="1"></p>`))
-        console.log('tree:', template)
         equal(tree, {
           children: [
             {

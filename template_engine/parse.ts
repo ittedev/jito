@@ -17,15 +17,16 @@ import { expression, innerText } from './script_parser.ts'
 
 const parser = new DOMParser()
 
-export function parse(html: string | HTMLTemplateElement, field: 'tree' | 'text' | 'script' = 'tree'): string | Template {
+export function parse(html: string | Element | DocumentFragment, field: 'tree' | 'text' | 'script' = 'tree'): string | Template {
   switch (field) {
     case 'tree':
       if (typeof html === 'string') {
         const doc = parser.parseFromString(html, 'text/html')
         return { type: 'tree', children: parseChildren(doc.head).concat(parseChildren(doc.body)) } as TreeTemplate
-      } else {
-        const node = html.content
-        return { type: 'tree', children: parseChildren(node) } as TreeTemplate
+      } else if (html.nodeType === 11) { // DOCUMENT_FRAGMENT_NODE
+        return { type: 'tree', children: parseChildren(html) } as TreeTemplate
+      } else {// ELEMENT_NODE
+        return parseElement(html as Element) as ElementTemplate
       }
     case 'text':
       return innerText(new Lexer(html as string, field))
@@ -64,12 +65,18 @@ class DomLexer {
   }
   pop(): Node | null {
     const node = this.node
-    this.node = this.node ? this.node.nextSibling : null
+    do {
+      this.node = this.node ? this.node.nextSibling : null
+    } while (this.node && this.node.nodeType === 1 && (this.node as Element).tagName === 'SCRIPT') // skip <script>
     return node
   }
 }
 
 function parseChildren(node: Node): Array<Template | string> {
+  let firstChild = node.firstChild
+  while (firstChild && firstChild.nodeType === 1 && (firstChild as Element).tagName === 'SCRIPT') { // skip <script>
+    firstChild = firstChild.nextSibling
+  }
   const lexer = new DomLexer(node.firstChild)
   const children = [] as Array<Template | string>
   while (lexer.node) {

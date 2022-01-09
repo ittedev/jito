@@ -188,7 +188,7 @@ function patchOn(ve: LinkedVirtualElement, newVe: VirtualElement) {
   }
 }
 
-// TODO: add use DocumentFragment
+// TODO: add use DocumentFragment?
 class LinkedVirtualElementPointer {
   index = 0
   node: Node | null
@@ -207,12 +207,12 @@ class LinkedVirtualElementPointer {
   get ve(): string | LinkedVirtualElement | number {
     return this.children[this.index]
   }
-  next() {
+  next(indexStep = 1) {
     if (typeof this.children[this.index] === 'number') {
-      this.index++
+      this.index += indexStep
     } else {
       if (this.node) {
-        this.index++
+        this.index += indexStep
         this.node = this.node.nextSibling
       }
     }
@@ -232,8 +232,9 @@ class LinkedVirtualElementPointer {
   }
   add(ve: LinkedVirtualElement | string) {
     const node = typeof ve === 'string' ? document.createTextNode(ve) : ve.node
+    const next = this.node
     this.node = this.parent.node.insertBefore(node, this.node || null)
-    this.next()
+    this.next(next ? 0 : 1)
     return ve
   }
   replace(ve: LinkedVirtualElement | string) {

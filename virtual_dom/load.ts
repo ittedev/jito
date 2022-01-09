@@ -49,6 +49,9 @@ function loadChildren(tree: LinkedVirtualTree) {
     for (let i = 0; i < nodeList.length; i++) {
       switch(nodeList[i].nodeType) {
         case 1: // ELEMENT_NODE
+          if ((nodeList[i] as Element).tagName === 'SCRIPT') { // skip <script>
+            break
+          }
           tree.children.push(loadElement(nodeList[i] as Element))
           break
         case 3: // TEXT_NODE

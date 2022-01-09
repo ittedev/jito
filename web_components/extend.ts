@@ -34,25 +34,31 @@ evaluator.custom = (
       el.is = typeof template.is === 'string' ? template.is : evaluate(template.is, stack) as string
     }
 
-    let isComponent: boolean
-    if (isPrimitive(template as ElementTemplate)) {
-      isComponent = customElements.get(el.is as string) instanceof ComponentElement
-    } else {
-      // local or global component
-      let element: unknown
-      for (let i = stack.length - 1; i >= 0; i--) {
-        if (template.tag in stack[i]) {
-          element = stack[i][template.tag]
-          break
+    let isComponent: boolean 
+    if (!template.isForce) {
+      if (isPrimitive(template as ElementTemplate)) {
+        const Type = customElements.get(el.is as string)
+        isComponent = Type !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, Type)
+      } else {
+        // local or global component
+        let element: unknown
+        for (let i = stack.length - 1; i >= 0; i--) {
+          if (template.tag in stack[i]) {
+            element = stack[i][template.tag]
+            break
+          }
+        }
+        if (instanceOfComponent(element)) {
+          el.tag = localComponentElementTag
+          el.props = { component: element }
+          isComponent = true
+        } else {
+          const Type = customElements.get(template.tag)
+          isComponent = Type !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, Type)
         }
       }
-      if (instanceOfComponent(element)) {
-        el.tag = localComponentElementTag
-        el.props = { component: element }
-        isComponent = true
-      } else {
-        isComponent = customElements.get(template.tag) instanceof ComponentElement
-      }
+    } else {
+      isComponent = true
     }
 
     if (isComponent) {
@@ -64,7 +70,7 @@ evaluator.custom = (
           if (temp.props) {
             if (temp.props['@as']) {
               contents.push([temp.props['@as'] as string, temp])
-              delete temp.props['@as']
+              // delete temp.props['@as']
               return []
             } else if(temp.props.slot) {
               return [evaluate(child, stack) as string | VirtualElement | number]

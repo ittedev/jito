@@ -19,6 +19,7 @@ export interface CustomElementTemplate extends HasAttrTemplate {
   props?: Record<string, unknown | Template>
   style?: string | Template
   children?: Array<Template | string>
+  isForce?: boolean // Evaluate as an component without verifying whether it is a component
 }
 
 // TODO: get refs

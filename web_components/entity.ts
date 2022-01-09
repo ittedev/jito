@@ -17,7 +17,7 @@ export class Entity {
   private _patch: () => void = () => {
     if (this.stack && this._tree && this._component.template) {
       const tree = evaluate(this._component.template, this.stack) as VirtualTree
-      // console.log('patch:', this._tree, tree)
+      // console.log('patch:', JSON.parse(JSON.stringify(this._tree)), tree)
       patch(this._tree, tree)
       // patch(this._tree, evaluate(this._component.template, this.stack) as VirtualTree)
     }
@@ -44,7 +44,6 @@ export class Entity {
     switch (name) {
       case 'is': case 'class': case 'part': case 'style': return
       default: {
-        // console.log('setProp:', name, value)
         const old = this._props[name]
         this._props[name] = value
         if (old !== value) {
