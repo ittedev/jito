@@ -145,7 +145,6 @@ evaluator.custom = (
           if (temp.props) {
             if (temp.props['@as']) {
               contents.push([temp.props['@as'] as string, temp])
-              // delete temp.props['@as']
               return []
             } else if(temp.props.slot) {
               return [evaluate(child, stack) as string | VirtualElement | number]

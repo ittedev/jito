@@ -4,8 +4,6 @@
 import { dictionary, isLocked, reactiveKey, arrayKey, ReactiveTuple, ReactiveCallback, Page, Arm, BeakoObject } from './types.ts'
 import { watch } from './watch.ts'
 
-const watchMethods = ['push', 'pop', 'shift', 'unshift', 'sort', 'reverse', 'splice', 'copyWithin']
-
 export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void {
   if (!obj[isLocked]) {
     if (!(dictionary in obj)) {
@@ -17,36 +15,67 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
       }
       if (Array.isArray(obj)) {
         const array = obj[dictionary][arrayKey] = obj.slice() as Array<unknown>
-        Object.defineProperty(obj, 'push', {
-          get: function () {
-            return function (...items: any[]): number {
-              const result = Array.prototype['push'].call(array, ...items)
-              watch(obj)
-              reactiveCallback()
-              return result
+        const reactive = <T>(value: T): T => {
+          reactiveCallback()
+          return value
+        }
+        const rewatch = <T>(value: T): T => {
+          watch(obj)
+          reactiveCallback()
+          return value
+        }
+        Object.defineProperties(obj, {
+          unshift: {
+            get() {
+              return (...items: any[]): number =>
+                rewatch(Array.prototype['unshift'].call(array, ...items))
             }
-          }
-        })
-        Object.defineProperty(obj, 'sort', {
-          get: function () {
-            return function (compareFn?: ((a: any, b: any) => number) | undefined) {
-              const result = compareFn === undefined ?
-                Array.prototype['sort'].call(array) :
-                Array.prototype['sort'].call(array, compareFn)
-              reactiveCallback()
-              return result
+          },
+          push: {
+            get() {
+              return (...items: any[]): number =>
+                rewatch(Array.prototype['push'].call(array, ...items))
             }
-          }
-        })
-        Object.defineProperty(obj, 'splice', {
-          get: function () {
-            return function (start: number, deleteCount?: number | undefined, ...items: any[]) {
-              const result = deleteCount === undefined ?
-                Array.prototype['splice'].call(array, start, array.length - start) :
-                Array.prototype['splice'].apply(array, [start, deleteCount, ...items])
-              watch(obj)
-              reactiveCallback()
-              return result
+          },
+          splice: {
+            get() {
+              return (start: number, deleteCount?: number | undefined, ...items: any[]) =>
+                rewatch(
+                  deleteCount === undefined ?
+                    Array.prototype['splice'].call(array, start, array.length - start) :
+                    Array.prototype['splice'].apply(array, [start, deleteCount, ...items])
+                )
+              }
+          },
+          pop: {
+            get() { return () => rewatch(Array.prototype['pop'].call(array)) }
+          },
+          shift: {
+            get() { return () => rewatch(Array.prototype['shift'].call(array)) }
+          },
+          sort: {
+            get() {
+              return (compareFn?: ((a: any, b: any) => number) | undefined) =>
+                reactive(
+                  compareFn === undefined ?
+                    Array.prototype['sort'].call(array) :
+                    Array.prototype['sort'].call(array, compareFn)
+                )
+            }
+          },
+          reverse: {
+            get() { return () => reactive(Array.prototype['reverse'].call(array)) }
+          },
+          copyWithin: {
+            get() {
+              return (target: number, start: number, end?: number | undefined) =>
+                reactive(
+                  Array.prototype['copyWithin'].call(array,
+                    target,
+                    start !== undefined ? start : 0,
+                    end !== undefined ? end : array.length
+                  )
+                )
             }
           }
         })
@@ -54,19 +83,7 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
     }
     
     if (key !== undefined) {
-      if (typeof key === 'number') {
-        if (!(key in obj) && key in obj[dictionary][arrayKey]) {
-          Object.defineProperty(obj, key, {
-            get() { return this[dictionary][arrayKey][key] },
-            set(value) {
-              (obj[dictionary][reactiveKey] as ReactiveTuple)[1].forEach(callback => watch(value, callback))
-              this[dictionary][arrayKey][key] = value
-              (obj[dictionary][reactiveKey] as ReactiveTuple)[0]()
-            },
-            configurable: true
-          })
-        }
-      } else {
+      if (typeof key !== 'number' && isNaN(key as unknown as number)) {
         if (!(key in obj[dictionary])) {
           obj[dictionary][key] = [obj[key], new Set<Arm>()]
           Object.defineProperty(obj, key, {
@@ -82,6 +99,25 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
             if (item[1] === arm[1]) return
           }
           obj[dictionary][key][1].add(arm)
+        }
+      } else {
+        const descriptor = Object.getOwnPropertyDescriptor(obj, key)
+        if (!descriptor || 'value' in descriptor) {
+          if (key in obj[dictionary][arrayKey]) {
+            Object.defineProperty(obj, key, {
+              get() { return this[dictionary][arrayKey][key] },
+              set(value) {
+                (obj[dictionary][reactiveKey] as ReactiveTuple)[1].forEach(callback => watch(value, callback))
+                const old = this[dictionary][arrayKey][key]
+                this[dictionary][arrayKey][key] = value
+                if (old !== value) {
+                  (obj[dictionary][reactiveKey] as ReactiveTuple)[0][1]()
+                }
+              },
+              configurable: true,
+              enumerable: true
+            })
+          }
         }
       }
     }

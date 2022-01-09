@@ -150,7 +150,159 @@ describe('Data Binding', function() {
         equal(y, 4)
       })
     })
-    // TODO watch array
+
+    describe(': bio array', function() {
+      it('watch array', () => {
+        const data = [1]
+        watch(data)
+        equal(data[0], 1)
+        data[0]++
+        equal(data[0], 2)
+        equal(data, [2])
+      })
+
+      it('deeply watch array', () => {
+        const data = [1, [2]]
+        watch(data)
+        equal(data[1][0], 2)
+        data[1][0] += 1
+        equal(data[1][0], 3)
+        equal(data, [1, [3]])
+      })
+      
+      it('watch array exec function', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data[0] = 2
+        equal(y, 2)
+      })
+
+      it('deeply watch array exec function', () => {
+        const data = [1, [2]]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data[1][0] = 3
+        equal(y, 2)
+      })
+
+      it('watch array no change exec function', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data[0] = 1
+        equal(y, 0)
+      })
+
+      it('double watch array a function', () => {
+        const data = [1]
+        let y = 0
+        const f = () => { y += 2 }
+        watch(data, f)
+        watch(data, f)
+        data[0] = 2
+        equal(y, 2)
+      })
+
+      it('double watch array difference functions', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y += 2 })
+        watch(data, () => { y += 2 })
+        data[0] = 2
+        equal(y, 4)
+      })
+
+      it('watch array push a item', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.push(3)
+        equal(y, 2)
+        equal(data, [1, 3])
+      })
+
+      it('watch array push items', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.push(3, 4)
+        equal(y, 2)
+        equal(data, [1, 3, 4])
+      })
+
+      it('watch array unshift a item', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.unshift(3)
+        equal(y, 2)
+        equal(data, [3, 1])
+      })
+
+      it('watch array unshift items', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.unshift(3, 4)
+        equal(y, 2)
+        equal(data, [3, 4, 1])
+      })
+
+      it('watch array pop', () => {
+        const data = [1, 3]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.pop()
+        equal(y, 2)
+        equal(data, [1])
+      })
+
+      it('watch array shift', () => {
+        const data = [1, 3]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.shift()
+        equal(y, 2)
+        equal(data, [3])
+      })
+
+      it('watch array sort', () => {
+        const data = [6, 3, 4]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.sort((a, b) => a - b)
+        equal(y, 2)
+        equal(data, [3, 4, 6])
+      })
+
+      it('watch array reverse', () => {
+        const data = [6, 3, 4]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.reverse()
+        equal(y, 2)
+        equal(data, [4, 3, 6])
+      })
+
+      it('watch array copyWithin', () => {
+        const data = [6, 3, 4]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.copyWithin(0, 1, 2)
+        equal(y, 2)
+        equal(data, [3, 3, 4])
+      })
+
+      it('watch array splice', () => {
+        const data = [6, 3, 4]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.splice(1, 1, 2, 5)
+        equal(y, 2)
+        equal(data, [6, 2, 5, 4])
+      })
+    })
 
     describe(': spy', function() {
       it('watch a property', () => {

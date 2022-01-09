@@ -10,7 +10,9 @@ export function watch(data: unknown, key: string, spy: Spy): unknown
 export function watch(data: unknown, keys: string[], callback: ChangeCallback): unknown
 export function watch(data: unknown, keys: string[], spy: Spy): unknown
 export function watch(data: unknown, keyOrCallback?:  ReactiveCallback | Bio | string | string[], callback?: ChangeCallback | Spy): unknown {
-  if (typeof data === 'object' && data !== null) {
+  if (typeof data === 'object' &&
+    data !== null &&
+    (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))) {
     const obj = data as BeakoObject
     if (!obj[isLocked]) {
       invade(obj)
@@ -20,22 +22,20 @@ export function watch(data: unknown, keyOrCallback?:  ReactiveCallback | Bio | s
           callbacks.add(keyOrCallback)
         }
         for (const key in obj) {
-          if (typeof key !== 'number') {
-            invade(obj, key, (obj[dictionary][reactiveKey] as ReactiveTuple)[0])
-            const value = obj[key]
-            // Change all child objects to beako objects
-            // and set parent bio to all child object
-            if (typeof value === 'object' && value !== null) {
-              if (callbacks.size) {
-                callbacks.forEach(callback => {
-                  if (!(dictionary in value) || !((value as BeakoObject)[dictionary][reactiveKey] as ReactiveTuple)[1].has(callback)) { // Block recursion
-                    watch(value, callback)
-                  }
-                })
-              } else {
-                if (!(dictionary in value)) { // Block recursion
-                  watch(value)
+          invade(obj, key, (obj[dictionary][reactiveKey] as ReactiveTuple)[0])
+          const value = obj[key]
+          // Change all child objects to beako objects
+          // and set parent bio to all child object
+          if (typeof value === 'object' && value !== null) {
+            if (callbacks.size) {
+              callbacks.forEach(callback => {
+                if (!(dictionary in value) || !((value as BeakoObject)[dictionary][reactiveKey] as ReactiveTuple)[1].has(callback)) { // Block recursion
+                  watch(value, callback)
                 }
+              })
+            } else {
+              if (!(dictionary in value)) { // Block recursion
+                watch(value)
               }
             }
           }
