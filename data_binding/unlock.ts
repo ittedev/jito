@@ -2,7 +2,7 @@
 // This module is browser compatible.
 import { isLocked } from './types.ts'
 
-export function unlock(obj: unknown): unknown {
+export function unlock<T>(obj: T): T {
   delete (obj as Record<PropertyKey, unknown>)[isLocked]
   return obj
 }

@@ -15,4 +15,4 @@ export const builtin = lock({
   isFinite,
   location,
   alert
-}) as Record<string, unknown>
+})

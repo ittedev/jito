@@ -6,27 +6,6 @@ import { watch } from './watch.ts'
 
 const watchMethods = ['push', 'pop', 'shift', 'unshift', 'sort', 'reverse', 'splice', 'copyWithin']
 
-function attack(page: Page, value: unknown) {
-  const old = page[0]
-  page[0] = value
-
-  if (old !== value) {
-    page[1].forEach(arm => {
-      switch(arm[0]) {
-        case 'bio':
-          (arm[1] as ReactiveCallback)()
-          break
-        // deno-lint-ignore no-fallthrough
-        case 'bom':
-          page[1].delete(arm)
-        case 'spy':
-          arm[1](value, old)
-          break
-      }
-    })
-  }
-}
-
 export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void {
   if (!obj[isLocked]) {
     if (!(dictionary in obj)) {
@@ -106,5 +85,26 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
         }
       }
     }
+  }
+}
+
+function attack(page: Page, value: unknown) {
+  const old = page[0]
+  page[0] = value
+
+  if (old !== value) {
+    page[1].forEach(arm => {
+      switch(arm[0]) {
+        case 'bio':
+          (arm[1] as ReactiveCallback)()
+          break
+        // deno-lint-ignore no-fallthrough
+        case 'bom':
+          page[1].delete(arm)
+        case 'spy':
+          arm[1](value, old)
+          break
+      }
+    })
   }
 }

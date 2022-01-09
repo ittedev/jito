@@ -19,5 +19,5 @@ export function compact(template: string | TreeTemplate, stack: Variables | Reco
   return lock({
     template: extend(typeof template === 'string' ? parse(template) : template) as TreeTemplate,
     stack: typeof stack === 'function' || Array.isArray(stack) ? stack : [stack]
-  }) as Component
+  })
 }

@@ -7,29 +7,6 @@ import { Entity } from './entity.ts'
 
 export const localComponentElementTag = 'beako-entity'
 
-function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void) {
-  return new Proxy(attr, {
-    set(target, prop, value) {
-      setProp(prop as string, value)
-      if (prop === 'value') {
-        return target.value = value
-      }
-    }
-  })
-}
-
-function proxyNamedNodeMap(attrs: NamedNodeMap, setProp: (name: string, value: unknown) => void) {
-  return new Proxy(attrs, {
-    get: function (target, prop) {
-      if (prop === 'length') {
-        return target[prop]
-      } else {
-        return proxyAttr(target[prop as unknown as number] as Attr, setProp)
-      }
-    }
-  })
-}
-
 export class ComponentElement extends HTMLElement {
   tree: LinkedVirtualTree
   entity: Entity | undefined
@@ -116,3 +93,26 @@ class LocalComponentElement extends ComponentElement {
 }
 
 customElements.define(localComponentElementTag, LocalComponentElement)
+
+function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void) {
+  return new Proxy(attr, {
+    set(target, prop, value) {
+      setProp(prop as string, value)
+      if (prop === 'value') {
+        return target.value = value
+      }
+    }
+  })
+}
+
+function proxyNamedNodeMap(attrs: NamedNodeMap, setProp: (name: string, value: unknown) => void) {
+  return new Proxy(attrs, {
+    get: function (target, prop) {
+      if (prop === 'length') {
+        return target[prop]
+      } else {
+        return proxyAttr(target[prop as unknown as number] as Attr, setProp)
+      }
+    }
+  })
+}

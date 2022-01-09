@@ -20,10 +20,6 @@ import {
 } from './types.ts'
 import { Lexer } from './lexer.ts'
 
-function must(token: Token | null, type: TokenType, message = ''): void {
-  if (!token || token[0] !== type) throw Error(message)
-}
-
 export function innerText(lexer: Lexer): Template | string {
   const texts = [] as Array<string | Template>
   texts.push(lexer.skip())
@@ -305,4 +301,8 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
   } else {
     return { type: 'join', values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
   }
+}
+
+function must(token: Token | null, type: TokenType, message = ''): void {
+  if (!token || token[0] !== type) throw Error(message)
 }

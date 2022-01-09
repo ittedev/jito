@@ -152,7 +152,7 @@ function parseExpand(el: Element): Template {
     return parseGroup(el)
   }
 }
-// TODO: parse Group
+
 function parseGroup(el: Element): Template {
   if (el.tagName.toLowerCase() === 'group') {
     const template = {

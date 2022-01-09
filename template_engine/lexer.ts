@@ -2,6 +2,67 @@
 // This module is browser compatible.
 import { TokenField, TokenType, Token } from './types.ts'
 
+export class Lexer {
+  constructor(
+    private text: string,
+    private field: TokenField,
+    private index = 0,
+    private token: Token | null = null
+  ) {}
+  private _next(start: number): Token | null {
+    const token = ['', '']
+    for (this.index = start; this.index < this.text.length; this.index++) {
+      const nextType = distinguish(this.field, token[1] + this.text[this.index])
+      if (nextType === 'other') {
+        return token as Token
+      } else {
+        token[0] = nextType
+        token[1] = token[1] + this.text[this.index]
+      }
+    }
+    return token as Token
+  }
+  skip(): string {
+    let value = ''
+    if (!this.token) {
+      for (let i = this.index; i < this.text.length; i++) {
+        if (distinguish(this.field, this.text[i]) === 'other') {
+          value += this.text[i]
+        } else {
+          this.token = this._next(i)
+          if (this.token && this.token[0] === 'partial') {
+            value += this.token[1]
+            this.token = null
+          } else {
+            return value
+          }
+        }
+      }
+    }
+    return value
+  }
+  nextType(): TokenType {
+    this.skip()
+    return this.token ? this.token[0] : ''
+  }
+  pop(): Token | null {
+    this.skip()
+    const token = this.token
+    this.token = null
+    return token ? token : null
+  }
+  expand(field: TokenField, func: () => void): void {
+    const parent = this.field
+    this.field = field
+    func()
+    if (this.token) {
+      this.index -= this.token[1].length
+      this.token = null
+    }
+    this.field = parent
+  }
+}
+
 function distinguish(field: TokenField, value: string): TokenType {
   switch (field) {
     case 'script':
@@ -80,65 +141,4 @@ function distinguish(field: TokenField, value: string): TokenType {
       break
   }
   return 'other'
-}
-
-export class Lexer {
-  constructor(
-    private text: string,
-    private field: TokenField,
-    private index = 0,
-    private token: Token | null = null
-  ) {}
-  private _next(start: number): Token | null {
-    const token = ['', '']
-    for (this.index = start; this.index < this.text.length; this.index++) {
-      const nextType = distinguish(this.field, token[1] + this.text[this.index])
-      if (nextType === 'other') {
-        return token as Token
-      } else {
-        token[0] = nextType
-        token[1] = token[1] + this.text[this.index]
-      }
-    }
-    return token as Token
-  }
-  skip(): string {
-    let value = ''
-    if (!this.token) {
-      for (let i = this.index; i < this.text.length; i++) {
-        if (distinguish(this.field, this.text[i]) === 'other') {
-          value += this.text[i]
-        } else {
-          this.token = this._next(i)
-          if (this.token && this.token[0] === 'partial') {
-            value += this.token[1]
-            this.token = null
-          } else {
-            return value
-          }
-        }
-      }
-    }
-    return value
-  }
-  nextType(): TokenType {
-    this.skip()
-    return this.token ? this.token[0] : ''
-  }
-  pop(): Token | null {
-    this.skip()
-    const token = this.token
-    this.token = null
-    return token ? token : null
-  }
-  expand(field: TokenField, func: () => void): void {
-    const parent = this.field
-    this.field = field
-    func()
-    if (this.token) {
-      this.index -= this.token[1].length
-      this.token = null
-    }
-    this.field = parent
-  }
 }
