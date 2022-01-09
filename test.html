@@ -69,6 +69,7 @@ describe('Data Binding', function() {
           x: 1
         }
         watch(data)
+        console.log('data:', data)
         equal(data.x, 1)
         data.x++
         equal(data.x, 2)
@@ -150,6 +151,7 @@ describe('Data Binding', function() {
         equal(y, 4)
       })
     })
+    // TODO watch array
 
     describe(': spy', function() {
       it('watch a property', () => {
@@ -1201,7 +1203,6 @@ describe('Virtual Dom', function() {
           }
         }] }
         patch(tree, newTree)
-        console.log('tree:', JSON.parse(JSON.stringify(tree)))
         equal(tree, {
           children: [{
             tag: 'div',
@@ -2094,7 +2095,7 @@ describe('Template Engine', function() {
     })
     // TODO: test escape char
     // TODO: test keywords
-    // TODO: test function
+    // TODO: test function and method(this)
     // TODO: test spread
 
     it('expression: word', () => {
@@ -2389,7 +2390,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: add style only', () => {
-        const template = parse(`<p style+="'color: red'"></p>`)
+        const template = parse(`<p style:="'color: red'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -2412,7 +2413,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: add style', () => {
-        const template = parse(`<p style="color: red" style+="\`margin-top: \${x}px\`"></p>`)
+        const template = parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -2446,33 +2447,33 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: add styles', () => {
-        const template = parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`)
-        equal(template, {
-          type: 'tree',
-          children: [
-            {
-              tag: "p",
-              type: "element",
-              style: {
-                type: "join",
-                separator: ";",
-                values: [
-                  "color: red",
-                  {
-                    type: "literal",
-                    value: "margin-top: 5px"
-                  },
-                  {
-                    type: "literal",
-                    value: "margin: 0 auto"
-                  }
-                ]
-              }
-            }
-          ]
-        })
-      })
+    //   it('parse: add styles', () => {
+    //     const template = parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`)
+    //     equal(template, {
+    //       type: 'tree',
+    //       children: [
+    //         {
+    //           tag: "p",
+    //           type: "element",
+    //           style: {
+    //             type: "join",
+    //             separator: ";",
+    //             values: [
+    //               "color: red",
+    //               {
+    //                 type: "literal",
+    //                 value: "margin-top: 5px"
+    //               },
+    //               {
+    //                 type: "literal",
+    //                 value: "margin: 0 auto"
+    //               }
+    //             ]
+    //           }
+    //         }
+    //       ]
+    //     })
+    //   })
     })
 
     describe(': props', function() {
@@ -2492,7 +2493,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: add props variable', () => {
+      it('parse: assign props variable', () => {
         const template = parse(`<p id:="id"></p>`)
         equal(template, {
           type: 'tree',
@@ -2501,6 +2502,94 @@ describe('Template Engine', function() {
               tag: "p",
               type: "element",
               props: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: boolean props variable', () => {
+        const template = parse(`<p id&="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              bools: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: assign props already variable', () => {
+        const template = parse(`<p id="id" id:="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              props: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: boolean props override props', () => {
+        const template = parse(`<p id="id" id&="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              bools: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: boolean props override assign props', () => {
+        const template = parse(`<p id:="id" id&="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              bools: {
                 id: {
                   type: "get",
                   value: {
@@ -2566,7 +2655,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: add on', () => {
-        const template = parse('<p onclick+="value"></p>')
+        const template = parse('<p onclick:="value"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -2592,7 +2681,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: add ons', () => {
-        const template = parse('<p onclick="value" onclick+="value2" onclick+1="value3"></p>')
+        const template = parse('<p onclick="value" onclick:="value2"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -2620,16 +2709,6 @@ describe('Template Engine', function() {
                         name: "value2"
                       }
                     }
-                  },
-                  {
-                    type: 'handler',
-                    value: {
-                      type: "get",
-                      value: {
-                        type: "variable",
-                        name: "value3"
-                      }
-                    }
                   }
                 ]
               }
@@ -2637,52 +2716,52 @@ describe('Template Engine', function() {
           ]
         })
       })
-      it('parse: add reverse ons', () => {
-        const template = parse('<p onclick+="value2" onclick="value" onclick+1="value3"></p>')
-        equal(template, {
-          type: 'tree',
-          children: [
-            {
-              tag: "p",
-              type: "element",
-              on: {
-                click: [
-                  {
-                    type: 'handler',
-                    value: {
-                      type: "get",
-                      value: {
-                        type: "variable",
-                        name: "value"
-                      }
-                    }
-                  },
-                  {
-                    type: 'handler',
-                    value: {
-                      type: "get",
-                      value: {
-                        type: "variable",
-                        name: "value2"
-                      }
-                    }
-                  },
-                  {
-                    type: 'handler',
-                    value: {
-                      type: "get",
-                      value: {
-                        type: "variable",
-                        name: "value3"
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        })
-      })
+      // it('parse: add reverse ons', () => {
+      //   const template = parse('<p onclick+="value2" onclick="value" onclick+1="value3"></p>')
+      //   equal(template, {
+      //     type: 'tree',
+      //     children: [
+      //       {
+      //         tag: "p",
+      //         type: "element",
+      //         on: {
+      //           click: [
+      //             {
+      //               type: 'handler',
+      //               value: {
+      //                 type: "get",
+      //                 value: {
+      //                   type: "variable",
+      //                   name: "value"
+      //                 }
+      //               }
+      //             },
+      //             {
+      //               type: 'handler',
+      //               value: {
+      //                 type: "get",
+      //                 value: {
+      //                   type: "variable",
+      //                   name: "value2"
+      //                 }
+      //               }
+      //             },
+      //             {
+      //               type: 'handler',
+      //               value: {
+      //                 type: "get",
+      //                 value: {
+      //                   type: "variable",
+      //                   name: "value3"
+      //                 }
+      //               }
+      //             }
+      //           ]
+      //         }
+      //       }
+      //     ]
+      //   })
+      // })
     })
 
     describe(': @if', function() {
@@ -2708,7 +2787,6 @@ describe('Template Engine', function() {
           ]
         })
       })
-      // TODO: 空文字対策
       it('parse: @if @else', () => {
         const template = parse('<p @if="isActive"></p><div @else></div>')
         equal(template, {
@@ -2735,6 +2813,63 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse: @if @else has space', () => {
+        const template = parse(`<p @if="isActive"></p>
+          <div @else></div>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              },
+              falsy: {
+                tag: "div",
+                type: "element"
+              },
+            }
+          ]
+        })
+      })
+      
+      it('parse: @if @else has not space', () => {
+        const template = parse(`<p @if="isActive"></p>.<div @else></div>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              }
+            },
+            ".",
+            {
+              tag: "div",
+              type: "element"
+            }
+          ]
+        })
+      })
+
       it('parse: @if @else chain', () => {
         const template = parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>')
         equal(template, {
@@ -3258,7 +3393,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: add style only', () => {
-        const tree = evaluate(parse(`<p style+="'color: red'"></p>`))
+        const tree = evaluate(parse(`<p style:="'color: red'"></p>`))
         equal(tree, {
           children: [
             {
@@ -3270,7 +3405,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: add style', () => {
-        const tree = evaluate(parse(`<p style="color: red" style+="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
+        const tree = evaluate(parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
         equal(tree, {
           children: [
             {
@@ -3281,17 +3416,17 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: add styles', () => {
-        const tree = evaluate(parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`))
-        equal(tree, {
-          children: [
-            {
-              tag: "p",
-              style: "color: red;margin-top: 5px;margin: 0 auto"
-            }
-          ]
-        })
-      })
+      // it('evaluate: add styles', () => {
+      //   const tree = evaluate(parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`))
+      //   equal(tree, {
+      //     children: [
+      //       {
+      //         tag: "p",
+      //         style: "color: red;margin-top: 5px;margin: 0 auto"
+      //       }
+      //     ]
+      //   })
+      // })
     })
 
     describe(': props', function() {
@@ -3332,6 +3467,32 @@ describe('Template Engine', function() {
               props: {
                 value: 10
               }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: truthy props variable', () => {
+        const tree = evaluate(parse(`<p id&="1"></p>`))
+        console.log('tree:', template)
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              props: {
+                id: 1
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: falsy props variable', () => {
+        const tree = evaluate(parse(`<p id&="0"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p"
             }
           ]
         })
