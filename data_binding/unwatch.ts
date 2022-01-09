@@ -1,6 +1,6 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { ChangeCallback, ReactiveCallback, BeakoObject } from './types.ts'
+import { dictionary, reactiveKey, ChangeCallback, ReactiveCallback, ReactiveTuple, BeakoObject } from './types.ts'
 import { retreat } from './retreat.ts'
 
 export function unwatch(data: unknown): unknown
@@ -14,8 +14,8 @@ export function unwatch(data: unknown, keyOrCallback?:  ReactiveCallback | strin
       if (keyOrCallback) {
         // Remove bio from all properties
         const reactiveCallback = keyOrCallback as ReactiveCallback
+        (obj[dictionary][reactiveKey] as ReactiveTuple)[1].delete(reactiveCallback)
         for (const key in obj) {
-          retreat(obj, key, reactiveCallback)
           unwatch(obj[key], reactiveCallback)
         }
       } else {

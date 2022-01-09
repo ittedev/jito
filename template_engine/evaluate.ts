@@ -88,9 +88,23 @@ export const evaluator = {
 
   ['function']: (
     (template: FunctionTemplate, stack: Variables): unknown => {
-      const func = evaluate(template.name, stack)
-      if (typeof func === 'function') {
-        return func(...template.params.map(param => evaluate(param, stack)))
+      if (template.name.type === 'get' && (template.name as GetTemplate).value.type === 'hash') {
+        // method
+        const value = evaluate((template.name as GetTemplate).value, stack) as Ref
+        if (!value) {
+          throw Error(evaluate(((template.name as GetTemplate).value as HashTemplate).key) as string + ' is not defined')
+        }
+        const f = value[0][value[1]]
+        if (typeof f === 'function') {
+          return f.apply(value[0], template.params.map(param => evaluate(param, stack)))
+        }
+        
+      } else {
+        // other
+        const f = evaluate(template.name, stack)
+        if (typeof f === 'function') {
+          return f(...template.params.map(param => evaluate(param, stack)))
+        }
       }
       throw Error(template.name.toString() + ' is not a function')
     }
@@ -289,7 +303,12 @@ export function evaluateProps(template: ElementTemplate, stack: Variables, ve: V
   }
 }
 
-function compareCache(cache: Variables, stack: Variables, cacheIndex: number = cache.length - 1, stackIndex: number = stack.length - 1): boolean {
+function compareCache(
+  cache: Variables,
+  stack: Variables,
+  cacheIndex: number = cache.length - 1,
+  stackIndex: number = stack.length - 1
+): boolean {
   const [cacheLoop, newCacheIndex] = pickup(cache, 'loop', cacheIndex) as [Loop | undefined, number]
   const [stackLoop, newStackIndex] = pickup(stack, 'loop', stackIndex) as [Loop | undefined, number]
   
@@ -299,8 +318,9 @@ function compareCache(cache: Variables, stack: Variables, cacheIndex: number = c
   return cacheLoop.index === stackLoop.index && 
     cacheLoop.key === stackLoop.key && 
     cacheLoop.value === stackLoop.value &&
-    compareCache(cache, stack, newCacheIndex,  newStackIndex)
+    compareCache(cache, stack, newCacheIndex - 1,  newStackIndex - 1)
 }
+
 function flatwrap(value: unknown): Array<unknown> {
   return value === null || value === undefined ?
     [] :

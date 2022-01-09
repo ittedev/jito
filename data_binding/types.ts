@@ -2,16 +2,18 @@
 // This module is browser compatible.
 
 export const dictionary = Symbol('Beako')
+export const reactiveKey = Symbol('Reactive')
+export const arrayKey = Symbol('Array')
 export const isLocked = Symbol('Beako-lock')
 
 export interface Dictionary {
   [key: string]: Page
+  [key: symbol]: ReactiveTuple | Array<unknown>
 }
 
-export interface Page {
-  value: unknown
-  arms: Set<Arm>
-}
+export type Page = [unknown, Set<Arm>]
+
+export type ReactiveTuple = [Bio, Set<ReactiveCallback>]
 
 export type ArmType = 'bio' | 'spy' | 'bom'
 
