@@ -4,6 +4,7 @@ import { ComponentConstructor, Component } from './types.ts'
 import { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
 import { Variables } from '../template_engine/types.ts'
 import { reach } from '../data_binding/reach.ts'
+import { unwatch } from '../data_binding/unwatch.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
 import { patch } from '../virtual_dom/patch.ts'
 import { builtin } from './builtin.ts'
@@ -17,7 +18,7 @@ export class Entity {
   private _patch: () => void = () => {
     if (this.stack && this._tree && this._component.template) {
       const tree = evaluate(this._component.template, this.stack) as VirtualTree
-      // console.log('patch:', JSON.parse(JSON.stringify(this._tree)), tree)
+      // console.log('patch:', this._tree, tree)
       patch(this._tree, tree)
       // patch(this._tree, evaluate(this._component.template, this.stack) as VirtualTree)
     }
@@ -45,13 +46,17 @@ export class Entity {
       case 'is': case 'class': case 'part': case 'style': return
       default: {
         const old = this._props[name]
-        this._props[name] = value
-        reach(this._props[name], this._patch)
         if (old !== value) {
+          unwatch(old, this._patch)
+          this._props[name] = value
+          reach(this._props[name], this._patch)
           this._patch()
         }
       }
     }
+  }
+  _unwatch() {
+    unwatch(this.stack, this._patch)
   }
   get component(): Component { return this._component }
   get el(): Element { return this._el }

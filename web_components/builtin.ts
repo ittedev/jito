@@ -3,6 +3,7 @@
 import { lock } from '../data_binding/lock.ts'
 
 export const builtin = lock({
+  alert,
   console,
   Object,
   Number,
@@ -14,5 +15,6 @@ export const builtin = lock({
   isNaN,
   isFinite,
   location,
-  alert
+  history,
+  navigator
 })

@@ -14,7 +14,7 @@ export class ComponentElement extends HTMLElement {
     super()
     this.tree = load(this.attachShadow({ mode: 'open' }))
   }
-  static get observedAttributes() { return ['class', 'part', 'style'] }
+  // static get observedAttributes() { return ['class', 'part', 'style'] }
   setProp(name: string, value: unknown) {
     this.entity?.setProp(name, value)
   }
@@ -37,9 +37,9 @@ export class ComponentElement extends HTMLElement {
     this.setProp(name, value)
     super.setAttribute(name, value as string)
   }
-  attributeChangedCallback(name: string, oldValue: unknown, newValue: unknown) {
-    // console.log('attributeChangedCallback()', name, oldValue, newValue)
-  }
+  // attributeChangedCallback(name: string, oldValue: unknown, newValue: unknown) {
+  //   // console.log('attributeChangedCallback()', name, oldValue, newValue)
+  // }
   getAttributeNode(name: string): Attr | null {
     const attr = super.getAttributeNode(name)
     return attr ? proxyAttr(attr, this.setProp) : attr
@@ -79,11 +79,17 @@ class LocalComponentElement extends ComponentElement {
               this.entity = new Entity(component, this, this.tree)
             }
           }
+          // TODO: add error
           break
         }
         case 'object':
           if (instanceOfComponent(value)) {
-            this.entity = new Entity(value, this, this.tree)
+            if (this.entity?.component !== value) {
+              this.entity?._unwatch()
+              this.entity = new Entity(value, this, this.tree)
+            }
+          } else {
+            throw Error(value + ' is not a component.')
           }
           break
       }
