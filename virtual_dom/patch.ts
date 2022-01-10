@@ -44,6 +44,7 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
   patchProps(ve, newVe)
   patchOn(ve, newVe)
   patchChildren(ve, newVe)
+  patchForm(ve, newVe)
 
   if ('key' in newVe) {
     ve.key = newVe.key
@@ -55,21 +56,15 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
 }
 
 function patchClass(ve: LinkedVirtualElement, newVe: VirtualElement) {
-  const currentClass = ve.class || []
-  const newClass = newVe.class || []
+  const currentClass = (ve.class || []).join(' ')
+  const newClass = (newVe.class || []).join(' ')
 
-  const shortage = newClass.filter(cls => !currentClass.includes(cls))
-  if (shortage.length) {
-    ve.node.classList.add(...shortage)
-  }
-
-  const surplus = currentClass.filter(cls => !newClass.includes(cls))
-  if (surplus.length) {
-    ve.node.classList.remove(...surplus)
+  if (currentClass !== newClass) {
+    ve.node.className = newClass
   }
 
   if (newClass.length) {
-    ve.class = newClass.slice()
+    ve.class = (newVe.class || []).slice()
   } else {
     delete ve.class
   }
@@ -187,6 +182,44 @@ function patchOn(ve: LinkedVirtualElement, newVe: VirtualElement) {
     delete ve.on
   }
 }
+
+function patchForm(ve: LinkedVirtualElement, newVe: VirtualElement) {
+  // <input>
+  if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.node)) {
+    const input = ve.node as HTMLInputElement
+    // value
+    if (input.value !== newVe.props?.value) {
+      if (newVe.props && 'value' in newVe.props) {
+        if (input.value !== (newVe.props?.value as string).toString()) { // Object.create(null)?
+          input.value = newVe.props.value as string
+        }
+      } else {
+        if ((ve.node as HTMLInputElement).value !== '') {
+          (ve.node as HTMLInputElement).value = ''
+        }
+      }
+    }
+
+    // checked
+    if (!input.checked && newVe.props && 'checked' in newVe.props) {
+      input.checked = true
+    } else if (input.checked && !(newVe.props && 'checked' in newVe.props)) {
+      input.checked = false
+    }
+  }
+
+  // <option>
+  if (Object.prototype.isPrototypeOf.call(HTMLOptionElement.prototype, ve.node)) {
+    const option = ve.node as HTMLOptionElement
+    // selected
+    if (!option.selected && newVe.props && 'selected' in newVe.props) {
+      option.selected = true
+    } else if (option.selected && !(newVe.props && 'selected' in newVe.props)) {
+      option.selected = false
+    }
+  }
+}
+
 
 // TODO: add use DocumentFragment?
 class LinkedVirtualElementPointer {
