@@ -3,7 +3,7 @@
   "version": "0.9.12",
   "license": "MIT",
   "author": "Nakamura",
-  "description": "Beako is web component tools with Data Binding, Template Engine and Virtual Dom for Deno.",
+  "description": "Beako.js is Web component tools with Data Binding, Template Engine and Virtual DOM for Deno.",
   "main": "beako.js",
   "type": "module",
   "files": [

@@ -1,6 +1,6 @@
 # Beako.js
 
-Beako is web component tools with Data Binding, Template Engine and Virtual Dom.
+Beako.js is web component tools with Data Binding, Template Engine and Virtual DOM.
 
 She support Deno and Web browsers.
 
