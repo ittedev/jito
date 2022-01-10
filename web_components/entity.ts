@@ -30,7 +30,7 @@ export class Entity {
     if (typeof this._component.stack === 'function') {
       (async () => {
         const stack = await (component.stack as ComponentConstructor)(this)
-        this.stack = stack ? (Array.isArray(stack) ? [builtin, this._props, ...stack] : [builtin, this._props, stack]) : [builtin] 
+        this.stack = [builtin, this._props, ...(stack ? Array.isArray(stack) ? stack : [stack] : [])]
         reach(stack, this._patch)
         this._patch()
       })().then()
@@ -46,6 +46,7 @@ export class Entity {
       default: {
         const old = this._props[name]
         this._props[name] = value
+        reach(this._props[name], this._patch)
         if (old !== value) {
           this._patch()
         }
