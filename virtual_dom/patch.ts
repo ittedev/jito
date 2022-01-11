@@ -25,7 +25,7 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
  * 
  * @alpha
  */
- export function patchElement(ve: LinkedVirtualElement, newVe: VirtualElement): LinkedVirtualElement {
+export function patchElement(ve: LinkedVirtualElement, newVe: VirtualElement): LinkedVirtualElement {
   // if tag is different, new element
   if (ve.tag !== newVe.tag || ve.is !== newVe.is) {
     return patchElement(newVe.is ? {

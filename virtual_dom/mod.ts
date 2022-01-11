@@ -9,3 +9,5 @@ export type {
 
 export { load } from './load.ts'
 export { patch } from './patch.ts'
+export { trace } from './trace.ts'
+export { find } from './find.ts'
