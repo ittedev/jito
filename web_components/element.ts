@@ -52,15 +52,16 @@ export class ComponentElement extends HTMLElement {
     this.setProp(attr.name, undefined)
     return super.removeAttributeNode(attr)
   }
+  connectedCallback() {
+    this.dispatchEvent(new CustomEvent('connected', { bubbles: false }))
+  }
+  disconnectedCallback() {
+    this.dispatchEvent(new CustomEvent('disconnected', { bubbles: false }))
+  }
+
   // not spport
   // getAttributeNodeNS()
   // ARIAMixin
-  // connectedCallback() {
-  //   console.log('connectedCallback()')
-  // }
-  // disconnectedCallback() {
-  //   console.log('disconnectedCallback()')
-  // }
 }
 
 class LocalComponentElement extends ComponentElement {
@@ -86,6 +87,7 @@ class LocalComponentElement extends ComponentElement {
           if (instanceOfComponent(value)) {
             if (this.entity?.component !== value) {
               this.entity?._unwatch()
+              // TODO: clear shadow root
               this.entity = new Entity(value, this, this.tree)
             }
           } else {

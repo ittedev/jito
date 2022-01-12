@@ -22,6 +22,6 @@ export interface LinkedVirtualElement extends VirtualElement {
 }
 
 export interface LinkedVirtualTree extends VirtualTree {
-  node: Element | DocumentFragment
+  node: Element | DocumentFragment | ShadowRoot
   children?: Array<string | LinkedVirtualElement | number>
 }
