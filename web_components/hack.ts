@@ -33,8 +33,11 @@ export function hack(target: string | Element, template: string | TreeTemplate |
     typeof target === 'string' ?
       document.querySelector(target) as Element :
       target as Element
-  const tree = load(element.attachShadow({mode: 'open'}))
   const component = instanceOfComponent(template) ? template : compact(template, stack)
+  if (component.options.localeOnly) {
+    throw Error('This componet is local only.')
+  }
+  const tree = load(element.attachShadow({ mode: component.options.mode, delegatesFocus: component.options.delegatesFocus }))
   const entity = new Entity(component, element, tree)
 
   const temp = parse(element) as CustomElementTemplate

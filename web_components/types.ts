@@ -20,15 +20,27 @@ export interface CustomElementTemplate extends HasAttrTemplate {
   style?: string | Template
   children?: Array<Template | string>
   isForce?: boolean // Evaluate as an component without verifying whether it is a component
+  cache?: string | Component
 }
 
 // TODO: get refs
 // TODO: get lifecycle
 export type ComponentConstructor = (entity: Entity) => Variables | Record<string, unknown> | void | Promise<Variables | Record<string, unknown> | void>
 
+export interface ComponentOptions {
+  mode?: ShadowRootMode
+  delegatesFocus?: boolean
+  localeOnly?: boolean
+}
+
 export interface Component {
   template: TreeTemplate
   stack: ComponentConstructor | Variables
+  options: {
+    mode: ShadowRootMode
+    delegatesFocus: boolean
+    localeOnly?: boolean
+  }
 }
 
 // deno-lint-ignore no-explicit-any

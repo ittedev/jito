@@ -3,12 +3,13 @@
 import { ComponentConstructor, Component, instanceOfComponent } from './types.ts'
 import { Variables, ElementTemplate, TreeTemplate } from '../template_engine/types.ts'
 import { VirtualElement } from '../virtual_dom/types.ts'
+import { load } from '../virtual_dom/load.ts'
+import { parse } from '../template_engine/parse.ts'
+import { evaluate } from '../template_engine/evaluate.ts'
 import { compact } from './compact.ts'
 import { ComponentElement } from './element.ts'
 import { Entity } from './entity.ts'
-import { parse } from '../template_engine/parse.ts'
 import { extend } from './extend.ts'
-import { evaluate } from '../template_engine/evaluate.ts'
 
 export function define(name: string, component: Component): void
 export function define(name: string, html: string): void
@@ -20,10 +21,14 @@ export function define(name: string, template: TreeTemplate, construct: Componen
 export function define(name: string, template: string | TreeTemplate | Component, stack: Variables | Record<string, unknown> | ComponentConstructor): void
 export function define(name: string, template: string | TreeTemplate | Component, stack: Variables | Record<string, unknown> | ComponentConstructor = []): void {
   const component = instanceOfComponent(template) ? template : compact(template, stack)
+  if (component.options.localeOnly) {
+    throw Error('This componet is local only.')
+  }
   customElements.define(name, class extends ComponentElement {
     constructor() {
       super()
-      this.entity = new Entity(component, this, this.tree)
+      const tree = load(this.attachShadow({ mode: component.options.mode, delegatesFocus: component.options.delegatesFocus }))
+      this.entity = new Entity(component, this, tree)
 
       if(this.innerHTML) {
         // if this is rendered from html

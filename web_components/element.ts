@@ -1,18 +1,15 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { Component, instanceOfComponent } from './types.ts'
-import { LinkedVirtualTree } from '../virtual_dom/types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { Entity } from './entity.ts'
 
 export const localComponentElementTag = 'beako-entity'
 
 export class ComponentElement extends HTMLElement {
-  tree: LinkedVirtualTree
   entity: Entity | undefined
   constructor() {
     super()
-    this.tree = load(this.attachShadow({ mode: 'open' }))
   }
   // static get observedAttributes() { return ['class', 'part', 'style'] }
   setProp(name: string, value: unknown) {
@@ -71,21 +68,20 @@ class LocalComponentElement extends ComponentElement {
           if (def && ComponentElement.isPrototypeOf(def)) {
             const component = (def as typeof ComponentElement).getComponent()
             if (component) {
-              this.entity = new Entity(component, this, this.tree)
+              const tree = load(this.attachShadow({ mode: component.options.mode, delegatesFocus: component.options.delegatesFocus }))
+              this.entity = new Entity(component, this, tree)
             }
+          } else {
+            throw Error(value + ' is not a component.')
           }
-          // TODO: add error
           break
         }
         case 'object':
           if (instanceOfComponent(value)) {
-            if (this.entity?.component !== value) {
-              this.entity?._unwatch()
-              // TODO: clear shadow root
-              this.entity = new Entity(value, this, this.tree)
-            }
+            const tree = load(this.attachShadow({ mode: value.options.mode, delegatesFocus: value.options.delegatesFocus }))
+            this.entity = new Entity(value, this, tree)
           } else {
-            throw Error(value + ' is not a component.')
+            throw Error('The object is not a component.')
           }
           break
       }

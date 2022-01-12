@@ -14,6 +14,7 @@ export interface VirtualElement extends VirtualTree {
   props?: Record<string, unknown>
   on?: Record<string, Array<EventListener>>
   key?: unknown
+  new?: boolean
 }
 
 export interface LinkedVirtualElement extends VirtualElement {

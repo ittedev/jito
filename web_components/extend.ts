@@ -1,6 +1,7 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 // deno-lint-ignore-file no-fallthrough
+import { EvaluationTemplate, CustomElementTemplate, Component, instanceOfComponent } from './types.ts'
 import { VirtualElement } from '../virtual_dom/types.ts'
 import {
   Variables,
@@ -15,7 +16,6 @@ import {
   GroupTemplate
 } from '../template_engine/types.ts'
 import { evaluate, evaluator, evaluateProps } from '../template_engine/evaluate.ts'
-import { EvaluationTemplate, CustomElementTemplate, instanceOfComponent } from './types.ts'
 import { ComponentElement, localComponentElementTag } from './element.ts'
 
 export function extend(template: Template): Template
@@ -170,6 +170,14 @@ evaluator.custom = (
       }
 
       evaluateProps(template as ElementTemplate, stack, el)
+      if (template.cache && template.cache !== el.props?.component) {
+        el.new = true
+      }
+      if (el.props?.component) {
+        template.cache = el.props.component as Component
+      } else {
+        delete template.cache
+      }
       
       return el
   } else {
