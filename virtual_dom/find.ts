@@ -16,7 +16,10 @@ export function find(tree: VirtualTree, callback: (ve: VirtualElement) => boolea
       if (callback(child)) {
         return child
       } else {
-        find(child, callback)
+        const result = find(child, callback)
+        if (result) {
+          return result
+        }
       }
     }
   }
