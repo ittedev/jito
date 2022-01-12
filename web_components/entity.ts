@@ -6,7 +6,6 @@ import { Variables } from '../template_engine/types.ts'
 import { reach } from '../data_binding/reach.ts'
 import { unwatch } from '../data_binding/unwatch.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
-import { clone } from '../virtual_dom/clone.ts'
 import { patch } from '../virtual_dom/patch.ts'
 import { builtin } from './builtin.ts'
 
@@ -68,13 +67,6 @@ export class Entity {
       const tree = evaluate(this._component.template, this._stack) as VirtualTree
       // console.log('patch:', this._tree, tree)
       patch(this._tree, tree)
-      this._el.dispatchEvent(new CustomEvent('patched', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          tree: clone(this._tree)
-        }
-      }))
     }
   }
 

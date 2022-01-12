@@ -7,7 +7,9 @@ export type {
   LinkedVirtualTree
 } from './types.ts'
 
+export { eventTypes } from './event_types.ts'
 export { load } from './load.ts'
 export { patch } from './patch.ts'
 export { trace } from './trace.ts'
-export { find } from './find.ts'
+export { clone } from './clone.ts'
+export { destroy } from './destroy.ts'

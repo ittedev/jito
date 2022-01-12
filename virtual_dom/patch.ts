@@ -1,6 +1,9 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { VirtualTree, LinkedVirtualTree, VirtualElement, LinkedVirtualElement } from './types.ts'
+import { eventTypes } from './event_types.ts'
+import { clone } from './clone.ts'
+import { destroy } from './destroy.ts'
 
 /**
  * Apply a patch to a dom node.
@@ -9,10 +12,16 @@ import { VirtualTree, LinkedVirtualTree, VirtualElement, LinkedVirtualElement } 
  * @param newTree - A new virtual tree patch tree.
  * @returns If tag names are equal, then the patched tree, else new LinkedVirtualElement linked with new real element.
  * 
- * @alpha
  */
 export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirtualTree {
   patchChildren(tree, newTree)
+  tree.node.dispatchEvent(new CustomEvent(eventTypes.patch, {
+    bubbles: true,
+    composed: false,
+    detail: {
+      tree: clone(tree)
+    }
+  }))
   return tree
 }
 
@@ -237,7 +246,7 @@ class LinkedVirtualElementPointer {
   get isEnd(): boolean {
     return this.index >= this.children.length
   }
-  get ve(): string | LinkedVirtualElement | number {
+  get vNode(): string | LinkedVirtualElement | number {
     return this.children[this.index]
   }
   next(indexStep = 1) {
@@ -263,34 +272,42 @@ class LinkedVirtualElementPointer {
       }
     }
   }
-  add(ve: LinkedVirtualElement | string) {
-    const node = typeof ve === 'string' ? document.createTextNode(ve) : ve.node
+  add(vNode: LinkedVirtualElement | string) {
+    const node = typeof vNode === 'string' ? document.createTextNode(vNode) : vNode.node
     const next = this.node
     this.node = this.parent.node.insertBefore(node, this.node || null)
     this.next(next ? 0 : 1)
-    return ve
+    return vNode
   }
-  replace(ve: LinkedVirtualElement | string) {
-    if (typeof ve === 'string' && this.node?.nodeType === 3) { // TEXT_NODE
-      if ((this.node as Text).data !== ve) {
-        (this.node as Text).data = ve
+  replace(vNode: LinkedVirtualElement | string) {
+    if (typeof vNode === 'string' && this.node?.nodeType === 3) { // TEXT_NODE
+      if ((this.node as Text).data !== vNode) {
+        (this.node as Text).data = vNode
       }
     } else {
-      const node = typeof ve === 'string' ? document.createTextNode(ve) : ve.node
+      const node = typeof vNode === 'string' ? document.createTextNode(vNode) : vNode.node
       if (this.node !== node) {
-        if (typeof this.ve === 'object' && 'key' in this.ve) {
-          this.stock.set(this.ve.key, this.ve)
+        if (typeof this.vNode === 'object') {
+          if ('key' in this.vNode) {
+            this.stock.set(this.vNode.key, this.vNode)
+          } else if (this.node?.nodeType === 1) { // ELEMENT_NODE
+            destroy(this.vNode)
+          }
         }
         this.parent.node.replaceChild(node, this.node as Node)
         this.node = node
       }
     }
     this.next()
-    return ve
+    return vNode
   }
   remove() {
-    if (typeof this.ve === 'object' && 'key' in this.ve) {
-      this.stock.set(this.ve.key, this.ve)
+    if (typeof this.vNode === 'object') {
+      if ('key' in this.vNode) {
+        this.stock.set(this.vNode.key, this.vNode)
+      } if (this.node?.nodeType === 1) { // ELEMENT_NODE
+        destroy(this.vNode)
+      }
     }
     const node = this.node
     this.node = node?.nextSibling || null
@@ -302,6 +319,12 @@ class LinkedVirtualElementPointer {
         this.parent.node.removeChild(node)
       }
     }
+    while (!this.isEnd) {
+      if (typeof this.vNode === 'object') {
+        destroy(this.vNode)
+      }
+      this.index++
+    }
   }
   has(key: unknown) {
     return this.stock.has(key)
@@ -312,6 +335,7 @@ class LinkedVirtualElementPointer {
     return this.add(patchElement(tmp, ve))
   }
   clear() {
+    this.stock.forEach(ve => destroy(ve))
     this.stock.clear()
   }
   // true is match, false is stop, void is continue
@@ -339,49 +363,49 @@ class LinkedVirtualElementPointer {
 function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: VirtualTree) {
   const newChildren = newTree.children || []
   const pointer = new LinkedVirtualElementPointer(tree)
-  const numbers = newChildren.filter(ve => typeof ve === 'number').reverse() as Array<number>
+  const numbers = newChildren.filter(vNode => typeof vNode === 'number').reverse() as Array<number>
   let number= numbers.pop()
 
-  const tmp = newChildren.map(ve => {
-    switch (typeof ve) {
+  const tmp = newChildren.map(vNode => {
+    switch (typeof vNode) {
       case 'string': {
-        if (!pointer.isEnd && typeof pointer.ve === 'string') {
-          return pointer.replace(ve)
+        if (!pointer.isEnd && typeof pointer.vNode === 'string') {
+          return pointer.replace(vNode)
         } else {
-          return pointer.add(ve)
+          return pointer.add(vNode)
         }
       }
 
       case 'object': {
-        if ('key' in ve) {
-          if (pointer.has(ve.key)) {
-            return pointer.addFromKey(ve.key, ve)
+        if ('key' in vNode) {
+          if (pointer.has(vNode.key)) {
+            return pointer.addFromKey(vNode.key, vNode)
           } else {
-            if (typeof pointer.ve === 'object') {
+            if (typeof pointer.vNode === 'object') {
               const isMatched = pointer.search(() => {
-                if (typeof pointer.ve === 'object' && ve.key === pointer.ve.key) {
+                if (typeof pointer.vNode === 'object' && vNode.key === pointer.vNode.key) {
                   return true
-                } else if (typeof pointer.ve === 'number' && (number != undefined && pointer.ve === number)) {
+                } else if (typeof pointer.vNode === 'number' && (number != undefined && pointer.vNode === number)) {
                   return false
                 }
               })
               if (isMatched) {
-                return pointer.replace(patchElement(pointer.ve, ve))
+                return pointer.replace(patchElement(pointer.vNode, vNode))
               }
             }
           }
         }
-        if (typeof pointer.ve === 'object') {
-          const tmp = 'key' in pointer.ve ? { tag: ve.tag, node: document.createElement(ve.tag) } : pointer.ve
-          return pointer.replace(patchElement(tmp, ve))
+        if (typeof pointer.vNode === 'object') {
+          const tmp = 'key' in pointer.vNode ? { tag: vNode.tag, node: document.createElement(vNode.tag) } : pointer.vNode
+          return pointer.replace(patchElement(tmp, vNode))
         } else {
-          return pointer.add(patchElement({ tag: ve.tag, node: document.createElement(ve.tag) }, ve))
+          return pointer.add(patchElement({ tag: vNode.tag, node: document.createElement(vNode.tag) }, vNode))
         }
       }
 
       case 'number': {
         const isMatched = pointer.search(() => {
-          if (typeof pointer.ve === 'number' && ve === pointer.ve) {
+          if (typeof pointer.vNode === 'number' && vNode === pointer.vNode) {
             return true
           }
         })
@@ -390,7 +414,7 @@ function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: 
           pointer.next()
         }
         pointer.clear()
-        return ve
+        return vNode
       }
     }
   })
