@@ -3,17 +3,17 @@
 import { dictionary, isLocked, reactiveKey, arrayKey, ReactiveTuple, ChangeCallback, ReactiveCallback, BeakoObject, Bio, Spy } from './types.ts'
 import { invade } from './invade.ts'
 
-export function watch(data: unknown): unknown
-export function watch(data: unknown, callback: ReactiveCallback): unknown
-export function watch(data: unknown, key: string, callback: ChangeCallback): unknown
-export function watch(data: unknown, key: string, spy: Spy): unknown
-export function watch(data: unknown, keys: string[], callback: ChangeCallback): unknown
-export function watch(data: unknown, keys: string[], spy: Spy): unknown
-export function watch(data: unknown, keyOrCallback?:  ReactiveCallback | Bio | string | string[], callback?: ChangeCallback | Spy): unknown {
+export function watch<T>(data: T): T
+export function watch<T>(data: T, callback: ReactiveCallback): T
+export function watch<T>(data: T, key: string, callback: ChangeCallback): T
+export function watch<T>(data: T, key: string, spy: Spy): T
+export function watch<T>(data: T, keys: string[], callback: ChangeCallback): T
+export function watch<T>(data: T, keys: string[], spy: Spy): T
+export function watch<T>(data: T, keyOrCallback?:  ReactiveCallback | Bio | string | string[], callback?: ChangeCallback | Spy): T {
   if (typeof data === 'object' &&
     data !== null &&
     (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))) {
-    const obj = data as BeakoObject
+    const obj = data as unknown as BeakoObject
     if (!obj[isLocked]) {
       invade(obj)
       if (callback === undefined) { // bio

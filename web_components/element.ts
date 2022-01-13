@@ -25,9 +25,12 @@ export class ComponentElement extends HTMLElement {
       })
     }
   }
+  whenConstructed(): Promise<void> | null {
+    return this.entity?.whenConstructed() || null
+  }
 
   // overwraps
-  get attributes (): NamedNodeMap {
+  get attributes(): NamedNodeMap {
     return proxyNamedNodeMap(super.attributes, this.setProp)
   }
   setAttribute(name: string, value: unknown) {

@@ -4209,30 +4209,34 @@ describe('Web Components', function() {
   })
 
   describe('define()', function() {
-    it('define string', () => {
+    it('define string', async () => {
       define('define-1', `Hello beako!`)
       document.getElementById('define_target1').innerHTML = '<define-1>Hello world!</define-1>'
+      await sleep()
       const el = document.querySelector('define-1')
       equal(el.tagName, 'DEFINE-1')
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-    it('define template', () => {
+    it('define template', async () => {
       define('define-2', parse(`Hello beako!`))
       document.getElementById('define_target2').innerHTML = '<define-2>Hello world!</define-2>'
+      await sleep()
       const el = document.querySelector('define-2')
       equal(el.tagName, 'DEFINE-2')
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-    it('define string and data', () => {
+    it('define string and data', async () => {
       define('define-3', `Hello {{ name }}!`, { name: 'beako' })
       document.getElementById('define_target3').innerHTML = '<define-3>Hello world!</define-3>'
+      await sleep()
       const el = document.querySelector('define-3')
       equal(el.tagName, 'DEFINE-3')
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-    it('define component', () => {
+    it('define component', async () => {
       define('define-4', compact(`Hello beako!`))
       document.getElementById('define_target4').innerHTML = '<define-4>Hello world!</define-4>'
+      await sleep()
       const el = document.querySelector('define-4')
       equal(el.tagName, 'DEFINE-4')
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
@@ -4240,33 +4244,38 @@ describe('Web Components', function() {
   })
 
   describe('hack()', function() {
-    it('hack string', () => {
+    it('hack string', async () => {
       const el = document.querySelector('#hack_target1')
       hack(el, `Hello beako!`)
+      await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-    it('hack template', () => {
+    it('hack template', async () => {
       const el = document.querySelector('#hack_target2')
       hack(el, parse(`Hello beako!`))
+      await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-    it('hack string and data', () => {
+    it('hack string and data', async () => {
       const el = document.querySelector('#hack_target3')
       hack(el, `Hello {{ name }}!`, { name: 'beako' })
+      await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
-    it('hack component', () => {
+    it('hack component', async () => {
       const el = document.querySelector('#hack_target4')
       hack(el, compact(`Hello beako!`))
+      await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
   })
 
   describe('compact()', function() {
-    it('compact slot', () => {
+    it('compact slot', async () => {
       const el = document.querySelector('#compact_target1')
       const component = compact(`<slot name="my-text">Hello world!</slot>`)
       hack(el, component)
+      await sleep()
       el.innerHTML = `<span slot="my-text">Hello beako!</span>`
       equal(el.innerText, 'Hello beako!')
       equal(el.shadowRoot.querySelector('slot').innerHTML, 'Hello world!')
@@ -4315,6 +4324,7 @@ describe('Web Components', function() {
       const local = compact('<p>Hello {{ name }}!</p>', { name: 'beako' })
       const component = compact('<hello></hello>', { hello: local })
       hack(el, component)
+      await sleep()
       equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
   })
@@ -4331,6 +4341,7 @@ describe('Web Components', function() {
       const component2 = compact('<p>Welcome {{ name }}!</p>', data)
       hack(el1, component1)
       hack(el2, component2)
+      await sleep()
       equal(el1.shadowRoot.querySelector('p').innerText, 'Hello beako!')
       equal(el2.shadowRoot.querySelector('p').innerText, 'Welcome beako!')
     })

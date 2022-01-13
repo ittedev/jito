@@ -37,14 +37,14 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
 export function patchElement(ve: LinkedVirtualElement, newVe: VirtualElement): LinkedVirtualElement {
   // if tag is different, 'is' is different or 'new' is true then new element
   if (ve.tag !== newVe.tag || ve.is !== newVe.is || newVe.new) {
-    return patchElement(newVe.is ? {
+    ve = newVe.is ? {
       tag: newVe.tag,
       is : newVe.is,
       node: document.createElement(newVe.tag, { is : newVe.is })
     } : {
       tag: newVe.tag,
       node: document.createElement(newVe.tag)
-    }, newVe)
+    }
   }
 
   patchClass(ve, newVe)
