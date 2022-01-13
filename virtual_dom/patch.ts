@@ -17,7 +17,7 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
   patchChildren(tree, newTree)
   tree.node.dispatchEvent(new CustomEvent(eventTypes.patch, {
     bubbles: true,
-    composed: false,
+    composed: true,
     detail: {
       tree: clone(tree)
     }

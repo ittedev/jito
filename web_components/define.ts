@@ -13,14 +13,14 @@ import { extend } from './extend.ts'
 
 export function define(name: string, component: Component): void
 export function define(name: string, html: string): void
-export function define(name: string, html: string, stack: Variables): void
+export function define(name: string, html: string, data: Variables): void
 export function define(name: string, html: string, construct: ComponentConstructor): void
 export function define(name: string, template: TreeTemplate): void
-export function define(name: string, template: TreeTemplate, stack: Variables): void
+export function define(name: string, template: TreeTemplate, data: Variables): void
 export function define(name: string, template: TreeTemplate, construct: ComponentConstructor): void
-export function define(name: string, template: string | TreeTemplate | Component, stack: Variables | Record<string, unknown> | ComponentConstructor): void
-export function define(name: string, template: string | TreeTemplate | Component, stack: Variables | Record<string, unknown> | ComponentConstructor = []): void {
-  const component = instanceOfComponent(template) ? template : compact(template, stack)
+export function define(name: string, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor): void
+export function define(name: string, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor = []): void {
+  const component = instanceOfComponent(template) ? template : compact(template, data)
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')
   }

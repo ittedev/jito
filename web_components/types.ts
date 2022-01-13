@@ -35,7 +35,7 @@ export interface ComponentOptions {
 
 export interface Component {
   template: TreeTemplate
-  stack: ComponentConstructor | Variables
+  data: ComponentConstructor | Variables
   options: {
     mode: ShadowRootMode
     delegatesFocus: boolean
@@ -45,5 +45,5 @@ export interface Component {
 
 // deno-lint-ignore no-explicit-any
 export function instanceOfComponent(object: any): object is Component {
-  return typeof object === 'object' && object.template && object.stack
+  return typeof object === 'object' && object.template && object.data && object.options
 }

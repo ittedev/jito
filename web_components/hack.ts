@@ -11,29 +11,29 @@ import { evaluate } from '../template_engine/evaluate.ts'
 
 export function hack(selectors: string, component: Component): void
 export function hack(selectors: string, html: string): void
-export function hack(selectors: string, html: string, stack: Variables): void
-export function hack(selectors: string, html: string, stack: Record<string, unknown>): void
+export function hack(selectors: string, html: string, data: Variables): void
+export function hack(selectors: string, html: string, data: Record<string, unknown>): void
 export function hack(selectors: string, html: string, construct: ComponentConstructor): void
 export function hack(selectors: string, template: TreeTemplate): void
-export function hack(selectors: string, template: TreeTemplate, stack: Variables): void
-export function hack(selectors: string, template: TreeTemplate, stack: Record<string, unknown>): void
+export function hack(selectors: string, template: TreeTemplate, data: Variables): void
+export function hack(selectors: string, template: TreeTemplate, data: Record<string, unknown>): void
 export function hack(selectors: string, template: TreeTemplate, construct: ComponentConstructor): void
 export function hack(element: Element, component: Component): void
 export function hack(element: Element, html: string): void
-export function hack(element: Element, html: string, stack: Variables): void
-export function hack(element: Element, html: string, stack: Record<string, unknown>): void
+export function hack(element: Element, html: string, data: Variables): void
+export function hack(element: Element, html: string, data: Record<string, unknown>): void
 export function hack(element: Element, html: string, construct: ComponentConstructor): void
 export function hack(element: Element, template: TreeTemplate): void
-export function hack(element: Element, template: TreeTemplate, stack: Variables): void
-export function hack(element: Element, template: TreeTemplate, stack: Record<string, unknown>): void
+export function hack(element: Element, template: TreeTemplate, data: Variables): void
+export function hack(element: Element, template: TreeTemplate, data: Record<string, unknown>): void
 export function hack(element: Element, template: TreeTemplate, construct: ComponentConstructor): void
-export function hack(target: string | Element, template: string | TreeTemplate | Component, stack: Variables | Record<string, unknown> | ComponentConstructor): void
-export function hack(target: string | Element, template: string | TreeTemplate | Component, stack: Variables | Record<string, unknown> | ComponentConstructor = []): void {
+export function hack(target: string | Element, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor): void
+export function hack(target: string | Element, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor = []): void {
   const element: Element =
     typeof target === 'string' ?
       document.querySelector(target) as Element :
       target as Element
-  const component = instanceOfComponent(template) ? template : compact(template, stack)
+  const component = instanceOfComponent(template) ? template : compact(template, data)
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')
   }
