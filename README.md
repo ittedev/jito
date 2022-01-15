@@ -9,6 +9,8 @@ She support Deno and Web browsers.
 
 Please wait for it to be released in the near future.
 
+The explanation in Japanese is written [here](https://zenn.dev/itte/articles/54dfdf99622e40).
+
 ## Usage
 
 Beako.js use ES Modules
