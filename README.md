@@ -17,8 +17,12 @@ Beako.js use ES Modules
 
 ### Deno
 
+```shell
+deno install -f --allow-read --allow-write --allow-env --allow-run https://deno.land/x/beako@v0.9.16/cli/beako.ts
+```
+
 ```ts
-import { hack } from 'https://deno.land/x/beako@v0.9.15/mod.ts'
+import { watch, hack } from 'https://deno.land/x/beako@v0.9.16/mod.ts'
 
 const data = {
   count: 1
@@ -31,10 +35,10 @@ watch(data)
 hack(document, `Counter: {{ count }}`, data)
 ```
 
-To bundle script.js with a configuration file:
+Build:
 
 ```shell
-deno bundle --config deno.json script.ts > script.bundle.js
+beako build script.ts --outdir=public
 ```
 
 To Import it into html:
@@ -43,7 +47,7 @@ To Import it into html:
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <body>Loading...</body>
-<script type="module" src="script.bundle.js"></script>
+<script type="module" src="script.js"></script>
 ```
 
 ### CDN
@@ -53,7 +57,7 @@ To Import it into html:
 <meta charset="UTF-8">
 <body>Loading...</body>
 <script type="module">
-  import { watch, hack } from 'https://unpkg.com/beako@0.9.15/beako.js'
+  import { watch, hack } from 'https://unpkg.com/beako@0.9.16/beako.js'
 
   const data = {
     count: 1

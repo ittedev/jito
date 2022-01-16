@@ -11,7 +11,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "bundle": "deno run -A cli/beako.ts build mod.ts --allow-read --allow-env --outfile=beako.js"
+    "bundle": "deno run -A cli/beako.ts build mod.ts --allow-read --allow-env --allow-run --allow-write --outfile=beako.js"
   },
   "keywords": [
     "web components",
