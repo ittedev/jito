@@ -186,7 +186,7 @@ function parseElement(el: Element): ElementTemplate {
     tag: el.tagName.toLowerCase(),
   } as ElementTemplate
   
-  if (el.hasAttributes()) {
+  {
     const style = [] as Array<string | Template>
     el.getAttributeNames().forEach(name => {
       const value = el.getAttribute(name) as string

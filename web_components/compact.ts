@@ -4,6 +4,7 @@ import { ComponentConstructor, Component } from './types.ts'
 import { Variables, TreeTemplate } from '../template_engine/types.ts'
 import { lock } from '../data_binding/lock.ts'
 import { parse } from '../template_engine/parse.ts'
+import './custom_evaluator.ts'
 import { extend } from './extend.ts'
 
 export function compact(html: string): Component

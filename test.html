@@ -46,6 +46,7 @@ import {
   expression,
   innerText,
   parse,
+  html,
   evaluate,
   extend,
   define,
@@ -3471,7 +3472,13 @@ describe('Template Engine', function() {
           ]
         })
       })
-
+    })
+  })
+    
+  describe('html()', function() {
+    it('html: string', () => {
+      const template = html`Hello`
+      equal(template, 'Hello')
     })
   })
 

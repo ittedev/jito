@@ -11,7 +11,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "bundle": "deno bundle --config deno.json mod.ts | esbuild --minify > beako.js"
+    "bundle": "deno run -A cli/beako.ts build mod.ts --allow-read --allow-env --outfile=beako.js"
   },
   "keywords": [
     "web components",
