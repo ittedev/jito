@@ -18,7 +18,7 @@ Beako.js use ES Modules
 ### Deno
 
 ```ts
-import { hack } from 'https://deno.land/x/beako@v0.9.14/mod.ts'
+import { hack } from 'https://deno.land/x/beako@v0.9.15/mod.ts'
 
 const data = {
   count: 1
@@ -53,7 +53,7 @@ To Import it into html:
 <meta charset="UTF-8">
 <body>Loading...</body>
 <script type="module">
-  import { watch, hack } from 'https://unpkg.com/beako@0.9.14/beako.js'
+  import { watch, hack } from 'https://unpkg.com/beako@0.9.15/beako.js'
 
   const data = {
     count: 1
