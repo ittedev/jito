@@ -17,7 +17,6 @@ switch (command) {
 
   case 'build': {
     const outfile = options.find(arg => arg.startsWith('--outfile='))?.slice(10) || ''
-    console.log('outfile:', outfile)
     const outdir = options.find(arg => arg.startsWith('--outdir='))?.slice(9) || './dist'
     const watch = options.some(arg => arg === '--watch')
     const minify = !options.some(arg => arg === '--no-minify')
