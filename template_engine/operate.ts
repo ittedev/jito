@@ -48,8 +48,8 @@ export function operateBinary(operator: string, left: any, right: any) {
     case '^': return left ^ right
 
     // Binary logical operators
-    case '&&': return left && right
-    case '||': return left || right
+    case '&&': return left && right // TODO: right is may not be evaluated
+    case '||': return left || right // TODO: right is may not be evaluated
     case '??': return left ?? right
     
     // Other operators

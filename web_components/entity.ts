@@ -22,8 +22,8 @@ export class Entity {
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._patch = this._patch.bind(this)
-    this._on = this._on.bind(this)
-    this._off = this._off.bind(this)
+    // this._on = this._on.bind(this)
+    // this._off = this._off.bind(this)
 
     const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
     this._constructor = (async () => {
@@ -77,8 +77,8 @@ export class Entity {
   get root(): ShadowRoot { return this._tree.node as ShadowRoot }
   get props(): Record<string, unknown> { return this._props }
   get patch() { return this._patch }
-  get on() { return this._on }
-  get off() { return this._off }
+  // get on() { return this._on }
+  // get off() { return this._off }
   get whenConstructed() {
     return (): Promise<void> | null => this._constructor
   }
@@ -91,23 +91,23 @@ export class Entity {
     }
   }
 
-  private _on(type: string, listener: EventListener): void
-  private _on(type: string, listener: EventListener, options: EventListenerOptions): void
-  private _on(type: string, listener: EventListener, useCapture: boolean): void
-  private _on(type: string, listener: (e: CustomEvent) => void): void
-  private _on(type: string, listener: (e: CustomEvent) => void, useCapture: boolean): void
-  private _on(type: string, listener: (e: CustomEvent) => void, options: EventListenerOptions): void
-  private _on(type: string, listener: EventListener | ((e: CustomEvent) => void), options: boolean | EventListenerOptions = false): void {
-    this._host.addEventListener(type, listener as EventListener, options)
-  }
+  // private _on(type: string, listener: EventListener): void
+  // private _on(type: string, listener: EventListener, options: EventListenerOptions): void
+  // private _on(type: string, listener: EventListener, useCapture: boolean): void
+  // private _on(type: string, listener: (e: CustomEvent) => void): void
+  // private _on(type: string, listener: (e: CustomEvent) => void, useCapture: boolean): void
+  // private _on(type: string, listener: (e: CustomEvent) => void, options: EventListenerOptions): void
+  // private _on(type: string, listener: EventListener | ((e: CustomEvent) => void), options: boolean | EventListenerOptions = false): void {
+  //   this._host.addEventListener(type, listener as EventListener, options)
+  // }
 
-  private _off(type: string, listener: EventListener): void
-  private _off(type: string, listener: EventListener, options: EventListenerOptions): void
-  private _off(type: string, listener: EventListener, useCapture: boolean): void
-  private _off(type: string, listener: (e: CustomEvent) => void): void
-  private _off(type: string, listener: (e: CustomEvent) => void, useCapture: boolean): void
-  private _off(type: string, listener: (e: CustomEvent) => void, options: EventListenerOptions): void
-  private _off(type: string, listener: EventListener | ((e: CustomEvent) => void), options: boolean | EventListenerOptions = false): void {
-    this._host.removeEventListener(type, listener as EventListener, options)
-  }
+  // private _off(type: string, listener: EventListener): void
+  // private _off(type: string, listener: EventListener, options: EventListenerOptions): void
+  // private _off(type: string, listener: EventListener, useCapture: boolean): void
+  // private _off(type: string, listener: (e: CustomEvent) => void): void
+  // private _off(type: string, listener: (e: CustomEvent) => void, useCapture: boolean): void
+  // private _off(type: string, listener: (e: CustomEvent) => void, options: EventListenerOptions): void
+  // private _off(type: string, listener: EventListener | ((e: CustomEvent) => void), options: boolean | EventListenerOptions = false): void {
+  //   this._host.removeEventListener(type, listener as EventListener, options)
+  // }
 }

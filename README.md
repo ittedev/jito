@@ -18,7 +18,7 @@ Beako.js use ES Modules
 ### Deno
 
 ```shell
-deno install -f --allow-read --allow-write --allow-env --allow-run https://deno.land/x/beako@v0.9.16/cli/beako.ts
+deno install -f --allow-read --allow-write --allow-env --allow-run https://deno.land/x/beako@v0.9.17/cli/beako.ts
 ```
 
 ```ts

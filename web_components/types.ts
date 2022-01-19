@@ -23,8 +23,6 @@ export interface CustomElementTemplate extends HasAttrTemplate {
   cache?: string | Component
 }
 
-// TODO: get refs
-// TODO: get lifecycle
 export type ComponentConstructor = (entity: Entity) => Variables | Record<string, unknown> | void | Promise<Variables | Record<string, unknown> | void>
 
 export interface ComponentOptions {
