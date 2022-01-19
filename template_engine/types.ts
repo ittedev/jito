@@ -151,13 +151,14 @@ export interface HandlerTemplate {
   type: 'handler'
   value: Template
 }
-export interface CachedHandlerTemplate extends HandlerTemplate {
-  cache: Array<[Variables, EventListener]>
+
+export interface Cache {
+  handler?: Map<HandlerTemplate, Array<[Variables, EventListener]>>
 }
 
 export type Ref = [Record<PropertyKey, unknown>, PropertyKey]
 
-export type Evaluate = (template: Template, stack: Variables) => unknown
+export type Evaluate = (template: Template, stack: Variables, cache: Cache) => unknown
 
 export type Evaluator = Record<string, Evaluate>
 

@@ -8,26 +8,28 @@ import {
   Template,
   ElementTemplate,
   HasAttrTemplate,
-  GroupTemplate
+  GroupTemplate,
+  Cache
 } from '../template_engine/types.ts'
 import { evaluate, evaluator, evaluateProps } from '../template_engine/evaluate.ts'
 import { ComponentElement, localComponentElementTag } from './element.ts'
 import { isPrimitive } from './is_primitive.ts'
 
 evaluator.evaluation = (
-  (template: EvaluationTemplate, stack: Variables): unknown =>
+  (template: EvaluationTemplate, stack: Variables, cache: Cache): unknown =>
     evaluate(
       template.template,
-      template.stack ? template.stack.concat(stack) : stack
+      template.stack ? template.stack.concat(stack) : stack,
+      cache
     )
 ) as Evaluate
 
 evaluator.custom = (
-  (template: CustomElementTemplate, stack: Variables): VirtualElement => {
+  (template: CustomElementTemplate, stack: Variables, cache: Cache): VirtualElement => {
     const el = { tag: template.tag } as VirtualElement
 
     if (template.is) {
-      el.is = typeof template.is === 'string' ? template.is : evaluate(template.is, stack) as string
+      el.is = typeof template.is === 'string' ? template.is : evaluate(template.is, stack, cache) as string
     }
 
     let isComponent: boolean 
@@ -68,7 +70,7 @@ evaluator.custom = (
               contents.push([temp.props['@as'] as string, temp])
               return []
             } else if(temp.props.slot) {
-              return [evaluate(child, stack) as string | VirtualElement | number]
+              return [evaluate(child, stack, cache) as string | VirtualElement | number]
             }
           }
         }
@@ -90,7 +92,7 @@ evaluator.custom = (
         el.children = children
       }
 
-      evaluateProps(template as ElementTemplate, stack, el)
+      evaluateProps(template as ElementTemplate, stack, cache, el)
       if (template.cache && template.cache !== el.props?.component) {
         el.new = true
       }
@@ -102,6 +104,6 @@ evaluator.custom = (
       
       return el
   } else {
-    return evaluator.element(template as ElementTemplate, stack) as VirtualElement
+    return evaluator.element(template as ElementTemplate, stack, cache) as VirtualElement
   }
 }) as Evaluate
