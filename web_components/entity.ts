@@ -12,14 +12,14 @@ import { builtin } from './builtin.ts'
 export class Entity {
   private _stack?: Variables | null
   private _component: Component
-  private _el: Element
+  private _host: Element
   private _tree: LinkedVirtualTree
   private _props: Record<string, unknown> = {}
   private _constructor: Promise<void>
   
-  constructor( component: Component, el: Element, tree: LinkedVirtualTree ) {
+  constructor( component: Component, host: Element, tree: LinkedVirtualTree ) {
     this._component = component
-    this._el = el
+    this._host = host
     this._tree = tree as LinkedVirtualTree
     this._patch = this._patch.bind(this)
     this._on = this._on.bind(this)
@@ -38,11 +38,11 @@ export class Entity {
             if (
               typeof data[name] === 'function' && // The value is function
               isNaN(name as unknown as number) && // The name is not number
-              !(name in this._el) // Do not override same property name
+              !(name in this._host) // Do not override same property name
             ) {
               // deno-lint-ignore ban-types
               const method = (data[name] as Function).bind(this)
-              Object.defineProperty(this._el, name, {
+              Object.defineProperty(this._host, name, {
                 get () { return method }
               })
             }
@@ -73,7 +73,7 @@ export class Entity {
   }
 
   get component(): Component { return this._component }
-  get node(): Element { return this._el }
+  get host(): Element { return this._host }
   get root(): ShadowRoot { return this._tree.node as ShadowRoot }
   get props(): Record<string, unknown> { return this._props }
   get patch() { return this._patch }
@@ -98,7 +98,7 @@ export class Entity {
   private _on(type: string, listener: (e: CustomEvent) => void, useCapture: boolean): void
   private _on(type: string, listener: (e: CustomEvent) => void, options: EventListenerOptions): void
   private _on(type: string, listener: EventListener | ((e: CustomEvent) => void), options: boolean | EventListenerOptions = false): void {
-    this._el.addEventListener(type, listener as EventListener, options)
+    this._host.addEventListener(type, listener as EventListener, options)
   }
 
   private _off(type: string, listener: EventListener): void
@@ -108,6 +108,6 @@ export class Entity {
   private _off(type: string, listener: (e: CustomEvent) => void, useCapture: boolean): void
   private _off(type: string, listener: (e: CustomEvent) => void, options: EventListenerOptions): void
   private _off(type: string, listener: EventListener | ((e: CustomEvent) => void), options: boolean | EventListenerOptions = false): void {
-    this._el.removeEventListener(type, listener as EventListener, options)
+    this._host.removeEventListener(type, listener as EventListener, options)
   }
 }

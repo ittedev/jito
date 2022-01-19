@@ -29,7 +29,7 @@ export function hack(element: Element, template: TreeTemplate, data: Record<stri
 export function hack(element: Element, template: TreeTemplate, construct: ComponentConstructor): void
 export function hack(target: string | Element, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor): void
 export function hack(target: string | Element, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor = []): void {
-  const element: Element =
+  const host: Element =
     typeof target === 'string' ?
       document.querySelector(target) as Element :
       target as Element
@@ -37,10 +37,10 @@ export function hack(target: string | Element, template: string | TreeTemplate |
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')
   }
-  const tree = load(element.attachShadow({ mode: component.options.mode, delegatesFocus: component.options.delegatesFocus }))
-  const entity = new Entity(component, element, tree)
+  const tree = load(host.attachShadow({ mode: component.options.mode, delegatesFocus: component.options.delegatesFocus }))
+  const entity = new Entity(component, host, tree)
 
-  const temp = parse(element) as CustomElementTemplate
+  const temp = parse(host) as CustomElementTemplate
   temp.type = 'custom'
   temp.isForce = true
   const ve = evaluate(temp) as VirtualElement
