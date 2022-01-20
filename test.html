@@ -2266,7 +2266,8 @@ describe('Template Engine', function() {
 
     it('expression: object', () => {
       equal(evaluate(expression(new Lexer('{}', 'script')), stack), {})
-      equal(evaluate(expression(new Lexer('{ x: 2, y: "x", [s]: 1 + x }', 'script')), stack), { x: 2, y: "x", s: 2 })
+      equal(evaluate(expression(new Lexer('{ x }', 'script')), stack), { x: 1 })
+      equal(evaluate(expression(new Lexer('{ x, y: "x", [s]: 1 + x }', 'script')), stack), { x: 1, y: "x", s: 2 })
     })
 
     it('expression: hash h.x', () => {

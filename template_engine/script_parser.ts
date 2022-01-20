@@ -238,7 +238,7 @@ function term(lexer: Lexer): Template {
       return { type: 'array', values } as ArrayTemplate
     }
 
-    // r = { w: E, [E]: E, ...}
+    // r = { w, w: E, [E]: E, ...}
     case '{': {
       const entries = [] as Array<[Template, Template]>
       while(lexer.nextType() !== '}') {
@@ -250,16 +250,24 @@ function term(lexer: Lexer): Template {
           entry[0] = expression(lexer)
           must(lexer.pop(), ']')
         }
-        must(lexer.pop(), ':')
-        entry[1] = expression(lexer)
-        entries.push(entry)
-        if (lexer.nextType() === ',') {
+        if (lexer.nextType() === ',' || lexer.nextType() === '}') {
+          entry[1] = { type: 'variable', name: token[1] } as VariableTemplate
           lexer.pop()
-        } else if (lexer.nextType() === '}') {
-          lexer.pop()
-          break
+          if (lexer.nextType() === '}') {
+            break
+          }
         } else {
-          throw Error("'}' is required")
+          must(lexer.pop(), ':')
+          entry[1] = expression(lexer)
+          entries.push(entry)
+          if (lexer.nextType() === ',') {
+            lexer.pop()
+          } else if (lexer.nextType() === '}') {
+            lexer.pop()
+            break
+          } else {
+            throw Error("'}' is required")
+          }
         }
       }
       return { type: 'object', entries } as ObjectTemplate
