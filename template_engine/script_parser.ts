@@ -250,24 +250,20 @@ function term(lexer: Lexer): Template {
           entry[0] = expression(lexer)
           must(lexer.pop(), ']')
         }
-        if (lexer.nextType() === ',' || lexer.nextType() === '}') {
-          entry[1] = { type: 'variable', name: token[1] } as VariableTemplate
-          lexer.pop()
-          if (lexer.nextType() === '}') {
-            break
-          }
+        if (token[0] === 'word' && (lexer.nextType() === ',' || lexer.nextType() === '}')) {
+          entry[1] = { type: 'get', value: { type: 'variable', name: token[1] } as VariableTemplate } as GetTemplate
         } else {
           must(lexer.pop(), ':')
           entry[1] = expression(lexer)
-          entries.push(entry)
-          if (lexer.nextType() === ',') {
-            lexer.pop()
-          } else if (lexer.nextType() === '}') {
-            lexer.pop()
-            break
-          } else {
-            throw Error("'}' is required")
-          }
+        }
+        entries.push(entry)
+        if (lexer.nextType() === ',') {
+          lexer.pop()
+        } else if (lexer.nextType() === '}') {
+          lexer.pop()
+          break
+        } else {
+          throw Error("'}' is required")
         }
       }
       return { type: 'object', entries } as ObjectTemplate
