@@ -8,6 +8,7 @@ import { unwatch } from '../data_binding/unwatch.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
 import { patch } from '../virtual_dom/patch.ts'
 import { builtin } from './builtin.ts'
+import { eventTypes } from '../virtual_dom/event_types.ts'
 
 export class Entity {
   private _stack?: Variables | null
@@ -17,12 +18,16 @@ export class Entity {
   private _tree: LinkedVirtualTree
   private _props: Record<string, unknown> = {}
   private _constructor: Promise<void>
-  
+
   constructor( component: Component, host: Element, tree: LinkedVirtualTree ) {
     this._component = component
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._patch = this._patch.bind(this)
+
+    if (this._component.options.mode === 'closed') {
+      this.root.addEventListener(eventTypes.patch, event => event.stopPropagation())
+    }
 
     const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
     this._constructor = (async () => {

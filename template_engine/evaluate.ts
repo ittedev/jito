@@ -33,7 +33,7 @@ import { Loop } from './loop.ts'
 import { operateUnary, noCut, operateBinary } from './operate.ts'
 import { pickup } from './pickup.ts'
 
-export function evaluate(template: Template, stack: Variables = [], cache: Cache): unknown {
+export function evaluate(template: Template, stack: Variables = [], cache: Cache = {}): unknown {
   return evaluator[template.type](template, stack, cache)
 }
 
@@ -135,7 +135,6 @@ export const evaluator = {
   get: (
     (template: GetTemplate, stack: Variables, cache: Cache): unknown => {
       const value = evaluate(template.value, stack, cache) as Ref
-      // TODO: value[0] === undefined error
       return value ? value[0][value[1]] : value
     }
   ) as Evaluate,
@@ -216,7 +215,7 @@ export const evaluator = {
       return el
     }
   ) as Evaluate,
-  
+
   tree: (
     (template: TreeTemplate, stack: Variables, cache: Cache): VirtualTree => {
       const children: Array<string | VirtualElement | number> = (template.children || [])?.flatMap(child => {

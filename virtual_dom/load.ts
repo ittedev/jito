@@ -57,7 +57,6 @@ function loadChildren(tree: LinkedVirtualTree) {
         case 3: // TEXT_NODE
           tree.children.push((nodeList[i] as CharacterData).data)
           break
-        // TODO: load svg
       }
     }
   }

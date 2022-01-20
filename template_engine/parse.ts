@@ -92,7 +92,6 @@ function parseNode(lexer: DomLexer): Template | string {
     case 1: { // ELEMENT_NODE
       return parseFor(lexer)
     }
-    // TODO: parse svg
     default:
       return ''
   }
