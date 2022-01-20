@@ -1,34 +1,26 @@
 {
-	"name": "@appName@",
+	"name": "Deno",
 	"build": {
 		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick an Ubuntu version: hirsute, focal, bionic
-		// Use hirsute or bionic on local arm64/Apple Silicon.
-		"args": { "VARIANT": "focal" }
+		// Update 'VARIANT' to pick an Debian OS version: bullseye, buster
+		"args": {
+			"VARIANT": "bullseye"
+		}
 	},
-
-	// Set *default* container specific settings.json values on container create.
 	"settings": {
-		"editor.tabSize": 2,
-    "deno.enable": true,
-    "deno.lint": true,
+		"deno.enable": true,
+		"deno.lint": true,
     "deno.unstable": true,
-    "deno.config": "deno.json"
+    "deno.config": "deno.json",
+		"editor.defaultFormatter": "denoland.vscode-deno",
+		"editor.tabSize": 2
 	},
 
-
-	// Add the IDs of extensions you want installed when the container is created.
+	// This will install the vscode-deno extension
 	"extensions": [
 		"denoland.vscode-deno",
 		"gruntfuggly.todo-tree"
 	],
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
-
-	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
 }

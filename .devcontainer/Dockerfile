@@ -1,13 +1,16 @@
-# [Choice] Ubuntu version (use hirsuite or bionic on local arm64/Apple Silicon): hirsute, focal, bionic
-ARG VARIANT=focal
-FROM mcr.microsoft.com/vscode/devcontainers/base:${VARIANT}
+# [Choice] Debian OS version: bullseye, buster
+ARG VARIANT=bullseye
+FROM --platform=linux/amd64 mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
 
-ENV PATH /home/vscode/.deno/bin:/usr/local/bin:$PATH
+ENV DENO_INSTALL=/deno
+RUN mkdir -p /deno \
+    && curl -fsSL https://deno.land/x/install/install.sh | sh \
+    && chown -R vscode /deno
+
+ENV PATH=${DENO_INSTALL}/bin:${PATH} \
+    DENO_DIR=${DENO_INSTALL}/.cache/deno
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends nodejs npm
 
-# [Optional] Uncomment this section to install additional OS packages.
-RUN curl -Lo "/tmp/deno.zip" "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip" \
-    && unzip -d /usr/local/bin /tmp/deno.zip
 RUN sudo -u vscode deno install --allow-net --allow-read https://deno.land/std@0.106.0/http/file_server.ts
