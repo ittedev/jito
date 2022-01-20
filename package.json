@@ -1,6 +1,6 @@
 {
   "name": "beako",
-  "version": "0.9.18",
+  "version": "0.9.19",
   "license": "MIT",
   "author": "Nakamura",
   "description": "Beako.js is Web component tools with Data Binding, Template Engine and Virtual DOM for Deno.",
