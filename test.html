@@ -2217,37 +2217,37 @@ describe('Template Engine', function() {
 
 
   describe('Script parser', function() {
-    const stack = [{
+    const stack = {
       x: 1,
       y: 10,
       s: 's',
       h: { x: 2, y: { x: 3 }, z: [7] },
       a: [4, 5, [6], { x: 8 }],
       text: 'x'
-    }]
+    }
 
     it('expression: number', () => {
-      equal(evaluate(expression(new Lexer('50.5', 'script')), stack), 50.5)
+      equal(evaluate(expression(new Lexer('50.5', 'script')), [stack]), 50.5)
     })
 
     it('expression: true', () => {
-      equal(evaluate(expression(new Lexer('true', 'script')), stack), true)
+      equal(evaluate(expression(new Lexer('true', 'script')), [stack]), true)
     })
 
     it('expression: string: single', () => {
-      equal(evaluate(expression(new Lexer('\'string\'', 'script')), stack), 'string')
+      equal(evaluate(expression(new Lexer('\'string\'', 'script')), [stack]), 'string')
     })
 
     it('expression: string: double', () => {
-      equal(evaluate(expression(new Lexer('"string"', 'script')), stack), 'string')
+      equal(evaluate(expression(new Lexer('"string"', 'script')), [stack]), 'string')
     })
 
     it('expression: string tenplate: string only', () => {
-      equal(evaluate(expression(new Lexer('`string`', 'script')), stack), 'string')
+      equal(evaluate(expression(new Lexer('`string`', 'script')), [stack]), 'string')
     })
 
     it('expression: string tenplate: has expression', () => {
-      equal(evaluate(expression(new Lexer('`Hello ${text}!`', 'script')), stack), 'Hello x!')
+      equal(evaluate(expression(new Lexer('`Hello ${text}!`', 'script')), [stack]), 'Hello x!')
     })
     // TODO: test escape char
     // TODO: test keywords
@@ -2255,165 +2255,273 @@ describe('Template Engine', function() {
     // TODO: test spread
 
     it('expression: word', () => {
-      equal(evaluate(expression(new Lexer('x', 'script')), stack), 1)
-      equal(evaluate(expression(new Lexer('text', 'script')), stack), 'x')
+      equal(evaluate(expression(new Lexer('x', 'script')), [stack]), 1)
+      equal(evaluate(expression(new Lexer('text', 'script')), [stack]), 'x')
     })
 
     it('expression: array', () => {
-      equal(evaluate(expression(new Lexer('[]', 'script')), stack), [])
-      equal(evaluate(expression(new Lexer('[2, 1 + 2, x]', 'script')), stack), [2, 3, 1])
+      equal(evaluate(expression(new Lexer('[]', 'script')), [stack]), [])
+      equal(evaluate(expression(new Lexer('[2, 1 + 2, x]', 'script')), [stack]), [2, 3, 1])
     })
 
     it('expression: object', () => {
-      equal(evaluate(expression(new Lexer('{}', 'script')), stack), {})
+      equal(evaluate(expression(new Lexer('{}', 'script')), [stack]), {})
       console.log('expression:', expression(new Lexer('{ x }', 'script')))
-      equal(evaluate(expression(new Lexer('{ x }', 'script')), stack), { x: 1 })
-      equal(evaluate(expression(new Lexer('{ x, y: "x", [s]: 1 + x }', 'script')), stack), { x: 1, y: "x", s: 2 })
+      equal(evaluate(expression(new Lexer('{ x }', 'script')), [stack]), { x: 1 })
+      equal(evaluate(expression(new Lexer('{ x, y: "x", [s]: 1 + x }', 'script')), [stack]), { x: 1, y: "x", s: 2 })
     })
 
     it('expression: hash h.x', () => {
-      equal(evaluate(expression(new Lexer('h.x', 'script')), stack), 2)
+      equal(evaluate(expression(new Lexer('h.x', 'script')), [stack]), 2)
     })
 
     it('expression: hash h[text]', () => {
-      equal(evaluate(expression(new Lexer('h[text]', 'script')), stack), 2)
+      equal(evaluate(expression(new Lexer('h[text]', 'script')), [stack]), 2)
     })
 
     it('expression: hash h.y.x', () => {
-      equal(evaluate(expression(new Lexer('h.y.x', 'script')), stack), 3)
+      equal(evaluate(expression(new Lexer('h.y.x', 'script')), [stack]), 3)
     })
 
     it('expression: hash h.y?.x', () => {
-      equal(evaluate(expression(new Lexer('h.y?.x', 'script')), stack), 3)
-      equal(evaluate(expression(new Lexer('h.y?.y', 'script')), stack), undefined)
+      equal(evaluate(expression(new Lexer('h.y?.x', 'script')), [stack]), 3)
+      equal(evaluate(expression(new Lexer('h.y?.y', 'script')), [stack]), undefined)
     })
 
     it('expression: hash a[0]', () => {
-      equal(evaluate(expression(new Lexer('a[0]', 'script')), stack), 4)
+      equal(evaluate(expression(new Lexer('a[0]', 'script')), [stack]), 4)
     })
 
     it('expression: hash a[2][0]', () => {
-      equal(evaluate(expression(new Lexer('a[2][0]', 'script')), stack), 6)
+      equal(evaluate(expression(new Lexer('a[2][0]', 'script')), [stack]), 6)
     })
 
     it('expression: hash a[2-1]', () => {
-      equal(evaluate(expression(new Lexer('a[2-1]', 'script')), stack), 5)
+      equal(evaluate(expression(new Lexer('a[2-1]', 'script')), [stack]), 5)
     })
 
     it('expression: hash h.z[0]', () => {
-      equal(evaluate(expression(new Lexer('h.z[0]', 'script')), stack), 7)
+      equal(evaluate(expression(new Lexer('h.z[0]', 'script')), [stack]), 7)
     })
 
     it('expression: hash a[3].x', () => {
-      equal(evaluate(expression(new Lexer('a[3].x', 'script')), stack), 8)
+      equal(evaluate(expression(new Lexer('a[3].x', 'script')), [stack]), 8)
     })
 
     it('expression: unary oparate +', () => {
-      equal(evaluate(expression(new Lexer('+ 1', 'script')), stack), 1)
+      equal(evaluate(expression(new Lexer('+ 1', 'script')), [stack]), 1)
     })
 
     it('expression: unary oparate -', () => {
-      equal(evaluate(expression(new Lexer('- 1', 'script')), stack), -1)
+      equal(evaluate(expression(new Lexer('- 1', 'script')), [stack]), -1)
     })
 
     it('expression: unary oparate void', () => {
-      equal(evaluate(expression(new Lexer('void 0', 'script')), stack), undefined)
-      equal(evaluate(expression(new Lexer('void(0)', 'script')), stack), undefined)
+      equal(evaluate(expression(new Lexer('void 0', 'script')), [stack]), undefined)
+      equal(evaluate(expression(new Lexer('void(0)', 'script')), [stack]), undefined)
     })
 
     it('expression: unary oparate typeof', () => {
-      equal(evaluate(expression(new Lexer('typeof 1', 'script')), stack), 'number')
+      equal(evaluate(expression(new Lexer('typeof 1', 'script')), [stack]), 'number')
     })
 
     it('expression: unary oparate ~', () => {
-      equal(evaluate(expression(new Lexer('~ 1', 'script')), stack), -2)
+      equal(evaluate(expression(new Lexer('~ 1', 'script')), [stack]), -2)
     })
 
     it('expression: unary oparate !', () => {
-      equal(evaluate(expression(new Lexer('! 1', 'script')), stack), false)
+      equal(evaluate(expression(new Lexer('! 1', 'script')), [stack]), false)
     })
 
     it('expression: binary oparate +', () => {
-      equal(evaluate(expression(new Lexer('x + 1', 'script')), stack), 2)
+      equal(evaluate(expression(new Lexer('x + 1', 'script')), [stack]), 2)
     })
 
     it('expression: binary oparate -', () => {
-      equal(evaluate(expression(new Lexer('x - 2', 'script')), stack), -1)
+      equal(evaluate(expression(new Lexer('x - 2', 'script')), [stack]), -1)
     })
 
     it('expression: binary oparate /', () => {
-      equal(evaluate(expression(new Lexer('x / 2', 'script')), stack), 0.5)
+      equal(evaluate(expression(new Lexer('x / 2', 'script')), [stack]), 0.5)
     })
 
     it('expression: binary oparate *', () => {
-      equal(evaluate(expression(new Lexer('x * 2', 'script')), stack), 2)
+      equal(evaluate(expression(new Lexer('x * 2', 'script')), [stack]), 2)
     })
 
     it('expression: binary oparate %', () => {
-      equal(evaluate(expression(new Lexer('y % 7', 'script')), stack), 3)
+      equal(evaluate(expression(new Lexer('y % 7', 'script')), [stack]), 3)
     })
 
     it('expression: binary oparate **', () => {
-      equal(evaluate(expression(new Lexer('y ** 2', 'script')), stack), 100)
+      equal(evaluate(expression(new Lexer('y ** 2', 'script')), [stack]), 100)
     })
 
     it('expression: binary oparate in', () => {
-      equal(evaluate(expression(new Lexer("'x' in h", 'script')), stack), true)
+      equal(evaluate(expression(new Lexer("'x' in h", 'script')), [stack]), true)
     })
 
     it('expression: oparate ==', () => {
-      equal(evaluate(expression(new Lexer('x == 1', 'script')), stack), true)
+      equal(evaluate(expression(new Lexer('x == 1', 'script')), [stack]), true)
     })
 
     it('expression: oparate !=', () => {
-      equal(evaluate(expression(new Lexer('x != 1', 'script')), stack), false)
+      equal(evaluate(expression(new Lexer('x != 1', 'script')), [stack]), false)
     })
 
     it('expression: oparate ===', () => {
-      equal(evaluate(expression(new Lexer('x === 1', 'script')), stack), true)
+      equal(evaluate(expression(new Lexer('x === 1', 'script')), [stack]), true)
     })
 
     it('expression: oparate !==', () => {
-      equal(evaluate(expression(new Lexer('x !== 1', 'script')), stack), false)
+      equal(evaluate(expression(new Lexer('x !== 1', 'script')), [stack]), false)
     })
 
     it('expression: oparate <', () => {
-      equal(evaluate(expression(new Lexer('x < 1', 'script')), stack), false)
-      equal(evaluate(expression(new Lexer('x < 2', 'script')), stack), true)
+      equal(evaluate(expression(new Lexer('x < 1', 'script')), [stack]), false)
+      equal(evaluate(expression(new Lexer('x < 2', 'script')), [stack]), true)
     })
 
     it('expression: oparate <=', () => {
-      equal(evaluate(expression(new Lexer('x <= 1', 'script')), stack), true)
+      equal(evaluate(expression(new Lexer('x <= 1', 'script')), [stack]), true)
     })
 
     it('expression: oparate >', () => {
-      equal(evaluate(expression(new Lexer('x > 1', 'script')), stack), false)
-      equal(evaluate(expression(new Lexer('x > -1', 'script')), stack), true)
+      equal(evaluate(expression(new Lexer('x > 1', 'script')), [stack]), false)
+      equal(evaluate(expression(new Lexer('x > -1', 'script')), [stack]), true)
     })
 
     it('expression: oparate >=', () => {
-      equal(evaluate(expression(new Lexer('x >= 1', 'script')), stack), true)
+      equal(evaluate(expression(new Lexer('x >= 1', 'script')), [stack]), true)
     })
 
     it('expression: oparate ||', () => {
-      equal(evaluate(expression(new Lexer('true || false', 'script')), stack), true)
+      equal(evaluate(expression(new Lexer('true || false', 'script')), [stack]), true)
     })
 
     it('expression: oparate &&', () => {
-      equal(evaluate(expression(new Lexer('true && false', 'script')), stack), false)
+      equal(evaluate(expression(new Lexer('true && false', 'script')), [stack]), false)
     })
 
     it('expression: oparate ?:', () => {
-      equal(evaluate(expression(new Lexer('1?2:3', 'script')), stack), 2)
-      equal(evaluate(expression(new Lexer('0?1:2?3:4', 'script')), stack), 3)
+      equal(evaluate(expression(new Lexer('1?2:3', 'script')), [stack]), 2)
+      equal(evaluate(expression(new Lexer('0?1:2?3:4', 'script')), [stack]), 3)
+    })
+
+    it('expression: assign =', () => {
+      const data = { a: 0, b: 0 }
+      evaluate(expression(new Lexer('a = 1', 'script')), [stack, data])
+      evaluate(expression(new Lexer('b = x', 'script')), [stack, data])
+      equal(data.a, 1)
+      equal(data.b, 1)
+    })
+
+    it('expression: assign +=', () => {
+      const data = { a: 1 }
+      evaluate(expression(new Lexer('a += 4', 'script')), [stack, data])
+      equal(data.a, 5)
+    })
+
+    it('expression: assign -=', () => {
+      const data = { a: 1 }
+      evaluate(expression(new Lexer('a -= 4', 'script')), [stack, data])
+      equal(data.a, -3)
+    })
+
+    it('expression: assign *=', () => {
+      const data = { a: 2 }
+      evaluate(expression(new Lexer('a *= 4', 'script')), [stack, data])
+      equal(data.a, 8)
+    })
+
+    it('expression: assign **=', () => {
+      const data = { a: 2 }
+      evaluate(expression(new Lexer('a **= 4', 'script')), [stack, data])
+      equal(data.a, 16)
+    })
+
+    it('expression: assign /=', () => {
+      const data = { a: 10 }
+      evaluate(expression(new Lexer('a /= 4', 'script')), [stack, data])
+      equal(data.a, 2.5)
+    })
+
+    it('expression: assign %=', () => {
+      const data = { a: 10 }
+      evaluate(expression(new Lexer('a %= 4', 'script')), [stack, data])
+      equal(data.a, 2)
+    })
+
+    it('expression: assign <<=', () => {
+      const data = { a: 2 }
+      evaluate(expression(new Lexer('a <<= 4', 'script')), [stack, data])
+      equal(data.a, 32)
+    })
+
+    it('expression: assign >>=', () => {
+      const data = { a: -5 }
+      evaluate(expression(new Lexer('a >>= 2', 'script')), [stack, data])
+      equal(data.a, -2)
+    })
+
+    it('expression: assign >>>=', () => {
+      const data = { a: -5 }
+      evaluate(expression(new Lexer('a >>>= 2', 'script')), [stack, data])
+      equal(data.a, 1073741822)
+    })
+
+    it('expression: assign &=', () => {
+      const data = { a: 5 }
+      evaluate(expression(new Lexer('a &= 6', 'script')), [stack, data])
+      equal(data.a, 4)
+    })
+
+    it('expression: assign ^=', () => {
+      const data = { a: 5 }
+      evaluate(expression(new Lexer('a ^= 6', 'script')), [stack, data])
+      equal(data.a, 3)
+    })
+
+    it('expression: assign |=', () => {
+      const data = { a: 5 }
+      evaluate(expression(new Lexer('a |= 6', 'script')), [stack, data])
+      equal(data.a, 7)
+    })
+
+    it('expression: assign &&=', () => {
+      const data = { a: 10, b: 0 }
+      evaluate(expression(new Lexer('a &&= 4', 'script')), [stack, data])
+      evaluate(expression(new Lexer('b &&= 4', 'script')), [stack, data])
+      equal(data.a, 4)
+      equal(data.b, 0)
+    })
+
+    it('expression: assign ||=', () => {
+      const data = { a: 10, b: 0 }
+      evaluate(expression(new Lexer('a ||= 4', 'script')), [stack, data])
+      evaluate(expression(new Lexer('b ||= 4', 'script')), [stack, data])
+      equal(data.a, 10)
+      equal(data.b, 4)
+    })
+
+    it('expression: assign ??=', () => {
+      const data = { a: 10, b: 0, c: undefined, d: null }
+      evaluate(expression(new Lexer('a ??= 4', 'script')), [stack, data])
+      evaluate(expression(new Lexer('b ??= 4', 'script')), [stack, data])
+      evaluate(expression(new Lexer('c ??= 4', 'script')), [stack, data])
+      evaluate(expression(new Lexer('d ??= 4', 'script')), [stack, data])
+      equal(data.a, 10)
+      equal(data.b, 0)
+      equal(data.c, 4)
+      equal(data.d, 4)
     })
 
     // it('innerText: text only', () => {
-    //   equal(evaluate(innerText(new Lexer('Hello world!', 'innerText')), stack), 'Hello world!')
+    //   equal(evaluate(innerText(new Lexer('Hello world!', 'innerText')), [stack]), 'Hello world!')
     // })
 
     // it('innerText: expression in text', () => {
-    //   equal(evaluate(innerText(new Lexer('x + 1 = {{ x + 1 }}.', 'innerText')), stack), 'x + 1 = 2.')
+    //   equal(evaluate(innerText(new Lexer('x + 1 = {{ x + 1 }}.', 'innerText')), [stack]), 'x + 1 = 2.')
     // })
   })
 

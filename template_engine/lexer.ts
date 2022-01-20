@@ -79,7 +79,7 @@ function distinguish(field: TokenField, value: string): TokenType {
         case '<<': case '>>': case '>>>': // Bitwise shift operators
         case '&': case '|': case '^': // Binary bitwise operators
         case '&&': case '||': case '??': // Binary logical operators
-          return 'binary'
+        return 'binary'
 
         case '=': case '*=': case '**=': case '/=': case '%=': case '+=': case '-=':
         case '<<=': case '>>=': case '>>>=': case '&=': case '^=': case '|=':

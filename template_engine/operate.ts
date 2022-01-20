@@ -13,6 +13,15 @@ export function operateUnary(operator: string, operand: any) {
   }
 }
 
+export function noCut(operator: string, left: any): boolean {
+  switch (operator) {
+    case '&&': return !!left
+    case '||': return !left
+    case '??': return left === null || left === undefined
+    default: return true
+  }
+}
+
 export function operateBinary(operator: string, left: any, right: any) {
   switch (operator) {
     // Arithmetic operators
@@ -48,12 +57,11 @@ export function operateBinary(operator: string, left: any, right: any) {
     case '^': return left ^ right
 
     // Binary logical operators
-    case '&&': return left && right // TODO: right is may not be evaluated
-    case '||': return left || right // TODO: right is may not be evaluated
+    case '&&': return left && right
+    case '||': return left || right
     case '??': return left ?? right
-    
+
     // Other operators
     default: throw Error(operator + ' does not exist')
   }
 }
-

@@ -30,7 +30,7 @@ import {
   Evaluator
 } from './types.ts'
 import { Loop } from './loop.ts'
-import { operateUnary, operateBinary } from './operate.ts'
+import { operateUnary, noCut, operateBinary } from './operate.ts'
 import { pickup } from './pickup.ts'
 
 export function evaluate(template: Template, stack: Variables = [], cache: Cache): unknown {
@@ -72,19 +72,34 @@ export const evaluator = {
   ) as Evaluate,
 
   binary: (
-    (template: BinaryTemplate, stack: Variables, cache: Cache): unknown =>
-      operateBinary(template.operator, evaluate(template.left, stack, cache), evaluate(template.right, stack, cache))
+    (template: BinaryTemplate, stack: Variables, cache: Cache): unknown => {
+      const left = evaluate(template.left, stack, cache)
+      if (noCut(template.operator, left)) {
+        return operateBinary(template.operator, left, evaluate(template.right, stack, cache))
+      } else {
+        return left
+      }
+    }
   ) as Evaluate,
-  
+
   assign: ((template: AssignTemplate, stack: Variables, cache: Cache): unknown => {
     const value = evaluate(template.left, stack, cache) as Ref
     if (!value) {
       throw Error(template.left ? (template.left as VariableTemplate).name : 'key' + ' is not defined')
     }
-    
+
     const [ object, key ] = value
     const right = evaluate(template.right, stack, cache)
-    return object[key] = template.operator.length > 1 ? operateBinary(template.operator.slice(0, -1), object[key], right) : right
+    if (template.operator.length > 1) {
+      const operator = template.operator.slice(0, -1)
+      if (noCut(operator, object[key])) {
+        return object[key] = operateBinary(operator, object[key], right)
+      } else {
+        return object[key]
+      }
+    } else {
+      return object[key] = right
+    }
   }) as Evaluate,
 
   ['function']: (
@@ -99,7 +114,6 @@ export const evaluator = {
         if (typeof f === 'function') {
           return f.apply(value[0], template.params.map(param => evaluate(param, stack, cache)))
         }
-        
       } else {
         // other
         const f = evaluate(template.name, stack, cache)
