@@ -57,7 +57,7 @@ To Import it into html:
 <meta charset="UTF-8">
 <body>Loading...</body>
 <script type="module">
-  import { watch, hack } from 'https://unpkg.com/beako@0.9.19/beako.js'
+  import { watch, hack } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.9.19/beako.js'
 
   const data = {
     count: 1
