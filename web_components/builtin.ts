@@ -16,5 +16,7 @@ export const builtin = lock({
   isFinite,
   location,
   history,
-  navigator
+  navigator,
+  setTimeout,
+  setInterval
 })
