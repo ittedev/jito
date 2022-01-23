@@ -2249,7 +2249,43 @@ describe('Template Engine', function() {
     it('expression: string tenplate: has expression', () => {
       equal(evaluate(expression(new Lexer('`Hello ${text}!`', 'script')), [stack]), 'Hello x!')
     })
-    // TODO: test escape char
+
+    it('expression: string escape: normal char', () => {
+      equal(evaluate(expression(new Lexer("'\\a'", 'script')), [stack]), "a")
+    })
+
+    it('expression: string escape: special char', () => {
+      equal(evaluate(expression(new Lexer("'\\n\\r\\v\\t\\b\\f'", 'script')), [stack]), "\n\r\v\t\b\f")
+    })
+
+    it('expression: string escape: \\', () => {
+      equal(evaluate(expression(new Lexer("'\\\\'", 'script')), [stack]), "\\")
+    })
+
+    it('expression: string escape: single in single', () => {
+      equal(evaluate(expression(new Lexer("'\\''", 'script')), [stack]), "'")
+    })
+
+    it('expression: string escape: double in double', () => {
+      equal(evaluate(expression(new Lexer('"\\""', 'script')), [stack]), '"')
+    })
+
+    it('expression: string escape: \\XXX', () => {
+      equal(evaluate(expression(new Lexer("'\\006\\157'", 'script')), [stack]), "\006\157")
+    })
+
+    it('expression: string escape: \\uXXXX', () => {
+      equal(evaluate(expression(new Lexer("'\\0006\\u11aa'", 'script')), [stack]), "\u0006\u11aa")
+    })
+
+    it('expression: string escape: \\u{X...XXXXXX}', () => {
+      equal(evaluate(expression(new Lexer("'\\u{6}\\u{789abF}'", 'script')), [stack]), "\u{6}\u{789abF}")
+    })
+
+    it('expression: string escape: \\xXX', () => {
+      equal(evaluate(expression(new Lexer("'\\x0c\\x9F'", 'script')), [stack]), "\x0c\x9F")
+    })
+
     // TODO: test keywords
     // TODO: test function and method(this)
     // TODO: test spread
@@ -2286,6 +2322,7 @@ describe('Template Engine', function() {
     it('expression: hash h.y?.x', () => {
       equal(evaluate(expression(new Lexer('h.y?.x', 'script')), [stack]), 3)
       equal(evaluate(expression(new Lexer('h.y?.y', 'script')), [stack]), undefined)
+      equal(evaluate(expression(new Lexer('h.t?.x', 'script')), [stack]), undefined)
     })
 
     it('expression: hash a[0]', () => {

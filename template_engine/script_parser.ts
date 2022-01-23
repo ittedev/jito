@@ -288,7 +288,7 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
         case type: break loop
         case 'return': throw Error()
         case 'escape':
-          texts[i] += token[1] // TODO: escape char
+          texts[i] += unescape(token[1])
           continue
         case '${':
           lexer.expand('script', () => {
@@ -309,4 +309,25 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
 
 function must(token: Token | null, type: TokenType, message = ''): void {
   if (!token || token[0] !== type) throw Error(message)
+}
+
+function unescape(value: string): string {
+  switch (value) {
+    case '\\n': return '\n'
+    case '\\r': return '\r'
+    case '\\v': return '\v'
+    case '\\t': return '\t'
+    case '\\b': return '\b'
+    case '\\f': return '\f'
+  }
+  switch (true) {
+    case /^\\[0-7]{3}$/.test(value):
+      return String.fromCodePoint(parseInt(value.slice(1), 8))
+    case /^\\u[0-9a-fA-F]{4}$/.test(value):
+    case /^\\x[0-9a-fA-F]{2}$/.test(value):
+      return String.fromCodePoint(parseInt(value.slice(2), 16))
+    case /^\\u\{[0-9a-fA-F]{1,6}\}$/.test(value):
+      return String.fromCodePoint(parseInt(value.slice(3,-1), 16))
+  }
+  return value.slice(1)
 }
