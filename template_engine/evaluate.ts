@@ -20,6 +20,7 @@ import {
   IfTemplate,
   ForTemplate,
   ElementTemplate,
+  HasChildrenTemplate,
   TreeTemplate,
   ExpandTemplate,
   GroupTemplate,
@@ -27,6 +28,7 @@ import {
   Cache,
   Ref,
   Evaluate,
+  CoreTemplate,
   Evaluator
 } from './types.ts'
 import { Loop } from './loop.ts'
@@ -196,8 +198,12 @@ export const evaluator = {
       }
       return entries.flatMap(([key, value], index) => {
         const loop = new Loop(key, value, index, entries, stack)
-        // TODO: add key
-        return flatwrap(evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]), cache))
+        const result = (flatwrap(evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]), cache)) as Array<string | VirtualElement | number>)
+          .filter(child => typeof child !== 'number')
+        result
+          .filter(child => typeof child === 'object')
+          .forEach(child => (child as VirtualElement).key = loop.value)
+        return result
       })
     }
   ) as Evaluate,
@@ -218,18 +224,8 @@ export const evaluator = {
 
   tree: (
     (template: TreeTemplate, stack: Variables, cache: Cache): VirtualTree => {
-      const children: Array<string | VirtualElement | number> = (template.children || [])?.flatMap(child => {
-        if (typeof child === 'string') {
-          return [child]
-        } else {
-          return flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | number>
-        }
-      })
-      if (children.length) {
-        return { children }
-      } else {
-        return {}
-      }
+      const children = evaluateChildren(template, stack, cache)
+      return children.length ? { children } : {}
     }
   ) as Evaluate,
 
@@ -248,14 +244,13 @@ export const evaluator = {
   ) as Evaluate,
 
   group: (
-    (template: GroupTemplate, stack: Variables, cache: Cache): Array<unknown> =>
-      template.children ? template.children.flatMap(child => flatwrap(instanceOfTemplate(child) ? evaluate(child, stack, cache) : child)) : []
+    (template: GroupTemplate, stack: Variables, cache: Cache): Array<unknown> => evaluateChildren(template, stack, cache)
   ) as Evaluate,
 
   handler: (
     (template: HandlerTemplate, stack: Variables, cache: Cache): EventListener => {
       if (!cache.handler) {
-        cache.handler = new Map<HandlerTemplate, Array<[Variables, EventListener]>>()
+        cache.handler = new WeakMap<HandlerTemplate, Array<[Variables, EventListener]>>()
       }
       if (!cache.handler.has(template)) {
         cache.handler.set(template, [])
@@ -273,6 +268,35 @@ export const evaluator = {
   ) as Evaluate
 
 } as Evaluator
+
+export function evaluateChildren(template: HasChildrenTemplate, stack: Variables, cache: Cache): Array<string | VirtualElement | number> {
+  const children = (template.children || []) as Array<Template | string>
+  let i = 0
+  if (children.length) {
+    if ((cache.groups ?? (cache.groups = [new WeakMap<Template, number>(), 0]))[0].has(template)) {
+      i = cache.groups[0].get(template) as number
+    } else {
+      i = cache.groups[1] = cache.groups[1] + children.length
+      cache.groups[0].set(template, i)
+    }
+  }
+  const result = children.flatMap((child, index) => {
+    if (instanceOfTemplate(child)) {
+      const result = flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | number>
+      switch ((child as CoreTemplate).type) {
+        case 'if': case 'for': case 'expand': case 'group':
+          result.push(i - index)
+      }
+      return result
+    } else {
+      return [child] as Array<string | VirtualElement | number>
+    }
+  })
+  if (typeof result[result.length - 1] === 'number') {
+    result.pop()
+  }
+  return result
+}
 
 export function evaluateProps(template: ElementTemplate, stack: Variables, cache: Cache, ve: VirtualElement): void {
   if (template.style) {
@@ -331,12 +355,12 @@ function compareCache(
 ): boolean {
   const [cacheLoop, newCacheIndex] = pickup(cache, 'loop', cacheIndex) as [Loop | undefined, number]
   const [stackLoop, newStackIndex] = pickup(stack, 'loop', stackIndex) as [Loop | undefined, number]
-  
+
   if (!cacheLoop && !stackLoop) return true
   if (!cacheLoop || !stackLoop) return false
 
-  return cacheLoop.index === stackLoop.index && 
-    cacheLoop.key === stackLoop.key && 
+  return cacheLoop.index === stackLoop.index &&
+    cacheLoop.key === stackLoop.key &&
     cacheLoop.value === stackLoop.value &&
     compareCache(cache, stack, newCacheIndex - 1,  newStackIndex - 1)
 }

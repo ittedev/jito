@@ -20,105 +20,115 @@ export type TemplateType =
   'element' |
   'tree' |
   'group' |
-  'handler'
+  'handler' |
+  'get'
 
 export interface Template {
   type: string
 }
 
-// deno-lint-ignore no-explicit-any
-export function instanceOfTemplate(object: any): object is Template {
-  return typeof object === 'object' && 'type' in object
+export interface CoreTemplate {
+  type: TemplateType
 }
 
-export interface LiteralTemplate extends Template {
+// deno-lint-ignore no-explicit-any
+export function instanceOfTemplate(object: any): object is CoreTemplate {
+  return typeof object === 'object' &&  typeof object.type === 'string'
+}
+
+export interface LiteralTemplate extends CoreTemplate {
   type: 'literal'
   value: unknown
 }
 
-export interface ArrayTemplate extends Template {
+export interface ArrayTemplate extends CoreTemplate {
   type: 'array'
   values: Array<Template>
 }
 
-export interface ObjectTemplate extends Template {
+export interface ObjectTemplate extends CoreTemplate {
   type: 'object'
   entries: Array<[Template, Template]>
 }
 
-export interface VariableTemplate extends Template {
+export interface VariableTemplate extends CoreTemplate {
   type: 'variable'
   name: string
 }
 
-export interface UnaryTemplate extends Template {
+export interface UnaryTemplate extends CoreTemplate {
   type: 'unary'
   operator: string
   operand: Template
 }
 
-export interface BinaryTemplate extends Template {
+export interface BinaryTemplate extends CoreTemplate {
   type: 'binary'
   operator: string
   left: Template
   right: Template
 }
 
-export interface AssignTemplate extends Template {
+export interface AssignTemplate extends CoreTemplate {
   type: 'assign'
   operator: string
   left: VariableTemplate | HashTemplate
   right: Template
 }
 
-export interface FunctionTemplate extends Template {
+export interface FunctionTemplate extends CoreTemplate {
   type: 'function'
   name: Template
   params: Array<Template>
 }
 
-export interface HashTemplate extends Template {
+export interface HashTemplate extends CoreTemplate {
   type: 'hash'
   object: Template
   key: Template
 }
 
-export interface GetTemplate extends Template {
+export interface GetTemplate extends CoreTemplate {
   type: 'get'
   value: Template
 }
 
-export interface JoinTemplate extends Template {
+export interface JoinTemplate extends CoreTemplate {
   type: 'join'
   values: Array<unknown | Template>
   separator: string
 }
 
-export interface FlagsTemplate extends Template {
+export interface FlagsTemplate extends CoreTemplate {
   type: 'flags'
   value: Template
 }
 
-export interface IfTemplate extends Template {
+export interface IfTemplate extends CoreTemplate {
   type: 'if'
   condition: Template
   truthy: Template
   falsy?: Template | undefined
 }
 
-export interface ForTemplate extends Template {
+export interface ForTemplate extends CoreTemplate {
   type: 'for'
   array: Template
   value: Template
   each?: string
 }
 
-export interface TreeTemplate extends Template {
-  type: 'tree' | 'element'
+export interface HasChildrenTemplate {
+  type: string
   children?: Array<Template | string>
 }
 
+export interface TreeTemplate extends HasChildrenTemplate {
+  type: 'tree' | 'element'
+}
+
 export interface HasAttrTemplate extends Template {
+  type: string
   props?: Record<string, unknown | Template>
 }
 
@@ -135,13 +145,13 @@ export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   on?: Record<string, Array<HandlerTemplate>>
 }
 
-export interface ExpandTemplate extends Template {
+export interface ExpandTemplate extends CoreTemplate {
   type: 'expand'
   template: Template
   default: Template
 }
 
-export interface GroupTemplate extends HasAttrTemplate {
+export interface GroupTemplate extends HasChildrenTemplate, HasAttrTemplate {
   type: 'group'
   props?: Record<string, unknown | Template>
   children?: Array<Template | string>
@@ -153,7 +163,8 @@ export interface HandlerTemplate {
 }
 
 export interface Cache {
-  handler?: Map<HandlerTemplate, Array<[Variables, EventListener]>>
+  handler?: WeakMap<HandlerTemplate, Array<[Variables, EventListener]>>
+  groups?: [WeakMap<Template, number>, number]
 }
 
 export type Ref = [Record<PropertyKey, unknown>, PropertyKey]
@@ -171,7 +182,7 @@ export type TokenField =
   'lineComment' |
   'blockComment'
 
-export type TokenType = 
+export type TokenType =
   '' |
   'multi' |
   'unary' |

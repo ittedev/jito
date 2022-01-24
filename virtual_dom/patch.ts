@@ -7,11 +7,11 @@ import { destroy } from './destroy.ts'
 
 /**
  * Apply a patch to a dom node.
- * 
+ *
  * @param tree - A virtual tree linked with real tree.
  * @param newTree - A new virtual tree patch tree.
  * @returns If tag names are equal, then the patched tree, else new LinkedVirtualElement linked with new real element.
- * 
+ *
  */
 export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirtualTree {
   patchChildren(tree, newTree)
@@ -27,11 +27,11 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
 
 /**
  * Apply a patch to a dom element.
- * 
+ *
  * @param ve - A virtual element linked with real element.
  * @param newVe - A new virtual element patch ve.
  * @returns If tag names are equal, then the patched ve, else new LinkedVirtualElement linked with new real element.
- * 
+ *
  * @alpha
  */
 export function patchElement(ve: LinkedVirtualElement, newVe: VirtualElement): LinkedVirtualElement {
@@ -60,7 +60,7 @@ export function patchElement(ve: LinkedVirtualElement, newVe: VirtualElement): L
   } else {
     delete ve.key
   }
-  
+
   return ve
 }
 
@@ -107,7 +107,7 @@ function patchStyle(ve: LinkedVirtualElement, newVe: VirtualElement) {
 
     if (style != newStyle) {
       ve.node.style.cssText = newStyle
-    
+
       if (newStyle != '') {
         ve.style = newStyle
       } else {
@@ -132,7 +132,7 @@ function patchProps(ve: LinkedVirtualElement, newVe: VirtualElement) {
   currentPropsKeys
     .filter(key => !newPropsKeys.includes(key))
     .forEach(key => ve.node.removeAttribute(key))
-  
+
   if (newPropsKeys.length) {
     ve.props = { ...newProps }
   } else {
@@ -236,9 +236,9 @@ class LinkedVirtualElementPointer {
   node: Node | null
   parent: LinkedVirtualTree
   children: Array<string | LinkedVirtualElement | number>
-  stock: Map<unknown, LinkedVirtualElement>
+  stock: Map<unknown, Array<LinkedVirtualElement>>
   constructor(tree: LinkedVirtualTree) {
-    this.stock = new Map<unknown, LinkedVirtualElement>()
+    this.stock = new Map<unknown, Array<LinkedVirtualElement>>()
     this.parent = tree
     this.node = tree.node.firstChild
     this.children = tree.children || []
@@ -260,9 +260,7 @@ class LinkedVirtualElementPointer {
     }
   }
   prev() {
-    if (typeof this.children[this.index] === 'number') {
-      this.index--
-    } else if (this.node) {
+    if (this.node) {
       this.index--
       this.node = this.node.previousSibling
     } else {
@@ -289,7 +287,7 @@ class LinkedVirtualElementPointer {
       if (this.node !== node) {
         if (typeof this.vNode === 'object') {
           if ('key' in this.vNode) {
-            this.stock.set(this.vNode.key, this.vNode)
+            this.push(this.vNode.key, this.vNode)
           } else if (this.node?.nodeType === 1) { // ELEMENT_NODE
             destroy(this.vNode)
           }
@@ -304,8 +302,9 @@ class LinkedVirtualElementPointer {
   remove() {
     if (typeof this.vNode === 'object') {
       if ('key' in this.vNode) {
-        this.stock.set(this.vNode.key, this.vNode)
-      } if (this.node?.nodeType === 1) { // ELEMENT_NODE
+        this.push(this.vNode.key, this.vNode)
+      }
+      if (this.node?.nodeType === 1) { // ELEMENT_NODE
         destroy(this.vNode)
       }
     }
@@ -327,15 +326,22 @@ class LinkedVirtualElementPointer {
     }
   }
   has(key: unknown) {
-    return this.stock.has(key)
+    return this.stock.get(key)?.length
   }
+  push(key: unknown, value: LinkedVirtualElement) {
+    if (this.stock.has(key)) {
+      (this.stock.get(key) as Array<LinkedVirtualElement>).push(value)
+    } else {
+      this.stock.set(key, [value])
+    }
+  }
+  // must this.has(key) === true
   addFromKey(key: unknown, ve: VirtualElement) {
-    const tmp = this.stock.get(key) as LinkedVirtualElement
-    this.stock.delete(key)
-    return this.add(patchElement(tmp, ve))
+    const queue = this.stock.get(key) as Array<LinkedVirtualElement>
+    return this.add(patchElement(queue.shift() as LinkedVirtualElement, ve))
   }
   clear() {
-    this.stock.forEach(ve => destroy(ve))
+    this.stock.forEach(queue => queue.forEach(ve => destroy(ve)))
     this.stock.clear()
   }
   // true is match, false is stop, void is continue

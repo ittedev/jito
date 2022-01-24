@@ -2407,7 +2407,6 @@ describe('Template Engine', function() {
 
     it('expression: object', () => {
       equal(evaluate(expression(new Lexer('{}', 'script')), [stack]), {})
-      console.log('expression:', expression(new Lexer('{ x }', 'script')))
       equal(evaluate(expression(new Lexer('{ x }', 'script')), [stack]), { x: 1 })
       equal(evaluate(expression(new Lexer('{ x, y: "x", [s]: 1 + x }', 'script')), [stack]), { x: 1, y: "x", s: 2 })
     })
@@ -3969,6 +3968,30 @@ describe('Template Engine', function() {
           children: [{ tag: "h2" }]
         })
       })
+      it('evaluate: @if with text is false', () => {
+        const tree = evaluate(parse('text<span @if="isActive"></span> text'), [{ isActive: false }])
+        equal(tree, {
+          children: ['text', 2, ' text']
+        })
+      })
+      it('evaluate: @if with text is true', () => {
+        const tree = evaluate(parse('text<span @if="isActive"></span> text'), [{ isActive: true }])
+        equal(tree, {
+          children: ['text', { tag: "span" }, 2, ' text']
+        })
+      })
+      it('evaluate: @if @else with text is false', () => {
+        const tree = evaluate(parse('text<span @if="isActive"></span> <b @else></b> text'), [{ isActive: false }])
+        equal(tree, {
+          children: ['text', { tag: "b" }, 2, ' text']
+        })
+      })
+      it('evaluate: @if @else with text is true', () => {
+        const tree = evaluate(parse('text<span @if="isActive"></span> <b @else></b> text'), [{ isActive: true }])
+        equal(tree, {
+          children: ['text', { tag: "span" }, 2, ' text']
+        })
+      })
     })
 
     describe(': @for', function() {
@@ -3976,11 +3999,15 @@ describe('Template Engine', function() {
         const tree = evaluate(parse('<p @for="array"></p>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
-            { tag: "p" },
-            { tag: "p" },
-            { tag: "p" }
+            { tag: "p", key: 'x' },
+            { tag: "p", key: 'y' },
+            { tag: "p", key: 'z' }
           ]
         })
+      })
+      it('evaluate: @for array empty', () => {
+        const tree = evaluate(parse('<p @for="array"></p>'), [{ array: [] }])
+        equal(tree, {})
       })
       it('evaluate: @for array: @each', () => {
         const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: ['x', 'y', 'z'] }])
@@ -3988,16 +4015,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x"]
+              children: ["x"],
+              key: 'x'
             },
             {
               tag: "p",
-              children: ["y"]
+              children: ["y"],
+              key: 'y'
             },
             {
               tag: "p",
-              children: ["z"]
-            },
+              children: ["z"],
+              key: 'z'
+            }
           ]
         })
       })
@@ -4007,16 +4037,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["0|x|0|3|true|false"]
+              children: ["0|x|0|3|true|false"],
+              key: 'x'
             },
             {
               tag: "p",
-              children: ["1|y|1|3|false|false"]
+              children: ["1|y|1|3|false|false"],
+              key: 'y'
             },
             {
               tag: "p",
-              children: ["2|z|2|3|false|true"]
-            },
+              children: ["2|z|2|3|false|true"],
+              key: 'z'
+            }
           ]
         })
       })
@@ -4026,16 +4059,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["xx"]
+              children: ["xx"],
+              key: 'xx'
             },
             {
               tag: "p",
-              children: ["yy"]
+              children: ["yy"],
+              key: 'yy'
             },
             {
               tag: "p",
-              children: ["zz"]
-            },
+              children: ["zz"],
+              key: 'zz'
+            }
           ]
         })
       })
@@ -4045,16 +4081,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x|xx|0|3|true|false"]
+              children: ["x|xx|0|3|true|false"],
+              key: 'xx'
             },
             {
               tag: "p",
-              children: ["y|yy|1|3|false|false"]
+              children: ["y|yy|1|3|false|false"],
+              key: 'yy'
             },
             {
               tag: "p",
-              children: ["z|zz|2|3|false|true"]
-            },
+              children: ["z|zz|2|3|false|true"],
+              key: 'zz'
+            }
           ]
         })
       })
@@ -4064,16 +4103,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x"]
+              children: ["x"],
+              key: 'x'
             },
             {
               tag: "p",
-              children: ["y"]
+              children: ["y"],
+              key: 'y'
             },
             {
               tag: "p",
-              children: ["z"]
-            },
+              children: ["z"],
+              key: 'z'
+            }
           ]
         })
       })
@@ -4083,16 +4125,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x|x|0|3|true|false"]
+              children: ["x|x|0|3|true|false"],
+              key: 'x'
             },
             {
               tag: "p",
-              children: ["y|y|1|3|false|false"]
+              children: ["y|y|1|3|false|false"],
+              key: 'y'
             },
             {
               tag: "p",
-              children: ["z|z|2|3|false|true"]
-            },
+              children: ["z|z|2|3|false|true"],
+              key: 'z'
+            }
           ]
         })
       })
@@ -4102,16 +4147,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["xx"]
+              children: ["xx"],
+              key: 'xx'
             },
             {
               tag: "p",
-              children: ["yy"]
+              children: ["yy"],
+              key: 'yy'
             },
             {
               tag: "p",
-              children: ["zz"]
-            },
+              children: ["zz"],
+              key: 'zz'
+            }
           ]
         })
       })
@@ -4121,16 +4169,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x|xx|0|3|true|false"]
+              children: ["x|xx|0|3|true|false"],
+              key: 'xx'
             },
             {
               tag: "p",
-              children: ["y|yy|1|3|false|false"]
+              children: ["y|yy|1|3|false|false"],
+              key: 'yy'
             },
             {
               tag: "p",
-              children: ["z|zz|2|3|false|true"]
-            },
+              children: ["z|zz|2|3|false|true"],
+              key: 'zz'
+            }
           ]
         })
       })
@@ -4145,16 +4196,19 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x"]
+              children: ["x"],
+              key: 'x'
             },
             {
               tag: "p",
-              children: ["y"]
+              children: ["y"],
+              key: 'y'
             },
             {
               tag: "p",
-              children: ["z"]
-            },
+              children: ["z"],
+              key: 'z'
+            }
           ]
         })
       })
@@ -4169,16 +4223,42 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["0|x|0|3|true|false"]
+              children: ["0|x|0|3|true|false"],
+              key: 'x'
             },
             {
               tag: "p",
-              children: ["1|y|1|3|false|false"]
+              children: ["1|y|1|3|false|false"],
+              key: 'y'
             },
             {
               tag: "p",
-              children: ["2|z|2|3|false|true"]
-            },
+              children: ["2|z|2|3|false|true"],
+              key: 'z'
+            }
+          ]
+        })
+      })
+      it('evaluate: @for with text', () => {
+        const tree = evaluate(parse('a<p @for="array"></p> b'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            'a',
+            { tag: "p", key: 'x' },
+            { tag: "p", key: 'y' },
+            { tag: "p", key: 'z' },
+            2,
+            ' b'
+          ]
+        })
+      })
+      it('evaluate: @for empty with text', () => {
+        const tree = evaluate(parse('a<p @for="array"></p> b'), [{ array: [] }])
+        equal(tree, {
+          children: [
+            'a',
+            2,
+            ' b'
           ]
         })
       })
@@ -4202,13 +4282,13 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: group chain', () => {
-        const tree = evaluate(parse('<group>Hello <group>beako</group></group>'))
+        const tree = evaluate(parse('<group>Hello <group>beako</group>!</group>'))
         equal(tree, {
-          children: [ "Hello ", "beako" ]
+          children: [ "Hello ", "beako", 3, '!' ]
         })
       })
     })
-    
+
     describe(': @expand', function() {
       it('evaluate: @expand no template', () => {
         const tree = evaluate(parse('<p @expand="template"></p>'))
@@ -4241,6 +4321,19 @@ describe('Template Engine', function() {
           children: [{ tag: "h2" }]
         })
       })
+      it('evaluate: @expand no template with text', () => {
+        const tree = evaluate(parse('<p @expand="template"></p> b'))
+        equal(tree, {
+          children: [{ tag: "p" }, 2, ' b']
+        })
+      })
+      it('evaluate: @expand template with text', () => {
+        const template = parse('<div></div>')
+        const tree = evaluate(parse('<p @expand="template"></p> b'), [{ template }])
+        equal(tree, {
+          children: [{ tag: "div" }, 2, ' b']
+        })
+      })
     })
 
     describe(': combinate', function() {
@@ -4250,11 +4343,13 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x"]
+              children: ["x"],
+              key: 'x'
             },
             {
               tag: "p",
-              children: ["z"]
+              children: ["z"],
+              key: 'z'
             }
           ]
         })
@@ -4265,15 +4360,18 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x"]
+              children: ["x"],
+              key: 'x'
             },
             {
               tag: "div",
-              children: ["y"]
+              children: ["y"],
+              key: 'y'
             },
             {
               tag: "p",
-              children: ["z"]
+              children: ["z"],
+              key: 'z'
             }
           ]
         })
@@ -4304,6 +4402,43 @@ describe('Template Engine', function() {
         const tree = evaluate(parse('<group @for="array">{{ loop.value }}</group>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: ["x", "y", "z"]
+        })
+      })
+      it('evaluate: @for and <group> elements', () => {
+        const tree = evaluate(parse('<group @for="array"><span>{{ loop.key }}</span><span>{{ loop.value }}</span></group>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "span",
+              children: ["0"],
+              key: 'x'
+            },
+            {
+              tag: "span",
+              children: ["x"],
+              key: 'x'
+            },
+            {
+              tag: "span",
+              children: ["1"],
+              key: 'y'
+            },
+            {
+              tag: "span",
+              children: ["y"],
+              key: 'y'
+            },
+            {
+              tag: "span",
+              children: ["2"],
+              key: 'z'
+            },
+            {
+              tag: "span",
+              children: ["z"],
+              key: 'z'
+            }
+          ]
         })
       })
       it('evaluate: @if, @for and <group>', () => {
@@ -4348,15 +4483,18 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "p",
-              children: ["x"]
+              children: ["x"],
+              key: 'x'
             },
             {
               tag: "p",
-              children: ["y"]
+              children: ["y"],
+              key: 'y'
             },
             {
               tag: "p",
-              children: ["z"]
+              children: ["z"],
+              key: 'z'
             }
           ]
         })
@@ -4368,15 +4506,18 @@ describe('Template Engine', function() {
           children: [
             {
               tag: "div",
-              children: ["x"]
+              children: ["x"],
+              key: 'x'
             },
             {
               tag: "div",
-              children: ["y"]
+              children: ["y"],
+              key: 'y'
             },
             {
               tag: "div",
-              children: ["z"]
+              children: ["z"],
+              key: 'z'
             }
           ]
         })
@@ -4399,6 +4540,26 @@ describe('Template Engine', function() {
         const tree = evaluate(parse('<p @expand="template">Hello</p>'), [{ template }])
         equal(tree, {
           children: ["Beako"]
+        })
+      })
+      it('evaluate: @if with text in @for and <group>', () => {
+        const tree = evaluate(parse(`<group @for="array"><p @if="loop.value !== 'y'">{{ loop.value }}</p> b</group>`), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"],
+              key: 'x'
+            },
+            ' b',
+            ' b',
+            {
+              tag: "p",
+              children: ["z"],
+              key: 'z'
+            },
+            ' b'
+          ]
         })
       })
 

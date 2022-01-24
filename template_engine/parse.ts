@@ -116,8 +116,6 @@ function parseChild(lexer: DomLexer): Template {
 //   }
 // }
 
-// TODO: parse boundary numbers algorithm
-
 function parseFor(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@for')) {
@@ -169,7 +167,6 @@ function parseGroup(el: Element): Template {
         }
       })
     }
-    
     if (el.hasChildNodes()) {
       template.children = parseChildren(el)
     }
@@ -184,7 +181,7 @@ function parseElement(el: Element): ElementTemplate {
     type: 'element',
     tag: el.tagName.toLowerCase(),
   } as ElementTemplate
-  
+
   {
     const style = [] as Array<string | Template>
     el.getAttributeNames().forEach(name => {
@@ -281,6 +278,6 @@ function parseElement(el: Element): ElementTemplate {
   if (el.hasChildNodes()) {
     template.children = parseChildren(el)
   }
-  
+
   return template
 }
