@@ -27,6 +27,7 @@ export type ComponentConstructor = (entity: Entity) => Variables | Record<string
 
 export interface ComponentOptions {
   mode?: ShadowRootMode
+  delegatesFocus?: boolean
   localeOnly?: boolean
 }
 
@@ -35,6 +36,7 @@ export interface Component {
   data: ComponentConstructor | Variables
   options: {
     mode: ShadowRootMode
+    delegatesFocus?: boolean
     localeOnly?: boolean
   }
 }

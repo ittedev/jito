@@ -4776,11 +4776,11 @@ describe('Web Components', function() {
           const data = watch({
             name: 'world'
           })
-        
+
           const child = compact('', () => {
             data.name = 'beako'
           })
-          
+
           return [data, { child }]
         }
       )
@@ -4797,6 +4797,7 @@ describe('Web Components', function() {
       await sleep()
       equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
+    // TODO: test seal
 
     it('expand content', async () => {
       const el = document.querySelector('#sync_target4')

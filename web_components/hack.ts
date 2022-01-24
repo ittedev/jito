@@ -37,7 +37,7 @@ export function hack(target: string | Element, template: string | TreeTemplate |
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')
   }
-  const tree = load(host.attachShadow({ mode: component.options.mode }))
+  const tree = load(host.attachShadow(component.options))
   const entity = new Entity(component, host, tree)
 
   const temp = parse(host) as CustomElementTemplate
