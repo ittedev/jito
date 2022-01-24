@@ -129,11 +129,13 @@ function distinguish(field: TokenField, value: string): TokenType {
           break
       }
       switch (true) {
-        case /^\\(x|u)$/.test(value): return 'partial'
+        case /^\\u[0-9a-fA-F]{0,3}$/.test(value):
+        case /^\\x[0-9a-fA-F]{0,1}$/.test(value):
+        case /^\\u\{(0?[0-9a-fA-F]{0,5}|10[0-9a-fA-F]{0,4})$/.test(value):
+          return 'partial'
         case /^\\.$/.test(value):
-        case /^\\[0-7]{3}$/.test(value):
         case /^\\u[0-9a-fA-F]{4}$/.test(value):
-        case /^\\u\{[0-9a-fA-F]{1,6}\}$/.test(value):
+        case /^\\u\{(0?[0-9a-fA-F]{1,5}|10[0-9a-fA-F]{1,4})\}$/.test(value):
         case /^\\x[0-9a-fA-F]{2}$/.test(value):
           return 'escape'
       }

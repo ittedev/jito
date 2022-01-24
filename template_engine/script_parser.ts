@@ -321,12 +321,10 @@ function unescape(value: string): string {
     case '\\f': return '\f'
   }
   switch (true) {
-    case /^\\[0-7]{3}$/.test(value):
-      return String.fromCodePoint(parseInt(value.slice(1), 8))
     case /^\\u[0-9a-fA-F]{4}$/.test(value):
     case /^\\x[0-9a-fA-F]{2}$/.test(value):
       return String.fromCodePoint(parseInt(value.slice(2), 16))
-    case /^\\u\{[0-9a-fA-F]{1,6}\}$/.test(value):
+    case /^\\u\{(0?[0-9a-fA-F]{1,5}|10[0-9a-fA-F]{1,4})\}$/.test(value):
       return String.fromCodePoint(parseInt(value.slice(3,-1), 16))
   }
   return value.slice(1)

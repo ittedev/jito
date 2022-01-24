@@ -596,7 +596,7 @@ describe('Data Binding', function() {
         x: 1
       })
       const data2 = await receive(data, 'x')
-      equal(data2.x, 1)
+      equal(data2.x, undefined)
     })
     it('unwatch locked object', () => {
       const data = {
@@ -646,7 +646,7 @@ describe('Data Binding', function() {
       equal(y, 2)
     })
     it('watch unlocked array', () => {
-      const data = unlocked(lock([1]))
+      const data = unlock(lock([1]))
       let y = 0
       watch(data, () => { y = 2 })
       data[0] = 2
@@ -2379,16 +2379,12 @@ describe('Template Engine', function() {
       equal(evaluate(expression(new Lexer('"\\""', 'script')), [stack]), '"')
     })
 
-    it('expression: string escape: \\XXX', () => {
-      equal(evaluate(expression(new Lexer("'\\006\\157'", 'script')), [stack]), "\006\157")
-    })
-
     it('expression: string escape: \\uXXXX', () => {
-      equal(evaluate(expression(new Lexer("'\\0006\\u11aa'", 'script')), [stack]), "\u0006\u11aa")
+      equal(evaluate(expression(new Lexer("'\\u0006\\u11aa'", 'script')), [stack]), "\u0006\u11aa")
     })
 
     it('expression: string escape: \\u{X...XXXXXX}', () => {
-      equal(evaluate(expression(new Lexer("'\\u{6}\\u{789abF}'", 'script')), [stack]), "\u{6}\u{789abF}")
+      equal(evaluate(expression(new Lexer("'\\u{6}\\u{109abF}'", 'script')), [stack]), "\u{6}\u{109abF}")
     })
 
     it('expression: string escape: \\xXX', () => {
