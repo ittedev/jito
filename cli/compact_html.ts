@@ -25,7 +25,7 @@ export function compactHtml(name: string, html : string) {
 export default {
   template: ${JSON.stringify(template)},
   data,
-  options: { mode: 'open', delegatesFocus: true } 
+  options: { mode: 'open' }
 }`
   return {
     dataFile: {

@@ -20,6 +20,6 @@ export function compact(template: string | TreeTemplate, data: Variables | Recor
   return lock({
     template: extend(typeof template === 'string' ? parse(template) : template) as TreeTemplate,
     data: (typeof data === 'function' || Array.isArray(data)) ? data : [data],
-    options: { mode: 'open', delegatesFocus: true }
+    options: { mode: 'open' }
   })
 }

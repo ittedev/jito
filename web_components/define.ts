@@ -27,7 +27,7 @@ export function define(name: string, template: string | TreeTemplate | Component
   customElements.define(name, class extends ComponentElement {
     constructor() {
       super()
-      const tree = load(this.attachShadow({ mode: component.options.mode, delegatesFocus: component.options.delegatesFocus }))
+      const tree = load(this.attachShadow({ mode: component.options.mode }))
       this.entity = new Entity(component, this, tree)
 
       if(this.innerHTML) {

@@ -3,6 +3,6 @@
 import { ComponentOptions, Component } from './types.ts'
 
 export function seal( component: Component, options: ComponentOptions = {} ): Component {
-  component.options = Object.freeze({ mode: 'closed', delegatesFocus: true, ...options })
+  component.options = Object.freeze({ mode: 'closed', ...options })
   return Object.freeze(component)
 }

@@ -71,7 +71,7 @@ class LocalComponentElement extends ComponentElement {
           if (def && ComponentElement.isPrototypeOf(def)) {
             const component = (def as typeof ComponentElement).getComponent()
             if (component) {
-              const tree = load(this.attachShadow({ mode: component.options.mode, delegatesFocus: component.options.delegatesFocus }))
+              const tree = load(this.attachShadow({ mode: component.options.mode }))
               this.entity = new Entity(component, this, tree)
             }
           } else {
@@ -81,7 +81,7 @@ class LocalComponentElement extends ComponentElement {
         }
         case 'object':
           if (instanceOfComponent(value)) {
-            const tree = load(this.attachShadow({ mode: value.options.mode, delegatesFocus: value.options.delegatesFocus }))
+            const tree = load(this.attachShadow({ mode: value.options.mode }))
             this.entity = new Entity(value, this, tree)
           } else {
             throw Error('The object is not a component.')
