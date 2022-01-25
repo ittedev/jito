@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<body></body>
+
+<script type="module">
+  import { watch, compact, hack } from './beako.js'
+
+  const data = watch({
+    texts: ['']
+  })
+  
+  const component = compact(`
+    <p @for="texts">
+      <input type="text" value:="loop.value" oninput="texts[loop.index] = event.target.value">
+      <button onclick="texts.splice(loop.index, 1))">Remove</button></p>
+    <p>
+      <button onclick="texts.push('')">Add</button>
+    </p>
+  `, data)
+  
+  hack(document.body, component)
+</script>

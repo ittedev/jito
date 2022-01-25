@@ -14,6 +14,7 @@ import { destroy } from './destroy.ts'
  *
  */
 export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirtualTree {
+  // console.log('patch:', JSON.parse(JSON.stringify(tree)), newTree)
   patchChildren(tree, newTree)
   tree.node.dispatchEvent(new CustomEvent(eventTypes.patch, {
     bubbles: true,
@@ -22,6 +23,7 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
       tree: clone(tree)
     }
   }))
+  // console.log('patched:', tree)
   return tree
 }
 
@@ -34,9 +36,9 @@ export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirt
  *
  * @alpha
  */
-export function patchElement(ve: LinkedVirtualElement, newVe: VirtualElement): LinkedVirtualElement {
+export function patchElement(ve: LinkedVirtualElement | null, newVe: VirtualElement): LinkedVirtualElement {
   // if tag is different, 'is' is different or 'new' is true then new element
-  if (ve.tag !== newVe.tag || ve.is !== newVe.is || newVe.new) {
+  if (!ve || ve.tag !== newVe.tag || ve.is !== newVe.is || newVe.new) {
     ve = newVe.is ? {
       tag: newVe.tag,
       is : newVe.is,
@@ -229,101 +231,10 @@ function patchForm(ve: LinkedVirtualElement, newVe: VirtualElement) {
   }
 }
 
-
-// TODO: add use DocumentFragment?
-class LinkedVirtualElementPointer {
-  index = 0
-  node: Node | null
-  parent: LinkedVirtualTree
-  children: Array<string | LinkedVirtualElement | number>
+class Stock {
   stock: Map<unknown, Array<LinkedVirtualElement>>
-  constructor(tree: LinkedVirtualTree) {
+  constructor() {
     this.stock = new Map<unknown, Array<LinkedVirtualElement>>()
-    this.parent = tree
-    this.node = tree.node.firstChild
-    this.children = tree.children || []
-  }
-  get isEnd(): boolean {
-    return this.index >= this.children.length
-  }
-  get vNode(): string | LinkedVirtualElement | number {
-    return this.children[this.index]
-  }
-  next(indexStep = 1) {
-    if (typeof this.children[this.index] === 'number') {
-      this.index += indexStep
-    } else {
-      if (this.node) {
-        this.index += indexStep
-        this.node = this.node.nextSibling
-      }
-    }
-  }
-  prev() {
-    if (this.node) {
-      this.index--
-      this.node = this.node.previousSibling
-    } else {
-      this.node = this.parent.node.lastChild
-      if (this.node) {
-        this.index--
-      }
-    }
-  }
-  add(vNode: LinkedVirtualElement | string) {
-    const node = typeof vNode === 'string' ? document.createTextNode(vNode) : vNode.node
-    const next = this.node
-    this.node = this.parent.node.insertBefore(node, this.node || null)
-    this.next(next ? 0 : 1)
-    return vNode
-  }
-  replace(vNode: LinkedVirtualElement | string) {
-    if (typeof vNode === 'string' && this.node?.nodeType === 3) { // TEXT_NODE
-      if ((this.node as Text).data !== vNode) {
-        (this.node as Text).data = vNode
-      }
-    } else {
-      const node = typeof vNode === 'string' ? document.createTextNode(vNode) : vNode.node
-      if (this.node !== node) {
-        if (typeof this.vNode === 'object') {
-          if ('key' in this.vNode) {
-            this.push(this.vNode.key, this.vNode)
-          } else if (this.node?.nodeType === 1) { // ELEMENT_NODE
-            destroy(this.vNode)
-          }
-        }
-        this.parent.node.replaceChild(node, this.node as Node)
-        this.node = node
-      }
-    }
-    this.next()
-    return vNode
-  }
-  remove() {
-    if (typeof this.vNode === 'object') {
-      if ('key' in this.vNode) {
-        this.push(this.vNode.key, this.vNode)
-      }
-      if (this.node?.nodeType === 1) { // ELEMENT_NODE
-        destroy(this.vNode)
-      }
-    }
-    const node = this.node
-    this.node = node?.nextSibling || null
-    this.parent.node.removeChild(node as Node)
-  }
-  removeAll() {
-    if (this.node) {
-      for (let node: Node | null = this.node; node !== null; node = node.nextSibling) {
-        this.parent.node.removeChild(node)
-      }
-    }
-    while (!this.isEnd) {
-      if (typeof this.vNode === 'object') {
-        destroy(this.vNode)
-      }
-      this.index++
-    }
   }
   has(key: unknown) {
     return this.stock.get(key)?.length
@@ -336,96 +247,119 @@ class LinkedVirtualElementPointer {
     }
   }
   // must this.has(key) === true
-  addFromKey(key: unknown, ve: VirtualElement) {
-    const queue = this.stock.get(key) as Array<LinkedVirtualElement>
-    return this.add(patchElement(queue.shift() as LinkedVirtualElement, ve))
-  }
-  clear() {
-    this.stock.forEach(queue => queue.forEach(ve => destroy(ve)))
-    this.stock.clear()
-  }
-  // true is match, false is stop, void is continue
-  search(cond: () => boolean | void): boolean {
-    if (this.isEnd) {
-      return false
-    }
-    const result = cond()
-    if (typeof result === 'boolean') {
-      return result
-    } else {
-      this.next()
-      const result = this.search(cond)
-      this.prev()
-      if (result) {
-        this.remove()
-        this.index++
-      }
-      return result
-    }
+  shift(key: unknown): LinkedVirtualElement {
+    return (this.stock.get(key) as Array<LinkedVirtualElement>).shift() as LinkedVirtualElement
   }
 }
 
 // use boundary numbers algorithm
 function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: VirtualTree) {
+  const children = tree.children || []
   const newChildren = newTree.children || []
-  const pointer = new LinkedVirtualElementPointer(tree)
+  const stock = new Stock()
+  let index = 0
+  let node = tree.node.firstChild as undefined | null | Node
   const numbers = newChildren.filter(vNode => typeof vNode === 'number').reverse() as Array<number>
-  let number= numbers.pop()
+  let number = numbers.pop()
+
+  // replace object
+  const replace = (vNode: VirtualElement) => {
+    const tmp = patchElement(children[index] as LinkedVirtualElement, vNode)
+    if (tmp !== children[index]) {
+      destroy(children[index] as LinkedVirtualElement)
+      tree.node.replaceChild(tmp.node, (children[index] as LinkedVirtualElement).node)
+    }
+    node = tmp.node.nextSibling
+    index++
+    return tmp
+  }
+
+  // add object
+  const add = (vNode: VirtualElement) => {
+    const tmp = patchElement(null, vNode)
+    tree.node.insertBefore(tmp.node, node || null)
+    return tmp
+  }
+
+  // remove node
+  const remove = (useStore = false) => {
+    if (typeof children[index] !== 'number') {
+      if (typeof children[index] === 'object') {
+        if (useStore && 'key' in (children[index] as LinkedVirtualElement)) {
+          stock.push((children[index] as LinkedVirtualElement).key, children[index] as LinkedVirtualElement)
+        } else {
+          destroy(children[index] as LinkedVirtualElement)
+        }
+      }
+      const old = node as Node
+      node = old.nextSibling
+      tree.node.removeChild(old)
+    }
+    index++
+  }
 
   const tmp = newChildren.map(vNode => {
     switch (typeof vNode) {
       case 'string': {
-        if (!pointer.isEnd && typeof pointer.vNode === 'string') {
-          return pointer.replace(vNode)
+        if (typeof children[index] === 'string') {
+          // replace text
+          if ((node as Text).data !== vNode) {
+            (node as Text).data = vNode
+          }
+          node = (node as Text).nextSibling
+          index++
         } else {
-          return pointer.add(vNode)
+          // add text
+          tree.node.insertBefore(document.createTextNode(vNode), node || null)
         }
+        return vNode
       }
 
       case 'object': {
+
         if ('key' in vNode) {
-          if (pointer.has(vNode.key)) {
-            return pointer.addFromKey(vNode.key, vNode)
+          if (stock.has(vNode.key)) {
+            const tmp = patchElement(stock.shift(vNode.key), vNode)
+            tree.node.insertBefore(tmp.node, node || null)
+            return tmp
           } else {
-            if (typeof pointer.vNode === 'object') {
-              const isMatched = pointer.search(() => {
-                if (typeof pointer.vNode === 'object' && vNode.key === pointer.vNode.key) {
-                  return true
-                } else if (typeof pointer.vNode === 'number' && (number != undefined && pointer.vNode === number)) {
-                  return false
-                }
-              })
-              if (isMatched) {
-                return pointer.replace(patchElement(pointer.vNode, vNode))
+            while (index < children.length && children[index] !== number) {
+              if (typeof children[index] === 'object' && vNode.key === (children[index] as LinkedVirtualElement).key) {
+                // replace key object
+                return replace(vNode)
               }
+              remove(true)
             }
+            // add key object
+            return add(vNode)
           }
-        }
-        if (typeof pointer.vNode === 'object') {
-          const tmp = 'key' in pointer.vNode ? { tag: vNode.tag, node: document.createElement(vNode.tag) } : pointer.vNode
-          return pointer.replace(patchElement(tmp, vNode))
         } else {
-          return pointer.add(patchElement({ tag: vNode.tag, node: document.createElement(vNode.tag) }, vNode))
+          if (typeof children[index] === 'object' && !('key' in (children[index] as LinkedVirtualElement))) {
+            // replace non key object
+            return replace(vNode)
+          } else {
+            // add object
+            return add(vNode)
+          }
         }
       }
 
       case 'number': {
-        const isMatched = pointer.search(() => {
-          if (typeof pointer.vNode === 'number' && vNode === pointer.vNode) {
-            return true
-          }
-        })
-        number = numbers.pop()
-        if (isMatched) {
-          pointer.next()
+        while (index < children.length && children[index] !== vNode) {
+          remove()
         }
-        pointer.clear()
+        index++
+        number = numbers.pop()
+        stock.stock.forEach(queue => queue.forEach(ve => destroy(ve)))
+        stock.stock.clear()
         return vNode
       }
     }
   })
 
-  pointer.removeAll()
+  while (index < children.length) {
+    remove()
+  }
 
   if (tmp.length) {
     tree.children = tmp

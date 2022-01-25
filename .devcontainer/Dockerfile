@@ -9,6 +9,5 @@ ENV PATH /home/vscode/.deno/bin:/usr/local/bin:$PATH
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends webfs
-    # webfsd -F -p 4050
 
 RUN sudo -u vscode deno install -f --allow-read --allow-write --allow-env --allow-run --allow-net https://deno.land/x/beako/cli/beako.ts

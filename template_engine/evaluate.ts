@@ -200,9 +200,11 @@ export const evaluator = {
         const loop = new Loop(key, value, index, entries, stack)
         const result = (flatwrap(evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]), cache)) as Array<string | VirtualElement | number>)
           .filter(child => typeof child !== 'number')
-        result
-          .filter(child => typeof child === 'object')
-          .forEach(child => (child as VirtualElement).key = loop.value)
+        if (typeof loop.value === 'object') {
+          result
+            .filter(child => typeof child === 'object')
+            .forEach(child => (child as VirtualElement).key = loop.value)
+        }
         return result
       })
     }
