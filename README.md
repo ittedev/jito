@@ -18,11 +18,11 @@ Beako.js use ES Modules
 ### Deno
 
 ```shell
-deno install -f --allow-read --allow-write --allow-env --allow-run --allow-net https://deno.land/x/beako@v0.9.22/cli/beako.ts
+deno install -f --allow-read --allow-write --allow-env --allow-run --allow-net https://deno.land/x/beako@v0.9.23/cli/beako.ts
 ```
 
 ```ts
-import { watch, hack } from 'https://deno.land/x/beako@0.9.22/mod.ts'
+import { watch, hack } from 'https://deno.land/x/beako@0.9.23/mod.ts'
 
 const data = {
   count: 1
@@ -57,7 +57,7 @@ To Import it into html:
 <meta charset="UTF-8">
 <body>Loading...</body>
 <script type="module">
-  import { watch, hack } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.9.22/beako.js'
+  import { watch, hack } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.9.23/beako.js'
 
   const data = {
     count: 1
