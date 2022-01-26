@@ -18,11 +18,15 @@ export interface VirtualElement extends VirtualTree {
 }
 
 export interface LinkedVirtualElement extends VirtualElement {
-  node: Element
+  el: Element
   children?: Array<string | LinkedVirtualElement | number>
 }
 
 export interface LinkedVirtualTree extends VirtualTree {
-  node: Element | DocumentFragment | ShadowRoot
+  el: Element | DocumentFragment | ShadowRoot
   children?: Array<string | LinkedVirtualElement | number>
+}
+
+export interface RemoteVirtualElement extends VirtualElement {
+  el: Element | DocumentFragment | ShadowRoot | EventTarget
 }

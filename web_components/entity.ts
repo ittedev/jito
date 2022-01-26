@@ -112,7 +112,7 @@ export class Entity {
 
   get component(): Component { return this._component }
   get host(): Element { return this._host }
-  get root(): ShadowRoot { return this._tree.node as ShadowRoot }
+  get root(): ShadowRoot { return this._tree.el as ShadowRoot }
   get props(): Record<string, unknown> { return this._props }
   get patch() { return this._patch }
   get whenConstructed() {

@@ -175,7 +175,7 @@ function func(lexer: Lexer): Template {
         lexer.pop()
         const key = lexer.pop() as Token
         must(key, 'word')
-        
+
         template = { type: 'get', value: { type: 'hash', object: template, key: { type: 'literal', value: key[1] } as LiteralTemplate } as HashTemplate } as GetTemplate
         continue
       }
@@ -205,7 +205,7 @@ function term(lexer: Lexer): Template {
       return { type: 'get', value: { type: 'variable', name: token[1] } as VariableTemplate } as GetTemplate
 
     // L = n | s | b | undefined | null
-    
+
     case 'number': return { type: 'literal', value: Number(token[1]) } as LiteralTemplate
     case 'boolean': return { type: 'literal', value: token[1] === 'true' ? true : false } as LiteralTemplate
     case 'undefined': return { type: 'literal', value: undefined } as LiteralTemplate

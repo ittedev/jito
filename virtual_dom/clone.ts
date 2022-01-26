@@ -5,7 +5,7 @@ import { VirtualTree, VirtualElement, LinkedVirtualTree } from './types.ts'
 /**
  * Clone a virtual element.
  * 
- * @param el - A virtual tree or a virtual element.
+ * @param tree - A virtual tree or a virtual element.
  * @returns A cloned target.
  * 
  */
@@ -41,7 +41,7 @@ export function clone(tree: VirtualTree): VirtualTree {
     cloneTree.children = tree.children.map(child => typeof child === 'object' ? clone(child) as VirtualElement : child)
   }
   if ('node' in tree) {
-    (cloneTree as LinkedVirtualTree).node = (tree as LinkedVirtualTree).node
+    (cloneTree as LinkedVirtualTree).el = (tree as LinkedVirtualTree).el
   }
   return cloneTree
 }

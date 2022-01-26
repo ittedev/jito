@@ -5,7 +5,7 @@ import { eventTypes } from './event_types.ts'
 
 export function destroy(tree: LinkedVirtualTree) {
   tree.children?.forEach(child => typeof child === 'object' && destroy(child as LinkedVirtualElement))
-  tree.node.dispatchEvent(new CustomEvent(eventTypes.destroy, {
+  tree.el.dispatchEvent(new CustomEvent(eventTypes.destroy, {
     bubbles: false,
     detail: { ve: tree }
   }))

@@ -16,7 +16,7 @@ import { destroy } from './destroy.ts'
 export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirtualTree {
   // console.log('patch:', JSON.parse(JSON.stringify(tree)), newTree)
   patchChildren(tree, newTree)
-  tree.node.dispatchEvent(new CustomEvent(eventTypes.patch, {
+  tree.el.dispatchEvent(new CustomEvent(eventTypes.patch, {
     bubbles: true,
     composed: true,
     detail: {
@@ -42,10 +42,10 @@ export function patchElement(ve: LinkedVirtualElement | null, newVe: VirtualElem
     ve = newVe.is ? {
       tag: newVe.tag,
       is : newVe.is,
-      node: document.createElement(newVe.tag, { is : newVe.is })
+      el: document.createElement(newVe.tag, { is : newVe.is })
     } : {
       tag: newVe.tag,
-      node: document.createElement(newVe.tag)
+      el: document.createElement(newVe.tag)
     }
   }
 
@@ -71,7 +71,7 @@ function patchClass(ve: LinkedVirtualElement, newVe: VirtualElement) {
   const newClass = (newVe.class || []).join(' ')
 
   if (currentClass !== newClass) {
-    ve.node.className = newClass
+    ve.el.className = newClass
   }
 
   if (newClass.length) {
@@ -87,12 +87,12 @@ function patchPart(ve: LinkedVirtualElement, newVe: VirtualElement) {
 
   const shortage = newPart.filter(part => !currentPart.includes(part))
   if (shortage.length) {
-    ve.node.part.add(...shortage)
+    ve.el.part.add(...shortage)
   }
 
   const surplus = currentPart.filter(part => !newPart.includes(part))
   if (surplus.length) {
-    ve.node.part.remove(...surplus)
+    ve.el.part.remove(...surplus)
   }
 
   if (newPart.length) {
@@ -103,12 +103,12 @@ function patchPart(ve: LinkedVirtualElement, newVe: VirtualElement) {
 }
 
 function patchStyle(ve: LinkedVirtualElement, newVe: VirtualElement) {
-  if (ve.node instanceof HTMLElement) {
+  if (ve.el instanceof HTMLElement) {
     const style = ve.style || ''
     const newStyle = newVe.style || ''
 
     if (style != newStyle) {
-      ve.node.style.cssText = newStyle
+      ve.el.style.cssText = newStyle
 
       if (newStyle != '') {
         ve.style = newStyle
@@ -128,12 +128,12 @@ function patchProps(ve: LinkedVirtualElement, newVe: VirtualElement) {
   // shortageOrUpdated
   newPropsKeys
     .filter(key => !currentPropsKeys.includes(key) || currentProps[key] !== newProps[key])
-    .forEach(key => ve.node.setAttribute(key, newProps[key] as string))
+    .forEach(key => ve.el.setAttribute(key, newProps[key] as string))
 
   // surplus
   currentPropsKeys
     .filter(key => !newPropsKeys.includes(key))
-    .forEach(key => ve.node.removeAttribute(key))
+    .forEach(key => ve.el.removeAttribute(key))
 
   if (newPropsKeys.length) {
     ve.props = { ...newProps }
@@ -153,7 +153,7 @@ function patchOn(ve: LinkedVirtualElement, newVe: VirtualElement) {
     .filter(type => !currentOnKeys.includes(type))
     .forEach(type => {
       newOn[type].forEach(listener => {
-        ve.node.addEventListener(type, listener)
+        ve.el.addEventListener(type, listener)
       })
     })
 
@@ -162,7 +162,7 @@ function patchOn(ve: LinkedVirtualElement, newVe: VirtualElement) {
     .filter(type => !newOnKeys.includes(type))
     .forEach(type => {
       currentOn[type].forEach(listener => {
-        ve.node.removeEventListener(type, listener)
+        ve.el.removeEventListener(type, listener)
       })
     })
 
@@ -176,12 +176,12 @@ function patchOn(ve: LinkedVirtualElement, newVe: VirtualElement) {
       // shortage
       news
         .filter(listener => !currents.includes(listener))
-        .forEach(listener => ve.node.addEventListener(type, listener))
+        .forEach(listener => ve.el.addEventListener(type, listener))
 
       // surplus
       currents
         .filter(listener => !news.includes(listener))
-        .forEach(listener => ve.node.removeEventListener(type, listener))
+        .forEach(listener => ve.el.removeEventListener(type, listener))
     })
   if (newOnKeys.length) {
     ve.on = newOnKeys.reduce((on, type) => {
@@ -196,8 +196,8 @@ function patchOn(ve: LinkedVirtualElement, newVe: VirtualElement) {
 
 function patchForm(ve: LinkedVirtualElement, newVe: VirtualElement) {
   // <input>
-  if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.node)) {
-    const input = ve.node as HTMLInputElement
+  if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.el)) {
+    const input = ve.el as HTMLInputElement
     // value
     if (input.value !== newVe.props?.value) {
       if (newVe.props && 'value' in newVe.props) {
@@ -205,8 +205,8 @@ function patchForm(ve: LinkedVirtualElement, newVe: VirtualElement) {
           input.value = newVe.props.value as string
         }
       } else {
-        if ((ve.node as HTMLInputElement).value !== '') {
-          (ve.node as HTMLInputElement).value = ''
+        if ((ve.el as HTMLInputElement).value !== '') {
+          (ve.el as HTMLInputElement).value = ''
         }
       }
     }
@@ -220,8 +220,8 @@ function patchForm(ve: LinkedVirtualElement, newVe: VirtualElement) {
   }
 
   // <option>
-  if (Object.prototype.isPrototypeOf.call(HTMLOptionElement.prototype, ve.node)) {
-    const option = ve.node as HTMLOptionElement
+  if (Object.prototype.isPrototypeOf.call(HTMLOptionElement.prototype, ve.el)) {
+    const option = ve.el as HTMLOptionElement
     // selected
     if (!option.selected && newVe.props && 'selected' in newVe.props) {
       option.selected = true
@@ -258,7 +258,7 @@ function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: 
   const newChildren = newTree.children || []
   const stock = new Stock()
   let index = 0
-  let node = tree.node.firstChild as undefined | null | Node
+  let node = tree.el.firstChild as undefined | null | Node
   const numbers = newChildren.filter(vNode => typeof vNode === 'number').reverse() as Array<number>
   let number = numbers.pop()
 
@@ -267,9 +267,9 @@ function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: 
     const tmp = patchElement(children[index] as LinkedVirtualElement, vNode)
     if (tmp !== children[index]) {
       destroy(children[index] as LinkedVirtualElement)
-      tree.node.replaceChild(tmp.node, (children[index] as LinkedVirtualElement).node)
+      tree.el.replaceChild(tmp.el, (children[index] as LinkedVirtualElement).el)
     }
-    node = tmp.node.nextSibling
+    node = tmp.el.nextSibling
     index++
     return tmp
   }
@@ -277,7 +277,7 @@ function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: 
   // add object
   const add = (vNode: VirtualElement) => {
     const tmp = patchElement(null, vNode)
-    tree.node.insertBefore(tmp.node, node || null)
+    tree.el.insertBefore(tmp.el, node || null)
     return tmp
   }
 
@@ -293,7 +293,7 @@ function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: 
       }
       const old = node as Node
       node = old.nextSibling
-      tree.node.removeChild(old)
+      tree.el.removeChild(old)
     }
     index++
   }
@@ -310,7 +310,7 @@ function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: 
           index++
         } else {
           // add text
-          tree.node.insertBefore(document.createTextNode(vNode), node || null)
+          tree.el.insertBefore(document.createTextNode(vNode), node || null)
         }
         return vNode
       }
@@ -320,7 +320,7 @@ function patchChildren(tree: LinkedVirtualElement | LinkedVirtualTree, newTree: 
         if ('key' in vNode) {
           if (stock.has(vNode.key)) {
             const tmp = patchElement(stock.shift(vNode.key), vNode)
-            tree.node.insertBefore(tmp.node, node || null)
+            tree.el.insertBefore(tmp.el, node || null)
             return tmp
           } else {
             while (index < children.length && children[index] !== number) {

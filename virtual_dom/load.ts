@@ -6,45 +6,45 @@ import { LinkedVirtualTree, LinkedVirtualElement } from './types.ts'
  * Create a vertual tree from a dom node.
  * @alpha
  */
-export function load(node: Element | DocumentFragment): LinkedVirtualTree {
-  const tree = { node } as LinkedVirtualTree
+export function load(el: Element | DocumentFragment): LinkedVirtualTree {
+  const tree = { el } as LinkedVirtualTree
   loadChildren(tree)
   return tree
 }
 
-function loadElement(element: Element): LinkedVirtualElement {
-  const el = {
-    tag: element.tagName.toLowerCase(),
-    node: element
+function loadElement(el: Element): LinkedVirtualElement {
+  const ve = {
+    tag: el.tagName.toLowerCase(),
+    el
   } as LinkedVirtualElement
 
-  loadAttr(el)
-  loadChildren(el)
+  loadAttr(ve)
+  loadChildren(ve)
 
-  return el
+  return ve
 }
 
-function loadAttr(el: LinkedVirtualElement) {
-  if (el.node.hasAttributes()) {
+function loadAttr(ve: LinkedVirtualElement) {
+  if (ve.el.hasAttributes()) {
     const props = {} as Record<string, string>
-    el.node.getAttributeNames().forEach(name => {
+    ve.el.getAttributeNames().forEach(name => {
       if (name.startsWith('on')) return
-      const value = el.node.getAttribute(name) as string
+      const value = ve.el.getAttribute(name) as string
       switch (name) {
-        case 'class': case 'part': return el[name] = value.split(/\s+/)
-        case 'style': case 'is': return el[name] = value
+        case 'class': case 'part': return ve[name] = value.split(/\s+/)
+        case 'style': case 'is': return ve[name] = value
         default: return props[name] = value
       }
     })
     if (Object.keys(props).length) {
-      el.props = props
+      ve.props = props
     }
   }
 }
 
 function loadChildren(tree: LinkedVirtualTree) {
-  if (tree.node.hasChildNodes()) {
-    const nodeList = tree.node.childNodes
+  if (tree.el.hasChildNodes()) {
+    const nodeList = tree.el.childNodes
     tree.children = []
     for (let i = 0; i < nodeList.length; i++) {
       switch(nodeList[i].nodeType) {

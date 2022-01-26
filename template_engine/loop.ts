@@ -18,7 +18,7 @@ export class Loop {
   get isFirst(): boolean { return this._index === 0 }
   get isLast(): boolean { return this._index === this._entries.length - 1 }
   get parent(): Loop | undefined { return pickup(this._stack, 'loop')[0] as Loop | undefined }
-  
+
   // There are not supported.
   // get iteration(): number { return this._index + 1 }
   // get remaining(): number { return this._entries.length - this._index }
