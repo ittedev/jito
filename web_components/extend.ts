@@ -18,7 +18,7 @@ export function extend(template: unknown | Template): unknown | Template {
     switch (template.type) {
       case 'element':
         if (!isPrimitive(template as ElementTemplate) || 'is' in (template as ElementTemplate)) {
-          template.type = 'custom'
+          (template as Template).type = 'custom'
         }
       case 'tree':
         (template as TreeTemplate).children?.forEach(extend)

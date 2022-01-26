@@ -32,7 +32,7 @@ evaluator.custom = (
       el.is = typeof template.is === 'string' ? template.is : evaluate(template.is, stack, cache) as string
     }
 
-    let isComponent: boolean 
+    let isComponent: boolean
     if (!template.isForce) {
       if (isPrimitive(template as ElementTemplate)) {
         const Type = customElements.get(el.is as string)
@@ -101,7 +101,7 @@ evaluator.custom = (
       } else {
         delete template.cache
       }
-      
+
       return el
   } else {
     return evaluator.element(template as ElementTemplate, stack, cache) as VirtualElement

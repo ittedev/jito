@@ -2,6 +2,7 @@
 // This module is browser compatible.
 import { VirtualElement, VirtualTree } from '../virtual_dom/types.ts'
 import {
+  isRef,
   Variables,
   Template,
   instanceOfTemplate,
@@ -63,7 +64,7 @@ export const evaluator = {
   variable: ((template: VariableTemplate, stack: Variables, _cache: Cache): unknown => {
     const [, index] = pickup(stack, template.name)
     if (index >= 0) {
-      return [ stack[index], template.name ] as Ref
+      return { record: stack[index], key: template.name, [isRef]: true } as Ref
     }
     return undefined
   }) as Evaluate,
@@ -90,17 +91,17 @@ export const evaluator = {
       throw Error(template.left ? (template.left as VariableTemplate).name : 'key' + ' is not defined')
     }
 
-    const [ object, key ] = value
+    const { record, key } = value
     const right = evaluate(template.right, stack, cache)
     if (template.operator.length > 1) {
       const operator = template.operator.slice(0, -1)
-      if (noCut(operator, object[key])) {
-        return object[key] = operateBinary(operator, object[key], right)
+      if (noCut(operator, record[key])) {
+        return record[key] = operateBinary(operator, record[key], right)
       } else {
-        return object[key]
+        return record[key]
       }
     } else {
-      return object[key] = right
+      return record[key] = right
     }
   }) as Evaluate,
 
@@ -112,9 +113,9 @@ export const evaluator = {
         if (!value) {
           throw Error(evaluate(((template.name as GetTemplate).value as HashTemplate).key, stack, cache) as string + ' is not defined')
         }
-        const f = value[0][value[1]]
+        const f = value.record[value.key]
         if (typeof f === 'function') {
-          return f.apply(value[0], template.params.map(param => evaluate(param, stack, cache)))
+          return f.apply(value.record, template.params.map(param => evaluate(param, stack, cache)))
         }
       } else {
         // other
@@ -128,16 +129,17 @@ export const evaluator = {
   ) as Evaluate,
 
   hash: (
-    (template: HashTemplate, stack: Variables, cache: Cache): unknown => ([
-      evaluate(template.object, stack, cache) as Record<PropertyKey, unknown>,
-      evaluate(template.key, stack, cache) as PropertyKey
-    ] as Ref)
+    (template: HashTemplate, stack: Variables, cache: Cache): unknown => ({
+      record: evaluate(template.object, stack, cache) as Record<PropertyKey, unknown>,
+      key: evaluate(template.key, stack, cache) as PropertyKey,
+      [isRef]: true
+    } as Ref)
   ) as Evaluate,
 
   get: (
     (template: GetTemplate, stack: Variables, cache: Cache): unknown => {
       const value = evaluate(template.value, stack, cache) as Ref
-      return value ? value[0][value[1]] : value
+      return value ? value.record[value.key] : value
     }
   ) as Evaluate,
 
@@ -307,10 +309,12 @@ export function evaluateProps(template: ElementTemplate, stack: Variables, cache
 
   if (template.bools) {
     for (const key in template.bools) {
-      const value = template.bools[key]
-      const result = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
-      if (result) {
-        (ve.props ?? (ve.props = {}))[key] = result
+      if (!key.startsWith('@')) { // Remove syntax attributes
+        const value = template.bools[key]
+        const result = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
+        if (result) {
+          (ve.props ?? (ve.props = {}))[key] = result
+        }
       }
     }
   }

@@ -1,6 +1,7 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import {
+  instanceOfTemplate,
   Template,
   JoinTemplate,
   GroupTemplate,
@@ -10,6 +11,7 @@ import {
   ElementTemplate,
   TreeTemplate,
   ExpandTemplate,
+  GetTemplate,
   HandlerTemplate
 } from './types.ts'
 import { Lexer } from './lexer.ts'
@@ -80,12 +82,15 @@ function parseChildren(node: Node): Array<Template | string> {
   const lexer = new DomLexer(node.firstChild)
   const children = [] as Array<Template | string>
   while (lexer.node) {
-    children.push(parseNode(lexer))
+    const result = parseNode(lexer)
+    if (result !== undefined) {
+      children.push(result)
+    }
   }
   return children
 }
 
-function parseNode(lexer: DomLexer): Template | string {
+function parseNode(lexer: DomLexer): Template | string | void {
   switch ((lexer.node as Node).nodeType) {
     case 3: // TEXT_NODE
       return parse((lexer.pop() as Text).data, 'text')
@@ -93,7 +98,7 @@ function parseNode(lexer: DomLexer): Template | string {
       return parseFor(lexer)
     }
     default:
-      return ''
+      lexer.pop()
   }
 }
 
@@ -230,13 +235,15 @@ function parseElement(el: Element): ElementTemplate {
         }
       }
 
-      // TODO: bind attribute
-      // bind attribute
+      // ref attribute
       {
         const match = name.match(/^(?<name>.+)\*$/)
         if (match?.groups) {
-          // bindFormula(value, bind, match.groups.name)
-          return
+          let ref = parse(value, 'script')
+          if (instanceOfTemplate(ref) && ref.type === 'get') {
+            ref = (ref as GetTemplate).value
+          }
+          return (template.props ?? (template.props = {}))[match.groups.name] = ref
         }
       }
 

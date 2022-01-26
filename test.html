@@ -361,6 +361,21 @@ describe('Data Binding', function() {
         data.x3 = 100
         equal(y, 202)
       })
+
+      it('bio and spy watch', () => {
+        const data = {
+          x1: 2,
+          x2: 20,
+          x3: 200
+        }
+        let y = 0
+        watch(data, () => { y += 2 })
+        watch(data, 'x3', v => { y += v })
+        data.x1 = 1
+        data.x2 = 10
+        data.x3 = 100
+        equal(y, 106)
+      })
     })
   })
 
@@ -1448,6 +1463,8 @@ describe('Virtual Dom', function() {
         equal(output, 'props-a: value 2;')
       })
     })
+    // TODO: test bools
+    // TODO: test refs
 
     describe(': on', function() {
       it('patch new on', () => {
@@ -2293,7 +2310,6 @@ describe('Virtual Dom', function() {
       })
     })
 
-    // TODO: test new
     // TODO: test find, trace
   })
 })
@@ -2330,10 +2346,12 @@ describe('Template Engine', function() {
     const stack = {
       x: 1,
       y: 10,
-      s: 's',
+      s: 'o',
       h: { x: 2, y: { x: 3 }, z: [7] },
       a: [4, 5, [6], { x: 8 }],
-      text: 'x'
+      text: 'x',
+      f: () => 5,
+      add: (a, b) => a + b
     }
 
     it('expression: number', () => {
@@ -2392,24 +2410,37 @@ describe('Template Engine', function() {
       equal(evaluate(expression(new Lexer("'\\x0c\\x9F'", 'script')), [stack]), "\x0c\x9F")
     })
 
-    // TODO: test keywords
-    // TODO: test function and method(this)
-    // TODO: test spread
-
     it('expression: word', () => {
       equal(evaluate(expression(new Lexer('x', 'script')), [stack]), 1)
       equal(evaluate(expression(new Lexer('text', 'script')), [stack]), 'x')
     })
 
-    it('expression: array', () => {
-      equal(evaluate(expression(new Lexer('[]', 'script')), [stack]), [])
+    it('expression: array [a, b]', () => {
       equal(evaluate(expression(new Lexer('[2, 1 + 2, x]', 'script')), [stack]), [2, 3, 1])
     })
 
-    it('expression: object', () => {
+    it('expression: array []', () => {
+      equal(evaluate(expression(new Lexer('[]', 'script')), [stack]), [])
+    })
+
+    it('expression: array [...a]', () => {
+      equal(evaluate(expression(new Lexer('[2, ...a[2]]', 'script')), [stack]), [2, 6])
+    })
+
+    it('expression: object { x: "", [x]: ""}', () => {
+      equal(evaluate(expression(new Lexer('{ y: "x", [s]: 1 + x, ["t"]: "" }', 'script')), [stack]), { y: "x", o: 2, t: '' })
+    })
+
+    it('expression: object {}', () => {
       equal(evaluate(expression(new Lexer('{}', 'script')), [stack]), {})
+    })
+
+    it('expression: object { x }', () => {
       equal(evaluate(expression(new Lexer('{ x }', 'script')), [stack]), { x: 1 })
-      equal(evaluate(expression(new Lexer('{ x, y: "x", [s]: 1 + x }', 'script')), [stack]), { x: 1, y: "x", s: 2 })
+    })
+
+    it('expression: object { ...x }', () => {
+      equal(evaluate(expression(new Lexer('{ y: "x", ...a[3]}', 'script')), [stack]), { y: "x", x: 8 })
     })
 
     it('expression: hash h.x', () => {
@@ -2428,6 +2459,18 @@ describe('Template Engine', function() {
       equal(evaluate(expression(new Lexer('h.y?.x', 'script')), [stack]), 3)
       equal(evaluate(expression(new Lexer('h.y?.y', 'script')), [stack]), undefined)
       equal(evaluate(expression(new Lexer('h.t?.x', 'script')), [stack]), undefined)
+    })
+
+    it('expression: function f()', () => {
+      equal(evaluate(expression(new Lexer('f()', 'script')), [stack]), 5)
+    })
+
+    it('expression: function f(a, b)', () => {
+      equal(evaluate(expression(new Lexer('add(4, 7)', 'script')), [stack]), 11)
+    })
+
+    it('expression: function f(...a)', () => {
+      equal(evaluate(expression(new Lexer('add(...a)', 'script')), [stack]), 9)
     })
 
     it('expression: hash a[0]', () => {
@@ -2657,6 +2700,11 @@ describe('Template Engine', function() {
       equal(data.c, 4)
       equal(data.d, 4)
     })
+
+    // TODO: test destructuring assignment
+    // TODO: test new operator
+    // TODO: test delete operator
+    // TODO: test camma operator
 
     // it('innerText: text only', () => {
     //   equal(evaluate(innerText(new Lexer('Hello world!', 'innerText')), [stack]), 'Hello world!')
@@ -4525,7 +4573,6 @@ describe('Template Engine', function() {
       })
     })
   })
-  // TODO: Test collection
 })
 
 describe('Web Components', function() {

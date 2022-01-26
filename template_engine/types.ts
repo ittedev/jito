@@ -1,5 +1,7 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
+export const isRef = Symbol('Beako-ref')
+
 export type Variables = Array<Record<string, unknown>>
 
 export type TemplateType =
@@ -167,7 +169,16 @@ export interface Cache {
   groups?: [WeakMap<Template, number>, number]
 }
 
-export type Ref = [Record<PropertyKey, unknown>, PropertyKey]
+export type Ref = {
+  record: Record<PropertyKey, unknown>,
+  key: PropertyKey,
+  [isRef]: boolean
+}
+
+// deno-lint-ignore no-explicit-any
+export function instanceOfRef(object: any): object is Ref {
+  return typeof object === 'object' && object[isRef] === true
+}
 
 export type Evaluate = (template: Template, stack: Variables, cache: Cache) => unknown
 
