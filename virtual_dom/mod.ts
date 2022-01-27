@@ -10,5 +10,4 @@ export type {
 export { eventTypes } from './event_types.ts'
 export { load } from './load.ts'
 export { patch } from './patch.ts'
-export { clone } from './clone.ts'
 export { destroy } from './destroy.ts'

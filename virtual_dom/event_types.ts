@@ -12,7 +12,7 @@ export const eventTypes = Object.seal({
       throw Error('Event type must be string')
     }
   },
-  
+
   get patch(): string { return patch },
   set patch(value: string) {
     if (typeof value === 'string' && value !== '') {
