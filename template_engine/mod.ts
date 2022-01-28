@@ -19,7 +19,6 @@ export type {
   ForTemplate,
   ElementTemplate,
   TreeTemplate,
-  ExpandTemplate,
   GroupTemplate,
   Ref,
   Evaluator,
@@ -33,6 +32,4 @@ export { Lexer } from './lexer.ts'
 export { innerText, expression } from './script_parser.ts'
 export { Loop } from './loop.ts'
 export { parse } from './parse.ts'
-export { html } from './html.ts'
 export { evaluate } from './evaluate.ts'
-// export { render } from './render.ts'

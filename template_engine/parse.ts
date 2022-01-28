@@ -10,7 +10,6 @@ import {
   ForTemplate,
   ElementTemplate,
   TreeTemplate,
-  ExpandTemplate,
   GetTemplate,
   HandlerTemplate
 } from './types.ts'
@@ -136,22 +135,12 @@ function parseIf(lexer: DomLexer): Template {
   const el = lexer.node as Element
   if (el.hasAttribute('@if')) {
     const condition = parse(el.getAttribute('@if') as string, 'script')
-    const truthy = parseExpand(el)
+    const truthy = parseGroup(el)
     lexer.pop()
     const falsy = lexer.isSkippable('@else') ? parseChild(lexer.skip()) : undefined
     return { type: 'if', condition, truthy, falsy } as IfTemplate
   } else {
-    return parseExpand(lexer.pop() as Element)
-  }
-}
-
-function parseExpand(el: Element): Template {
-  if (el.hasAttribute('@expand')) {
-    const template = parse(el.getAttribute('@expand') as string, 'script')
-    const def = parseGroup(el)
-    return { type: 'expand', template, default: def } as ExpandTemplate
-  } else {
-    return parseGroup(el)
+    return parseGroup(lexer.pop() as Element)
   }
 }
 
@@ -163,7 +152,7 @@ function parseGroup(el: Element): Template {
     if (el.hasAttributes()) {
       el.getAttributeNames().forEach(name => {
         // syntax attribute
-        if (name.match(/^@(if|else|for|each|expand)$/)) return
+        if (name.match(/^@(if|else|for|each)$/)) return
         if (name.match(/^@.*$/)) {
           if (!template.props) {
             template.props = {} as Record<string, unknown | Template>

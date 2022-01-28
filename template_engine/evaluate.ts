@@ -23,7 +23,6 @@ import {
   ElementTemplate,
   HasChildrenTemplate,
   TreeTemplate,
-  ExpandTemplate,
   GroupTemplate,
   HandlerTemplate,
   Cache,
@@ -233,20 +232,6 @@ export const evaluator = {
     }
   ) as Evaluate,
 
-  expand: (
-    (template: ExpandTemplate, stack: Variables, cache: Cache): unknown => {
-      const result = evaluate(template.template, stack, cache)
-      if (instanceOfTemplate(result)) {
-        if (result.type === 'tree') {
-          result.type = 'group'
-        }
-        return evaluate(result, stack, cache)
-      } else {
-        return evaluate(template.default, stack, cache)
-      }
-    }
-  ) as Evaluate,
-
   group: (
     (template: GroupTemplate, stack: Variables, cache: Cache): Array<unknown> => evaluateChildren(template, stack, cache)
   ) as Evaluate,
@@ -288,7 +273,7 @@ export function evaluateChildren(template: HasChildrenTemplate, stack: Variables
     if (instanceOfTemplate(child)) {
       const result = flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | number>
       switch ((child as CoreTemplate).type) {
-        case 'if': case 'for': case 'expand': case 'group':
+        case 'if': case 'for': case 'group':
           result.push(i - index)
       }
       return result

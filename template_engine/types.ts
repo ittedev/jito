@@ -18,7 +18,6 @@ export type TemplateType =
   'flags' |
   'if' |
   'for' |
-  'expand' |
   'element' |
   'tree' |
   'group' |
@@ -145,12 +144,6 @@ export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   style?: string | JoinTemplate
   children?: Array<Template | string>
   on?: Record<string, Array<HandlerTemplate>>
-}
-
-export interface ExpandTemplate extends CoreTemplate {
-  type: 'expand'
-  template: Template
-  default: Template
 }
 
 export interface GroupTemplate extends HasChildrenTemplate, HasAttrTemplate {
