@@ -35,6 +35,7 @@ export function innerText(lexer: Lexer): Template | string {
       lexer.pop()
     }
   }
+  // TODO:
 
   // optimize
   const values = texts.filter(value => value !== '')
@@ -246,6 +247,10 @@ function term(lexer: Lexer): Template {
         const token = lexer.pop() as Token
         if (token[0] === 'word') {
           entry[0] = { type: 'literal', value: token[1] } as LiteralTemplate
+        } else if (token[0] === '"') {
+          entry[0] = stringLiteral(lexer, 'doubleString', token[0])
+        } else if (token[0] === "'") {
+          entry[0] = stringLiteral(lexer, 'singleString', token[0])
         } else if (token[0] === '[') {
           entry[0] = expression(lexer)
           must(lexer.pop(), ']')
@@ -307,8 +312,8 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
   }
 }
 
-function must(token: Token | null, type: TokenType, message = ''): void {
-  if (!token || token[0] !== type) throw Error(message)
+function must(token: Token | null, type: TokenType): void {
+  if (!token || token[0] !== type) throw Error(type + ' is required.')
 }
 
 function unescape(value: string): string {
