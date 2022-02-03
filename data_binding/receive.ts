@@ -1,7 +1,7 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { isLocked, BeakoObject } from './types.ts'
-import { invade } from './invade.ts'
+import { invade } from './watch.ts'
 
 export async function receive(obj: BeakoObject, key: string | string[]): Promise<Record<string, unknown>> {
   if (!obj[isLocked]) {
