@@ -32,7 +32,6 @@ import {
   Evaluator
 } from './types.ts'
 import { Loop } from './loop.ts'
-import { operateUnary, noCut, operateBinary } from './operate.ts'
 import { pickup } from './pickup.ts'
 
 export function evaluate(template: Template, stack: Variables = [], cache: Cache = {}): unknown {
@@ -362,6 +361,7 @@ function flatwrap(value: unknown): Array<unknown> {
     Array.isArray(value) ? value : [value]
 }
 
+// deno-lint-ignore no-explicit-any
 export function operateUnary(operator: string, operand: any) {
   switch (operator) {
     case 'void': return void operand
@@ -374,6 +374,7 @@ export function operateUnary(operator: string, operand: any) {
   }
 }
 
+// deno-lint-ignore no-explicit-any
 export function noCut(operator: string, left: any): boolean {
   switch (operator) {
     case '&&': return !!left
@@ -383,6 +384,7 @@ export function noCut(operator: string, left: any): boolean {
   }
 }
 
+// deno-lint-ignore no-explicit-any
 export function operateBinary(operator: string, left: any, right: any) {
   switch (operator) {
     // Arithmetic operators
