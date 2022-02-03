@@ -13,7 +13,7 @@ import {
 } from '../template_engine/types.ts'
 import { evaluate, evaluator, evaluateProps } from '../template_engine/evaluate.ts'
 import { ComponentElement, localComponentElementTag } from './element.ts'
-import { isPrimitive } from './is_primitive.ts'
+import { isPrimitive } from '../template_engine/is_primitive.ts'
 
 evaluator.evaluation = (
   (template: EvaluationTemplate, stack: Variables, cache: Cache): unknown =>
@@ -34,7 +34,7 @@ evaluator.custom = (
 
     let isComponent: boolean
     if (!template.isForce) {
-      if (isPrimitive(template as ElementTemplate)) {
+      if (isPrimitive((template as ElementTemplate).tag)) {
         const Type = customElements.get(el.is as string)
         isComponent = Type !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, Type)
       } else {

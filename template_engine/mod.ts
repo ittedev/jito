@@ -22,14 +22,11 @@ export type {
   GroupTemplate,
   Ref,
   Evaluator,
-  Evaluate,
-  TokenField,
-  TokenType,
-  Token
+  Evaluate
 } from './types.ts'
 
-export { Lexer } from './lexer.ts'
-export { innerText, expression } from './script_parser.ts'
 export { Loop } from './loop.ts'
 export { parse } from './parse.ts'
+export { expression } from './expression.ts'
 export { evaluate } from './evaluate.ts'
+export { pickup } from './pickup.ts'

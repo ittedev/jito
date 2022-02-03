@@ -30,11 +30,13 @@ export function define(name: string, template: string | TreeTemplate | Component
       const tree = load(this.attachShadow(component.options))
       this.entity = new Entity(component, this, tree)
 
-      if(this.innerHTML) {
+      if(this.innerHTML) { // TODO: empty?
         // if this is rendered from html
-        const ve = evaluate(extend(parse(this)) as ElementTemplate) as VirtualElement
-        for (const key in ve.props) {
-          this.setProp(key, ve.props[key])
+        (this.entity as Entity).setProp('content', this.innerHTML)
+        if (this.hasAttributes()) {
+          this.getAttributeNames().forEach(name => {
+            (this.entity as Entity).setProp(name, this.getAttribute(name))
+          })
         }
       } else {
         this.loadProps()

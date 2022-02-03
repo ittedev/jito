@@ -9,7 +9,7 @@ import {
   IfTemplate,
   ForTemplate,
 } from '../template_engine/types.ts'
-import { isPrimitive } from './is_primitive.ts'
+import { isPrimitive } from '../template_engine/is_primitive.ts'
 
 export function extend(template: Template): Template
 export function extend(template: unknown): unknown
@@ -17,7 +17,7 @@ export function extend(template: unknown | Template): unknown | Template {
   if (instanceOfTemplate(template)) {
     switch (template.type) {
       case 'element':
-        if (!isPrimitive(template as ElementTemplate) || 'is' in (template as ElementTemplate)) {
+        if (!isPrimitive((template as ElementTemplate).tag) || 'is' in (template as ElementTemplate)) {
           (template as Template).type = 'custom'
         }
       case 'tree':

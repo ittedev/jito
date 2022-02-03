@@ -11,46 +11,61 @@ import {
   ElementTemplate,
   TreeTemplate,
   GetTemplate,
-  HandlerTemplate
+  HandlerTemplate,
+  TemporaryNode,
+  TemporaryText,
+  TemporaryElement,
+  instanceOfTemporaryElement
 } from './types.ts'
 import { Lexer } from './lexer.ts'
-import { expression, innerText } from './script_parser.ts'
+import { expression } from './expression.ts'
+import { dom } from './dom.ts'
 
-const parser = new DOMParser()
+export function parse(html: string): TreeTemplate {
+  const node = dom(html)
+  const children = node ? parseTree(node) : []
+  return children.length ? { type: 'tree', children } : { type: 'tree' }
+}
 
-export function parse(html: string | Element | DocumentFragment, field: 'tree' | 'text' | 'script' = 'tree'): string | Template {
-  switch (field) {
-    case 'tree':
-      if (typeof html === 'string') {
-        const doc = parser.parseFromString(html, 'text/html')
-        return { type: 'tree', children: parseChildren(doc.head).concat(parseChildren(doc.body)) } as TreeTemplate
-      } else if (html.nodeType === 11) { // DOCUMENT_FRAGMENT_NODE
-        return { type: 'tree', children: parseChildren(html) } as TreeTemplate
-      } else {// ELEMENT_NODE
-        return parseElement(html as Element) as ElementTemplate
-      }
-    case 'text':
-      return innerText(new Lexer(html as string, field))
-    case 'script':
-      return expression(new Lexer(html as string, field))
+function parseText(lexer: Lexer): Template | string {
+  const texts = [] as Array<string | Template>
+  texts.push(lexer.skip())
+  while (lexer.nextIs()) {
+    if (lexer.nextIs('{{')) {
+      lexer.pop()
+      lexer.expand('script', () => {
+        texts.push(expression(lexer))
+      })
+      lexer.must('}}')
+      texts.push(lexer.skip())
+    } else {
+      lexer.pop()
+    }
+  }
+  // TODO:
+
+  // optimize
+  const values = texts.filter(value => value !== '')
+  if (values.length === 1 && typeof values[0] === 'string') {
+    return values[0]
+  } else {
+    return { type: 'join', values, separator: '' } as JoinTemplate
   }
 }
 
 class DomLexer {
   constructor(
-    public node: Node | null
+    public node?: TemporaryNode
   ) {}
-  isSkippable(props: string): boolean {
-    for (let node = this.node; node; node = (node as Node).nextSibling) {
-      switch (node.nodeType) {
-        default:
+  isSkippable(prop: string): boolean {
+    for (let node = this.node; node; node = (node as TemporaryNode).next) {
+      console.log('node:', node)
+      if (instanceOfTemporaryElement(node)) {
+        return hasAttr(node, prop)
+      } else {
+        if (!/^\s*$/.test((node as TemporaryText).text)) {
           return false
-        case 1: // ELEMENT_NODE
-          return (node as Element).hasAttribute(props)
-        case 3: // TEXT_NODE
-          if (!/^\s*$/.test((node as Text).data)) {
-            return false
-          }
+        }
       }
     }
     return false
@@ -58,27 +73,21 @@ class DomLexer {
   // Warning: This method should only be called when skippable
   skip(): this {
     while (true) {
-      if ((this.node as Element).nodeType === 1) {
+      if (instanceOfTemporaryElement(this.node as TemporaryNode)) {
         return this
       }
-      this.node = (this.node as Node).nextSibling
+      this.node = (this.node as TemporaryNode).next
     }
   }
-  pop(): Node | null {
+  pop(): TemporaryNode | undefined {
     const node = this.node
-    do {
-      this.node = this.node ? this.node.nextSibling : null
-    } while (this.node && this.node.nodeType === 1 && (this.node as Element).tagName === 'SCRIPT') // skip <script>
+    this.node = this.node?.next
     return node
   }
 }
 
-function parseChildren(node: Node): Array<Template | string> {
-  let firstChild = node.firstChild
-  while (firstChild && firstChild.nodeType === 1 && (firstChild as Element).tagName === 'SCRIPT') { // skip <script>
-    firstChild = firstChild.nextSibling
-  }
-  const lexer = new DomLexer(node.firstChild)
+function parseTree(node: TemporaryNode): Array<Template | string> {
+  const lexer = new DomLexer(node)
   const children = [] as Array<Template | string>
   while (lexer.node) {
     const result = parseNode(lexer)
@@ -90,14 +99,12 @@ function parseChildren(node: Node): Array<Template | string> {
 }
 
 function parseNode(lexer: DomLexer): Template | string | void {
-  switch ((lexer.node as Node).nodeType) {
-    case 3: // TEXT_NODE
-      return parse((lexer.pop() as Text).data, 'text')
-    case 1: { // ELEMENT_NODE
-      return parseFor(lexer)
-    }
-    default:
-      lexer.pop()
+  if (!lexer.node) {
+    lexer.pop()
+  } else if (instanceOfTemporaryElement(lexer.node)) {
+    return parseFor(lexer)
+  } else {
+    return parseText(new Lexer((lexer.pop() as TemporaryText).text, 'text'))
   }
 }
 
@@ -105,26 +112,11 @@ function parseChild(lexer: DomLexer): Template {
   return parseFor(lexer)
 }
 
-// function parseTry(lexer: DomLexer): Template {
-//   if ((lexer.node as Element).hasAttribute('@try')) {
-//     const statement = parseEach(lexer)
-//     if (lexer.hasAttribute('@catch')) {
-//       const catchStatement = parseChild(lexer)
-//       const exceptionVar = (lexer.node as Element).getAttribute('@catch')
-//       return new TryTemplate(statement, catchStatement, exceptionVar)
-//     } else {
-//       return new TryTemplate(statement)
-//     }
-//   } else {
-//     return parseEach(lexer)
-//   }
-// }
-
 function parseFor(lexer: DomLexer): Template {
-  const el = lexer.node as Element
-  if (el.hasAttribute('@for')) {
-    const each = el.getAttribute('@each') || undefined
-    const array = parse(el.getAttribute('@for') as string, 'script')
+  const el = lexer.node as TemporaryElement
+  if (hasAttr(el, '@for')) {
+    const each = getAttr(el, '@each') || undefined
+    const array = expression(getAttr(el, '@for'))
     return { type: 'for', each, array, value: parseIf(lexer) } as ForTemplate
   } else {
     return parseIf(lexer)
@@ -132,37 +124,41 @@ function parseFor(lexer: DomLexer): Template {
 }
 
 function parseIf(lexer: DomLexer): Template {
-  const el = lexer.node as Element
-  if (el.hasAttribute('@if')) {
-    const condition = parse(el.getAttribute('@if') as string, 'script')
+  const el = lexer.node as TemporaryElement
+  if (hasAttr(el, '@if')) {
+    const condition = expression(getAttr(el, '@if'))
     const truthy = parseGroup(el)
     lexer.pop()
-    const falsy = lexer.isSkippable('@else') ? parseChild(lexer.skip()) : undefined
-    return { type: 'if', condition, truthy, falsy } as IfTemplate
+    const template = { type: 'if', condition, truthy } as IfTemplate
+    if (lexer.isSkippable('@else')) {
+      template.falsy = parseChild(lexer.skip())
+    }
+    return template
   } else {
-    return parseGroup(lexer.pop() as Element)
+    return parseGroup(lexer.pop() as TemporaryElement)
   }
 }
 
-function parseGroup(el: Element): Template {
-  if (el.tagName.toLowerCase() === 'group') {
+function parseGroup(el: TemporaryElement): Template {
+  if (el.tag === 'group') {
     const template = {
       type: 'group',
     } as GroupTemplate
-    if (el.hasAttributes()) {
-      el.getAttributeNames().forEach(name => {
-        // syntax attribute
-        if (name.match(/^@(if|else|for|each)$/)) return
-        if (name.match(/^@.*$/)) {
-          if (!template.props) {
-            template.props = {} as Record<string, unknown | Template>
-          }
-          (template.props as Record<string, unknown | Template>)[name] = el.getAttribute(name)
+    el.attrs?.forEach(([name,, value]) => {
+      // syntax attribute
+      if (name.match(/^@(if|else|for|each)$/)) return
+      if (name.match(/^@.*$/)) {
+        if (!template.props) {
+          template.props = {} as Record<string, unknown | Template>
         }
-      })
-    }
-    if (el.hasChildNodes()) {
-      template.children = parseChildren(el)
+        (template.props as Record<string, unknown | Template>)[name] = value
+      }
+    })
+    if (el.child) {
+      const children = parseTree(el.child)
+      if (children.length) {
+        template.children = children
+      }
     }
     return template
   } else {
@@ -170,78 +166,68 @@ function parseGroup(el: Element): Template {
   }
 }
 
-function parseElement(el: Element): ElementTemplate {
+function parseElement(el: TemporaryElement): ElementTemplate {
+  console.log('el:', el)
   const template = {
     type: 'element',
-    tag: el.tagName.toLowerCase(),
+    tag: el.tag,
   } as ElementTemplate
 
   {
     const style = [] as Array<string | Template>
-    el.getAttributeNames().forEach(name => {
-      const value = el.getAttribute(name) as string
-      switch (name) {
-        case 'is': {
-          if (!(name in template)) {
-            template.is = value
+    el.attrs?.forEach(([name, assign, value]) => {
+      switch (assign) {
+        case '=': { // string attribute
+          switch (name) {
+            case 'is': {
+              if (!(name in template)) {
+                template.is = value
+              }
+              return
+            }
+            case 'class':
+            case 'part': {
+              return (template[name] ?? (template[name] = [])).push(value.split(/\s+/))
+            }
+            case 'style': {
+              return style.push(value)
+            }
+          }
+          if (!(name in (template.props ?? (template.props = {}) as Record<string, unknown | Template>))) {
+            return (template.props as Record<string, unknown | Template>)[name] = value
           }
           return
         }
-        case 'class':
-        case 'part': {
-          return (template[name] ?? (template[name] = [])).push(value.split(/\s+/))
-        }
-        case 'style': {
-          return style.push(value)
-        }
-        case 'is:':
-          return template.is = parse(value, 'script')
-        case 'class:':
-        case 'part:': {
-          const n = name.slice(0, -1) as 'class' | 'part'
-          return (template[n] ?? (template[n] = []) as Array<Array<string> | Template>).push({ type: 'flags', value: parse(value, 'script') } as FlagsTemplate)
-        }
-        case 'style:': {
-          return style.push(parse(value, 'script'))
-        }
-      }
 
-      // on attribute
-      {
-        const match = name.match(/^on(?<type>.+?):?$/)
-        if (match?.groups) {
-          const type = match.groups.type
-          const handler = { type: 'handler', value: parse(value, 'script') } as HandlerTemplate
-          return ((template.on ?? (template.on = {}))[type] ?? (template.on[type] = [])).push(handler)
+        case ':=': {// assign attribute
+          switch (name) {
+            case 'is':
+              return template.is = expression(value)
+            case 'class':
+            case 'part': {
+              const n = name.slice(0, -1) as 'class' | 'part'
+              return (template[n] ?? (template[n] = []) as Array<Array<string> | Template>).push({ type: 'flags', value: expression(value) } as FlagsTemplate)
+            }
+            case 'style': {
+              return style.push(expression(value))
+            }
+          }
+          return (template.props ?? (template.props = {}))[name] = expression(value)
         }
-      }
 
-      // assign attribute
-      {
-        const match = name.match(/^(?<name>.+):$/)
-        if (match?.groups) {
-          return (template.props ?? (template.props = {}))[match.groups.name] = parse(value, 'script')
-        }
-      }
-
-      // ref attribute
-      {
-        const match = name.match(/^(?<name>.+)\*$/)
-        if (match?.groups) {
-          let ref = parse(value, 'script')
+        case '*=': { // ref attribute
+          let ref = expression(value)
           if (instanceOfTemplate(ref) && ref.type === 'get') {
             ref = (ref as GetTemplate).value
           }
-          return (template.props ?? (template.props = {}))[match.groups.name] = ref
+          return (template.props ?? (template.props = {}))[name] = ref
         }
-      }
 
-      // syntax attribute
-      if (name.match(/^@(if|else|for|each|expand)$/)) return
-
-      // string attribute
-      if (!(name in (template.props ?? (template.props = {}) as Record<string, unknown | Template>))) {
-        return (template.props as Record<string, unknown | Template>)[name] = value
+        case 'on': { // on attribute
+          const type = name.slice(2)
+          const handler = { type: 'handler', value: expression(value) } as HandlerTemplate
+          return ((template.on ?? (template.on = {}))[type] ?? (template.on[type] = [])).push(handler)
+        }
       }
     })
 
@@ -253,27 +239,35 @@ function parseElement(el: Element): ElementTemplate {
       }
     }
 
-    if (template.props) {
-      // boolean attribute
-      for (const key in template.props) {
-        const match = key.match(/^(?<name>.+)&$/)
-        if (match?.groups) {
-          const name = match.groups.name as string
-          (template.bools ?? (template.bools = {}) as Record<string, unknown | Template>)[name] = parse(template.props[key] as string, 'script')
+     // boolean attribute
+    el.attrs?.forEach(([name, assign, value]) => {
+      if (assign === '&=') {
+        (template.bools ?? (template.bools = {}) as Record<string, unknown | Template>)[name] = expression(value)
+        if (template.props) {
           delete template.props[name]
-          delete template.props[key]
-          delete template.props[name + ':']
+          if (!Object.keys(template.props).length) {
+            delete template.props
+          }
         }
       }
-      if (!Object.keys(template.props).length) {
-        delete template.props
-      }
+    })
+  }
+
+  if (el.child) {
+    const children = parseTree(el.child)
+    if (children.length) {
+      template.children = children
     }
   }
 
-  if (el.hasChildNodes()) {
-    template.children = parseChildren(el)
-  }
-
   return template
+}
+
+function hasAttr(el: TemporaryElement, prop: string): boolean {
+  return el.attrs?.some(attr => attr[0] === prop)
+}
+
+function getAttr(el: TemporaryElement, prop: string): string {
+  const attr = el.attrs?.find(attr => attr[0] === prop)
+  return attr ? attr[2] : ''
 }

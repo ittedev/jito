@@ -1,10 +1,8 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 // deno-lint-ignore-file no-fallthrough
-import { ElementTemplate } from '../template_engine/types.ts'
-
-export function isPrimitive(template: ElementTemplate): boolean {
-  switch(template.tag) {
+export function isPrimitive(tag: string): boolean {
+  switch(tag) {
     // Main root
     case 'html':
     // Document metadata
@@ -47,6 +45,26 @@ export function isPrimitive(template: ElementTemplate): boolean {
     case 'details': case 'dialog': case 'menu': case 'summary':
     // Web Components
     case 'slot': case 'template':
+      return true
+  }
+  return false
+}
+
+export function noClose(tag: string): boolean {
+  switch (tag) {
+    case 'br':
+    case 'hr':
+    case 'img':
+    case 'input':
+    case 'meta':
+    case 'area':
+    case 'base':
+    case 'col':
+    case 'embed':
+    case 'keygen':
+    case 'link':
+    case 'param':
+    case 'source':
       return true
   }
   return false

@@ -18,33 +18,7 @@ import {
   TokenField,
   TokenType
 } from './types.ts'
-import { Lexer } from './lexer.ts'
-
-export function innerText(lexer: Lexer): Template | string {
-  const texts = [] as Array<string | Template>
-  texts.push(lexer.skip())
-  while (lexer.nextType()) {
-    if (lexer.nextType() === '{{') {
-      lexer.pop()
-      lexer.expand('script', () => {
-        texts.push(expression(lexer))
-      })
-      must(lexer.pop(), '}}')
-      texts.push(lexer.skip())
-    } else {
-      lexer.pop()
-    }
-  }
-  // TODO:
-
-  // optimize
-  const values = texts.filter(value => value !== '')
-  if (values.length === 1 && typeof values[0] === 'string') {
-    return values[0]
-  } else {
-    return { type: 'join', values, separator: '' } as JoinTemplate
-  }
-}
+import { Lexer, unescape } from './lexer.ts'
 
 /**
  * E = I
@@ -52,7 +26,10 @@ export function innerText(lexer: Lexer): Template | string {
  * used: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
  * @alpha
  */
-export function expression(lexer: Lexer): Template {
+export function expression(script: string): Template
+export function expression(lexer: Lexer): Template
+export function expression(script: Lexer | string): Template {
+  const lexer = typeof script === 'string' ? new Lexer(script, 'script') : script
   return assignment(lexer)
 }
 
@@ -64,7 +41,7 @@ export function expression(lexer: Lexer): Template {
  */
 function assignment(lexer: Lexer): Template {
   const left = conditional(lexer)
-  if (lexer.nextType() === 'assign') {
+  if (lexer.nextIs('assign')) {
     if (left.type !== 'get') {
       throw Error('The left operand is not variable')
     }
@@ -83,10 +60,10 @@ function assignment(lexer: Lexer): Template {
  */
 function conditional(lexer: Lexer): Template {
   let condition = arithmetic(lexer)
-  while (lexer.nextType() === '?') {
+  while (lexer.nextIs('?')) {
     lexer.pop()
     const truthy = expression(lexer)
-    must(lexer.pop(), ':')
+    lexer.must(':')
     const falsy = arithmetic(lexer)
     condition = { type: 'if', condition, truthy, falsy } as IfTemplate
   }
@@ -101,7 +78,7 @@ function conditional(lexer: Lexer): Template {
  function arithmetic(lexer: Lexer): Template {
   const list = new Array<Template | string>()
   list.push(unary(lexer))
-  while(lexer.nextType() === 'multi' || lexer.nextType() === 'binary') {
+  while(lexer.nextIs('multi') || lexer.nextIs('binary')) {
     list.push((lexer.pop() as Token)[1])
     list.push(unary(lexer))
   }
@@ -142,8 +119,8 @@ function precedence(operator: string): number {
  * @alpha
  */
 function unary(lexer: Lexer): Template {
-  switch (lexer.nextType()) {
-    case 'multi': 
+  switch (lexer.nextIs()) {
+    case 'multi':
     case 'unary':
       return { type: 'unary', operator: (lexer.pop() as Token)[1] as string, operand:unary(lexer) } as UnaryTemplate
     default:
@@ -159,31 +136,29 @@ function unary(lexer: Lexer): Template {
 function func(lexer: Lexer): Template {
   let template = term(lexer)
   while (true) {
-    switch (lexer.nextType()) {
+    switch (lexer.nextIs()) {
       case '(': {
         lexer.pop()
         const params = [] as Array<Template>
-        while (lexer.nextType() !== ')') {
+        while (!lexer.nextIs(')')) {
           params.push(expression(lexer))
-          if (lexer.nextType() === ',') lexer.pop()
+          if (lexer.nextIs(',')) lexer.pop()
           else break
         }
-        must(lexer.pop(), ')')
+        lexer.must(')')
         template = { type: 'function', name: template, params } as FunctionTemplate
         continue
       }
       case '.': {
         lexer.pop()
-        const key = lexer.pop() as Token
-        must(key, 'word')
-
+        const key = lexer.must('word')
         template = { type: 'get', value: { type: 'hash', object: template, key: { type: 'literal', value: key[1] } as LiteralTemplate } as HashTemplate } as GetTemplate
         continue
       }
       case '[': {
         lexer.pop()
         const key = expression(lexer)
-        must(lexer.pop(), ']')
+        lexer.must(']')
         template = { type: 'get', value: { type: 'hash', object: template, key } as HashTemplate } as GetTemplate
         continue
       }
@@ -211,25 +186,25 @@ function term(lexer: Lexer): Template {
     case 'boolean': return { type: 'literal', value: token[1] === 'true' ? true : false } as LiteralTemplate
     case 'undefined': return { type: 'literal', value: undefined } as LiteralTemplate
     case 'null': return { type: 'literal', value: null } as LiteralTemplate
-    case '"': return stringLiteral(lexer, 'doubleString', token[0])
-    case "'": return stringLiteral(lexer, 'singleString', token[0])
+    case '"': return stringLiteral(lexer, 'double', token[0])
+    case "'": return stringLiteral(lexer, 'single', token[0])
     case '`': return stringLiteral(lexer, 'template', token[0])
 
     // (E)
     case '(': {
       const node = expression(lexer)
-      must(lexer.pop(), ')')
+      lexer.must(')')
       return node
     }
 
     // a = [E, ...]
     case '[': {
       const values = []
-      while(lexer.nextType() !== ']') {
+      while(!lexer.nextIs(']')) {
         values.push(expression(lexer))
-        if (lexer.nextType() === ',') {
+        if (lexer.nextIs(',')) {
           lexer.pop()
-        } else if (lexer.nextType() === ']') {
+        } else if (lexer.nextIs(']')) {
           lexer.pop()
           break
         } else {
@@ -242,29 +217,29 @@ function term(lexer: Lexer): Template {
     // r = { w, w: E, [E]: E, ...}
     case '{': {
       const entries = [] as Array<[Template, Template]>
-      while(lexer.nextType() !== '}') {
+      while(!lexer.nextIs('}')) {
         const entry = Array(2) as [Template, Template]
         const token = lexer.pop() as Token
         if (token[0] === 'word') {
           entry[0] = { type: 'literal', value: token[1] } as LiteralTemplate
         } else if (token[0] === '"') {
-          entry[0] = stringLiteral(lexer, 'doubleString', token[0])
+          entry[0] = stringLiteral(lexer, 'double', token[0])
         } else if (token[0] === "'") {
-          entry[0] = stringLiteral(lexer, 'singleString', token[0])
+          entry[0] = stringLiteral(lexer, 'single', token[0])
         } else if (token[0] === '[') {
           entry[0] = expression(lexer)
-          must(lexer.pop(), ']')
+          lexer.must(']')
         }
-        if (token[0] === 'word' && (lexer.nextType() === ',' || lexer.nextType() === '}')) {
+        if (token[0] === 'word' && (lexer.nextIs(',') || lexer.nextIs('}'))) {
           entry[1] = { type: 'get', value: { type: 'variable', name: token[1] } as VariableTemplate } as GetTemplate
         } else {
-          must(lexer.pop(), ':')
+          lexer.must(':')
           entry[1] = expression(lexer)
         }
         entries.push(entry)
-        if (lexer.nextType() === ',') {
+        if (lexer.nextIs(',')) {
           lexer.pop()
-        } else if (lexer.nextType() === '}') {
+        } else if (lexer.nextIs('}')) {
           lexer.pop()
           break
         } else {
@@ -282,7 +257,7 @@ function term(lexer: Lexer): Template {
  * String Literal
  * @alpha
  */
-function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Template {
+export function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Template {
   const texts = [''] as Array<string | Template>
   let i = 0
   lexer.expand(field, () => {
@@ -291,7 +266,7 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
       const token = lexer.pop() as Token
       switch (token[0]) {
         case type: break loop
-        case 'return': throw Error()
+        case 'return': throw Error('Newline cannot be used')
         case 'escape':
           texts[i] += unescape(token[1])
           continue
@@ -299,7 +274,7 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
           lexer.expand('script', () => {
             texts.push(expression(lexer))
           })
-          must(lexer.pop(), '}')
+          lexer.must('}')
           texts.push(lexer.skip())
           i += 2
       }
@@ -310,27 +285,4 @@ function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Templa
   } else {
     return { type: 'join', values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
   }
-}
-
-function must(token: Token | null, type: TokenType): void {
-  if (!token || token[0] !== type) throw Error(type + ' is required.')
-}
-
-function unescape(value: string): string {
-  switch (value) {
-    case '\\n': return '\n'
-    case '\\r': return '\r'
-    case '\\v': return '\v'
-    case '\\t': return '\t'
-    case '\\b': return '\b'
-    case '\\f': return '\f'
-  }
-  switch (true) {
-    case /^\\u[0-9a-fA-F]{4}$/.test(value):
-    case /^\\x[0-9a-fA-F]{2}$/.test(value):
-      return String.fromCodePoint(parseInt(value.slice(2), 16))
-    case /^\\u\{(0?[0-9a-fA-F]{1,5}|10[0-9a-fA-F]{1,4})\}$/.test(value):
-      return String.fromCodePoint(parseInt(value.slice(3,-1), 16))
-  }
-  return value.slice(1)
 }

@@ -178,13 +178,17 @@ export type Evaluate = (template: Template, stack: Variables, cache: Cache) => u
 export type Evaluator = Record<string, Evaluate>
 
 export type TokenField =
+  'html' |
   'text' |
   'script' |
-  'singleString' |
-  'doubleString' |
+  'single' |
+  'double' |
   'template' |
+  'comment' |
   'lineComment' |
+  'attr' |
   'blockComment'
+  // TODO: comment
 
 export type TokenType =
   '' |
@@ -205,9 +209,12 @@ export type TokenType =
   '}}' |
   '${' |
   '}' |
-  'lineComment' |     // //~
-  'leftComment' |  // /*
-  'rightComment' |  // */
+  '<!--' |
+  '-->' |
+  '>' |
+  '//' |
+  '/*' |
+  '*/' |
   ',' |
   '!' |
   '?' |
@@ -215,6 +222,7 @@ export type TokenType =
   "'" |
   '"' |
   '`' |
+  '/' |
   '...' |
   'return' |
   'null' |
@@ -226,7 +234,30 @@ export type TokenType =
   'word' |        // x
   'escape' |
   'partial' |
+  'start' |
+  'end' |
+  'name' |
+  'on' |
+  '@' |
   'other'
 
 
 export type Token = [TokenType, string]
+
+export interface TemporaryNode {
+  next?: TemporaryNode
+}
+
+export interface TemporaryText extends TemporaryNode {
+  text: string
+}
+
+export interface TemporaryElement extends TemporaryNode {
+  tag: string
+  attrs: Array<[string, string, string]>
+  child?: TemporaryNode
+}
+
+export function instanceOfTemporaryElement(node: TemporaryNode): node is TemporaryElement {
+  return 'tag' in node
+}

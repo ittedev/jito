@@ -41,9 +41,15 @@ export class Lexer {
     }
     return value
   }
-  nextType(): TokenType {
+  nextIs(): TokenType
+  nextIs(type: TokenType): boolean
+  nextIs(type?: TokenType): TokenType | boolean {
     this.skip()
-    return this.token ? this.token[0] : ''
+    if (this.token) {
+      return type ? this.token[0] === type : this.token[0]
+    } else {
+      return false
+    }
   }
   pop(): Token | null {
     this.skip()
@@ -61,10 +67,53 @@ export class Lexer {
     }
     this.field = parent
   }
+  must(type: TokenType): Token {
+    const token = this.pop()
+    if (!token || token[0] !== type) throw Error(type + ' is required.')
+    return token
+  }
 }
 
 function distinguish(field: TokenField, value: string): TokenType {
   switch (field) {
+    case 'html':
+      switch (value) {
+         case '>':
+        case '<!--':
+          return value
+        case '<': case '</': case '<!': case '<!-':
+          return 'partial'
+      }
+      switch (true) {
+        case /^\/\/.*$/.test(value): return '//'
+        case /^<[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(value): return 'start'
+        case /^<\/[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(value): return 'end'
+      }
+      break
+    case 'attr':
+      switch (value) {
+        case '@if': case '@else': case '@for': case '@each':
+          return '@'
+        case '=': case ':=': case '&=': case '*=':
+          return 'assign'
+        case '>': case '/': case "'": case '"':
+          return value
+        case ':': case '&': case '*':
+          return 'partial'
+      }
+      switch (true) {
+        case /^on[_\$\-a-zA-Z0-9]+$/.test(value): return 'on'
+        case /^[_\$\-@a-zA-Z0-9]+$/.test(value): return 'name'
+      }
+      break
+    case 'comment':
+      switch (value) {
+        case '-->':
+          return value
+        case '-': case '--':
+          return 'partial'
+      }
+      break
     case 'script':
       switch (value) {
         case '+': case '-':
@@ -100,7 +149,7 @@ function distinguish(field: TokenField, value: string): TokenType {
           return value
       }
       switch (true) {
-        case /^\/\/.*$/.test(value): return 'lineComment'
+        case /^\/\/.*$/.test(value): return '//'
         case /^[_\$a-zA-Z][_\$a-zA-Z0-9]*$/.test(value): return 'word'
         case /^\d+\.?\d*$|^\.?\d+$/.test(value): return 'number' // TODO: lex number
       }
@@ -115,17 +164,17 @@ function distinguish(field: TokenField, value: string): TokenType {
         case '\r': case '\n': case '\r\n':
           return 'other'
       }
-    case 'singleString':
-    case 'doubleString':
+    case 'single':
+    case 'double':
       switch (value) {
         case '\\': return 'partial'
         case '\r': case '\n': case '\r\n': return 'return'
         case '\\\r\n': return 'escape'
         case '\'':
-          if (field === 'singleString') return value
+          if (field === 'single') return value
           break
         case '\"':
-          if (field === 'doubleString') return value
+          if (field === 'double') return value
           break
       }
       switch (true) {
@@ -148,4 +197,23 @@ function distinguish(field: TokenField, value: string): TokenType {
       break
   }
   return 'other'
+}
+
+export function unescape(value: string): string {
+  switch (value) {
+    case '\\n': return '\n'
+    case '\\r': return '\r'
+    case '\\v': return '\v'
+    case '\\t': return '\t'
+    case '\\b': return '\b'
+    case '\\f': return '\f'
+  }
+  switch (true) {
+    case /^\\u[0-9a-fA-F]{4}$/.test(value):
+    case /^\\x[0-9a-fA-F]{2}$/.test(value):
+      return String.fromCodePoint(parseInt(value.slice(2), 16))
+    case /^\\u\{(0?[0-9a-fA-F]{1,5}|10[0-9a-fA-F]{1,4})\}$/.test(value):
+      return String.fromCodePoint(parseInt(value.slice(3,-1), 16))
+  }
+  return value.slice(1)
 }

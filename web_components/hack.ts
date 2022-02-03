@@ -40,12 +40,13 @@ export function hack(target: string | Element, template: string | TreeTemplate |
   const tree = load(host.attachShadow(component.options))
   const entity = new Entity(component, host, tree)
 
-  const temp = parse(host) as CustomElementTemplate
-  temp.type = 'custom'
-  temp.isForce = true
-  const ve = evaluate(temp) as VirtualElement
-  for (const key in ve.props) {
-    entity.setProp(key, ve.props[key])
+  if (host.innerHTML) {
+    entity.setProp('content', host.innerHTML)
+  }
+  if (host.hasAttributes()) {
+    host.getAttributeNames().forEach(name => {
+      entity.setProp(name, host.getAttribute(name))
+    })
   }
 
   // TODO: override setAttributes
