@@ -11,10 +11,12 @@ import {
   ElementTemplate,
   TreeTemplate,
   GetTemplate,
+  DrawTemplate,
   HandlerTemplate,
   TemporaryNode,
   TemporaryText,
   TemporaryElement,
+  FlatTemplate,
   instanceOfTemporaryElement
 } from './types.ts'
 import { Lexer } from './lexer.ts'
@@ -27,39 +29,12 @@ export function parse(html: string): TreeTemplate {
   return children.length ? { type: 'tree', children } : { type: 'tree' }
 }
 
-function parseText(lexer: Lexer): Template | string {
-  const texts = [] as Array<string | Template>
-  texts.push(lexer.skip())
-  while (lexer.nextIs()) {
-    if (lexer.nextIs('{{')) {
-      lexer.pop()
-      lexer.expand('script', () => {
-        texts.push(expression(lexer))
-      })
-      lexer.must('}}')
-      texts.push(lexer.skip())
-    } else {
-      lexer.pop()
-    }
-  }
-  // TODO:
-
-  // optimize
-  const values = texts.filter(value => value !== '')
-  if (values.length === 1 && typeof values[0] === 'string') {
-    return values[0]
-  } else {
-    return { type: 'join', values, separator: '' } as JoinTemplate
-  }
-}
-
 class DomLexer {
   constructor(
     public node?: TemporaryNode
   ) {}
   isSkippable(prop: string): boolean {
     for (let node = this.node; node; node = (node as TemporaryNode).next) {
-      console.log('node:', node)
       if (instanceOfTemporaryElement(node)) {
         return hasAttr(node, prop)
       } else {
@@ -167,7 +142,6 @@ function parseGroup(el: TemporaryElement): Template {
 }
 
 function parseElement(el: TemporaryElement): ElementTemplate {
-  console.log('el:', el)
   const template = {
     type: 'element',
     tag: el.tag,
@@ -270,4 +244,26 @@ function hasAttr(el: TemporaryElement, prop: string): boolean {
 function getAttr(el: TemporaryElement, prop: string): string {
   const attr = el.attrs?.find(attr => attr[0] === prop)
   return attr ? attr[2] : ''
+}
+
+function parseText(lexer: Lexer): Template | string {
+  const values = [] as Array<string | Template>
+  values.push(lexer.skip())
+  while (lexer.nextIs()) {
+    if (lexer.nextIs('{{')) {
+      lexer.pop()
+      lexer.expand('script', () => {
+        values.push({ type: 'draw', value: expression(lexer) } as DrawTemplate)
+      })
+      lexer.must('}}')
+      values.push(lexer.skip())
+    } else {
+      lexer.pop()
+    }
+  }
+  if (values.length === 1 && typeof values[0] === 'string') {
+    return values[0]
+  } else {
+    return { type: 'flat', values } as FlatTemplate
+  }
 }

@@ -1,6 +1,10 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { VirtualElement, VirtualTree } from '../virtual_dom/types.ts'
+import {
+  RealElement,
+  VirtualElement,
+  VirtualTree
+} from '../virtual_dom/types.ts'
 import {
   isRef,
   Variables,
@@ -16,6 +20,7 @@ import {
   FunctionTemplate,
   HashTemplate,
   GetTemplate,
+  DrawTemplate,
   JoinTemplate,
   FlagsTemplate,
   IfTemplate,
@@ -25,6 +30,7 @@ import {
   TreeTemplate,
   GroupTemplate,
   HandlerTemplate,
+  FlatTemplate,
   Cache,
   Ref,
   Evaluate,
@@ -141,6 +147,58 @@ export const evaluator = {
     }
   ) as Evaluate,
 
+  flat: (
+    (template: FlatTemplate, stack: Variables, cache: Cache): unknown => {
+      const values = template.values.flatMap(
+          (value: Template | string) => typeof value === 'string' ? [value] : flatwrap(evaluate(value, stack, cache)) as Array<string | VirtualElement | RealElement | number>
+        )
+        .filter(value => value !== '')
+        .reduce<Array<string | VirtualElement | RealElement | number>>((result, child) => {
+          const len = result.length
+          if (len && typeof child === 'string' && typeof result[len - 1] === 'string') {
+            result[len - 1] += child
+          } else {
+            result.push(child)
+          }
+          return result
+        }, [])
+
+      if (values.length === 1 && typeof values[0] === 'string') {
+        return values[0]
+      } else {
+        return values
+      }
+    }
+  ) as Evaluate,
+
+  draw: (
+    (template: DrawTemplate, stack: Variables, cache: Cache): unknown => {
+      const value = evaluate(template.value, stack, cache)
+      // if (value instanceof EventTarget) { // real element
+      //   const el = {
+      //     el: value
+      //   } as RealElement
+      //   return el
+      // } else
+      if (typeof value === 'object') {
+        if (instanceOfTemplate(value)) { // expand
+          if (value.type === 'tree') {
+            value.type = 'group'
+            const result = evaluate(value, stack, cache)
+            value.type = 'tree'
+            return result
+          } else {
+            return evaluate(value, stack, cache)
+          }
+        } else {
+          return JSON.stringify(value)
+        }
+      } else {
+        return value === null || value === undefined ? '' : value + ''
+      }
+    }
+  ) as Evaluate,
+
   join: (
     (template: JoinTemplate, stack: Variables, cache: Cache): string => {
       return template.values.reduce<string>((result: string, value: unknown | Template, index: number) => {
@@ -198,7 +256,7 @@ export const evaluator = {
       }
       return entries.flatMap(([key, value], index) => {
         const loop = new Loop(key, value, index, entries, stack)
-        const result = (flatwrap(evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]), cache)) as Array<string | VirtualElement | number>)
+        const result = (flatwrap(evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]), cache)) as Array<string | VirtualElement | RealElement | number>)
           .filter(child => typeof child !== 'number')
         if (typeof loop.value === 'object') {
           result
@@ -257,8 +315,10 @@ export const evaluator = {
 
 } as Evaluator
 
-export function evaluateChildren(template: HasChildrenTemplate, stack: Variables, cache: Cache): Array<string | VirtualElement | number> {
+export function evaluateChildren(template: HasChildrenTemplate, stack: Variables, cache: Cache): Array<string | VirtualElement | RealElement | number> {
   const children = (template.children || []) as Array<Template | string>
+
+  // Cache number
   let i = 0
   if (children.length) {
     if ((cache.groups ?? (cache.groups = [new WeakMap<Template, number>(), 0]))[0].has(template)) {
@@ -268,18 +328,20 @@ export function evaluateChildren(template: HasChildrenTemplate, stack: Variables
       cache.groups[0].set(template, i)
     }
   }
-  const result = children.flatMap((child, index) => {
-    if (instanceOfTemplate(child)) {
-      const result = flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | number>
-      switch ((child as CoreTemplate).type) {
-        case 'if': case 'for': case 'group':
-          result.push(i - index)
+
+  const result = children
+    .flatMap((child, index) => {
+      if (instanceOfTemplate(child)) {
+        const result = (flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | RealElement | number>)
+        switch ((child as CoreTemplate).type) {
+          case 'if': case 'for': case 'group':
+            result.push(i - index)
+        }
+        return result
+      } else {
+        return [child] as Array<string | VirtualElement | RealElement | number>
       }
-      return result
-    } else {
-      return [child] as Array<string | VirtualElement | number>
-    }
-  })
+    })
   if (typeof result[result.length - 1] === 'number') {
     result.pop()
   }

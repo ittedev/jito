@@ -22,7 +22,9 @@ export type TemplateType =
   'tree' |
   'group' |
   'handler' |
-  'get'
+  'get' |
+  'flat' |
+  'draw'
 
 export interface Template {
   type: string
@@ -45,6 +47,11 @@ export interface LiteralTemplate extends CoreTemplate {
 export interface ArrayTemplate extends CoreTemplate {
   type: 'array'
   values: Array<Template>
+}
+
+export interface FlatTemplate extends CoreTemplate {
+  type: 'flat'
+  values: Array<Template | string>
 }
 
 export interface ObjectTemplate extends CoreTemplate {
@@ -91,6 +98,11 @@ export interface HashTemplate extends CoreTemplate {
 
 export interface GetTemplate extends CoreTemplate {
   type: 'get'
+  value: Template
+}
+
+export interface DrawTemplate extends CoreTemplate {
+  type: 'draw'
   value: Template
 }
 
