@@ -139,7 +139,7 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
         })
       }
     }
-    
+
     if (key !== undefined) {
       if (typeof key !== 'number' && isNaN(key as unknown as number)) {
         if (!(key in obj[dictionary])) {

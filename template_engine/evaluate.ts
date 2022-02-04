@@ -270,6 +270,7 @@ export const evaluator = {
 
   element: (
     (template: ElementTemplate, stack: Variables, cache: Cache): VirtualElement => {
+      
       const el = evaluator.tree(template as TreeTemplate, stack, cache) as VirtualElement
       el.tag = template.tag
 
