@@ -141,7 +141,7 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
     }
 
     if (key !== undefined) {
-      if (typeof key !== 'number' && isNaN(key as unknown as number)) {
+      if (!Array.isArray(obj) || typeof key !== 'number' && isNaN(key as unknown as number)) {
         if (!(key in obj[dictionary])) {
           obj[dictionary][key] = [obj[key], new Set<Arm>()]
           Object.defineProperty(obj, key, {

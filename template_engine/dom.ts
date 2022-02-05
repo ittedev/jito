@@ -19,10 +19,8 @@ export function dom(html: Lexer | string): TemporaryNode | undefined {
   const text = { text: lexer.skip() } as TemporaryText
   while (lexer.nextIs()) {
     if (lexer.nextIs('<!--')) {
-      lexer.expand('comment', () => {
-        lexer.skip()
-        lexer.must('-->')
-      })
+      lexer.pop()
+      lexer.expand('comment', () => lexer.must('-->'))
       text.text += lexer.skip()
       continue
     } else {
