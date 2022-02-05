@@ -1,7 +1,13 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Component, instanceOfComponent, ComponentTemplate } from './types.ts'
-import { VirtualElement } from '../virtual_dom/types.ts'
+import {
+  special,
+  Component,
+  instanceOfComponent,
+  ComponentTemplate,
+  SpecialCache
+} from './types.ts'
+import { RealTarget, VirtualElement } from '../virtual_dom/types.ts'
 import {
   Variables,
   Template,
@@ -10,7 +16,8 @@ import {
   GroupTemplate,
   CustomElementTemplate,
   CustomTemplate,
-  Cache
+  Cache,
+  EvaluatePlugin
 } from '../template_engine/types.ts'
 import { ComponentElement, localComponentElementTag } from './element.ts'
 import { evaluate, evaluateProps } from '../template_engine/evaluate.ts'
@@ -88,4 +95,31 @@ export const componentPlugin = {
 
     return el
   }
-}
+} as EvaluatePlugin
+
+export const specialTagPlugin = {
+  match: (template: CustomElementTemplate, stack: Variables, cache: SpecialCache): boolean => {
+    if (template.type === 'custom') {
+      if (template.tag === 'window') {
+        return true
+      }
+      if (special in cache && !isPrimitive(template.tag)) {
+        const el = pickup(stack, template.tag)[0]
+        return el === cache[special].host || el === cache[special].root
+      }
+    }
+    return false
+  },
+  exec: (template: CustomElementTemplate, stack: Variables, cache: Cache): RealTarget => {
+    const el = template.tag === 'window' ? window :pickup(stack, template.tag)[0] as Element || ShadowRoot
+    const re = {
+      el,
+      invalid: {
+        props: true,
+        children: true
+      }
+    }
+    evaluateProps(template, stack, cache, re)
+    return re
+  }
+} as EvaluatePlugin

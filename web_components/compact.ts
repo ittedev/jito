@@ -4,10 +4,11 @@ import { ComponentConstructor, Component } from './types.ts'
 import { Variables, TreeTemplate } from '../template_engine/types.ts'
 import { lock } from '../data_binding/lock.ts'
 import { parse } from '../template_engine/parse.ts'
-import { componentPlugin } from './component_plugin.ts'
+import { componentPlugin, specialTagPlugin } from './plugins.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
 
 evaluate.plugin(componentPlugin)
+evaluate.plugin(specialTagPlugin)
 
 export function compact(html: string): Component
 export function compact(html: string, data: Variables): Component

@@ -22,7 +22,8 @@ export function mount(element: Element, html: string, data: Record<string, unkno
 export function mount(element: Element, html: string, construct: ComponentConstructor): void
 export function mount(element: Element, template: TreeTemplate): void
 export function mount(element: Element, template: TreeTemplate, data: Variables): void
-export function mount(element: Element, template: TreeTemplate, data: Record<string, unknown>): void export function mount(element: Element, template: TreeTemplate, construct: ComponentConstructor): void
+export function mount(element: Element, template: TreeTemplate, data: Record<string, unknown>): void
+export function mount(element: Element, template: TreeTemplate, construct: ComponentConstructor): void
 export function mount(target: string | Element, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor): void
 export function mount(target: string | Element, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor = []): void {
   const host: Element =

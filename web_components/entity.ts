@@ -1,7 +1,7 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { ChangeCallback } from '../data_binding/types.ts'
-import { Component } from './types.ts'
+import { special, Component, SpecialCache } from './types.ts'
 import { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
 import { Variables, Cache, instanceOfRef, Ref } from '../template_engine/types.ts'
 import { watch } from '../data_binding/watch.ts'
@@ -14,7 +14,7 @@ import { eventTypes } from '../virtual_dom/event_types.ts'
 
 export class Entity {
   private _stack?: Variables | null
-  private _cache: Cache = {}
+  private _cache: SpecialCache
   private _component: Component
   private _host: Element
   private _tree: LinkedVirtualTree
@@ -27,6 +27,12 @@ export class Entity {
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._patch = this._patch.bind(this)
+    this._cache = {
+      [special]: {
+        host,
+        root: tree.el as ShadowRoot
+      }
+    }
 
     if (this._component.options.mode === 'closed') {
       this.root.addEventListener(eventTypes.patch, event => event.stopPropagation())

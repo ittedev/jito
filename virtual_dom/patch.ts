@@ -360,7 +360,7 @@ function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree) {
           if (typeof children[index] === 'object' && vNode.el === (children[index] as LinkedRealTarget).el) {
             // patch real node
             const tmp = patchRealElement((children[index] as LinkedRealTarget), vNode)
-            if (vNode.insert && tmp.el === node) {
+            if (tmp.el === node && tmp.el instanceof Element && tmp.el.getRootNode() === node.getRootNode()) {
               node = (node as Node).nextSibling
             }
             index++
@@ -368,7 +368,7 @@ function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree) {
           } else {
             // add real node
             const tmp = patchRealElement(null, vNode) as LinkedVirtualElement
-            if (vNode.insert && tmp.el.parentNode !== null) {
+            if (tmp.el instanceof Element && tmp.el.parentNode === null) {// el instanceof Element
               tree.el.insertBefore(tmp.el, node || null)
             }
             return tmp
