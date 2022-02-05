@@ -9,6 +9,7 @@ import {
   IfTemplate,
   ForTemplate,
   ElementTemplate,
+  CustomElementTemplate,
   TreeTemplate,
   GetTemplate,
   DrawTemplate,
@@ -22,6 +23,7 @@ import {
 import { Lexer } from './lexer.ts'
 import { expression } from './expression.ts'
 import { dom } from './dom.ts'
+import { isPrimitive } from './is_primitive.ts'
 
 export function parse(html: string): TreeTemplate {
   const node = dom(html)
@@ -141,11 +143,11 @@ function parseGroup(el: TemporaryElement): Template {
   }
 }
 
-function parseElement(el: TemporaryElement): ElementTemplate {
+function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemplate {
   const template = {
     type: 'element',
     tag: el.tag,
-  } as ElementTemplate
+  } as ElementTemplate | CustomElementTemplate
 
   {
     const style = [] as Array<string | Template>
@@ -232,6 +234,11 @@ function parseElement(el: TemporaryElement): ElementTemplate {
     if (children.length) {
       template.children = children
     }
+  }
+
+  // custom element
+  if (!isPrimitive(template.tag) || template.is) {
+    template.type = 'custom'
   }
 
   return template

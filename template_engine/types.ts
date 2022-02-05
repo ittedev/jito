@@ -4,148 +4,144 @@ export const isRef = Symbol('Beako-ref')
 
 export type Variables = Array<Record<string, unknown>>
 
-export type TemplateType =
-  'literal' |
-  'array' |
-  'object' |
-  'variable' |
-  'unary' |
-  'binary' |
-  'assign' |
-  'function' |
-  'hash' |
-  'join' |
-  'flags' |
-  'if' |
-  'for' |
-  'element' |
-  'tree' |
-  'group' |
-  'handler' |
-  'get' |
-  'flat' |
-  'draw'
+export type Template =
+  LiteralTemplate |
+  ArrayTemplate |
+  ObjectTemplate |
+  VariableTemplate |
+  UnaryTemplate |
+  BinaryTemplate |
+  AssignTemplate |
+  FunctionTemplate |
+  HashTemplate |
+  JoinTemplate |
+  FlagsTemplate |
+  IfTemplate |
+  ForTemplate |
+  ElementTemplate |
+  CustomElementTemplate |
+  TreeTemplate |
+  GroupTemplate |
+  HandlerTemplate |
+  GetTemplate |
+  FlatTemplate |
+  DrawTemplate |
+  EvaluationTemplate
 
-export interface Template {
-  type: string
-}
+export type HasChildrenTemplate =
+  TreeTemplate |
+  ElementTemplate |
+  CustomElementTemplate |
+  GroupTemplate
 
-export interface CoreTemplate {
-  type: TemplateType
-}
+export type HasAttrTemplate =
+  GroupTemplate |
+  ElementTemplate |
+  CustomElementTemplate
 
 // deno-lint-ignore no-explicit-any
-export function instanceOfTemplate(object: any): object is CoreTemplate {
+export function instanceOfTemplate(object: any): object is Template {
   return typeof object === 'object' &&  typeof object.type === 'string'
 }
 
-export interface LiteralTemplate extends CoreTemplate {
+export interface LiteralTemplate {
   type: 'literal'
   value: unknown
 }
 
-export interface ArrayTemplate extends CoreTemplate {
+export interface ArrayTemplate {
   type: 'array'
   values: Array<Template>
 }
 
-export interface FlatTemplate extends CoreTemplate {
+export interface FlatTemplate {
   type: 'flat'
   values: Array<Template | string>
 }
 
-export interface ObjectTemplate extends CoreTemplate {
+export interface ObjectTemplate {
   type: 'object'
   entries: Array<[Template, Template]>
 }
 
-export interface VariableTemplate extends CoreTemplate {
+export interface VariableTemplate {
   type: 'variable'
   name: string
 }
 
-export interface UnaryTemplate extends CoreTemplate {
+export interface UnaryTemplate {
   type: 'unary'
   operator: string
   operand: Template
 }
 
-export interface BinaryTemplate extends CoreTemplate {
+export interface BinaryTemplate {
   type: 'binary'
   operator: string
   left: Template
   right: Template
 }
 
-export interface AssignTemplate extends CoreTemplate {
+export interface AssignTemplate {
   type: 'assign'
   operator: string
   left: VariableTemplate | HashTemplate
   right: Template
 }
 
-export interface FunctionTemplate extends CoreTemplate {
+export interface FunctionTemplate {
   type: 'function'
   name: Template
   params: Array<Template>
 }
 
-export interface HashTemplate extends CoreTemplate {
+export interface HashTemplate {
   type: 'hash'
   object: Template
   key: Template
 }
 
-export interface GetTemplate extends CoreTemplate {
+export interface GetTemplate {
   type: 'get'
   value: Template
 }
 
-export interface DrawTemplate extends CoreTemplate {
+export interface DrawTemplate {
   type: 'draw'
   value: Template
 }
 
-export interface JoinTemplate extends CoreTemplate {
+export interface JoinTemplate {
   type: 'join'
   values: Array<unknown | Template>
   separator: string
 }
 
-export interface FlagsTemplate extends CoreTemplate {
+export interface FlagsTemplate {
   type: 'flags'
   value: Template
 }
 
-export interface IfTemplate extends CoreTemplate {
+export interface IfTemplate {
   type: 'if'
   condition: Template
   truthy: Template
   falsy?: Template | undefined
 }
 
-export interface ForTemplate extends CoreTemplate {
+export interface ForTemplate {
   type: 'for'
   array: Template
   value: Template
   each?: string
 }
 
-export interface HasChildrenTemplate {
-  type: string
+export interface TreeTemplate {
+  type: 'tree'
   children?: Array<Template | string>
 }
 
-export interface TreeTemplate extends HasChildrenTemplate {
-  type: 'tree' | 'element'
-}
-
-export interface HasAttrTemplate extends Template {
-  type: string
-  props?: Record<string, unknown | Template>
-}
-
-export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
+export interface ElementTemplate {
   type: 'element'
   tag: string
   is?: string | Template
@@ -154,14 +150,38 @@ export interface ElementTemplate extends TreeTemplate, HasAttrTemplate {
   props?: Record<string, unknown | Template>
   bools?: Record<string, unknown | Template>
   style?: string | JoinTemplate
-  children?: Array<Template | string>
   on?: Record<string, Array<HandlerTemplate>>
+  children?: Array<Template | string>
 }
 
-export interface GroupTemplate extends HasChildrenTemplate, HasAttrTemplate {
-  type: 'group'
+export interface CustomElementTemplate {
+  type: 'custom'
+  tag: string
+  is?: string | Template
+  class?: Array<Array<string> | FlagsTemplate>
+  part?: Array<Array<string> | FlagsTemplate>
   props?: Record<string, unknown | Template>
+  bools?: Record<string, unknown | Template>
+  style?: string | JoinTemplate
+  on?: Record<string, Array<HandlerTemplate>>
   children?: Array<Template | string>
+}
+
+export interface GroupTemplate {
+  type: 'group'
+  class: undefined
+  part: undefined
+  props?: Record<string, unknown | Template>
+  bools: undefined
+  style: undefined
+  on: undefined
+  children?: Array<Template | string>
+}
+
+export interface EvaluationTemplate {
+  type: 'evaluation'
+  template: Template
+  stack?: Variables
 }
 
 export interface HandlerTemplate {
@@ -169,9 +189,14 @@ export interface HandlerTemplate {
   value: Template
 }
 
+export interface CustomTemplate {
+  type: string
+  [key: string]: unknown
+}
+
 export interface Cache {
   handler?: WeakMap<HandlerTemplate, Array<[Variables, EventListener]>>
-  groups?: [WeakMap<Template, number>, number]
+  groups?: [WeakMap<HasChildrenTemplate, number>, number]
 }
 
 export type Ref = {
@@ -185,9 +210,26 @@ export function instanceOfRef(object: any): object is Ref {
   return typeof object === 'object' && object[isRef] === true
 }
 
-export type Evaluate = (template: Template, stack: Variables, cache: Cache) => unknown
+export interface Plugin {
+  // deno-lint-ignore no-explicit-any
+  match: (...arg: Array<any>) => boolean,
+  // deno-lint-ignore no-explicit-any
+  exec: (...arg: Array<any>) => unknown
+}
 
-export type Evaluator = Record<string, Evaluate>
+export interface Pluginable<T extends Plugin> extends Function {
+  plugin(plugin: T): void
+}
+
+export interface EvaluatePlugin extends Plugin {
+  match: (template: CustomElementTemplate | CustomTemplate, stack: Variables, cache: Cache) => boolean,
+  exec: (template: CustomElementTemplate | CustomTemplate, stack: Variables, cache: Cache) => unknown
+}
+
+export interface Evaluate extends Pluginable<EvaluatePlugin> {
+  (template: Template | CustomTemplate, stack?: Variables, cache?: Cache): unknown
+  plugin(plugin: EvaluatePlugin): void
+}
 
 export type TokenField =
   'html' |

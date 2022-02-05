@@ -9,147 +9,116 @@ import {
   isRef,
   Variables,
   Template,
+  HasChildrenTemplate,
+  HasAttrTemplate,
   instanceOfTemplate,
-  LiteralTemplate,
-  ArrayTemplate,
   ObjectTemplate,
   VariableTemplate,
-  UnaryTemplate,
-  BinaryTemplate,
-  AssignTemplate,
-  FunctionTemplate,
   HashTemplate,
   GetTemplate,
-  DrawTemplate,
   JoinTemplate,
-  FlagsTemplate,
-  IfTemplate,
   ForTemplate,
-  ElementTemplate,
-  HasChildrenTemplate,
-  TreeTemplate,
-  GroupTemplate,
   HandlerTemplate,
-  FlatTemplate,
+  CustomTemplate,
   Cache,
-  Ref,
   Evaluate,
-  CoreTemplate,
-  Evaluator
+  EvaluatePlugin,
+  Ref,
 } from './types.ts'
 import { Loop } from './loop.ts'
 import { pickup } from './pickup.ts'
 
-export function evaluate(template: Template, stack: Variables = [], cache: Cache = {}): unknown {
-  return evaluator[template.type](template, stack, cache)
-}
+const plugins = new Array<EvaluatePlugin>()
 
-export const evaluator = {
-  literal: (
-    (template: LiteralTemplate, _stack: Variables, _cache: Cache): unknown => template.value
-  ) as Evaluate,
+export const evaluate = function (template: Template | CustomTemplate, stack: Variables = [], cache: Cache = {}): unknown {
+  const temp = template as Template
+  switch (temp.type) {
+    case 'literal':
+      return temp.value
 
-  array: (
-    (template: ArrayTemplate, stack: Variables, cache: Cache): unknown =>
-      template.values.map((value: Template) => evaluate(value, stack, cache))
-  ) as Evaluate,
+    case 'array':
+      return temp.values.map((value: Template) => evaluate(value, stack, cache))
 
-  object: (
-    (template: ObjectTemplate, stack: Variables, cache: Cache): unknown =>
-    template.entries
-      .map(entry => entry.map(value => evaluate(value, stack, cache)))
-      .reduce((obj, [key, value]) => {
-        obj[key as string | number] = value
-        return obj
-      }, {} as Record<string, unknown>)
-    // Object.fromEntries(template.entries.map(entry => entry.map(value => evaluate(value, stack))))
-  ) as Evaluate,
+    case 'object':
+      return Object.fromEntries(
+        (temp as ObjectTemplate).entries.map(entry => entry.map(value => evaluate(value, stack)))
+      )
 
-  variable: ((template: VariableTemplate, stack: Variables, _cache: Cache): unknown => {
-    const [, index] = pickup(stack, template.name)
-    if (index >= 0) {
-      return { record: stack[index], key: template.name, [isRef]: true } as Ref
+    case 'variable': {
+      const [, index] = pickup(stack, (temp as VariableTemplate).name)
+      if (index >= 0) {
+        return { record: stack[index], key: (temp as VariableTemplate).name, [isRef]: true } as Ref
+      }
+      return undefined
     }
-    return undefined
-  }) as Evaluate,
 
-  unary: (
-    (template: UnaryTemplate, stack: Variables, cache: Cache): unknown =>
-      operateUnary(template.operator, evaluate(template.operand, stack, cache))
-  ) as Evaluate,
+    case 'unary':
+      return operateUnary(temp.operator, evaluate(temp.operand, stack, cache))
 
-  binary: (
-    (template: BinaryTemplate, stack: Variables, cache: Cache): unknown => {
-      const left = evaluate(template.left, stack, cache)
-      if (noCut(template.operator, left)) {
-        return operateBinary(template.operator, left, evaluate(template.right, stack, cache))
+    case 'binary': {
+      const left = evaluate(temp.left, stack, cache)
+      if (noCut(temp.operator, left)) {
+        return operateBinary(temp.operator, left, evaluate(temp.right, stack, cache))
       } else {
         return left
       }
     }
-  ) as Evaluate,
 
-  assign: ((template: AssignTemplate, stack: Variables, cache: Cache): unknown => {
-    const value = evaluate(template.left, stack, cache) as Ref
-    if (!value) {
-      throw Error(template.left ? (template.left as VariableTemplate).name : 'key' + ' is not defined')
-    }
-
-    const { record, key } = value
-    const right = evaluate(template.right, stack, cache)
-    if (template.operator.length > 1) {
-      const operator = template.operator.slice(0, -1)
-      if (noCut(operator, record[key])) {
-        return record[key] = operateBinary(operator, record[key], right)
-      } else {
-        return record[key]
+    case 'assign': {
+      const value = evaluate(temp.left, stack, cache) as Ref
+      if (!value) {
+        throw Error(temp.left ? (temp.left as VariableTemplate).name : 'key' + ' is not defined')
       }
-    } else {
-      return record[key] = right
-    }
-  }) as Evaluate,
 
-  ['function']: (
-    (template: FunctionTemplate, stack: Variables, cache: Cache): unknown => {
-      if (template.name.type === 'get' && (template.name as GetTemplate).value.type === 'hash') {
+      const { record, key } = value
+      const right = evaluate(temp.right, stack, cache)
+      if (temp.operator.length > 1) {
+        const operator = temp.operator.slice(0, -1)
+        if (noCut(operator, record[key])) {
+          return record[key] = operateBinary(operator, record[key], right)
+        } else {
+          return record[key]
+        }
+      } else {
+        return record[key] = right
+      }
+    }
+
+    case 'function': {
+      if (temp.name.type === 'get' && (temp.name as GetTemplate).value.type === 'hash') {
         // method
-        const value = evaluate((template.name as GetTemplate).value, stack, cache) as Ref
+        const value = evaluate((temp.name as GetTemplate).value, stack, cache) as Ref
         if (!value) {
-          throw Error(evaluate(((template.name as GetTemplate).value as HashTemplate).key, stack, cache) as string + ' is not defined')
+          throw Error(evaluate(((temp.name as GetTemplate).value as HashTemplate).key, stack, cache) as string + ' is not defined')
         }
         const f = value.record[value.key]
         if (typeof f === 'function') {
-          return f.apply(value.record, template.params.map(param => evaluate(param, stack, cache)))
+          return f.apply(value.record, temp.params.map(param => evaluate(param, stack, cache)))
         }
       } else {
         // other
-        const f = evaluate(template.name, stack, cache)
+        const f = evaluate(temp.name, stack, cache)
         if (typeof f === 'function') {
-          return f(...template.params.map(param => evaluate(param, stack, cache)))
+          return f(...temp.params.map(param => evaluate(param, stack, cache)))
         }
       }
-      throw Error(template.name.toString() + ' is not a function')
+      throw Error(temp.name.toString() + ' is not a function')
     }
-  ) as Evaluate,
 
-  hash: (
-    (template: HashTemplate, stack: Variables, cache: Cache): unknown => ({
-      record: evaluate(template.object, stack, cache) as Record<PropertyKey, unknown>,
-      key: evaluate(template.key, stack, cache) as PropertyKey,
-      [isRef]: true
-    } as Ref)
-  ) as Evaluate,
+    case 'hash':
+      return {
+        record: evaluate(temp.object, stack, cache) as Record<PropertyKey, unknown>,
+        key: evaluate(temp.key, stack, cache) as PropertyKey,
+        [isRef]: true
+      } as Ref
 
-  get: (
-    (template: GetTemplate, stack: Variables, cache: Cache): unknown => {
-      const value = evaluate(template.value, stack, cache) as Ref
+    case 'get': {
+      const value = evaluate(temp.value, stack, cache) as Ref
       return value ? value.record[value.key] : value
     }
-  ) as Evaluate,
 
-  flat: (
-    (template: FlatTemplate, stack: Variables, cache: Cache): unknown => {
-      const values = template.values.flatMap(
+    case 'flat': {
+      const values = temp.values.flatMap(
           (value: Template | string) => typeof value === 'string' ? [value] : flatwrap(evaluate(value, stack, cache)) as Array<string | VirtualElement | RealElement | number>
         )
         .filter(value => value !== '')
@@ -169,11 +138,9 @@ export const evaluator = {
         return values
       }
     }
-  ) as Evaluate,
 
-  draw: (
-    (template: DrawTemplate, stack: Variables, cache: Cache): unknown => {
-      const value = evaluate(template.value, stack, cache)
+    case 'draw': {
+      const value = evaluate(temp.value, stack, cache)
       // if (value instanceof EventTarget) { // real element
       //   const el = {
       //     el: value
@@ -183,7 +150,7 @@ export const evaluator = {
       if (typeof value === 'object') {
         if (instanceOfTemplate(value)) { // expand
           if (value.type === 'tree') {
-            value.type = 'group'
+            (value as HasChildrenTemplate).type = 'group'
             const result = evaluate(value, stack, cache)
             value.type = 'tree'
             return result
@@ -197,24 +164,19 @@ export const evaluator = {
         return value === null || value === undefined ? '' : value + ''
       }
     }
-  ) as Evaluate,
 
-  join: (
-    (template: JoinTemplate, stack: Variables, cache: Cache): string => {
-      return template.values.reduce<string>((result: string, value: unknown | Template, index: number) => {
+    case 'join':
+      return temp.values.reduce<string>((result: string, value: unknown | Template, index: number) => {
         if (instanceOfTemplate(value)) {
           const text = evaluate(value, stack, cache)
-          return result + (index ? template.separator : '') + (typeof text === 'object' ? JSON.stringify(text) : text as string)
+          return result + (index ? (temp as JoinTemplate).separator : '') + (typeof text === 'object' ? JSON.stringify(text) : text as string)
         } else {
-          return result + (index ? template.separator : '') + value
+          return result + (index ? (temp as JoinTemplate).separator : '') + value
         }
       }, '')
-    }
-  ) as Evaluate,
 
-  flags: (
-    (template: FlagsTemplate, stack: Variables, cache: Cache): Array<string> => {
-      const value = evaluate(template.value, stack, cache)
+    case 'flags': {
+      const value = evaluate(temp.value, stack, cache)
 
       if (typeof value === 'string') {
         return value.split(/\s+/)
@@ -226,16 +188,17 @@ export const evaluator = {
         }
       }
       return []
-    }) as Evaluate,
+    }
 
-  ['if']: (
-    (template: IfTemplate, stack: Variables, cache: Cache): unknown =>
-      evaluate(template.condition, stack, cache) ? evaluate(template.truthy, stack, cache) : template.falsy ? evaluate(template.falsy, stack, cache) : null
-    ) as Evaluate,
+    case 'if':
+      return evaluate(temp.condition, stack, cache) ?
+        evaluate(temp.truthy, stack, cache) :
+        temp.falsy ?
+          evaluate((temp.falsy as Template), stack, cache) :
+          null
 
-  for: (
-    (template: ForTemplate, stack: Variables, cache: Cache): unknown => {
-      const array = evaluate(template.array, stack, cache)
+    case 'for': {
+      const array = evaluate(temp.array, stack, cache)
       let entries: Array<[unknown, unknown]>
       if (typeof array === 'object' && array !== null) {
         if (Symbol.iterator in array) {
@@ -256,7 +219,7 @@ export const evaluator = {
       }
       return entries.flatMap(([key, value], index) => {
         const loop = new Loop(key, value, index, entries, stack)
-        const result = (flatwrap(evaluate(template.value, stack.concat([template.each ? { [template.each]: value, loop } : { loop }]), cache)) as Array<string | VirtualElement | RealElement | number>)
+        const result = (flatwrap(evaluate((temp as ForTemplate).value, stack.concat([(temp as ForTemplate).each ? { [((temp as ForTemplate).each as string)]: value, loop } : { loop }]), cache)) as Array<string | VirtualElement | RealElement | number>)
           .filter(child => typeof child !== 'number')
         if (typeof loop.value === 'object') {
           result
@@ -266,55 +229,70 @@ export const evaluator = {
         return result
       })
     }
-  ) as Evaluate,
 
-  element: (
-    (template: ElementTemplate, stack: Variables, cache: Cache): VirtualElement => {
-      
-      const el = evaluator.tree(template as TreeTemplate, stack, cache) as VirtualElement
-      el.tag = template.tag
+    case 'tree': {
+      const children = evaluateChildren(temp, stack, cache)
+      return children.length ? { children } : {}
+    }
 
-      if (template.is) {
-        el.is = typeof template.is === 'string' ? template.is : evaluate(template.is, stack, cache) as string
+    // deno-lint-ignore no-fallthrough
+    case 'custom': {
+      const el = plugins.find(plugin => plugin.match(temp, stack, cache))?.exec(temp, stack, cache)
+      if (el) {
+        return el
       }
-      evaluateProps(template, stack, cache, el)
+    }
+
+    case 'element': {
+      const children = evaluateChildren(temp, stack, cache)
+      const tree: VirtualTree = children.length ? { children } : {}
+      const el = (tree as VirtualElement)
+
+      el.tag = temp.tag
+
+      if (temp.is) {
+        el.is = typeof temp.is === 'string' ? temp.is : evaluate(temp.is, stack, cache) as string
+      }
+      evaluateProps(temp, stack, cache, el)
 
       return el
     }
-  ) as Evaluate,
 
-  tree: (
-    (template: TreeTemplate, stack: Variables, cache: Cache): VirtualTree => {
-      const children = evaluateChildren(template, stack, cache)
-      return children.length ? { children } : {}
-    }
-  ) as Evaluate,
+    case 'group':
+      return evaluateChildren(temp, stack, cache)
 
-  group: (
-    (template: GroupTemplate, stack: Variables, cache: Cache): Array<unknown> => evaluateChildren(template, stack, cache)
-  ) as Evaluate,
-
-  handler: (
-    (template: HandlerTemplate, stack: Variables, cache: Cache): EventListener => {
+    case 'handler': {
       if (!cache.handler) {
         cache.handler = new WeakMap<HandlerTemplate, Array<[Variables, EventListener]>>()
       }
-      if (!cache.handler.has(template)) {
-        cache.handler.set(template, [])
+      if (!cache.handler.has(temp)) {
+        cache.handler.set(temp, [])
       }
-      const thisHandlerCache = cache.handler.get(template) as Array<[Variables, EventListener]>
+      const thisHandlerCache = cache.handler.get(temp) as Array<[Variables, EventListener]>
       for (const cache of thisHandlerCache) {
         if (compareCache(cache[0], stack)) {
           return cache[1]
         }
       }
-      const handler = (event: Event) => evaluate(template.value, [...stack, { event }], cache) as void
+      const handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...stack, { event }], cache) as void
       thisHandlerCache.push([stack, handler])
       return handler
     }
-  ) as Evaluate
 
-} as Evaluator
+    case 'evaluation':
+      return evaluate(
+        temp.template,
+        temp.stack ? temp.stack.concat(stack) : stack,
+        cache
+      )
+    default:
+      return plugins.find(plugin => plugin.match(template as CustomTemplate, stack, cache))?.exec(template as CustomTemplate, stack, cache)
+  }
+} as Evaluate
+
+evaluate.plugin = function (plugin: EvaluatePlugin) {
+  plugins.push(plugin)
+}
 
 export function evaluateChildren(template: HasChildrenTemplate, stack: Variables, cache: Cache): Array<string | VirtualElement | RealElement | number> {
   const children = (template.children || []) as Array<Template | string>
@@ -322,7 +300,7 @@ export function evaluateChildren(template: HasChildrenTemplate, stack: Variables
   // Cache number
   let i = 0
   if (children.length) {
-    if ((cache.groups ?? (cache.groups = [new WeakMap<Template, number>(), 0]))[0].has(template)) {
+    if ((cache.groups ?? (cache.groups = [new WeakMap<HasChildrenTemplate, number>(), 0]))[0].has(template)) {
       i = cache.groups[0].get(template) as number
     } else {
       i = cache.groups[1] = cache.groups[1] + children.length
@@ -334,7 +312,7 @@ export function evaluateChildren(template: HasChildrenTemplate, stack: Variables
     .flatMap((child, index) => {
       if (instanceOfTemplate(child)) {
         const result = (flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | RealElement | number>)
-        switch ((child as CoreTemplate).type) {
+        switch ((child as Template).type) {
           case 'if': case 'for': case 'group':
             result.push(i - index)
         }
@@ -349,7 +327,7 @@ export function evaluateChildren(template: HasChildrenTemplate, stack: Variables
   return result
 }
 
-export function evaluateProps(template: ElementTemplate, stack: Variables, cache: Cache, ve: VirtualElement): void {
+export function evaluateProps(template: HasAttrTemplate, stack: Variables, cache: Cache, ve: VirtualElement): void {
   if (template.style) {
     ve.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack, cache) as string
   }

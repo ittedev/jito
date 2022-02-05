@@ -21,7 +21,6 @@ export type {
   TreeTemplate,
   GroupTemplate,
   Ref,
-  Evaluator,
   Evaluate
 } from './types.ts'
 

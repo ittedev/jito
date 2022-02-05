@@ -1,8 +1,7 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 export type {
-  EvaluationTemplate,
-  CustomElementTemplate,
+  ComponentTemplate,
   ComponentConstructor,
   Component
 } from './types.ts'
@@ -10,7 +9,6 @@ export type {
 export { builtin } from './builtin.ts'
 export { Entity } from './entity.ts'
 export { ComponentElement } from './element.ts'
-export { extend } from './extend.ts'
 export { compact } from './compact.ts'
 export { define } from './define.ts'
 export { mount } from './mount.ts'
