@@ -181,8 +181,7 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
               return template.is = expression(value)
             case 'class':
             case 'part': {
-              const n = name.slice(0, -1) as 'class' | 'part'
-              return (template[n] ?? (template[n] = []) as Array<Array<string> | Template>).push({ type: 'flags', value: expression(value) } as FlagsTemplate)
+              return (template[name] ?? (template[name] = []) as Array<Array<string> | Template>).push({ type: 'flags', value: expression(value) } as FlagsTemplate)
             }
             case 'style': {
               return style.push(expression(value))

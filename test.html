@@ -2780,6 +2780,353 @@ describe('Template Engine', function() {
       })
     })
 
+    // TODO: test parse is
+    describe(': class', function() {
+      it('parse: class', () => {
+        const template = parse('<p class="class-a"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [["class-a"]]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi classes', () => {
+        const template = parse('<p class="class-a" class="class-b class-c"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [["class-a"], ["class-b", "class-c"]]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign class only', () => {
+        const template = parse(`<p class:="'class-a'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [{
+                type: "flags",
+                value: {
+                  type: "literal",
+                  value: "class-a"
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign array class only', () => {
+        const template = parse(`<p class:="['class-a']"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [{
+                type: "flags",
+                value: {
+                  type: "array",
+                  values: [{
+                    type: "literal",
+                    value: "class-a"
+                  }]
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign object class only', () => {
+        const template = parse(`<p class:="{ 'class-a': true, classb: false }"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [{
+                type: "flags",
+                value: {
+                  type: "object",
+                  entries: [
+                    [
+                      {
+                        type: "literal",
+                        value: "class-a"
+                      },
+                      {
+                        type: "literal",
+                        value: true
+                      }
+                    ],
+                    [
+                      {
+                        type: "literal",
+                        value: "classb"
+                      },
+                      {
+                        type: "literal",
+                        value: false
+                      }
+                    ]
+                  ]
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi assign classes', () => {
+        const template = parse(`<p class:="'class-a'" class:="'class-b'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "class-a"
+                  }
+                },
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "class-b"
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      })
+
+      it('parse: class and multi assign classes', () => {
+        const template = parse(`<p class="class-a" class:="'class-b'" class:="'class-c'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [
+                ["class-a"],
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "class-b"
+                  }
+                },
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "class-c"
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': part', function() {
+      it('parse: part', () => {
+        const template = parse('<p part="part-a"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [["part-a"]]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi parts', () => {
+        const template = parse('<p part="part-a" part="part-b part-c"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [["part-a"], ["part-b", "part-c"]]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign part only', () => {
+        const template = parse(`<p part:="'part-a'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [{
+                type: "flags",
+                value: {
+                  type: "literal",
+                  value: "part-a"
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign array part only', () => {
+        const template = parse(`<p part:="['part-a']"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [{
+                type: "flags",
+                value: {
+                  type: "array",
+                  values: [{
+                    type: "literal",
+                    value: "part-a"
+                  }]
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign object part only', () => {
+        const template = parse(`<p part:="{ 'part-a': true, partb: false }"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [{
+                type: "flags",
+                value: {
+                  type: "object",
+                  entries: [
+                    [
+                      {
+                        type: "literal",
+                        value: "part-a"
+                      },
+                      {
+                        type: "literal",
+                        value: true
+                      }
+                    ],
+                    [
+                      {
+                        type: "literal",
+                        value: "partb"
+                      },
+                      {
+                        type: "literal",
+                        value: false
+                      }
+                    ]
+                  ]
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi assign parts', () => {
+        const template = parse(`<p part:="'part-a'" part:="'part-b'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "part-a"
+                  }
+                },
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "part-b"
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      })
+
+      it('parse: part and multi assign parts', () => {
+        const template = parse(`<p part="part-a" part:="'part-b'" part:="'part-c'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [
+                ["part-a"],
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "part-b"
+                  }
+                },
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "part-c"
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      })
+    })
+
     describe(': style', function() {
       it('parse: style', () => {
         const template = parse('<p style="color: red"></p>')
@@ -2795,7 +3142,28 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: add style only', () => {
+      it('parse: multi styles', () => {
+        const template = parse('<p style="color: red" style="font-size: 16px"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  "color: red",
+                  "font-size: 16px"
+                ]
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: assign style only', () => {
         const template = parse(`<p style:="'color: red'"></p>`)
         equal(template, {
           type: 'tree',
@@ -2818,7 +3186,35 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: add style', () => {
+      it('parse: multi assign styles', () => {
+        const template = parse(`<p style="color: red" style:="'margin-top: 5px'" style:="'margin: 0 auto'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  "color: red",
+                  {
+                    type: "literal",
+                    value: "margin-top: 5px"
+                  },
+                  {
+                    type: "literal",
+                    value: "margin: 0 auto"
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: style and assign style', () => {
         const template = parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`)
         equal(template, {
           type: 'tree',
@@ -2852,34 +3248,6 @@ describe('Template Engine', function() {
           ]
         })
       })
-
-    //   it('parse: add styles', () => {
-    //     const template = parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`)
-    //     equal(template, {
-    //       type: 'tree',
-    //       children: [
-    //         {
-    //           tag: "p",
-    //           type: "element",
-    //           style: {
-    //             type: "join",
-    //             separator: ";",
-    //             values: [
-    //               "color: red",
-    //               {
-    //                 type: "literal",
-    //                 value: "margin-top: 5px"
-    //               },
-    //               {
-    //                 type: "literal",
-    //                 value: "margin: 0 auto"
-    //               }
-    //             ]
-    //           }
-    //         }
-    //       ]
-    //     })
-    //   })
     })
 
     describe(': props', function() {
@@ -3611,6 +3979,177 @@ describe('Template Engine', function() {
       })
     })
 
+    // TODO: test evaluate is
+    describe(': class', function() {
+      it('evaluate: class', () => {
+        const tree = evaluate(parse('<p class="class-a"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi classes', () => {
+        const tree = evaluate(parse('<p class="class-a" class="class-b class-c"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b", "class-c"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign class only', () => {
+        const tree = evaluate(parse(`<p class:="'class-a'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign array class only', () => {
+        const tree = evaluate(parse(`<p class:="['class-a']"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign object class only', () => {
+        const tree = evaluate(parse(`<p class:="{ 'class-a': true, classb: false }"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a"]
+            }
+          ]
+        })
+      })
+      it('evaluate: multi assign classes', () => {
+        const tree = evaluate(parse(`<p class:="'class-a'" class:="'class-b'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: class and multi assign classes', () => {
+        const tree = evaluate(parse(`<p class="class-a" class:="'class-b'" class:="'class-c'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b", "class-c"]
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': part', function() {
+      it('evaluate: part', () => {
+        const tree = evaluate(parse('<p part="part-a"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi parts', () => {
+        const tree = evaluate(parse('<p part="part-a" part="part-b part-c"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b", "part-c"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign part only', () => {
+        const tree = evaluate(parse(`<p part:="'part-a'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign array part only', () => {
+        const tree = evaluate(parse(`<p part:="['part-a']"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign object part only', () => {
+        const tree = evaluate(parse(`<p part:="{ 'part-a': true, partb: false }"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a"]
+            }
+          ]
+        })
+      })
+      it('evaluate: multi assign parts', () => {
+        const tree = evaluate(parse(`<p part:="'part-a'" part:="'part-b'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: part and multi assign parts', () => {
+        const tree = evaluate(parse(`<p part="part-a" part:="'part-b'" part:="'part-c'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b", "part-c"]
+            }
+          ]
+        })
+      })
+    })
+
     describe(': style', function() {
       it('evaluate: style', () => {
         const tree = evaluate(parse('<p style="color: red"></p>'))
@@ -3619,6 +4158,18 @@ describe('Template Engine', function() {
             {
               tag: "p",
               style: "color: red"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi styles', () => {
+        const tree = evaluate(parse(`<p style="color: red" style="margin-top: 5px"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red;margin-top: 5px"
             }
           ]
         })
@@ -3636,7 +4187,19 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: add style', () => {
+      it('evaluate: multi assign styles', () => {
+        const tree = evaluate(parse(`<p style="color: red" style:="'margin-top: 5px'" style:="'margin: 0 auto'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red;margin-top: 5px;margin: 0 auto"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign style', () => {
         const tree = evaluate(parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
         equal(tree, {
           children: [
@@ -3647,18 +4210,6 @@ describe('Template Engine', function() {
           ]
         })
       })
-
-      // it('evaluate: add styles', () => {
-      //   const tree = evaluate(parse(`<p style="color: red" style+1="'margin-top: 5px'" style+2="'margin: 0 auto'"></p>`))
-      //   equal(tree, {
-      //     children: [
-      //       {
-      //         tag: "p",
-      //         style: "color: red;margin-top: 5px;margin: 0 auto"
-      //       }
-      //     ]
-      //   })
-      // })
     })
 
     describe(': props', function() {
