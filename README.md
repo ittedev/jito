@@ -22,7 +22,7 @@ deno install -f --allow-read --allow-write --allow-env --allow-run --allow-net h
 ```
 
 ```ts
-import { watch, hack } from 'https://deno.land/x/beako@0.10.0/mod.ts'
+import { watch, mount } from 'https://deno.land/x/beako@0.10.0/mod.ts'
 
 const data = {
   count: 1
@@ -32,7 +32,7 @@ setInterval(() => { data.count++ }, 1000)
 
 watch(data)
 
-hack(document, `Counter: {{ count }}`, data)
+mount(document, `Counter: {{ count }}`, data)
 ```
 
 Build:
@@ -57,7 +57,7 @@ To Import it into html:
 <meta charset="UTF-8">
 <body>Loading...</body>
 <script type="module">
-  import { watch, hack } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.10.0/beako.js'
+  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.10.0/beako.js'
 
   const data = {
     count: 1
@@ -67,7 +67,7 @@ To Import it into html:
 
   watch(data)
 
-  hack(document, `Counter: {{ count }}`, data)
+  mount(document, `Counter: {{ count }}`, data)
 </script>
 ```
 
