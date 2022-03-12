@@ -22,7 +22,7 @@ deno install -fA https://deno.land/x/beako_cli@0.1.0/beako.ts
 ```
 
 ```ts
-import { watch, mount } from 'https://deno.land/x/beako@0.10.0/mod.ts'
+import { watch, mount } from 'https://deno.land/x/beako@0.10.1/mod.ts'
 
 const data = {
   count: 1
@@ -57,7 +57,7 @@ To Import it into html:
 <meta charset="UTF-8">
 <body>Loading...</body>
 <script type="module">
-  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.10.0/beako.js'
+  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.10.1/beako.js'
 
   const data = {
     count: 1
