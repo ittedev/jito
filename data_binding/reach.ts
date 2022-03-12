@@ -3,7 +3,7 @@
 import { dictionary, isLocked, reactiveKey, ReactiveTuple, ReactiveCallback, BeakoObject } from './types.ts'
 
 export function reach(data: unknown, callback:  ReactiveCallback): unknown {
-  if (typeof data === 'object' && data !== null) {
+  if (typeof data === 'object' && data !== null && (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))) {
     const obj = data as BeakoObject
     if (!obj[isLocked]) {
       if (dictionary in obj) {

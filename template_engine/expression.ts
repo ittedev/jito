@@ -249,7 +249,7 @@ function term(lexer: Lexer): Template {
       return { type: 'object', entries } as ObjectTemplate
     }
 
-    default: throw new Error(JSON.stringify(token))
+    default: throw new Error(token[0] + ' is invalid')
   }
 }
 

@@ -25,7 +25,12 @@ import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'
 
 export const componentPlugin = {
-  match: (template: CustomElementTemplate | CustomTemplate, stack: Variables, _cache: Cache): boolean => {
+  match (
+    template: CustomElementTemplate | CustomTemplate,
+    stack: Variables,
+    _cache: Cache
+  ): boolean
+  {
     if (template.type === 'custom') {
       const temp = template as CustomElementTemplate
       if (!isPrimitive(temp.tag)) {
@@ -41,7 +46,12 @@ export const componentPlugin = {
     }
     return false
   },
-  exec: (template: CustomElementTemplate | CustomTemplate, stack: Variables, cache: Cache): VirtualElement => {
+  exec (
+    template: CustomElementTemplate | CustomTemplate,
+    stack: Variables,
+    cache: Cache
+  ): VirtualElement
+  {
     const temp = template as ComponentTemplate
     const el = { tag: template.tag } as VirtualElement
 
@@ -98,20 +108,28 @@ export const componentPlugin = {
 } as EvaluatePlugin
 
 export const specialTagPlugin = {
-  match: (template: CustomElementTemplate, stack: Variables, cache: SpecialCache): boolean => {
+  match (
+    template: CustomElementTemplate,
+    stack: Variables,
+    cache: SpecialCache
+  ): boolean
+  {
     if (template.type === 'custom') {
-      if (template.tag === 'window') {
-        return true
-      }
       if (special in cache && !isPrimitive(template.tag)) {
+        console.log('cache:', cache)
         const el = pickup(stack, template.tag)[0]
-        return el === cache[special].host || el === cache[special].root
+        return cache[special].some(tag => tag === el)
       }
     }
     return false
   },
-  exec: (template: CustomElementTemplate, stack: Variables, cache: Cache): RealTarget => {
-    const el = template.tag === 'window' ? window :pickup(stack, template.tag)[0] as Element || ShadowRoot
+  exec (
+    template: CustomElementTemplate,
+    stack: Variables,
+    cache: Cache
+  ): RealTarget
+  {
+    const el = pickup(stack, template.tag)[0] as Element || ShadowRoot
     const re = {
       el,
       invalid: {

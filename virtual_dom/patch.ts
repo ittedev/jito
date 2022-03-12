@@ -321,7 +321,7 @@ function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree) {
     if (typeof children[index] !== 'number') {
       if (typeof children[index] === 'object') {
         if (node !== (children[index] as LinkedRealTarget).el) {
-          index++
+          destroy(children[index++] as LinkedVirtualElement)
           return
         }
         if (useStore && 'key' in (children[index] as LinkedVirtualElement)) {

@@ -3,7 +3,7 @@
 import { ChangeCallback } from '../data_binding/types.ts'
 import { special, Component, SpecialCache } from './types.ts'
 import { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
-import { Variables, Cache, instanceOfRef, Ref } from '../template_engine/types.ts'
+import { Variables, instanceOfRef, Ref } from '../template_engine/types.ts'
 import { watch } from '../data_binding/watch.ts'
 import { reach } from '../data_binding/reach.ts'
 import { unwatch } from '../data_binding/unwatch.ts'
@@ -23,26 +23,22 @@ export class Entity {
   private _constructor: Promise<void>
 
   constructor( component: Component, host: Element, tree: LinkedVirtualTree ) {
+    const root = tree.el as ShadowRoot
     this._component = component
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._patch = this._patch.bind(this)
-    this._cache = {
-      [special]: {
-        host,
-        root: tree.el as ShadowRoot
-      }
-    }
+    this._cache = { [special]: [host, root] }
 
     if (this._component.options.mode === 'closed') {
-      this.root.addEventListener(eventTypes.patch, event => event.stopPropagation())
+      root.addEventListener(eventTypes.patch, event => event.stopPropagation())
     }
 
     const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
     this._constructor = (async () => {
       const result = await data
       const stack = result ? Array.isArray(result) ? result : [result] : []
-      this._stack = [builtin, watch(this._props), ...stack]
+      this._stack = [builtin, { host, root }, watch(this._props), ...stack]
       reach(this._stack, this._patch)
       this._patch()
       stack.forEach(data => {

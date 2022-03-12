@@ -10,23 +10,22 @@ import {
   instanceOfTemporaryElement
 } from './types.ts'
 import { Lexer, unescape } from './lexer.ts'
-import { isPrimitive, noClose } from './is_primitive.ts'
+import { notHasEnd } from './is_primitive.ts'
 
 export function dom(html: string): TemporaryNode | undefined
 export function dom(lexer: Lexer): TemporaryNode | undefined
 export function dom(html: Lexer | string): TemporaryNode | undefined {
   const lexer = typeof html === 'string' ? new Lexer(html, 'html') : html
   const text = { text: lexer.skip() } as TemporaryText
-  while (lexer.nextIs()) {
-    if (lexer.nextIs('<!--')) {
-      lexer.pop()
-      lexer.expand('comment', () => lexer.must('-->'))
-      text.text += lexer.skip()
-      continue
-    } else {
-      break
-    }
+
+  // remove comment
+  while (lexer.nextIs('<!--')) {
+    lexer.pop()
+    lexer.expand('comment', () => lexer.must('-->'))
+    text.text += lexer.skip()
+    continue
   }
+
   if (lexer.nextIs('start')) {
     const next = el(lexer)
     if (next) {
@@ -43,19 +42,21 @@ export function dom(html: Lexer | string): TemporaryNode | undefined {
   return text.text ? text : text.next ? text.next : undefined
 }
 
-export function el(lexer: Lexer): TemporaryNode | undefined {
-  const el = { tag: (lexer.pop() as Token)[1].slice(1).toLocaleLowerCase() } as TemporaryElement
+function el(lexer: Lexer): TemporaryNode | undefined {
+  const el = {
+    tag: (lexer.pop() as Token)[1].slice(1).toLocaleLowerCase()
+  } as TemporaryElement
+
+  // get attributes
   const attrs = attr(lexer)
   if (attrs.length) {
     el.attrs = attrs
   }
-  if (noClose(el.tag)) {
-    if (lexer.nextIs('/')) {
-      lexer.pop()
-    }
-    lexer.must('>')
-  } else if (lexer.nextIs('/') && !isPrimitive(el.tag)) {
+
+  if (lexer.nextIs('/')) {
     lexer.pop()
+    lexer.must('>')
+  } else if (notHasEnd(el.tag)) {
     lexer.must('>')
   } else {
     lexer.must('>')
@@ -65,7 +66,7 @@ export function el(lexer: Lexer): TemporaryNode | undefined {
     }
     // Not supported: p, dt, dd, li, option, thead, tfoot, th, tr, td, rt, rp, optgroup, caption
     if (lexer.must('end')[1].slice(2) !== el.tag) {
-      throw Error('End tag is required.')
+      throw Error('end is required.')
     }
     lexer.must('>')
   }

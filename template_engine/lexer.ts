@@ -78,8 +78,9 @@ function distinguish(field: TokenField, value: string): TokenType {
   switch (field) {
     case 'html':
       switch (value) {
-         case '>':
+        case '>':
         case '<!--':
+        case '/':
           return value
         case '<': case '</': case '<!': case '<!-':
           return 'partial'

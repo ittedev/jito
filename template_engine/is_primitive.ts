@@ -50,7 +50,7 @@ export function isPrimitive(tag: string): boolean {
   return false
 }
 
-export function noClose(tag: string): boolean {
+export function notHasEnd(tag: string): boolean {
   switch (tag) {
     case 'br':
     case 'hr':

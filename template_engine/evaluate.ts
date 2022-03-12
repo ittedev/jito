@@ -163,7 +163,7 @@ export const evaluate = function (template: Template | CustomTemplate, stack: Va
             return evaluate(value, stack, cache)
           }
         } else {
-          return JSON.stringify(value)
+          return Object.getPrototypeOf(value) === Object.prototype ? JSON.stringify(value) : ''
         }
       } else {
         return value === null || value === undefined ? '' : value + ''
@@ -174,7 +174,7 @@ export const evaluate = function (template: Template | CustomTemplate, stack: Va
       return temp.values.reduce<string>((result: string, value: unknown | Template, index: number) => {
         if (instanceOfTemplate(value)) {
           const text = evaluate(value, stack, cache)
-          return result + (index ? (temp as JoinTemplate).separator : '') + (typeof text === 'object' ? JSON.stringify(text) : text as string)
+          return result + (index ? (temp as JoinTemplate).separator : '') + (typeof text === 'object' ? '' : text as string)
         } else {
           return result + (index ? (temp as JoinTemplate).separator : '') + value
         }
@@ -306,22 +306,52 @@ evaluate.plugin = function(plugin: EvaluatePlugin) {
   plugins.unshift(plugin)
 }
 
-evaluate.plugin({
-  match: (template: CustomElementTemplate | CustomTemplate, stack: Variables, _cache: Cache): boolean => {
+const realElementPlugin = {
+  match (
+    template: CustomElementTemplate | CustomTemplate,
+    stack: Variables,
+    _cache: Cache
+  ): boolean
+  {
     if (template.type === 'custom') {
       const temp = template as CustomElementTemplate
       if (!isPrimitive(temp.tag)) {
-        return temp.tag === 'window' && pickup(stack, temp.tag)[0] instanceof EventTarget
+        return temp.tag === 'window' || pickup(stack, temp.tag)[0] instanceof EventTarget
       }
     }
     return false
   },
-  exec: (template: CustomElementTemplate | CustomTemplate, stack: Variables, cache: Cache): RealTarget => {
+  exec (
+    template: CustomElementTemplate | CustomTemplate,
+    stack: Variables,
+    cache: Cache
+  ): RealTarget
+  {
     const temp = template as CustomElementTemplate
+    if (template.tag === 'window') {
+      console.log('template.tag:', template.tag)
+      const re = {
+        el: window,
+        invalid: {
+          props: true,
+          children: true
+        }
+      }
+      evaluateProps(temp, stack, cache, re)
+      return re
+    }
     const el = pickup(stack, temp.tag)[0] as Element | DocumentFragment | ShadowRoot | EventTarget
     const re = { el } as RealTarget
     evaluateProps(temp, stack, cache, re)
-    if ((el instanceof Element || el instanceof DocumentFragment || el instanceof ShadowRoot) && temp.children && temp.children.length) {
+    if (
+      (
+        el instanceof Element ||
+        el instanceof DocumentFragment ||
+        el instanceof ShadowRoot
+      ) &&
+      temp.children &&
+      temp.children.length
+    ) {
       re.children = evaluateChildren(temp, stack, cache)
     } else {
       re.invalid = {
@@ -330,7 +360,9 @@ evaluate.plugin({
     }
     return re
   }
-})
+}
+
+evaluate.plugin(realElementPlugin)
 
 export function evaluateChildren(template: HasChildrenTemplate, stack: Variables, cache: Cache): Array<string | VirtualElement | RealTarget | number> {
   const children = (template.children || []) as Array<Template | string>

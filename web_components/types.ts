@@ -34,8 +34,5 @@ export function instanceOfComponent(object: any): object is Component {
 }
 
 export interface SpecialCache extends Cache {
-  [special]: {
-    host: Element,
-    root: ShadowRoot
-  }
+  [special]: Array<Element | DocumentFragment | ShadowRoot | EventTarget>
 }

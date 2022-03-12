@@ -3962,6 +3962,7 @@ describe('Template Engine', function() {
           ]
         })
       })
+
       it('evaluate a element in Text Node', () => {
         const tree = evaluate(parse('Hello <span>beako</span>!'))
         equal(tree, {
@@ -3976,6 +3977,43 @@ describe('Template Engine', function() {
             "!"
           ]
         })
+      })
+    })
+
+    describe(': tag', function() {
+      it('evaluate omitted tag', () => {
+        const tree = evaluate(parse('<br><test />'))
+        equal(tree, {
+          children: [
+            { tag: "br" },
+            { tag: "test" }
+          ]
+        })
+      })
+
+      it('evaluate window tag', () => {
+        const tree = evaluate(parse('<window />'))
+        equal(tree.children[0].el === window, true)
+      })
+
+      it('evaluate real tag', () => {
+        const test = document.createElement('div')
+        const tree = evaluate(parse('<test />'), [{ test }])
+        equal(tree.children[0].el === test, true)
+      })
+
+      it('evaluate real tag has children', () => {
+        const test = document.createElement('div')
+        const tree = evaluate(parse('<test>beako</test>'), [{ test }])
+        equal(tree, {
+          children: [
+            {
+              el: {},
+              children: ["beako"]
+            }
+          ]
+        })
+        equal(tree.children[0].el === test, true)
       })
     })
 
