@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>virtual_dom/load.test.js</title>
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<div id="mocha"></div>
+<div id="define_target1" style="display: none;"></div>
+<div id="define_target2" style="display: none;"></div>
+<div id="define_target3" style="display: none;"></div>
+<div id="define_target4" style="display: none;"></div>
+<div id="mount_target1" style="display: none;"></div>
+<div id="mount_target2" style="display: none;"></div>
+<div id="mount_target3" style="display: none;"></div>
+<div id="mount_target4" style="display: none;"></div>
+<div id="compact_target1" style="display: none;"></div>
+<div id="compact_target2" style="display: none;"></div>
+<div id="compact_target3" style="display: none;"></div>
+<div id="compact_target4" style="display: none;"></div>
+<div id="compact_target5" style="display: none;"></div>
+<div id="sync_target1_1" style="display: none;"></div>
+<div id="sync_target1_2" style="display: none;"></div>
+<div id="sync_target2" style="display: none;"></div>
+<div id="sync_target3" style="display: none;"></div>
+<div id="sync_target4" style="display: none;"></div>
+<div id="sync_target5" style="display: none;"></div>
+<div id="sync_target6" style="display: none;"></div>
+<div id="sync_target7" style="display: none;"></div>
+<div id="sync_target8" style="display: none;"></div>
+<div id="sync_target9" style="display: none;"></div>
+<script src="https://unpkg.com/chai/chai.js"></script>
+<script>
+var i = 0
+var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
+</script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
+<script type="module">
+import {
+  watch,
+  receive,
+  unwatch,
+  reach,
+  lock,
+  unlock,
+  load,
+  patch,
+  expression,
+  parse,
+  evaluate,
+  define,
+  compact,
+  mount
+} from '../beako.js'
+
+mocha.setup('bdd')
+class XX extends HTMLDivElement { constructor() { super() } }
+class YY extends HTMLDivElement { constructor() { super() } }
+customElements.define('x-x', XX, { extends: "div" })
+customElements.define('y-y', YY, { extends: "div" })
+
+describe('Web Components', function() {
+  describe('extend()', function() {
+    it('evaluate: evaluation', () => {
+      const template = {
+        type: 'evaluation',
+        stack: [{ name: 'Hello' }],
+        template: {
+          type: "get",
+          value: {
+            type: "variable",
+            name: "name"
+          }
+        }
+      }
+      const tree = evaluate(parse('{{ template }}'), [{ template }])
+      equal(tree, {
+        children: ["Hello"]
+      })
+    })
+    it('evaluate: evaluation override', () => {
+      const template = {
+        type: 'evaluation',
+        stack: [{ name: 'Hello' }],
+        template: {
+          type: "get",
+          value: {
+            type: "variable",
+            name: "name"
+          }
+        }
+      }
+      const tree = evaluate(parse('{{ template }}'), [{ template, name: 'Beako' }])
+      equal(tree, {
+        children: ["Beako"]
+      })
+    })
+    it('evaluate: evaluation <group>', () => {
+      const template = {
+        type: 'evaluation',
+        stack: [{ name: 'Hello' }],
+        template: {
+          type: "group",
+          children: [
+            {
+              type: "get",
+              value: {
+                type: "variable",
+                name: "name"
+              }
+            },
+            '!'
+          ]
+        }
+      }
+      const tree = evaluate(parse('{{ template }}'), [{ template }])
+      equal(tree, {
+        children: ["Hello!"]
+      })
+    })
+  })
+
+  describe('define()', function() {
+    it('define string', async () => {
+      define('define-1', `Hello beako!`)
+      document.getElementById('define_target1').innerHTML = '<define-1>Hello world!</define-1>'
+      await sleep()
+      const el = document.querySelector('define-1')
+      equal(el.tagName, 'DEFINE-1')
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('define template', async () => {
+      define('define-2', parse(`Hello beako!`))
+      document.getElementById('define_target2').innerHTML = '<define-2>Hello world!</define-2>'
+      await sleep()
+      const el = document.querySelector('define-2')
+      equal(el.tagName, 'DEFINE-2')
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('define string and data', async () => {
+      define('define-3', `Hello {{ name }}!`, { name: 'beako' })
+      document.getElementById('define_target3').innerHTML = '<define-3>Hello world!</define-3>'
+      await sleep()
+      const el = document.querySelector('define-3')
+      equal(el.tagName, 'DEFINE-3')
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('define component', async () => {
+      define('define-4', compact(`Hello beako!`))
+      document.getElementById('define_target4').innerHTML = '<define-4>Hello world!</define-4>'
+      await sleep()
+      const el = document.querySelector('define-4')
+      equal(el.tagName, 'DEFINE-4')
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+  })
+
+  describe('mount()', function() {
+    it('mount string', async () => {
+      const el = document.querySelector('#mount_target1')
+      mount(el, `Hello beako!`)
+      await sleep()
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('mount template', async () => {
+      const el = document.querySelector('#mount_target2')
+      mount(el, parse(`Hello beako!`))
+      await sleep()
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('mount string and data', async () => {
+      const el = document.querySelector('#mount_target3')
+      mount(el, `Hello {{ name }}!`, { name: 'beako' })
+      await sleep()
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('mount component', async () => {
+      const el = document.querySelector('#mount_target4')
+      mount(el, compact(`Hello beako!`))
+      await sleep()
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+  })
+
+  describe('compact()', function() {
+    it('compact slot', async () => {
+      const el = document.querySelector('#compact_target1')
+      const component = compact(`<slot name="my-text">Hello world!</slot>`)
+      mount(el, component)
+      await sleep()
+      el.innerHTML = `<span slot="my-text">Hello beako!</span>`
+      equal(el.innerText, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('slot').innerHTML, 'Hello world!')
+      equal(el.shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Hello beako!')
+    })
+
+    it('compact use constructer', async () => {
+      const el = document.querySelector('#compact_target2')
+      const component = compact(`Hello {{ name }}!`, () => {
+        return [{ name: 'beako' }]
+      })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+
+    it('compact use constructer with receive from HTML', async () => {
+      const el = document.querySelector('#compact_target3')
+      const component = compact(`Hello {{ name }}!`, async ({ props }) => {
+        const { name } = await receive(props, ['name'])
+        return [{ name }]
+      })
+      define('compact-3', component)
+      el.innerHTML = '<compact-3 name="beako"></compact-5>'
+      await sleep()
+      const root = document.querySelector('compact-3')
+      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+    })
+
+    it('compact use constructer with receive from setAttribute', async () => {
+      const el = document.querySelector('#compact_target4')
+      const component = compact(`Hello {{ name }}!`, async ({ props }) => {
+        const { name } = await receive(props, ['name'])
+        return [{ name }]
+      })
+      define('compact-4', component)
+      el.innerHTML = '<compact-4 name="beako"></compact-4>'
+      const root = document.querySelector('compact-4')
+      root.setAttribute('name', 'beako')
+      await sleep()
+      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+    })
+
+    it('compact local component', async () => {
+      const el = document.querySelector('#compact_target5')
+      const local = compact('<p>Hello {{ name }}!</p>', { name: 'beako' })
+      const component = compact('<hello></hello>', { hello: local })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
+    })
+  })
+
+  describe('sync data', function() {
+
+    it('compact share data on brothers', async () => {
+      const el1 = document.querySelector('#sync_target1_1')
+      const el2 = document.querySelector('#sync_target1_2')
+      const data = {
+        name: 'beako'
+      }
+      const component1 = compact('<p>Hello {{ name }}!</p>', data)
+      const component2 = compact('<p>Welcome {{ name }}!</p>', data)
+      mount(el1, component1)
+      mount(el2, component2)
+      await sleep()
+      equal(el1.shadowRoot.querySelector('p').innerText, 'Hello beako!')
+      equal(el2.shadowRoot.querySelector('p').innerText, 'Welcome beako!')
+    })
+
+    it('compact share data on childe scope', async () => {
+      const el = document.querySelector('#sync_target2')
+      const component = compact(
+        `
+          <p>Hello {{ name }}!</p>
+          <child></child>
+        `,
+        () => {
+          const data = watch({
+            name: 'world'
+          })
+
+          const child = compact('', () => {
+            data.name = 'beako'
+          })
+
+          return [data, { child }]
+        }
+      )
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('p').innerText, 'Hello beako!')
+    })
+
+    it('compact receive props', async () => {
+      const el = document.querySelector('#sync_target3')
+      const local = compact('<p>Hello {{ name }}!</p>')
+      const component = compact('<hello name:="name"></hello>', { hello: local, name: 'beako' })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
+    })
+    // TODO: test seal
+
+    it('expand content', async () => {
+      const el = document.querySelector('#sync_target4')
+      const local = compact(`<group @for="[1, 2, 3]" @if="content">{{ content }}</group><p @else>{{ loop.value }}</p>`)
+      const component = compact(`
+        <local></local>
+        <local><span>{{ loop.value + add }}</span></local>
+      `, { local, add: 2 })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
+    })
+
+    it('expand @as', async () => {
+      const el = document.querySelector('#sync_target5')
+      const local = compact(`<group @for="[1, 2, 3]" @if="num">{{ num }}</group><p @else>{{ loop.value }}</p>`)
+      const component = compact(`
+        <local></local>
+        <local><span @as="num">{{ loop.value + add }}</span></local>
+      `, { local, add: 2 })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
+    })
+
+    it('expand @as and <group>', async () => {
+      const el = document.querySelector('#sync_target6')
+      const local = compact(`{{ header }}`)
+      const component = compact(`
+        <local>
+          <group @as="header">
+            <h2>Beako.js</h2>
+            <p>Welcome!</p>
+          </group>
+        </local>
+      `, { local })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('h2').innerText, 'Beako.js')
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Welcome!')
+    })
+
+    it('expand content, @as and slot', async () => {
+      const el = document.querySelector('#sync_target7')
+      const local = compact(`
+        {{ header }}
+        {{ content }}
+        <slot name="footer"></slot>
+      `)
+      const component = compact(`
+        <local>
+          <h2 @as="header">Welcome!</h2>
+          <button>Click me</button>
+          <div slot="footer">Good bye!</div>
+        </local>
+      `, { local })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('h2').innerText, 'Welcome!')
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('button').innerText, 'Click me')
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Good bye!')
+    })
+
+    it('expand no content', async () => {
+      const el = document.querySelector('#sync_target8')
+      const local = compact(`<group @for="[1, 2, 3]" @if="content">{{ content }}</group><p @else>{{ loop.value }}</p>`)
+      const component = compact(`
+        <local></local>
+        <local><span @as="num">{{ loop.value + add }}</span><span slot="header">Hello</span></local>
+      `, { local, add: 2 })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+    })
+
+    it('expand chain', async () => {
+      const el = document.querySelector('#sync_target9')
+      const local = compact(`{{ content }}`)
+      const component = compact(`
+        <local>
+          <span @as="num">{{ add }}</span>
+          {{ num }}
+        </local>
+      `, { local, add: 2 })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('span').innerText, '2')
+    })
+  })
+})
+
+mocha.run()
+</script>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>virtual_dom/load.test.js</title>
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<div id="mocha"></div>
+<script src="https://unpkg.com/chai/chai.js"></script>
+<script>
+var i = 0
+var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
+</script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
+<script type="module">
+import {
+  watch,
+  receive,
+  unwatch,
+  reach,
+  lock,
+  unlock,
+} from '../beako.js'
+
+mocha.setup('bdd')
+
+describe('Data Binding', function() {
+
+  // Test watch() function
+  describe('watch()', function() {
+    describe(': bio', function() {
+      it('watch object', () => {
+        const data = {
+          x: 1
+        }
+        watch(data)
+        equal(data.x, 1)
+        data.x++
+        equal(data.x, 2)
+        equal(data, { x: 2 })
+      })
+
+      it('deeply watch object', () => {
+        const data = {
+          x: 1,
+          y: {
+            z: 2
+          }
+        }
+        watch(data)
+        equal(data.y.z, 2)
+        data.y.z += 1
+        equal(data.y.z, 3)
+        equal(data, {
+          x: 1,
+          y: {
+            z: 3
+          }
+        })
+      })
+
+      it('watch object exec function', () => {
+        const data = {
+          x: 1
+        }
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.x = 2
+        equal(y, 2)
+      })
+
+      it('deeply watch object exec function', () => {
+        const data = {
+          x: 1,
+          y: {
+            z: 2
+          }
+        }
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.y.z = 3
+        equal(y, 2)
+      })
+
+      it('watch object no change exec function', () => {
+        const data = {
+          x: 1
+        }
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.x = 1
+        equal(y, 0)
+      })
+
+      it('double watch a function', () => {
+        const data = {
+          x: 1
+        }
+        let y = 0
+        const f = () => { y += 2 }
+        watch(data, f)
+        watch(data, f)
+        data.x = 2
+        equal(y, 2)
+      })
+
+      it('double watch difference functions', () => {
+        const data = {
+          x: 1
+        }
+        let y = 0
+        watch(data, () => { y += 2 })
+        watch(data, () => { y += 2 })
+        data.x = 2
+        equal(y, 4)
+      })
+    })
+
+    describe(': bio array', function() {
+      it('watch array', () => {
+        const data = [1]
+        watch(data)
+        equal(data[0], 1)
+        data[0]++
+        equal(data[0], 2)
+        equal(data, [2])
+      })
+
+      it('deeply watch array', () => {
+        const data = [1, [2]]
+        watch(data)
+        equal(data[1][0], 2)
+        data[1][0] += 1
+        equal(data[1][0], 3)
+        equal(data, [1, [3]])
+      })
+
+      it('watch array exec function', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data[0] = 2
+        equal(y, 2)
+      })
+
+      it('deeply watch array exec function', () => {
+        const data = [1, [2]]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data[1][0] = 3
+        equal(y, 2)
+      })
+
+      it('watch array no change exec function', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data[0] = 1
+        equal(y, 0)
+      })
+
+      it('double watch array a function', () => {
+        const data = [1]
+        let y = 0
+        const f = () => { y += 2 }
+        watch(data, f)
+        watch(data, f)
+        data[0] = 2
+        equal(y, 2)
+      })
+
+      it('double watch array difference functions', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y += 2 })
+        watch(data, () => { y += 2 })
+        data[0] = 2
+        equal(y, 4)
+      })
+
+      it('watch array push a item', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.push(3)
+        equal(y, 2)
+        equal(data, [1, 3])
+      })
+
+      it('watch array push items', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.push(3, 4)
+        equal(y, 2)
+        equal(data, [1, 3, 4])
+      })
+
+      it('watch array unshift a item', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.unshift(3)
+        equal(y, 2)
+        equal(data, [3, 1])
+      })
+
+      it('watch array unshift items', () => {
+        const data = [1]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.unshift(3, 4)
+        equal(y, 2)
+        equal(data, [3, 4, 1])
+      })
+
+      it('watch array pop', () => {
+        const data = [1, 3]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.pop()
+        equal(y, 2)
+        equal(data, [1])
+      })
+
+      it('watch array shift', () => {
+        const data = [1, 3]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.shift()
+        equal(y, 2)
+        equal(data, [3])
+      })
+
+      it('watch array sort', () => {
+        const data = [6, 3, 4]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.sort((a, b) => a - b)
+        equal(y, 2)
+        equal(data, [3, 4, 6])
+      })
+
+      it('watch array reverse', () => {
+        const data = [6, 3, 4]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.reverse()
+        equal(y, 2)
+        equal(data, [4, 3, 6])
+      })
+
+      it('watch array copyWithin', () => {
+        const data = [6, 3, 4]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.copyWithin(0, 1, 2)
+        equal(y, 2)
+        equal(data, [3, 3, 4])
+      })
+
+      it('watch array splice', () => {
+        const data = [6, 3, 4]
+        let y = 0
+        watch(data, () => { y = 2 })
+        data.splice(1, 1, 2, 5)
+        equal(y, 2)
+        equal(data, [6, 2, 5, 4])
+      })
+    })
+
+    describe(': spy', function() {
+      it('watch a property', () => {
+        const data = {
+          x: 1
+        }
+        let y = 0
+        watch(data, 'x', v => { y = v })
+        data.x = 2
+        equal(y, 2)
+      })
+      it('watch multi properties', () => {
+        const data = {
+          x1: 2,
+          x2: 20,
+          x3: 200
+        }
+        let y = 0
+        watch(data, ['x1', 'x3'], v => { y += v })
+        data.x1 = 1
+        data.x2 = 10
+        data.x3 = 100
+        equal(y, 101)
+      })
+
+      it('double watch a function', () => {
+        const data = {
+          x1: 2,
+          x2: 20,
+          x3: 200
+        }
+        let y = 0
+        const f = v => { y += v }
+        watch(data, ['x1', 'x3'], f)
+        watch(data, ['x1', 'x3'], f)
+        data.x1 = 1
+        data.x2 = 10
+        data.x3 = 100
+        equal(y, 101)
+      })
+
+      it('double watch difference functions', () => {
+        const data = {
+          x1: 2,
+          x2: 20,
+          x3: 200
+        }
+        let y = 0
+        watch(data, ['x1', 'x3'], v => { y += v })
+        watch(data, ['x1', 'x3'], v => { y += v })
+        data.x1 = 1
+        data.x2 = 10
+        data.x3 = 100
+        equal(y, 202)
+      })
+
+      it('bio and spy watch', () => {
+        const data = {
+          x1: 2,
+          x2: 20,
+          x3: 200
+        }
+        let y = 0
+        watch(data, () => { y += 2 })
+        watch(data, 'x3', v => { y += v })
+        data.x1 = 1
+        data.x2 = 10
+        data.x3 = 100
+        equal(y, 106)
+      })
+    })
+  })
+
+  // Test receive() function
+  describe('receive()', function() {
+    it('receive defined', async () => {
+      const data = {
+        x: 1
+      }
+      const data2 = await receive(data, 'x')
+      equal(data2.x, 1)
+    })
+
+    it('receive multi defined', async () => {
+      const data = {
+        x: 1,
+        y: 'hello'
+      }
+      const data2 = await receive(data, ['x', 'y'])
+      equal(JSON.stringify(data2), '{"x":1,"y":"hello"}')
+    })
+
+    it('receive undefined', async () => {
+      const data = {}
+      setTimeout(() => data.x = 1, 10)
+      const data2 = await receive(data, 'x')
+      equal(data2.x, 1)
+    })
+
+    it('receive undefined value', async () => {
+      const data = {
+        x: undefined
+      }
+      setTimeout(() => data.x = 1, 10)
+      const data2 = await receive(data, 'x')
+      equal(data2.x, 1)
+    })
+  })
+
+  // Test unwatch() function
+  describe('unwatch()', function() {
+    it('unwatch object', () => {
+      const data = {
+        x: 1
+      }
+      watch(data)
+      unwatch(data)
+      equal(data.x, 1)
+      data.x++
+      equal(data.x, 2)
+      equal(data, { x: 2 })
+    })
+
+    it('unwatch nested object', () => {
+      const data = {
+        x: 1,
+        y: {
+          z: 2
+        }
+      }
+      watch(data)
+      unwatch(data)
+      equal(data.y.z, 2)
+      data.y.z += 1
+      equal(data.y.z, 3)
+      equal(data, {
+        x: 1,
+        y: {
+          z: 3
+        }
+      })
+    })
+
+    it('unwatch object exec function', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      const f = () => { y = 2 }
+      watch(data, f)
+      unwatch(data, f)
+      data.x = 2
+      equal(y, 0)
+    })
+
+    it('deeply unwatch object exec function', () => {
+      const data = {
+        x: 1,
+        y: {
+          z: 2
+        }
+      }
+      let y = 0
+      const f = () => { y = 2 }
+      watch(data, f)
+      unwatch(data, f)
+      data.y.z = 3
+      equal(y, 0)
+    })
+
+    it('unwatch a property', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      const f = v => { y = v }
+      watch(data, 'x', f)
+      unwatch(data, 'x', f)
+      data.x = 2
+      equal(y, 0)
+    })
+
+    it('unwatch multi properties', () => {
+      const data = {
+        x1: 2,
+        x2: 20,
+        x3: 200
+      }
+      let y = 0
+      const f = v => { y += v }
+      watch(data, ['x1', 'x3'], f)
+      unwatch(data, ['x1', 'x3'], f)
+      data.x1 = 1
+      data.x2 = 10
+      data.x3 = 100
+      equal(y, 0)
+    })
+
+    it('watch multi properties and unwatch a property', () => {
+      const data = {
+        x1: 2,
+        x2: 20,
+        x3: 200
+      }
+      let y = 0
+      const f = v => { y += v }
+      watch(data, ['x1', 'x3'], f)
+      unwatch(data, 'x1', f)
+      data.x1 = 1
+      data.x2 = 10
+      data.x3 = 100
+      equal(y, 100)
+    })
+  })
+
+  describe('reach()', function() {
+    it('reach object', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      watch(data)
+      reach(data, () => { y = 2 })
+      data.x++
+      equal(y, 2)
+    })
+    it('reach nested object', () => {
+      const data = {
+        x: 1,
+        y: {
+          z: 3
+        }
+      }
+      let y = 0
+      watch(data.y)
+      reach(data, () => { y = 2 })
+      data.x += 1
+      data.y.z += 1
+      equal(y, 2)
+    })
+    it('reach no watch object', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      reach(data, () => { y = 2 })
+      data.x++
+      equal(y, 0)
+    })
+    it('double reach a function', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      watch(data)
+      const f = () => { y += 2 }
+      reach(data, f)
+      reach(data, f)
+      data.x++
+      equal(y, 2)
+    })
+    it('double reach difference functions', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      watch(data)
+      reach(data, () => { y += 2 })
+      reach(data, () => { y += 2 })
+      data.x++
+      equal(y, 4)
+    })
+  })
+
+  describe('lock()', function() {
+    it('watch locked object', () => {
+      const data = lock({
+        x: 1
+      })
+      let y = 0
+      watch(data, () => { y = 2 })
+      data.x = 2
+      equal(y, 0)
+    })
+    it('watch locked object property', () => {
+      const data = lock({
+        x: 1
+      })
+      let y = 0
+      watch(data, 'x', v => { y = v })
+      data.x = 2
+      equal(y, 0)
+    })
+    it('watch locked array', () => {
+      const data = lock([1])
+      let y = 0
+      watch(data, () => { y = 2 })
+      data[0] = 2
+      equal(y, 0)
+    })
+    it('receive locked defined', async () => {
+      const data = lock({
+        x: 1
+      })
+      const data2 = await receive(data, 'x')
+      equal(data2.x, undefined)
+    })
+    it('unwatch locked object', () => {
+      const data = {
+        x: 1
+      }
+      watch(data)
+      lock(data)
+      unwatch(data)
+      equal(data.x, 1)
+      data.x++
+      equal(data.x, 2)
+      equal(data, { x: 2 })
+    })
+    it('reach nested locked object', () => {
+      const data = {
+        x: 1,
+        y: {
+          z: 3
+        }
+      }
+      let y = 0
+      watch(data.y)
+      lock(data.y)
+      reach(data, () => { y = 2 })
+      data.x += 1
+      data.y.z += 1
+      equal(y, 0)
+    })
+  })
+  describe('unlock()', function() {
+    it('watch unlocked object', () => {
+      const data = unlock(lock({
+        x: 1
+      }))
+      let y = 0
+      watch(data, () => { y = 2 })
+      data.x = 2
+      equal(y, 2)
+    })
+    it('watch unlocked object property', () => {
+      const data = unlock(lock({
+        x: 1
+      }))
+      let y = 0
+      watch(data, 'x', v => { y = v })
+      data.x = 2
+      equal(y, 2)
+    })
+    it('watch unlocked array', () => {
+      const data = unlock(lock([1]))
+      let y = 0
+      watch(data, () => { y = 2 })
+      data[0] = 2
+      equal(y, 2)
+    })
+    it('receive unlocked defined', async () => {
+      const data = unlock(lock({
+        x: 1
+      }))
+      const data2 = await receive(data, 'x')
+      equal(data2.x, 1)
+    })
+    it('reach nested unlocked object', () => {
+      const data = {
+        x: 1,
+        y: unlock(lock({
+          z: 3
+        }))
+      }
+      let y = 0
+      watch(data.y)
+      reach(data, () => { y = 2 })
+      data.x += 1
+      data.y.z += 1
+      equal(y, 2)
+    })
+  })
+})
+
+mocha.run()
+</script>

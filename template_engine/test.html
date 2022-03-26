@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>virtual_dom/load.test.js</title>
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<div id="mocha"></div>
+<script src="https://unpkg.com/chai/chai.js"></script>
+<script>
+var i = 0
+var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
+</script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
+<script type="module">
+import {
+  watch,
+  receive,
+  unwatch,
+  reach,
+  lock,
+  unlock,
+  load,
+  patch,
+  expression,
+  parse,
+  evaluate,
+  define,
+  compact,
+  mount
+} from '../beako.js'
+
+mocha.setup('bdd')
+class XX extends HTMLDivElement { constructor() { super() } }
+class YY extends HTMLDivElement { constructor() { super() } }
+customElements.define('x-x', XX, { extends: "div" })
+customElements.define('y-y', YY, { extends: "div" })
+
+describe('Template Engine', function() {
+  describe('Script parser', function() {
+    const stack = {
+      x: 1,
+      y: 10,
+      s: 'o',
+      h: { x: 2, y: { x: 3 }, z: [7] },
+      a: [4, 5, [6], { x: 8 }],
+      text: 'x',
+      f: () => 5,
+      add: (a, b) => a + b
+    }
+
+    it('expression: number', () => {
+      equal(evaluate(expression('50.5'), [stack]), 50.5)
+    })
+
+    it('expression: true', () => {
+      equal(evaluate(expression('true'), [stack]), true)
+    })
+
+    it('expression: string: single', () => {
+      equal(evaluate(expression('\'string\''), [stack]), 'string')
+    })
+
+    it('expression: string: double', () => {
+      equal(evaluate(expression('"string"'), [stack]), 'string')
+    })
+
+    it('expression: string tenplate: string only', () => {
+      equal(evaluate(expression('`string`'), [stack]), 'string')
+    })
+
+    it('expression: string tenplate: has expression', () => {
+      equal(evaluate(expression('`Hello ${text}!`'), [stack]), 'Hello x!')
+    })
+
+    it('expression: string escape: normal char', () => {
+      equal(evaluate(expression("'\\a'"), [stack]), "a")
+    })
+
+    it('expression: string escape: special char', () => {
+      equal(evaluate(expression("'\\n\\r\\v\\t\\b\\f'"), [stack]), "\n\r\v\t\b\f")
+    })
+
+    it('expression: string escape: \\', () => {
+      equal(evaluate(expression("'\\\\'"), [stack]), "\\")
+    })
+
+    it('expression: string escape: single in single', () => {
+      equal(evaluate(expression("'\\''"), [stack]), "'")
+    })
+
+    it('expression: string escape: double in double', () => {
+      equal(evaluate(expression('"\\""'), [stack]), '"')
+    })
+
+    it('expression: string escape: \\uXXXX', () => {
+      equal(evaluate(expression("'\\u0006\\u11aa'"), [stack]), "\u0006\u11aa")
+    })
+
+    it('expression: string escape: \\u{X...XXXXXX}', () => {
+      equal(evaluate(expression("'\\u{6}\\u{109abF}'"), [stack]), "\u{6}\u{109abF}")
+    })
+
+    it('expression: string escape: \\xXX', () => {
+      equal(evaluate(expression("'\\x0c\\x9F'"), [stack]), "\x0c\x9F")
+    })
+
+    it('expression: word', () => {
+      equal(evaluate(expression('x'), [stack]), 1)
+      equal(evaluate(expression('text'), [stack]), 'x')
+    })
+
+    it('expression: array [a, b]', () => {
+      equal(evaluate(expression('[2, 1 + 2, x]'), [stack]), [2, 3, 1])
+    })
+
+    it('expression: array []', () => {
+      equal(evaluate(expression('[]'), [stack]), [])
+    })
+
+    it('expression: array [...a]', () => {
+      equal(evaluate(expression('[2, ...a[2]]'), [stack]), [2, 6])
+    })
+
+    it('expression: object { x: "", [x]: ""}', () => {
+      equal(evaluate(expression('{ y: "x", [s]: 1 + x, ["t"]: "" }'), [stack]), { y: "x", o: 2, t: '' })
+    })
+
+    it('expression: object {}', () => {
+      equal(evaluate(expression('{}'), [stack]), {})
+    })
+
+    it('expression: object { x }', () => {
+      equal(evaluate(expression('{ x }'), [stack]), { x: 1 })
+    })
+
+    it('expression: object { "x": "" }', () => {
+      equal(evaluate(expression('{ "y": x, \'c-d\': x }'), [stack]), { y: 1, "c-d": 1 })
+    })
+
+    it('expression: object { ...x }', () => {
+      equal(evaluate(expression('{ y: "x", ...a[3]}'), [stack]), { y: "x", x: 8 })
+    })
+
+    it('expression: hash h.x', () => {
+      equal(evaluate(expression('h.x'), [stack]), 2)
+    })
+
+    it('expression: hash h[text]', () => {
+      equal(evaluate(expression('h[text]'), [stack]), 2)
+    })
+
+    it('expression: hash h.y.x', () => {
+      equal(evaluate(expression('h.y.x'), [stack]), 3)
+    })
+
+    it('expression: hash h.y?.x', () => {
+      equal(evaluate(expression('h.y?.x'), [stack]), 3)
+      equal(evaluate(expression('h.y?.y'), [stack]), undefined)
+      equal(evaluate(expression('h.t?.x'), [stack]), undefined)
+    })
+
+    it('expression: function f()', () => {
+      equal(evaluate(expression('f()'), [stack]), 5)
+    })
+
+    it('expression: function f(a, b)', () => {
+      equal(evaluate(expression('add(4, 7)'), [stack]), 11)
+    })
+
+    it('expression: function f(...a)', () => {
+      equal(evaluate(expression('add(...a)'), [stack]), 9)
+    })
+
+    it('expression: hash a[0]', () => {
+      equal(evaluate(expression('a[0]'), [stack]), 4)
+    })
+
+    it('expression: hash a[2][0]', () => {
+      equal(evaluate(expression('a[2][0]'), [stack]), 6)
+    })
+
+    it('expression: hash a[2-1]', () => {
+      equal(evaluate(expression('a[2-1]'), [stack]), 5)
+    })
+
+    it('expression: hash h.z[0]', () => {
+      equal(evaluate(expression('h.z[0]'), [stack]), 7)
+    })
+
+    it('expression: hash a[3].x', () => {
+      equal(evaluate(expression('a[3].x'), [stack]), 8)
+    })
+
+    it('expression: unary oparate +', () => {
+      equal(evaluate(expression('+ 1'), [stack]), 1)
+    })
+
+    it('expression: unary oparate -', () => {
+      equal(evaluate(expression('- 1'), [stack]), -1)
+    })
+
+    it('expression: unary oparate void', () => {
+      equal(evaluate(expression('void 0'), [stack]), undefined)
+      equal(evaluate(expression('void(0)'), [stack]), undefined)
+    })
+
+    it('expression: unary oparate typeof', () => {
+      equal(evaluate(expression('typeof 1'), [stack]), 'number')
+    })
+
+    it('expression: unary oparate ~', () => {
+      equal(evaluate(expression('~ 1'), [stack]), -2)
+    })
+
+    it('expression: unary oparate !', () => {
+      equal(evaluate(expression('! 1'), [stack]), false)
+    })
+
+    it('expression: binary oparate +', () => {
+      equal(evaluate(expression('x + 1'), [stack]), 2)
+    })
+
+    it('expression: binary oparate -', () => {
+      equal(evaluate(expression('x - 2'), [stack]), -1)
+    })
+
+    it('expression: binary oparate /', () => {
+      equal(evaluate(expression('x / 2'), [stack]), 0.5)
+    })
+
+    it('expression: binary oparate *', () => {
+      equal(evaluate(expression('x * 2'), [stack]), 2)
+    })
+
+    it('expression: binary oparate %', () => {
+      equal(evaluate(expression('y % 7'), [stack]), 3)
+    })
+
+    it('expression: binary oparate **', () => {
+      equal(evaluate(expression('y ** 2'), [stack]), 100)
+    })
+
+    it('expression: binary oparate in', () => {
+      equal(evaluate(expression("'x' in h"), [stack]), true)
+      equal(evaluate(expression("'ttt' in h.y"), [stack]), false)
+    })
+
+    it('expression: oparate ==', () => {
+      equal(evaluate(expression('x == 1'), [stack]), true)
+    })
+
+    it('expression: oparate !=', () => {
+      equal(evaluate(expression('x != 1'), [stack]), false)
+    })
+
+    it('expression: oparate ===', () => {
+      equal(evaluate(expression('x === 1'), [stack]), true)
+    })
+
+    it('expression: oparate !==', () => {
+      equal(evaluate(expression('x !== 1'), [stack]), false)
+    })
+
+    it('expression: oparate <', () => {
+      equal(evaluate(expression('x < 1'), [stack]), false)
+      equal(evaluate(expression('x < 2'), [stack]), true)
+    })
+
+    it('expression: oparate <=', () => {
+      equal(evaluate(expression('x <= 1'), [stack]), true)
+    })
+
+    it('expression: oparate >', () => {
+      equal(evaluate(expression('x > 1'), [stack]), false)
+      equal(evaluate(expression('x > -1'), [stack]), true)
+    })
+
+    it('expression: oparate >=', () => {
+      equal(evaluate(expression('x >= 1'), [stack]), true)
+    })
+
+    it('expression: oparate ||', () => {
+      equal(evaluate(expression('true || false'), [stack]), true)
+    })
+
+    it('expression: oparate &&', () => {
+      equal(evaluate(expression('true && false'), [stack]), false)
+    })
+
+    it('expression: oparate ?:', () => {
+      equal(evaluate(expression('1?2:3'), [stack]), 2)
+      equal(evaluate(expression('0?1:2?3:4'), [stack]), 3)
+    })
+
+    it('expression: assign =', () => {
+      const data = { a: 0, b: 0 }
+      evaluate(expression('a = 1'), [stack, data])
+      evaluate(expression('b = x'), [stack, data])
+      equal(data.a, 1)
+      equal(data.b, 1)
+    })
+
+    it('expression: assign +=', () => {
+      const data = { a: 1 }
+      evaluate(expression('a += 4'), [stack, data])
+      equal(data.a, 5)
+    })
+
+    it('expression: assign -=', () => {
+      const data = { a: 1 }
+      evaluate(expression('a -= 4'), [stack, data])
+      equal(data.a, -3)
+    })
+
+    it('expression: assign *=', () => {
+      const data = { a: 2 }
+      evaluate(expression('a *= 4'), [stack, data])
+      equal(data.a, 8)
+    })
+
+    it('expression: assign **=', () => {
+      const data = { a: 2 }
+      evaluate(expression('a **= 4'), [stack, data])
+      equal(data.a, 16)
+    })
+
+    it('expression: assign /=', () => {
+      const data = { a: 10 }
+      evaluate(expression('a /= 4'), [stack, data])
+      equal(data.a, 2.5)
+    })
+
+    it('expression: assign %=', () => {
+      const data = { a: 10 }
+      evaluate(expression('a %= 4'), [stack, data])
+      equal(data.a, 2)
+    })
+
+    it('expression: assign <<=', () => {
+      const data = { a: 2 }
+      evaluate(expression('a <<= 4'), [stack, data])
+      equal(data.a, 32)
+    })
+
+    it('expression: assign >>=', () => {
+      const data = { a: -5 }
+      evaluate(expression('a >>= 2'), [stack, data])
+      equal(data.a, -2)
+    })
+
+    it('expression: assign >>>=', () => {
+      const data = { a: -5 }
+      evaluate(expression('a >>>= 2'), [stack, data])
+      equal(data.a, 1073741822)
+    })
+
+    it('expression: assign &=', () => {
+      const data = { a: 5 }
+      evaluate(expression('a &= 6'), [stack, data])
+      equal(data.a, 4)
+    })
+
+    it('expression: assign ^=', () => {
+      const data = { a: 5 }
+      evaluate(expression('a ^= 6'), [stack, data])
+      equal(data.a, 3)
+    })
+
+    it('expression: assign |=', () => {
+      const data = { a: 5 }
+      evaluate(expression('a |= 6'), [stack, data])
+      equal(data.a, 7)
+    })
+
+    it('expression: assign &&=', () => {
+      const data = { a: 10, b: 0 }
+      evaluate(expression('a &&= 4'), [stack, data])
+      evaluate(expression('b &&= 4'), [stack, data])
+      equal(data.a, 4)
+      equal(data.b, 0)
+    })
+
+    it('expression: assign ||=', () => {
+      const data = { a: 10, b: 0 }
+      evaluate(expression('a ||= 4'), [stack, data])
+      evaluate(expression('b ||= 4'), [stack, data])
+      equal(data.a, 10)
+      equal(data.b, 4)
+    })
+
+    it('expression: assign ??=', () => {
+      const data = { a: 10, b: 0, c: undefined, d: null }
+      evaluate(expression('a ??= 4'), [stack, data])
+      evaluate(expression('b ??= 4'), [stack, data])
+      evaluate(expression('c ??= 4'), [stack, data])
+      evaluate(expression('d ??= 4'), [stack, data])
+      equal(data.a, 10)
+      equal(data.b, 0)
+      equal(data.c, 4)
+      equal(data.d, 4)
+    })
+
+    // TODO: test destructuring assignment
+    // TODO: test new operator
+    // TODO: test delete operator
+    // TODO: test camma operator
+  })
+
+  describe('parse()', function() {
+    describe(': overload', function() {
+      it('parse string', () => {
+        const template = parse('<style></style><p></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "style",
+              type: "element"
+            },
+            {
+              tag: "p",
+              type: "element"
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': text', function() {
+      it('parse Text Node', () => {
+        const template = parse('Hello beako!')
+        equal(template, {
+          type: 'tree',
+          children: [
+            "Hello beako!"
+          ]
+        })
+      })
+
+      it('parse unicode', () => {
+        const template = parse('مرحبا ベア子😆')
+        equal(template, {
+          type: 'tree',
+          children: [
+            "مرحبا ベア子😆"
+          ]
+        })
+      })
+
+      it('parse a variable in Text Node', () => {
+        const template = parse('Hello {{ name }}!')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "flat",
+              values: [
+                "Hello ",
+                {
+                  type: "draw",
+                  value: {
+                    type: "get",
+                    value: {
+                      type: "variable",
+                      name: "name"
+                    }
+                  }
+                },
+                "!"
+              ]
+            }
+          ]
+        })
+      })
+      it('parse Text Node in element', () => {
+        const template = parse('<p>Hello beako!</p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              children: [
+                "Hello beako!"
+              ]
+            }
+          ]
+        })
+      })
+      it('parse a element in Text Node', () => {
+        const template = parse('Hello <span>beako</span>!')
+        equal(template, {
+          type: 'tree',
+          children: [
+            "Hello ",
+            {
+              tag: "span",
+              type: "element",
+              children: [
+                "beako"
+              ]
+            },
+            "!"
+          ]
+        })
+      })
+    })
+
+    // TODO: test parse is
+    describe(': class', function() {
+      it('parse: class', () => {
+        const template = parse('<p class="class-a"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [["class-a"]]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi classes', () => {
+        const template = parse('<p class="class-a" class="class-b class-c"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [["class-a"], ["class-b", "class-c"]]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign class only', () => {
+        const template = parse(`<p class:="'class-a'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [{
+                type: "flags",
+                value: {
+                  type: "literal",
+                  value: "class-a"
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign array class only', () => {
+        const template = parse(`<p class:="['class-a']"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [{
+                type: "flags",
+                value: {
+                  type: "array",
+                  values: [{
+                    type: "literal",
+                    value: "class-a"
+                  }]
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign object class only', () => {
+        const template = parse(`<p class:="{ 'class-a': true, classb: false }"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [{
+                type: "flags",
+                value: {
+                  type: "object",
+                  entries: [
+                    [
+                      {
+                        type: "literal",
+                        value: "class-a"
+                      },
+                      {
+                        type: "literal",
+                        value: true
+                      }
+                    ],
+                    [
+                      {
+                        type: "literal",
+                        value: "classb"
+                      },
+                      {
+                        type: "literal",
+                        value: false
+                      }
+                    ]
+                  ]
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi assign classes', () => {
+        const template = parse(`<p class:="'class-a'" class:="'class-b'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "class-a"
+                  }
+                },
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "class-b"
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      })
+
+      it('parse: class and multi assign classes', () => {
+        const template = parse(`<p class="class-a" class:="'class-b'" class:="'class-c'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [
+                ["class-a"],
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "class-b"
+                  }
+                },
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "class-c"
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': part', function() {
+      it('parse: part', () => {
+        const template = parse('<p part="part-a"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [["part-a"]]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi parts', () => {
+        const template = parse('<p part="part-a" part="part-b part-c"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [["part-a"], ["part-b", "part-c"]]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign part only', () => {
+        const template = parse(`<p part:="'part-a'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [{
+                type: "flags",
+                value: {
+                  type: "literal",
+                  value: "part-a"
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign array part only', () => {
+        const template = parse(`<p part:="['part-a']"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [{
+                type: "flags",
+                value: {
+                  type: "array",
+                  values: [{
+                    type: "literal",
+                    value: "part-a"
+                  }]
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: assign object part only', () => {
+        const template = parse(`<p part:="{ 'part-a': true, partb: false }"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [{
+                type: "flags",
+                value: {
+                  type: "object",
+                  entries: [
+                    [
+                      {
+                        type: "literal",
+                        value: "part-a"
+                      },
+                      {
+                        type: "literal",
+                        value: true
+                      }
+                    ],
+                    [
+                      {
+                        type: "literal",
+                        value: "partb"
+                      },
+                      {
+                        type: "literal",
+                        value: false
+                      }
+                    ]
+                  ]
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi assign parts', () => {
+        const template = parse(`<p part:="'part-a'" part:="'part-b'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "part-a"
+                  }
+                },
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "part-b"
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      })
+
+      it('parse: part and multi assign parts', () => {
+        const template = parse(`<p part="part-a" part:="'part-b'" part:="'part-c'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [
+                ["part-a"],
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "part-b"
+                  }
+                },
+                {
+                  type: "flags",
+                  value: {
+                    type: "literal",
+                    value: "part-c"
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': style', function() {
+      it('parse: style', () => {
+        const template = parse('<p style="color: red"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: "color: red"
+            }
+          ]
+        })
+      })
+
+      it('parse: multi styles', () => {
+        const template = parse('<p style="color: red" style="font-size: 16px"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  "color: red",
+                  "font-size: 16px"
+                ]
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: assign style only', () => {
+        const template = parse(`<p style:="'color: red'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  {
+                    type: "literal",
+                    value: "color: red"
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: multi assign styles', () => {
+        const template = parse(`<p style="color: red" style:="'margin-top: 5px'" style:="'margin: 0 auto'"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  "color: red",
+                  {
+                    type: "literal",
+                    value: "margin-top: 5px"
+                  },
+                  {
+                    type: "literal",
+                    value: "margin: 0 auto"
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: style and assign style', () => {
+        const template = parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  "color: red",
+                  {
+                    type: "join",
+                    separator: "",
+                    values: [
+                      "margin-top: ",
+                      {
+                        type: "get",
+                        value: {
+                          type: "variable",
+                          name: "x"
+                        }
+                      },
+                      "px"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': props', function() {
+      it('parse: props', () => {
+        const template = parse('<p id="beako"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              props: {
+                id: "beako"
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: assign props variable', () => {
+        const template = parse(`<p id:="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              props: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: boolean props variable', () => {
+        const template = parse(`<p id&="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              bools: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: assign props already variable', () => {
+        const template = parse(`<p id="id" id:="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              props: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: boolean props override props', () => {
+        const template = parse(`<p id="id" id&="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              bools: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: boolean props override assign props', () => {
+        const template = parse(`<p id:="id" id&="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              bools: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: multi props', () => {
+        const template = parse('<p id:="id" slot="my-slot"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              props: {
+                id: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "id"
+                  }
+                },
+                slot: "my-slot"
+              }
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': on', function() {
+      it('parse: on', () => {
+        const template = parse('<p onclick="value"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              on: {
+                click: [
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: add ons', () => {
+        const template = parse('<p onclick="value" onclick="value2"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              on: {
+                click: [
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value"
+                      }
+                    }
+                  },
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "value2"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+      // it('parse: add reverse ons', () => {
+      //   const template = parse('<p onclick+="value2" onclick="value" onclick+1="value3"></p>')
+      //   equal(template, {
+      //     type: 'tree',
+      //     children: [
+      //       {
+      //         tag: "p",
+      //         type: "element",
+      //         on: {
+      //           click: [
+      //             {
+      //               type: 'handler',
+      //               value: {
+      //                 type: "get",
+      //                 value: {
+      //                   type: "variable",
+      //                   name: "value"
+      //                 }
+      //               }
+      //             },
+      //             {
+      //               type: 'handler',
+      //               value: {
+      //                 type: "get",
+      //                 value: {
+      //                   type: "variable",
+      //                   name: "value2"
+      //                 }
+      //               }
+      //             },
+      //             {
+      //               type: 'handler',
+      //               value: {
+      //                 type: "get",
+      //                 value: {
+      //                   type: "variable",
+      //                   name: "value3"
+      //                 }
+      //               }
+      //             }
+      //           ]
+      //         }
+      //       }
+      //     ]
+      //   })
+      // })
+    })
+
+    describe(': @if', function() {
+      it('parse: @if', () => {
+        const template = parse('<p @if="isActive"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if @else', () => {
+        const template = parse('<p @if="isActive"></p><div @else></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              },
+              falsy: {
+                tag: "div",
+                type: "element"
+              },
+            }
+          ]
+        })
+      })
+
+      it('parse: @if @else has space', () => {
+        const template = parse(`<p @if="isActive"></p>
+          <div @else></div>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              },
+              falsy: {
+                tag: "div",
+                type: "element"
+              },
+            }
+          ]
+        })
+      })
+      
+      it('parse: @if @else has not space', () => {
+        const template = parse(`<p @if="isActive"></p>.<div @else></div>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              }
+            },
+            ".",
+            {
+              tag: "div",
+              type: "element"
+            }
+          ]
+        })
+      })
+
+      it('parse: @if @else chain', () => {
+        const template = parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              },
+              falsy: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isNext"
+                  }
+                },
+                truthy: {
+                  tag: "div",
+                  type: "element"
+                },
+                falsy: {
+                  tag: "h2",
+                  type: "element"
+                }
+              },
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': @for', function() {
+      it('parse: @for', () => {
+        const template = parse('<p @for="array"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                tag: "p",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @for @each', () => {
+        const template = parse('<p @for="array" @each="value"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                tag: "p",
+                type: "element"
+              },
+              each: "value"
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': <group>', function() {
+      it('parse: group', () => {
+        const template = parse('<group>Hello <span>beako</span></group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "group",
+              children: [
+                "Hello ",
+                {
+                  tag: "span",
+                  type: "element",
+                  children: ["beako"]
+                }
+              ]
+            }
+          ]
+        })
+      })
+      it('parse: group has props', () => {
+        const template = parse('<group title="name" @as="header">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "group",
+              props: {
+                ["@as"]: "header"
+              },
+              children: ["Hello"]
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': combinate', function() {
+      it('parse: @if and @for', () => {
+        const template = parse('<p @for="array" @if="isActive"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  tag: "p",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if, @else and @for', () => {
+        const template = parse('<p @for="array" @if="isActive"></p><div @else></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  tag: "p",
+                  type: "element"
+                },
+                falsy: {
+                  tag: "div",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if and <group>', () => {
+        const template = parse('<group @if="isActive">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if, @else and <group>', () => {
+        const template = parse('<p @if="isActive"></p><group @else>Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                tag: "p",
+                type: "element"
+              },
+              falsy: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @for and <group>', () => {
+        const template = parse('<group @for="array">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if, @for and <group>', () => {
+        const template = parse('<group @for="array" @if="isActive">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  type: "group",
+                  children: ["Hello"]
+                }
+              }
+            }
+          ]
+        })
+      })
+    })
+    // TODO: test loop parent
+  })
+
+  describe('evaluate()', function() {
+    describe(': text', function() {
+      it('evaluate Text Node', () => {
+        const tree = evaluate(parse('Hello beako!'), [])
+        equal(tree, {
+          children: [
+            "Hello beako!"
+          ]
+        })
+      })
+
+      it('evaluate unicode', () => {
+        const tree = evaluate(parse('مرحبا ベア子😆'), [])
+        equal(tree, {
+          children: [
+            "مرحبا ベア子😆"
+          ]
+        })
+      })
+
+      it('evaluate a variable in Text Node', () => {
+        const tree = evaluate(parse('Hello {{ name }}!'), [{ name: 'beako' }])
+        equal(tree, {
+          children: [
+            "Hello beako!"
+          ]
+        })
+      })
+
+      it('evaluate Text Node in element', () => {
+        const tree = evaluate(parse('<p>Hello beako!</p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: [
+                "Hello beako!"
+              ]
+            }
+          ]
+        })
+      })
+
+      it('evaluate a element in Text Node', () => {
+        const tree = evaluate(parse('Hello <span>beako</span>!'))
+        equal(tree, {
+          children: [
+            "Hello ",
+            {
+              tag: "span",
+              children: [
+                "beako"
+              ]
+            },
+            "!"
+          ]
+        })
+      })
+    })
+
+    describe(': tag', function() {
+      it('evaluate omitted tag', () => {
+        const tree = evaluate(parse('<br><test />'))
+        equal(tree, {
+          children: [
+            { tag: "br" },
+            { tag: "test" }
+          ]
+        })
+      })
+
+      it('evaluate window tag', () => {
+        const tree = evaluate(parse('<window />'))
+        equal(tree.children[0].el === window, true)
+      })
+
+      it('evaluate real tag', () => {
+        const test = document.createElement('div')
+        const tree = evaluate(parse('<test />'), [{ test }])
+        equal(tree.children[0].el === test, true)
+      })
+
+      it('evaluate real tag has children', () => {
+        const test = document.createElement('div')
+        const tree = evaluate(parse('<test>beako</test>'), [{ test }])
+        equal(tree, {
+          children: [
+            {
+              el: {},
+              children: ["beako"]
+            }
+          ]
+        })
+        equal(tree.children[0].el === test, true)
+      })
+    })
+
+    // TODO: test evaluate is
+    describe(': class', function() {
+      it('evaluate: class', () => {
+        const tree = evaluate(parse('<p class="class-a"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi classes', () => {
+        const tree = evaluate(parse('<p class="class-a" class="class-b class-c"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b", "class-c"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign class only', () => {
+        const tree = evaluate(parse(`<p class:="'class-a'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign array class only', () => {
+        const tree = evaluate(parse(`<p class:="['class-a']"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign object class only', () => {
+        const tree = evaluate(parse(`<p class:="{ 'class-a': true, classb: false }"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a"]
+            }
+          ]
+        })
+      })
+      it('evaluate: multi assign classes', () => {
+        const tree = evaluate(parse(`<p class:="'class-a'" class:="'class-b'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: class and multi assign classes', () => {
+        const tree = evaluate(parse(`<p class="class-a" class:="'class-b'" class:="'class-c'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b", "class-c"]
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': part', function() {
+      it('evaluate: part', () => {
+        const tree = evaluate(parse('<p part="part-a"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi parts', () => {
+        const tree = evaluate(parse('<p part="part-a" part="part-b part-c"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b", "part-c"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign part only', () => {
+        const tree = evaluate(parse(`<p part:="'part-a'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign array part only', () => {
+        const tree = evaluate(parse(`<p part:="['part-a']"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign object part only', () => {
+        const tree = evaluate(parse(`<p part:="{ 'part-a': true, partb: false }"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a"]
+            }
+          ]
+        })
+      })
+      it('evaluate: multi assign parts', () => {
+        const tree = evaluate(parse(`<p part:="'part-a'" part:="'part-b'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: part and multi assign parts', () => {
+        const tree = evaluate(parse(`<p part="part-a" part:="'part-b'" part:="'part-c'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b", "part-c"]
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': style', function() {
+      it('evaluate: style', () => {
+        const tree = evaluate(parse('<p style="color: red"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi styles', () => {
+        const tree = evaluate(parse(`<p style="color: red" style="margin-top: 5px"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red;margin-top: 5px"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: add style only', () => {
+        const tree = evaluate(parse(`<p style:="'color: red'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi assign styles', () => {
+        const tree = evaluate(parse(`<p style="color: red" style:="'margin-top: 5px'" style:="'margin: 0 auto'"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red;margin-top: 5px;margin: 0 auto"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: assign style', () => {
+        const tree = evaluate(parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red;margin-top: 10px"
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': props', function() {
+      it('evaluate: props', () => {
+        const tree = evaluate(parse('<p id="beako"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              props: {
+                id: "beako"
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: add props variable', () => {
+        const tree = evaluate(parse(`<p id:="id"></p>`), [{ id: 'beako' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              props: {
+                id: "beako"
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi props is not string', () => {
+        const tree = evaluate(parse('<p value:="value"></p>'), [{ value: 10 }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              props: {
+                value: 10
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: truthy props variable', () => {
+        const tree = evaluate(parse(`<p id&="1"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              props: {
+                id: 1
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: falsy props variable', () => {
+        const tree = evaluate(parse(`<p id&="0"></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: multi props', () => {
+        const tree = evaluate(parse('<p id:="id" slot="my-slot" value:="value"></p>'), [{ id: 'beako', value: 10 }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              props: {
+                id: "beako",
+                slot: "my-slot",
+                value: 10
+              }
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': @if', function() {
+      it('evaluate: @if is true', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p>'), [{ isActive: true }])
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: @if is false', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p>'), [{ isActive: false }])
+        equal(tree, {})
+      })
+      it('evaluate: @if is true @else', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else></div>'), [{ isActive: true }])
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: @if is false @else', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else></div>'), [{ isActive: false }])
+        equal(tree, {
+          children: [{ tag: "div" }]
+        })
+      })
+      it('evaluate: @if @else chain / true true', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: true, isNext: true }])
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: @if @else chain / false true', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: false, isNext: true }])
+        equal(tree, {
+          children: [{ tag: "div" }]
+        })
+      })
+      it('evaluate: @if @else chain / false false', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: false, isNext: false }])
+        equal(tree, {
+          children: [{ tag: "h2" }]
+        })
+      })
+      it('evaluate: @if with text is false', () => {
+        const tree = evaluate(parse('text<span @if="isActive"></span> text'), [{ isActive: false }])
+        equal(tree, {
+          children: ['text', 2, ' text']
+        })
+      })
+      it('evaluate: @if with text is true', () => {
+        const tree = evaluate(parse('text<span @if="isActive"></span> text'), [{ isActive: true }])
+        equal(tree, {
+          children: ['text', { tag: "span" }, 2, ' text']
+        })
+      })
+      it('evaluate: @if @else with text is false', () => {
+        const tree = evaluate(parse('text<span @if="isActive"></span> <b @else></b> text'), [{ isActive: false }])
+        equal(tree, {
+          children: ['text', { tag: "b" }, 2, ' text']
+        })
+      })
+      it('evaluate: @if @else with text is true', () => {
+        const tree = evaluate(parse('text<span @if="isActive"></span> <b @else></b> text'), [{ isActive: true }])
+        equal(tree, {
+          children: ['text', { tag: "span" }, 2, ' text']
+        })
+      })
+    })
+
+    describe(': @for', function() {
+      it('evaluate: @for array', () => {
+        const tree = evaluate(parse('<p @for="array"></p>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            { tag: "p" },
+            { tag: "p" },
+            { tag: "p" }
+          ]
+        })
+      })
+      it('evaluate: @for array empty', () => {
+        const tree = evaluate(parse('<p @for="array"></p>'), [{ array: [] }])
+        equal(tree, {})
+      })
+      it('evaluate: @for array: @each', () => {
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for array: loop', () => {
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["0|x|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["1|y|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["2|z|2|3|false|true"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for object: @each', () => {
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["xx"]
+            },
+            {
+              tag: "p",
+              children: ["yy"]
+            },
+            {
+              tag: "p",
+              children: ["zz"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for object: loop', () => {
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x|xx|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["y|yy|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["z|zz|2|3|false|true"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for Set: @each', () => {
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for Set: loop', () => {
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x|x|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["y|y|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["z|z|2|3|false|true"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for Map: @each', () => {
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["xx"]
+            },
+            {
+              tag: "p",
+              children: ["yy"]
+            },
+            {
+              tag: "p",
+              children: ["zz"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for Map: loop', () => {
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x|xx|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["y|yy|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["z|zz|2|3|false|true"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for iterator: @each', () => {
+        function* generate(){
+            yield 'x'
+            yield 'y'
+            yield 'z'
+        }
+        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: generate() }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for iterator: loop', () => {
+        function* generate(){
+            yield 'x'
+            yield 'y'
+            yield 'z'
+        }
+        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: generate() }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["0|x|0|3|true|false"]
+            },
+            {
+              tag: "p",
+              children: ["1|y|1|3|false|false"]
+            },
+            {
+              tag: "p",
+              children: ["2|z|2|3|false|true"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @for with text', () => {
+        const tree = evaluate(parse('a<p @for="array"></p> b'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            'a',
+            { tag: "p" },
+            { tag: "p" },
+            { tag: "p" },
+            2,
+            ' b'
+          ]
+        })
+      })
+      it('evaluate: @for empty with text', () => {
+        const tree = evaluate(parse('a<p @for="array"></p> b'), [{ array: [] }])
+        equal(tree, {
+          children: [
+            'a',
+            2,
+            ' b'
+          ]
+        })
+      })
+    })
+
+    describe(': <group>', function() {
+      it('evaluate: group only', () => {
+        const tree = evaluate(parse('<group></group>'))
+        equal(tree, {})
+      })
+      it('evaluate: group', () => {
+        const tree = evaluate(parse('<group>Hello <span>beako</span></group>'))
+        equal(tree, {
+          children: [
+            "Hello ",
+            {
+              tag: "span",
+              children: ["beako"]
+            }
+          ]
+        })
+      })
+      it('evaluate: group chain', () => {
+        const tree = evaluate(parse('<group>Hello <group>beako</group>!</group>'))
+        equal(tree, {
+          children: [ "Hello ", "beako", 3, '!' ]
+        })
+      })
+    })
+
+    describe(': expand', function() {
+      it('evaluate: expand no template', () => {
+        const tree = evaluate(parse('<p>{{ template }}</p>'))
+        equal(tree, {
+          children: [{ tag: "p" }]
+        })
+      })
+      it('evaluate: expand template', () => {
+        const template = parse('<div></div>')
+        const tree = evaluate(parse('<p>{{ template }}</p>'), [{ template }])
+        equal(tree, {
+          children: [{
+            tag: "p",
+            children: [{ tag: "div" }]
+          }]
+        })
+      })
+      it('evaluate: expand template in group', () => {
+        const template = parse('<div></div>')
+        const tree = evaluate(parse('<group>{{ template }}</group>'), [{ template }])
+        equal(tree, {
+          children: [{ tag: "div" }]
+        })
+      })
+      it('evaluate: expand template assign data', () => {
+        const template = parse('<div>{{ name }}</div>')
+        const tree = evaluate(parse('<p>{{ template }}</p>'), [{ template, name: 'beako' }])
+        equal(tree, {
+          children: [{
+            tag: "p",
+            children: [{
+              tag: "div",
+              children: ['beako']
+            }]
+          }]
+        })
+      })
+      it('evaluate: expand template chain', () => {
+        const template1 = parse('<div>{{ template2 }}</div>')
+        const template2 = parse('<h2></h2>')
+        const tree = evaluate(parse('<p>{{ template1 }}</p>'), [{ template1, template2 }])
+        equal(tree, {
+          children: [{
+            tag: "p",
+            children: [{
+              tag: "div",
+              children: [{ tag: "h2" }]
+            }]
+          }]
+        })
+      })
+      it('evaluate: expand no template with text', () => {
+        const tree = evaluate(parse('<p>{{ template1 }}</p> b'))
+        equal(tree, {
+          children: [{ tag: "p" }, ' b']
+        })
+      })
+      it('evaluate: @if true and expand template', () => {
+        const template = parse('<div></div>')
+        const tree = evaluate(parse('<p @if="isActive">{{ template }}</p>'), [{ template, isActive: true }])
+        equal(tree, {
+          children: [{
+            tag: "p",
+            children: [{ tag: "div" }]
+          }]
+        })
+      })
+    })
+
+    describe(': combinate', function() {
+      it('evaluate: @if and @for', () => {
+        const tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p>`), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @if, @else and @for', () => {
+        const tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p><div @else>{{ loop.value }}</div>`), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            {
+              tag: "div",
+              children: ["y"]
+            },
+            {
+              tag: "p",
+              children: ["z"]
+            }
+          ]
+        })
+      })
+      it('evaluate: @if true and <group>', () => {
+        const tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: true }])
+        equal(tree, {
+          children: ["Hello"]
+        })
+      })
+      it('evaluate: @if false and <group>', () => {
+        const tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: false }])
+        equal(tree, {})
+      })
+      it('evaluate: @if true, @else and <group>', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: true }])
+        equal(tree, {
+          children: [{ tag: "p", }]
+        })
+      })
+      it('evaluate: @if false, @else and <group>', () => {
+        const tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: false }])
+        equal(tree, {
+          children: ["Hello"]
+        })
+      })
+      it('evaluate: @for and <group>', () => {
+        const tree = evaluate(parse('<group @for="array">{{ loop.value }}</group>'), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: ["x", "y", "z"]
+        })
+      })
+      it('evaluate: @if, @for and <group>', () => {
+        const tree = evaluate(parse(`<group @for="array" @if="loop.value !== 'y'">{{ loop.value }}</group>`), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: ["x", "z"]
+        })
+      })
+      it('evaluate: @if with text in @for and <group>', () => {
+        const tree = evaluate(parse(`<group @for="array"><p @if="loop.value !== 'y'">{{ loop.value }}</p> b</group>`), [{ array: ['x', 'y', 'z'] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["x"]
+            },
+            ' b',
+            ' b',
+            {
+              tag: "p",
+              children: ["z"]
+            },
+            ' b'
+          ]
+        })
+      })
+
+    })
+    describe(': @for', function() {
+      const xx = { name: 'xx' }
+      const yy = { name: 'yy' }
+      const zz = { name: 'zz' }
+      const collection = [xx, yy, zz]
+      it('evaluate: collection: @for array', () => {
+        const tree = evaluate(parse('<p @for="collection" @each="user">{{ user.name }}</p>'), [{ collection }])
+        equal(tree, {
+          children: [
+            { tag: "p", key: xx, children: ['xx'] },
+            { tag: "p", key: yy, children: ['yy'] },
+            { tag: "p", key: zz, children: ['zz'] }
+          ]
+        })
+      })
+      it('evaluate: collection: @for array loop', () => {
+        const tree = evaluate(parse('<p @for="collection">{{ loop.value.name }}</p>'), [{ collection }])
+        equal(tree, {
+          children: [
+            { tag: "p", key: xx, children: ['xx'] },
+            { tag: "p", key: yy, children: ['yy'] },
+            { tag: "p", key: zz, children: ['zz'] }
+          ]
+        })
+      })
+      it('evaluate: collection: @for and <group> elements', () => {
+        const tree = evaluate(parse('<group @for="collection"><span>{{ loop.key }}</span><span>{{ loop.value.name }}</span></group>'), [{ collection }])
+        equal(tree, {
+          children: [
+            { tag: "span", children: ["0"], key: xx },
+            { tag: "span", children: ["xx"], key: xx },
+            { tag: "span", children: ["1"], key: yy },
+            { tag: "span", children: ["yy"], key: yy },
+            { tag: "span", children: ["2"], key: zz },
+            { tag: "span", children: ["zz"], key: zz }
+          ]
+        })
+      })
+    })
+  })
+})
+
+mocha.run()
+</script>

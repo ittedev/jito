@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>virtual_dom/load.test.js</title>
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<div id="mocha"></div>
+<script src="https://unpkg.com/chai/chai.js"></script>
+<script>
+var i = 0
+var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
+</script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
+<script type="module">
+import {
+  watch,
+  receive,
+  unwatch,
+  reach,
+  lock,
+  unlock,
+  load,
+  patch,
+  expression,
+  parse,
+  evaluate,
+  define,
+  compact,
+  mount
+} from '../beako.js'
+
+mocha.setup('bdd')
+class XX extends HTMLDivElement { constructor() { super() } }
+class YY extends HTMLDivElement { constructor() { super() } }
+customElements.define('x-x', XX, { extends: "div" })
+customElements.define('y-y', YY, { extends: "div" })
+
+describe('Virtual Dom', function() {
+  describe('load()', function() {
+    it('load body', () => {
+      const doc = new DOMParser().parseFromString(`<body></body>`, 'text/html')
+      const vtree = load(doc.body)
+      equal(vtree, {
+        el: {}
+      })
+    })
+
+    it('load body class', () => {
+      const doc = new DOMParser().parseFromString(`<body class="class-a class-b"></body>`, 'text/html')
+      const vtree = load(doc.body)
+      equal(vtree, {
+        el: {}
+      })
+    })
+
+    it('load body part', () => {
+      const doc = new DOMParser().parseFromString(`<body part="part-a part-b"></body>`, 'text/html')
+      const vtree = load(doc.body)
+      equal(vtree, {
+        el: {}
+      })
+    })
+
+    it('load single element', () => {
+      const doc = new DOMParser().parseFromString(`<p></p>`, 'text/html')
+      const vtree = load(doc.body)
+      equal(vtree, {
+        children: [
+          {
+            tag: 'p',
+            el: {}
+          }
+        ],
+        el: {}
+      })
+    })
+
+    it('load multi element', () => {
+      const doc = new DOMParser().parseFromString(`<p></p><p></p>`, 'text/html')
+      const vtree = load(doc.body)
+    })
+
+    it('load style element', () => {
+      const doc = new DOMParser().parseFromString(`<style>a { color: red; }</style>`, 'text/html')
+      const vtree = load(doc.body)
+    })
+
+    it('load script element', () => {
+      const doc = new DOMParser().parseFromString(`<script>alert('hello');<\/script>`, 'text/html')
+      const vtree = load(doc.body)
+      equal(vtree, {
+        el: {}
+      })
+    })
+  })
+
+
+  // Test patch() function
+  describe('patch()', function() {
+    describe(': element', function() {
+      it('patch change tag', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ tag: 'div', el }] }
+        const newTree = { children: [{ tag: 'p' }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'p',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.tagName, 'P')
+      })
+    })
+
+    describe(': is', function() {
+      it('patch new is', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ tag: 'div', el }] }
+        const newTree = { children: [{ tag: 'div', is: 'x-x' }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'div',
+            is: 'x-x',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild instanceof XX, true)
+        equal(parent.firstChild === el, false)
+      })
+
+      it('patch change is', () => {
+        const parent = document.createElement('div', { is : 'x-x' })
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ tag: 'div', is: 'x-x', el }] }
+        const newTree = { children: [{ tag: 'div', is: 'y-y' }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'div',
+            is: 'y-y',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild instanceof YY, true)
+        equal(parent.firstChild === el, false)
+      })
+
+      it('patch remove is', () => {
+        const parent = document.createElement('div', { is : 'x-x' })
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ tag: 'div', is: 'x-x', el }] }
+        const newTree = { children: [{ tag: 'div' }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'div',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild instanceof XX, false)
+        equal(parent.firstChild === el, false)
+      })
+    })
+
+    describe(': class', function() {
+      it('patch new class', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ tag: 'div', el }] }
+        const newTree = { children: [{ tag: 'div', class: ['class-a'] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            class: ['class-a'],
+            el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.classList.values()], ['class-a'])
+      })
+
+      it('patch add class', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.classList.add('class-a')
+        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a'], el }] }
+        const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            class: ['class-a', 'class-b', 'class-c'],
+            el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.classList.values()], ['class-a', 'class-b', 'class-c'])
+      })
+
+      it('patch remove class', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.classList.add('class-a', 'class-b', 'class-c')
+        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
+        const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-c'] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+          tag: 'div',
+          class: ['class-a', 'class-c'],
+          el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.classList.values()], ['class-a', 'class-c'])
+      })
+
+      it('patch remove all class', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.classList.add('class-a', 'class-b', 'class-c')
+        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
+          const newTree = { children: [{ tag: 'div' }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+          tag: 'div',
+          el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.classList.values()], [])
+      })
+
+      it('patch set empty class', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.classList.add('class-a', 'class-b', 'class-c')
+        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
+        const newTree = { children: [{ tag: 'div', class: [] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+          tag: 'div',
+          el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.classList.values()], [])
+      })
+
+      it('patch no change class', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.classList.add('class-a', 'class-b')
+        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b'], el }] }
+        const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-b'] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+          tag: 'div',
+          class: ['class-a', 'class-b'],
+          el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.classList.values()], ['class-a', 'class-b'])
+      })
+    })
+
+    describe(': part', function() {
+      it('patch new part', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ tag: 'div', el }] }
+        const newTree = { children: [{ tag: 'div', part: ['part-a'] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            part: ['part-a'],
+            el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.part.values()], ['part-a'])
+      })
+
+      it('patch add part', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.part.add('part-a')
+        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a'], el }] }
+        const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            part: ['part-a', 'part-b', 'part-c'],
+            el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.part.values()], ['part-a', 'part-b', 'part-c'])
+      })
+
+      it('patch remove part', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.part.add('part-a', 'part-b', 'part-c')
+        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
+        const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-c'] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+          tag: 'div',
+          part: ['part-a', 'part-c'],
+          el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.part.values()], ['part-a', 'part-c'])
+      })
+
+      it('patch remove all part', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.part.add('part-a', 'part-b', 'part-c')
+        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
+          const newTree = { children: [{ tag: 'div' }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+          tag: 'div',
+          el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.part.values()], [])
+      })
+
+      it('patch set empty part', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.part.add('part-a', 'part-b', 'part-c')
+        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
+        const newTree = { children: [{ tag: 'div', part: [] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+          tag: 'div',
+          el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.part.values()], [])
+      })
+
+      it('patch no change part', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.part.add('part-a', 'part-b')
+        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b'], el }] }
+        const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-b'] }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            part: ['part-a', 'part-b'],
+            el: {}
+          }],
+          el: {}
+        })
+        equal([...parent.firstChild.part.values()], ['part-a', 'part-b'])
+      })
+    })
+
+    describe(': style', function() {
+      it('patch new style', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ tag: 'div', el }] }
+        const newTree = { children: [{ tag: 'div', style: 'color: red;' }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            style: 'color: red;',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.style.cssText, 'color: red;')
+      })
+
+      it('patch add style', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.style.cssText = 'color: red;'
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          style: 'color: red;',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          style: 'font-size: 1px; margin: auto; color: red;'
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            style: 'font-size: 1px; margin: auto; color: red;',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.style.cssText, 'font-size: 1px; margin: auto; color: red;')
+      })
+
+      it('patch remove style', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          style: 'font-size: 1px; margin: auto; color: red;',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          style: 'font-size: 1px; color: red;'
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            style: 'font-size: 1px; color: red;',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.style.cssText, 'font-size: 1px; color: red;')
+      })
+
+      it('patch remove All style', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          style: 'font-size: 1px; margin: auto; color: red;',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div'
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.style.cssText, '')
+      })
+
+      it('patch set empty style', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          style: 'font-size: 1px; margin: auto; color: red;',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          style: ''
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.style.cssText, '')
+      })
+
+      it('patch no change style', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.style.cssText = 'font-size: 1px; margin: auto;'
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          style: 'font-size: 1px; margin: auto;',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          style: 'font-size: 1px; margin: auto;'
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            style: 'font-size: 1px; margin: auto;',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.style.cssText, 'font-size: 1px; margin: auto;')
+      })
+    })
+
+    describe(': props', function() {
+      it('patch new props', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1'
+          }
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            props: {
+              'props-a': 'value 1'
+            },
+            el: {}
+          }],
+          el: {}
+        })
+        let output = ''
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
+        }
+        equal(output, 'props-a: value 1;')
+      })
+
+      it('patch add props', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.setAttribute('props-a', 'value 1')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1'
+          },
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2',
+            'props-c': 'value 3'
+          }
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            props: {
+              'props-a': 'value 1',
+              'props-b': 'value 2',
+              'props-c': 'value 3'
+            },
+            el: {}
+          }],
+          el: {}
+        })
+        let output = ''
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
+        }
+        equal(output, 'props-a: value 1;props-b: value 2;props-c: value 3;')
+      })
+
+      it('patch remove props', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.setAttribute('props-a', 'value 1')
+        el.setAttribute('props-b', 'value 2')
+        el.setAttribute('props-c', 'value 3')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2',
+            'props-c': 'value 3'
+          },
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1',
+            'props-c': 'value 3'
+          }
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            props: {
+              'props-a': 'value 1',
+              'props-c': 'value 3'
+            },
+            el: {}
+          }],
+          el: {}
+        })
+        let output = ''
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
+        }
+        equal(output, 'props-a: value 1;props-c: value 3;')
+      })
+
+      it('patch remove all props', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.setAttribute('props-a', 'value 1')
+        el.setAttribute('props-b', 'value 2')
+        el.setAttribute('props-c', 'value 3')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2',
+            'props-c': 'value 3'
+          },
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div'
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            el: {}
+          }],
+          el: {}
+        })
+        let output = ''
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
+        }
+        equal(output, '')
+      })
+
+      it('patch set empty props', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.setAttribute('props-a', 'value 1')
+        el.setAttribute('props-b', 'value 2')
+        el.setAttribute('props-c', 'value 3')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2',
+            'props-c': 'value 3'
+          },
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          props: {}
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            el: {}
+          }],
+          el: {}
+        })
+        let output = ''
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
+        }
+        equal(output, '')
+      })
+
+      it('patch no change props', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.setAttribute('props-a', 'value 1')
+        el.setAttribute('props-b', 'value 2')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2'
+          },
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1',
+            'props-b': 'value 2'
+          }
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            props: {
+              'props-a': 'value 1',
+              'props-b': 'value 2'
+            },
+            el: {}
+          }],
+          el: {}
+        })
+        let output = ''
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
+        }
+        equal(output, 'props-a: value 1;props-b: value 2;')
+      })
+
+      it('patch update props', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.setAttribute('props-a', 'value 1')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 1'
+          },
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          props: {
+            'props-a': 'value 2'
+          }
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            props: {
+              'props-a': 'value 2'
+            },
+            el: {}
+          }],
+          el: {}
+        })
+        let output = ''
+        for(const props of parent.firstChild.attributes) {
+          output += props.name + ': ' + props.value + ';';
+        }
+        equal(output, 'props-a: value 2;')
+      })
+    })
+    // TODO: test bools
+    // TODO: test refs
+
+    describe(': on', function() {
+      it('patch new on', () => {
+        const f1 = () => {}
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.setAttribute('props-a', 'value 1')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          on: {
+            click: [f1]
+          }
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            on: {
+              click: [null]
+            },
+            el: {}
+          }],
+          el: {}
+        })
+      })
+      // How to test ?
+    })
+
+    describe(': children', function() {
+      it('patch new text', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: ['Hello']
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: ['Hello'],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerHTML, 'Hello')
+      })
+
+      it('patch new multi texts', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: ['Hello', 'world', '!']
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: ['Hello', 'world', '!'],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerHTML, 'Helloworld!')
+      })
+
+
+      it('test: patch update text', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.innerHTML = 'Hello'
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: ['Hello'],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: ['World'],
+          el
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: ['World'],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerHTML, 'World')
+      })
+
+
+      it('patch new Element', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'p' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'p',
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.firstElementChild.tagName, 'P')
+      })
+
+      it('patch new multi Elements', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1' },
+            { tag: 'h2' },
+            { tag: 'p' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'h1',
+                el: {}
+              },
+              {
+                tag: 'h2',
+                el: {}
+              },
+              {
+                tag: 'p',
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.children[0].tagName, 'H1')
+        equal(parent.firstChild.children[1].tagName, 'H2')
+        equal(parent.firstChild.children[2].tagName, 'P')
+      })
+
+      it('patch update Element', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const p = document.createElement('p')
+        el.insertAdjacentElement('beforeend', p)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'p', el: p }
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'p', class: ['class-a'] }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'p',
+                class: ['class-a'],
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.firstElementChild.tagName, 'P')
+        equal(parent.firstChild.firstElementChild.classList.length, 1)
+        equal(parent.firstChild.firstElementChild === p, true)
+      })
+
+      it('patch change Element', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const p = document.createElement('p')
+        el.insertAdjacentElement('beforeend', p)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'p', el: p }
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'h1',
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.firstElementChild.tagName, 'H1')
+        equal(parent.firstChild.firstElementChild === p, false)
+      })
+
+      it('patch new Number', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            0
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              0
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.childElementCount, 0)
+      })
+
+      it('patch new multi Numbers', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            100, 1, 0
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              100, 1, 0
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.childElementCount, 0)
+      })
+
+      it('patch new cross Nodes', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            'Hello',
+            { tag: 'br' },
+            'world',
+            '!',
+            10,
+            { tag: 'span' },
+            { tag: 'a' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              'Hello',
+              {
+                tag: 'br',
+                el: {}
+              },
+              'world',
+              '!',
+              10,
+              {
+                tag: 'span',
+                el: {}
+              },
+              {
+                tag: 'a',
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerText, 'Helloworld!')
+        equal(parent.firstChild.children[0].tagName, 'BR')
+        equal(parent.firstChild.children[1].tagName, 'SPAN')
+        equal(parent.firstChild.children[2].tagName, 'A')
+      })
+
+      it('patch change text to Element', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.insertAdjacentText('beforeend', 'Hello')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            'Hello'
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'p' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'p',
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.firstElementChild.tagName, 'P')
+        equal(parent.firstChild.childNodes.length, 1)
+      })
+
+      it('patch change Element to text', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const p = document.createElement('p')
+        el.insertAdjacentElement('beforeend', p)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'p', el: p }
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            'Hello'
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              'Hello'
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerText, 'Hello')
+        equal(parent.firstChild.childNodes.length, 1)
+      })
+
+      it('patch add text to texts', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.insertAdjacentText('beforeend', 'Hello')
+        el.insertAdjacentText('beforeend', '!')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            'Hello',
+            '!'
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            'Hello',
+            'World',
+            '!'
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              'Hello',
+              'World',
+              '!'
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerHTML, 'HelloWorld!')
+        equal(parent.firstChild.childNodes.length, 3)
+      })
+
+      it('patch add text to Elements', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const h1 = document.createElement('h1')
+        el.insertAdjacentElement('beforeend', h1)
+        const h2 = document.createElement('h2')
+        el.insertAdjacentElement('beforeend', h2)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1', el: h1 },
+            { tag: 'h2', el: h2 }
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1' },
+            'World',
+            { tag: 'h2' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'h1',
+                el: {}
+              },
+              'World',
+              {
+                tag: 'h2',
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerText, 'World')
+        equal(parent.firstChild.childNodes.length, 3)
+        equal(parent.firstChild.childNodes[0].tagName, 'H1')
+        equal(parent.firstChild.childNodes[2].tagName, 'H2')
+      })
+
+      it('patch add Element to texts', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.insertAdjacentText('beforeend', 'Hello')
+        el.insertAdjacentText('beforeend', '!')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            'Hello',
+            '!'
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            'Hello',
+            { tag: 'span' },
+            '!'
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              'Hello',
+              {
+                tag: 'span',
+                el: {}
+              },
+              '!'
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerText, 'Hello!')
+        equal(parent.firstChild.childNodes.length, 3)
+        equal(parent.firstChild.childNodes[1].tagName, 'SPAN')
+      })
+
+      it('patch add Element to Elements', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const h1 = document.createElement('h1')
+        el.insertAdjacentElement('beforeend', h1)
+        const h2 = document.createElement('h2')
+        el.insertAdjacentElement('beforeend', h2)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1', el: h1 },
+            { tag: 'h2', el: h2 }
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1' },
+            { tag: 'p' },
+            { tag: 'h2' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'h1',
+                el: {}
+              },
+              {
+                tag: 'p',
+                el: {}
+              },
+              {
+                tag: 'h2',
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.childNodes[0].tagName, 'H1')
+        equal(parent.firstChild.childNodes[1].tagName, 'P')
+        equal(parent.firstChild.childNodes[2].tagName, 'H2')
+      })
+
+      it('patch add Elements to Elements', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const h1 = document.createElement('h1')
+        el.insertAdjacentElement('beforeend', h1)
+        const h2 = document.createElement('h2')
+        el.insertAdjacentElement('beforeend', h2)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1', el: h1 },
+            { tag: 'h2', el: h2 }
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h3' },
+            { tag: 'h4' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              {
+                tag: 'h3',
+                el: {}
+              },
+              {
+                tag: 'h4',
+                el: {}
+              }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.childNodes[0].tagName, 'H3')
+        equal(parent.firstChild.childNodes[1].tagName, 'H4')
+      })
+
+      it('patch remove text', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        el.insertAdjacentText('beforeend', 'Hello')
+        el.insertAdjacentText('beforeend', 'World')
+        el.insertAdjacentText('beforeend', '!')
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            'Hello',
+            'World',
+            '!'
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            'Hello',
+            '!'
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              'Hello',
+              '!'
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerHTML, 'Hello!')
+        equal(parent.firstChild.childNodes.length, 2)
+      })
+
+      it('patch remove Element', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const h1 = document.createElement('h1')
+        el.insertAdjacentElement('beforeend', h1)
+        const p = document.createElement('p')
+        el.insertAdjacentElement('beforeend', p)
+        const h2 = document.createElement('h2')
+        el.insertAdjacentElement('beforeend', h2)
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1', el: h1 },
+            { tag: 'p', el: p },
+            { tag: 'h2', el: h2 }
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1' },
+            { tag: 'h2' }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              { tag: 'h1', el: {} },
+              { tag: 'h2', el: {} }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.childNodes[0].tagName, 'H1')
+        equal(parent.firstChild.childNodes[1].tagName, 'H2')
+      })
+
+      it('patch use key', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const h1 = document.createElement('h1')
+        el.insertAdjacentElement('beforeend', h1)
+        const h2 = document.createElement('h2')
+        el.insertAdjacentElement('beforeend', h2)
+        const h1key = {}
+        const h2key = {}
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h1', el: h1, key: h1key },
+            { tag: 'h2', el: h2, key: h2key }
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            { tag: 'h2', key: h2key },
+            { tag: 'h1', key: h1key, class: ['class-a'] }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              { tag: 'h2', key: {}, el: {} },
+              { tag: 'h1', key: {}, class: ['class-a'], el: {} }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.childNodes[0].tagName, 'H2')
+        equal(parent.firstChild.childNodes[1].tagName, 'H1')
+        equal(parent.firstChild.lastElementChild.classList.length, 1)
+        equal(parent.firstChild.childNodes[0] === h2, true)
+        equal(parent.firstChild.childNodes[1] === h1, true)
+      })
+
+      it('patch use key and number', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const p = document.createElement('p')
+        el.insertAdjacentElement('beforeend', p)
+        const h1 = document.createElement('h1')
+        el.insertAdjacentElement('beforeend', h1)
+        const h2 = document.createElement('h2')
+        el.insertAdjacentElement('beforeend', h2)
+        const h1key = {}
+        const h2key = {}
+        const tree = { el: parent, children: [{
+          tag: 'div',
+          children: [
+            { tag: 'p', el: p },
+            0,
+            { tag: 'h1', el: h1, key: h1key },
+            { tag: 'h2', el: h2, key: h2key },
+            1
+          ],
+          el
+        }] }
+        const newTree = { children: [{
+          tag: 'div',
+          children: [
+            'Hello',
+            0,
+            { tag: 'h2', key: h2key },
+            1,
+            { tag: 'h1', key: h1key }
+          ]
+        }] }
+        patch(tree, newTree)
+        equal(tree, {
+          children: [{
+            tag: 'div',
+            children: [
+              'Hello',
+              0,
+              { tag: 'h2', key: {}, el: {} },
+              1,
+              { tag: 'h1', key: {}, el: {} }
+            ],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.innerText, 'Hello')
+        equal(parent.firstChild.childNodes[1] === h2, true)
+        equal(parent.firstChild.childNodes[2] !== h1, true)
+      })
+    })
+    // TODO: test real element
+  })
+})
+
+mocha.run()
+</script>
