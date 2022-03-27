@@ -23,7 +23,7 @@ Beako.js use ES Modules from jsDelivr.
 <meta charset="UTF-8">
 <body>Loading...</body>
 <script type="module">
-  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.10.4/beako.js'
+  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.10.5/beako.js'
 
   const data = {
     count: 1
@@ -44,7 +44,7 @@ deno install -fA https://deno.land/x/beako_cli@0.1.1/beako.ts
 ```
 
 ```ts
-import { watch, mount } from 'https://deno.land/x/beako@0.10.4/mod.ts'
+import { watch, mount } from 'https://deno.land/x/beako@0.10.5/mod.ts'
 
 const data = {
   count: 1
