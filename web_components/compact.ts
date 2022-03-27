@@ -1,6 +1,6 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { ComponentConstructor, Component, Patcher } from './types.ts'
+import { Main, Component, Patcher } from './types.ts'
 import { Variables, TreeTemplate } from '../template_engine/types.ts'
 import { lock } from '../data_binding/lock.ts'
 import { parse } from '../template_engine/parse.ts'
@@ -13,17 +13,17 @@ evaluate.plugin(specialTagPlugin)
 export function compact(html: string): Component
 export function compact(html: string, data: Variables): Component
 export function compact(html: string, data: Record<string, unknown>): Component
-export function compact(html: string, construct: ComponentConstructor): Component
+export function compact(html: string, main: Main): Component
 export function compact(template: TreeTemplate): Component
 export function compact(template: TreeTemplate, data: Variables): Component
 export function compact(template: TreeTemplate, data: Record<string, unknown>): Component
-export function compact(template: TreeTemplate, construct: ComponentConstructor): Component
+export function compact(template: TreeTemplate, main: Main): Component
 export function compact(patcher: Patcher): Component
 export function compact(patcher: Patcher, data: Variables): Component
 export function compact(patcher: Patcher, data: Record<string, unknown>): Component
-export function compact(patcher: Patcher, construct: ComponentConstructor): Component
-export function compact(template: string | TreeTemplate | Patcher, data: Variables | Record<string, unknown> | ComponentConstructor): Component
-export function compact(template: string | TreeTemplate | Patcher, data: Variables | Record<string, unknown> | ComponentConstructor = []): Component {
+export function compact(patcher: Patcher, main: Main): Component
+export function compact(template: string | TreeTemplate | Patcher, data: Variables | Record<string, unknown> | Main): Component
+export function compact(template: string | TreeTemplate | Patcher, data: Variables | Record<string, unknown> | Main = []): Component {
   const component: Component = {
     data: (typeof data === 'function' || Array.isArray(data)) ? data : [data],
     options: { mode: 'open' }

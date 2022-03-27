@@ -2,8 +2,10 @@
 // This module is browser compatible.
 export type {
   ComponentTemplate,
-  ComponentConstructor,
-  Component
+  Main,
+  Component,
+  ComponentOptions,
+  Patcher
 } from './types.ts'
 
 export { builtin } from './builtin.ts'

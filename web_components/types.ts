@@ -18,7 +18,7 @@ export interface ComponentTemplate extends CustomElementTemplate {
   cache?: string | Component | unknown
 }
 
-export type ComponentConstructor = (entity: Entity) => Variables | Record<string, unknown> | void | Promise<Variables | Record<string, unknown> | void>
+export type Main = (entity: Entity) => Variables | Record<string, unknown> | void | Promise<Variables | Record<string, unknown> | void>
 
 export interface ComponentOptions {
   mode?: ShadowRootMode
@@ -29,7 +29,7 @@ export interface ComponentOptions {
 export interface Component {
   patcher?: Patcher
   template?: TreeTemplate
-  data: ComponentConstructor | Variables
+  data: Main | Variables
   options: {
     mode: ShadowRootMode
     delegatesFocus?: boolean

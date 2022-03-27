@@ -4,7 +4,11 @@ export type {
   VirtualElement,
   VirtualTree,
   LinkedVirtualElement,
-  LinkedVirtualTree
+  LinkedVirtualTree,
+  RealElement,
+  LinkedRealElement,
+  RealTarget,
+  LinkedRealTarget
 } from './types.ts'
 
 export { eventTypes } from './event_types.ts'

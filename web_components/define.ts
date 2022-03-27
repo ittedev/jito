@@ -1,6 +1,6 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import type { ComponentConstructor, Component, Patcher } from './types.ts'
+import type { Main, Component, Patcher } from './types.ts'
 import { Variables, TreeTemplate } from '../template_engine/types.ts'
 import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
@@ -11,15 +11,15 @@ import { Entity } from './entity.ts'
 export function define(name: string, component: Component): void
 export function define(name: string, html: string): void
 export function define(name: string, html: string, data: Variables): void
-export function define(name: string, html: string, construct: ComponentConstructor): void
+export function define(name: string, html: string, main: Main): void
 export function define(name: string, template: TreeTemplate): void
 export function define(name: string, template: TreeTemplate, data: Variables): void
-export function define(name: string, template: TreeTemplate, construct: ComponentConstructor): void
+export function define(name: string, template: TreeTemplate, main: Main): void
 export function define(name: string, patcher: Patcher): void
 export function define(name: string, patcher: Patcher, data: Variables): void
-export function define(name: string, patcher: Patcher, construct: ComponentConstructor): void
-export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | ComponentConstructor): void
-export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | ComponentConstructor = []): void {
+export function define(name: string, patcher: Patcher, main: Main): void
+export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | Main): void
+export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | Main = []): void {
   const component = instanceOfComponent(template) ? template : compact(template, data)
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')
