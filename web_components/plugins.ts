@@ -32,16 +32,17 @@ export const componentPlugin = {
   ): boolean
   {
     if (template.type === 'custom') {
+      if (template.tag === 'entity') {
+        return true
+      }
       const temp = template as CustomElementTemplate
-      if (!isPrimitive(temp.tag)) {
-        // local or global component
-        const element = pickup(stack, temp.tag)[0]
-        if (instanceOfComponent(element)) {
-          return true
-        } else {
-          const El = customElements.get(temp.tag)
-          return El !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, El)
-        }
+      // local or global component
+      const element = pickup(stack, temp.tag)[0]
+      if (instanceOfComponent(element)) {
+        return true
+      } else {
+        const El = customElements.get(temp.tag)
+        return El !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, El)
       }
     }
     return false
@@ -55,10 +56,14 @@ export const componentPlugin = {
     const temp = template as ComponentTemplate
     const el = { tag: template.tag } as VirtualElement
 
-    const element = pickup(stack, temp.tag)[0]
-    if (element) {
-      el.tag = localComponentElementTag
-      el.props = { component: element }
+    el.tag = localComponentElementTag // 'beako-entity'
+    if (temp.tag === 'entity' || temp.tag === localComponentElementTag) {
+      el.props = { component: temp.props?.component }
+    } else {
+      const element = pickup(stack, temp.tag)[0]
+      if (element) {
+        el.props = { component: element }
+      }
     }
 
     const values = [] as Array<Template | string>
@@ -94,14 +99,10 @@ export const componentPlugin = {
     }
 
     evaluateProps(temp, stack, cache, el)
-    if (temp.cache && temp.cache !== el.props?.component) {
+    if (temp.cache !== el.props?.component) {
       el.new = true
     }
-    if (el.props?.component) {
-      temp.cache = el.props.component as Component
-    } else {
-      delete temp.cache
-    }
+    temp.cache = el.props?.component
 
     return el
   }

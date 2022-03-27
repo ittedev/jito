@@ -10,7 +10,7 @@ import { compact } from './compact.ts'
 export const localComponentElementTag = 'beako-entity'
 
 export class ComponentElement extends HTMLElement {
-  entity: Entity | undefined
+  entity?: Entity
   constructor() {
     super()
   }
@@ -83,22 +83,15 @@ class LocalComponentElement extends ComponentElement {
           break
         }
         case 'object':
-        case 'undefined':
-            if (instanceOfComponent(value)) {
+          if (instanceOfComponent(value)) {
             const tree = load(this.attachShadow(value.options))
             this.entity = new Entity(value, this, tree)
-          } else if (value === null || value === undefined) {
-            console.log('reset:', value)
-            const component = compact('')
-            const tree = load(this.attachShadow(component.options))
-            this.entity = new Entity(component, this, tree)
-          } else {
+          } else if (value !== null) {
             throw Error('The object is not a component.')
           }
           break
       }
     }
-    console.log('setProp:', name, value)
     super.setProp(name, value)
   }
 }

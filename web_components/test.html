@@ -259,7 +259,7 @@ describe('Web Components', function() {
       const component = compact('<beako-entity component:="component"></beako-entity>', { component: null })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, '')
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot, null)
       console.log('el.shadowRoot:', el.shadowRoot)
     })
     it('component is undefined', async () => {
@@ -267,7 +267,7 @@ describe('Web Components', function() {
       const component = compact('<beako-entity component:="component"></beako-entity>', { component: undefined })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, '')
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot, null)
     })
     it('component is a defined component', async () => {
       define('element-3', compact(`Hello beako!`))

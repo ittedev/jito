@@ -1,19 +1,20 @@
 # Beako.js
 
-Beako.js is web component tools with Data Binding, Template Engine and Virtual DOM.
-
-She support Deno and Web browsers.
-
-
 ## What is Beako.js?
 
-Please wait for it to be released in the near future.
+Beako.js is web component tools with Data Binding, Template Engine and Virtual DOM.
 
-The explanation in Japanese is written [here](https://zenn.dev/itte/articles/54dfdf99622e40).
+You can experience single page application development with just a web browser.
+
+She support Web browsers and Deno.
+
+## Examples
+
+[Glitch Examples](https://glitch.com/@itte1)
 
 ## Usage
 
-Beako.js use ES Modules
+Beako.js use ES Modules from jsDelivr.
 
 ### CDN
 
@@ -32,7 +33,7 @@ Beako.js use ES Modules
 
   watch(data)
 
-  mount(document, `Counter: {{ count }}`, data)
+  mount(document.body, `Counter: {{ count }}`, data)
 </script>
 ```
 
@@ -53,7 +54,7 @@ setInterval(() => { data.count++ }, 1000)
 
 watch(data)
 
-mount(document, `Counter: {{ count }}`, data)
+mount(document.body, `Counter: {{ count }}`, data)
 ```
 
 Build:
