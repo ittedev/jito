@@ -1,7 +1,8 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { ComponentConstructor, Component, instanceOfComponent } from './types.ts'
+import type { ComponentConstructor, Component, Patcher } from './types.ts'
 import { Variables, TreeTemplate } from '../template_engine/types.ts'
+import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { compact } from './compact.ts'
 import { ComponentElement } from './element.ts'
@@ -14,8 +15,11 @@ export function define(name: string, html: string, construct: ComponentConstruct
 export function define(name: string, template: TreeTemplate): void
 export function define(name: string, template: TreeTemplate, data: Variables): void
 export function define(name: string, template: TreeTemplate, construct: ComponentConstructor): void
-export function define(name: string, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor): void
-export function define(name: string, template: string | TreeTemplate | Component, data: Variables | Record<string, unknown> | ComponentConstructor = []): void {
+export function define(name: string, patcher: Patcher): void
+export function define(name: string, patcher: Patcher, data: Variables): void
+export function define(name: string, patcher: Patcher, construct: ComponentConstructor): void
+export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | ComponentConstructor): void
+export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | ComponentConstructor = []): void {
   const component = instanceOfComponent(template) ? template : compact(template, data)
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')

@@ -2,7 +2,6 @@
 // This module is browser compatible.
 import {
   special,
-  Component,
   instanceOfComponent,
   ComponentTemplate,
   SpecialCache

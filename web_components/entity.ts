@@ -1,12 +1,15 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { ChangeCallback } from '../data_binding/types.ts'
-import { special, Component, SpecialCache } from './types.ts'
-import { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
-import { Variables, instanceOfRef, Ref } from '../template_engine/types.ts'
+import type { ChangeCallback } from '../data_binding/types.ts'
+import type { Component, SpecialCache, Patcher } from './types.ts'
+import type { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
+import type { TreeTemplate, Variables, Ref } from '../template_engine/types.ts'
+import { special } from './types.ts'
+import { instanceOfRef } from '../template_engine/types.ts'
 import { watch } from '../data_binding/watch.ts'
 import { reach } from '../data_binding/reach.ts'
 import { unwatch } from '../data_binding/unwatch.ts'
+import { parse } from '../template_engine/parse.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
 import { patch } from '../virtual_dom/patch.ts'
 import { builtin } from './builtin.ts'
@@ -14,8 +17,10 @@ import { eventTypes } from '../virtual_dom/event_types.ts'
 
 export class Entity {
   private _stack?: Variables | null
+  private _patcher?: Patcher
   private _cache: SpecialCache
   private _component: Component
+  private _template?: TreeTemplate
   private _host: Element
   private _tree: LinkedVirtualTree
   private _props: Record<string, unknown> = {}
@@ -25,6 +30,8 @@ export class Entity {
   constructor( component: Component, host: Element, tree: LinkedVirtualTree ) {
     const root = tree.el as ShadowRoot
     this._component = component
+    this._template = component.template
+    this._patcher = component.patcher
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._patch = this._patch.bind(this)
@@ -121,11 +128,27 @@ export class Entity {
     return (): Promise<void> | null => this._constructor
   }
 
-  private _patch (): void {
-    if (this._stack && this._tree && this._component.template) {
-      // patch(this._tree, evaluate(this._component.template, this.stack) as VirtualTree)
-      const tree = evaluate(this._component.template, this._stack, this._cache) as VirtualTree
-      patch(this._tree, tree)
+  private _patch (template?: string | TreeTemplate | Patcher): void {
+    if (template) {
+      if (typeof template === 'function') {
+        this._patcher = template
+        this._template = undefined
+      } else {
+        this._patcher = undefined
+        this._template = typeof template === 'string' ? parse(template) : template
+      }
+    }
+    if (this._stack) {
+      if (this._patcher) {
+        const tree = this._patcher(this._stack)
+        patch(this._tree, tree)
+      } else {
+        if (this._tree && this._component.template) {
+          // patch(this._tree, evaluate(this._component.template, this.stack) as VirtualTree)
+          const tree = evaluate(this._component.template, this._stack, this._cache) as VirtualTree
+          patch(this._tree, tree)
+        }
+      }
     }
   }
 }
