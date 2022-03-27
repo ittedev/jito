@@ -116,7 +116,7 @@ export const specialTagPlugin = {
   {
     if (template.type === 'custom') {
       if (special in cache && !isPrimitive(template.tag)) {
-        console.log('cache:', cache)
+        // console.log('cache:', cache)
         const el = pickup(stack, template.tag)[0]
         return cache[special].some(tag => tag === el)
       }

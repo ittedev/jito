@@ -41,7 +41,9 @@ export type HasAttrTemplate =
 
 // deno-lint-ignore no-explicit-any
 export function instanceOfTemplate(object: any): object is Template {
-  return typeof object === 'object' &&  typeof object.type === 'string'
+  return typeof object === 'object' &&
+    object !== null &&
+    typeof object.type === 'string'
 }
 
 export interface LiteralTemplate {
@@ -207,7 +209,9 @@ export type Ref = {
 
 // deno-lint-ignore no-explicit-any
 export function instanceOfRef(object: any): object is Ref {
-  return typeof object === 'object' && object[isRef] === true
+  return typeof object === 'object' &&
+    object !== null &&
+    object[isRef] === true
 }
 
 export interface Plugin {

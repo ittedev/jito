@@ -1,8 +1,11 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { Component, instanceOfComponent } from './types.ts'
+import type { Component } from './types.ts'
+import type { LinkedVirtualTree } from '../virtual_dom/types.ts'
+import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { Entity } from './entity.ts'
+import { compact } from './compact.ts'
 
 export const localComponentElementTag = 'beako-entity'
 
@@ -80,15 +83,22 @@ class LocalComponentElement extends ComponentElement {
           break
         }
         case 'object':
-          if (instanceOfComponent(value)) {
+        case 'undefined':
+            if (instanceOfComponent(value)) {
             const tree = load(this.attachShadow(value.options))
             this.entity = new Entity(value, this, tree)
+          } else if (value === null || value === undefined) {
+            console.log('reset:', value)
+            const component = compact('')
+            const tree = load(this.attachShadow(component.options))
+            this.entity = new Entity(component, this, tree)
           } else {
             throw Error('The object is not a component.')
           }
           break
       }
     }
+    console.log('setProp:', name, value)
     super.setProp(name, value)
   }
 }

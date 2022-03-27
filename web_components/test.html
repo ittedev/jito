@@ -16,6 +16,13 @@
 <div id="compact_target3" style="display: none;"></div>
 <div id="compact_target4" style="display: none;"></div>
 <div id="compact_target5" style="display: none;"></div>
+<div id="element_target1" style="display: none;"></div>
+<div id="element_target2" style="display: none;"></div>
+<div id="element_target3" style="display: none;"></div>
+<div id="element_target4" style="display: none;"></div>
+<div id="element_target5" style="display: none;"></div>
+<div id="element_target6" style="display: none;"></div>
+<div id="element_target7" style="display: none;"></div>
 <div id="sync_target1_1" style="display: none;"></div>
 <div id="sync_target1_2" style="display: none;"></div>
 <div id="sync_target2" style="display: none;"></div>
@@ -236,6 +243,56 @@ describe('Web Components', function() {
       mount(el, component)
       await sleep()
       equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
+    })
+  })
+
+  describe('ComponentElement', function() {
+    it('no component prop', async () => {
+      const el = document.querySelector('#element_target1')
+      const component = compact('<beako-entity></beako-entity>')
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot, null)
+    })
+    it('component is null', async () => {
+      const el = document.querySelector('#element_target2')
+      const component = compact('<beako-entity component:="component"></beako-entity>', { component: null })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, '')
+      console.log('el.shadowRoot:', el.shadowRoot)
+    })
+    it('component is undefined', async () => {
+      const el = document.querySelector('#element_target3')
+      const component = compact('<beako-entity component:="component"></beako-entity>', { component: undefined })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, '')
+    })
+    it('component is a defined component', async () => {
+      define('element-3', compact(`Hello beako!`))
+      const el = document.querySelector('#element_target4')
+      const component = compact('<beako-entity component="element-3"></beako-entity>')
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('component is a local component', async () => {
+      const el = document.querySelector('#element_target5')
+      const component = compact('<beako-entity component:="component"></beako-entity>', { component: compact(`Hello beako!`) })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('component is a changed component', async () => {
+      const el = document.querySelector('#element_target6')
+      const state = watch({ component: compact(`Hello beako!`) })
+      const component = compact('<beako-entity component:="component"></beako-entity>', state)
+      mount(el, component)
+      await sleep()
+      state.component = compact(`Hello world!`)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, 'Hello world!')
     })
   })
 

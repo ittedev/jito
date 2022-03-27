@@ -15,6 +15,27 @@ The explanation in Japanese is written [here](https://zenn.dev/itte/articles/54d
 
 Beako.js use ES Modules
 
+### CDN
+
+```html
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<body>Loading...</body>
+<script type="module">
+  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.10.2/beako.js'
+
+  const data = {
+    count: 1
+  }
+
+  setInterval(() => { data.count++ }, 1000)
+
+  watch(data)
+
+  mount(document, `Counter: {{ count }}`, data)
+</script>
+```
+
 ### Deno
 
 ```shell
@@ -50,24 +71,4 @@ To Import it into html:
 <script type="module" src="script.js"></script>
 ```
 
-### CDN
-
-```html
-<!DOCTYPE html>
-<meta charset="UTF-8">
-<body>Loading...</body>
-<script type="module">
-  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.10.2/beako.js'
-
-  const data = {
-    count: 1
-  }
-
-  setInterval(() => { data.count++ }, 1000)
-
-  watch(data)
-
-  mount(document, `Counter: {{ count }}`, data)
-</script>
-```
 

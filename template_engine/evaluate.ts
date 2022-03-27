@@ -329,7 +329,7 @@ const realElementPlugin = {
   {
     const temp = template as CustomElementTemplate
     if (template.tag === 'window') {
-      console.log('template.tag:', template.tag)
+      // console.log('template.tag:', template.tag)
       const re = {
         el: window,
         invalid: {

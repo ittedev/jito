@@ -30,7 +30,11 @@ export interface Component {
 
 // deno-lint-ignore no-explicit-any
 export function instanceOfComponent(object: any): object is Component {
-  return typeof object === 'object' && object.template && object.data && object.options
+  return typeof object === 'object' &&
+    object !== null &&
+    'template' in object &&
+    'data' in object &&
+    'options' in object
 }
 
 export interface SpecialCache extends Cache {
