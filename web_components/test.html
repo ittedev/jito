@@ -260,7 +260,6 @@ describe('Web Components', function() {
       mount(el, component)
       await sleep()
       equal(el.shadowRoot.querySelector('beako-entity').shadowRoot, null)
-      console.log('el.shadowRoot:', el.shadowRoot)
     })
     it('component is undefined', async () => {
       const el = document.querySelector('#element_target3')

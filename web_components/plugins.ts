@@ -23,6 +23,12 @@ import { evaluate, evaluateProps } from '../template_engine/evaluate.ts'
 import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'
 
+type Module = {
+  [Symbol.toStringTag]: 'Module'
+  default?: unknown
+  [prop: string]: unknown
+}
+
 export const componentPlugin = {
   match (
     template: CustomElementTemplate | CustomTemplate,
@@ -31,15 +37,27 @@ export const componentPlugin = {
   ): boolean
   {
     if (template.type === 'custom') {
-      if (template.tag === 'entity') {
+      if (template.tag === localComponentElementTag) {
+        // local entity
         return true
       }
       const temp = template as CustomElementTemplate
-      // local or global component
       const element = pickup(stack, temp.tag)[0]
-      if (instanceOfComponent(element)) {
+      if (
+        typeof element === 'object' &&
+        element !== null &&
+        (
+          // local component
+          instanceOfComponent(element) ||
+            // default module
+            'default' in element &&
+            (element as Module)[Symbol.toStringTag] === 'Module' &&
+            instanceOfComponent((element as Module).default)
+        )
+      ) {
         return true
       } else {
+        // global component
         const El = customElements.get(temp.tag)
         return El !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, El)
       }
@@ -53,15 +71,19 @@ export const componentPlugin = {
   ): VirtualElement
   {
     const temp = template as ComponentTemplate
-    const el = { tag: template.tag } as VirtualElement
+    const ve: VirtualElement = {
+      tag: localComponentElementTag // 'beako-entity'
+    }
 
-    el.tag = localComponentElementTag // 'beako-entity'
-    if (temp.tag === 'entity' || temp.tag === localComponentElementTag) {
-      el.props = { component: temp.props?.component }
-    } else {
-      const element = pickup(stack, temp.tag)[0]
-      if (element) {
-        el.props = { component: element }
+    let component
+    if (temp.tag !== localComponentElementTag) {
+      component = pickup(stack, temp.tag)[0]
+      if (component) {
+        // local component
+        (ve.props ?? (ve.props = {})).component = component
+      } else {
+        // global component
+        ve.tag = temp.tag
       }
     }
 
@@ -86,24 +108,43 @@ export const componentPlugin = {
       contents.push(['content', { type: 'group', children: values } as GroupTemplate])
     }
     if (contents.length) {
-      if (!el.props) {
-        el.props = {}
+      if (!ve.props) {
+        ve.props = {}
       }
       contents.forEach(([name, template]) => {
-        (el.props as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
+        (ve.props as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
       })
     }
     if (children.length) {
-      el.children = children
+      ve.children = children
     }
 
-    evaluateProps(temp, stack, cache, el)
-    if (temp.cache !== el.props?.component) {
-      el.new = true
-    }
-    temp.cache = el.props?.component
+    evaluateProps(temp, stack, cache, ve)
 
-    return el
+    if (temp.tag === localComponentElementTag) {
+      // local entity
+      component = ve.props?.component
+      ;(ve.props ?? (ve.props = {})).component = component
+    }
+
+    if (
+      typeof component === 'object' &&
+      component !== null &&
+      'default' in component &&
+      (component as Module)[Symbol.toStringTag] === 'Module' &&
+      instanceOfComponent((component as Module).default)
+    ) {
+      // default module
+      component = (component as Module).default
+      ;(ve.props ?? (ve.props = {})).component = component
+    }
+
+    if (temp.cache !== component) {
+      ve.new = true
+    }
+    temp.cache = component
+
+    return ve
   }
 } as EvaluatePlugin
 
