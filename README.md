@@ -25,15 +25,13 @@ Beako.js use ES Modules from jsDelivr.
 <script type="module">
   import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.11.0/beako.js'
 
-  const data = {
+  const state = watch({
     count: 1
-  }
+  })
 
-  setInterval(() => { data.count++ }, 1000)
+  setInterval(() => { state.count++ }, 1000)
 
-  watch(data)
-
-  mount(document.body, `Counter: {{ count }}`, data)
+  mount(document.body, `Counter: {{ count }}`, state)
 </script>
 ```
 
@@ -46,15 +44,13 @@ deno install -fA https://deno.land/x/beako_cli@0.1.1/beako.ts
 ```ts
 import { watch, mount } from 'https://deno.land/x/beako@0.11.0/mod.ts'
 
-const data = {
+const state = watch({
   count: 1
-}
+})
 
-setInterval(() => { data.count++ }, 1000)
+setInterval(() => { state.count++ }, 1000)
 
-watch(data)
-
-mount(document.body, `Counter: {{ count }}`, data)
+mount(document.body, `Counter: {{ count }}`, state)
 ```
 
 Build:
