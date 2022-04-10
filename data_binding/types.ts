@@ -1,10 +1,10 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export const dictionary = Symbol('Beako')
-export const reactiveKey = Symbol('Reactive')
-export const arrayKey = Symbol('Array')
-export const isLocked = Symbol('Beako-lock')
+export const dictionary = Symbol.for('Beako Dictionary')
+export const reactiveKey = Symbol.for('Beako Reactive')
+export const arrayKey = Symbol.for('Beako Array')
+export const isLocked = Symbol.for('Beako Lock')
 
 export interface Dictionary {
   [key: string]: Page

@@ -20,7 +20,10 @@ export type {
   TreeTemplate,
   GroupTemplate,
   Ref,
-  Evaluate
+  Evaluate,
+  TemporaryNode,
+  TemporaryText,
+  TemporaryElement
 } from './types.ts'
 
 export { Loop } from './loop.ts'

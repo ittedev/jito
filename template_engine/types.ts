@@ -1,6 +1,6 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-export const isRef = Symbol('Beako-ref')
+export const isRef = Symbol.for('Beako Ref')
 
 export type Variables = Array<Record<string, unknown>>
 

@@ -32,7 +32,11 @@ import { isPrimitive } from './is_primitive.ts'
 
 const plugins = new Array<EvaluatePlugin>()
 
-export const evaluate = function (template: Template | CustomTemplate, stack: Variables = [], cache: Cache = {}): unknown {
+export const evaluate = function (
+  template: Template | CustomTemplate,
+  stack: Variables = [],
+  cache: Cache = {}
+): unknown {
   const temp = template as Template
   switch (temp.type) {
     case 'literal':
