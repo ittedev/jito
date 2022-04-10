@@ -36,7 +36,8 @@ export const evaluate = function (
   template: Template | CustomTemplate,
   stack: Variables = [],
   cache: Cache = {}
-): unknown {
+): unknown
+{
   const temp = template as Template
   switch (temp.type) {
     case 'literal':
@@ -306,7 +307,7 @@ export const evaluate = function (
   }
 } as Evaluate
 
-evaluate.plugin = function(plugin: EvaluatePlugin) {
+evaluate.plugin = (plugin: EvaluatePlugin) => {
   plugins.unshift(plugin)
 }
 
@@ -368,7 +369,12 @@ const realElementPlugin = {
 
 evaluate.plugin(realElementPlugin)
 
-export function evaluateChildren(template: HasChildrenTemplate, stack: Variables, cache: Cache): Array<string | VirtualElement | RealTarget | number> {
+export function evaluateChildren(
+  template: HasChildrenTemplate,
+  stack: Variables,
+  cache: Cache
+): Array<string | VirtualElement | RealTarget | number>
+{
   const children = (template.children || []) as Array<Template | string>
 
   // Cache number
@@ -401,7 +407,13 @@ export function evaluateChildren(template: HasChildrenTemplate, stack: Variables
   return result
 }
 
-export function evaluateProps(template: HasAttrTemplate, stack: Variables, cache: Cache, ve: VirtualElement | RealTarget): void {
+export function evaluateProps(
+  template: HasAttrTemplate,
+  stack: Variables,
+  cache: Cache,
+  ve: VirtualElement | RealTarget
+): void
+{
   if (template.style) {
     ve.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack, cache) as string
   }
@@ -457,7 +469,8 @@ function compareCache(
   stack: Variables,
   cacheIndex: number = cache.length - 1,
   stackIndex: number = stack.length - 1
-): boolean {
+): boolean
+{
   const [cacheLoop, newCacheIndex] = pickup(cache, 'loop', cacheIndex) as [Loop | undefined, number]
   const [stackLoop, newStackIndex] = pickup(stack, 'loop', stackIndex) as [Loop | undefined, number]
 
@@ -470,14 +483,16 @@ function compareCache(
     compareCache(cache, stack, newCacheIndex - 1,  newStackIndex - 1)
 }
 
-function flatwrap(value: unknown): Array<unknown> {
+function flatwrap(value: unknown): Array<unknown>
+{
   return value === null || value === undefined ?
     [] :
     Array.isArray(value) ? value : [value]
 }
 
 // deno-lint-ignore no-explicit-any
-export function operateUnary(operator: string, operand: any) {
+export function operateUnary(operator: string, operand: any)
+{
   switch (operator) {
     case 'void': return void operand
     case 'typeof': return typeof operand
@@ -490,7 +505,8 @@ export function operateUnary(operator: string, operand: any) {
 }
 
 // deno-lint-ignore no-explicit-any
-export function noCut(operator: string, left: any): boolean {
+export function noCut(operator: string, left: any): boolean
+{
   switch (operator) {
     case '&&': return !!left
     case '||': return !left
@@ -500,7 +516,8 @@ export function noCut(operator: string, left: any): boolean {
 }
 
 // deno-lint-ignore no-explicit-any
-export function operateBinary(operator: string, left: any, right: any) {
+export function operateBinary(operator: string, left: any, right: any)
+{
   switch (operator) {
     // Arithmetic operators
     case '+': return left + right

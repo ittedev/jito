@@ -3,21 +3,27 @@
 import { Variables } from './types.ts'
 import { pickup } from './pickup.ts'
 
-export class Loop {
+export class Loop
+{
   constructor(
     private _key: unknown,
     private _value: unknown,
     private _index: number,
     private _entries: Array<[unknown, unknown]>,
     private _stack: Variables
-  ) {}
+  )
+  {}
+
   get key(): unknown { return this._key }
   get value(): unknown { return this._value }
   get index(): number { return this._index }
   get size(): number { return this._entries.length }
   get isFirst(): boolean { return this._index === 0 }
   get isLast(): boolean { return this._index === this._entries.length - 1 }
-  get parent(): Loop | undefined { return pickup(this._stack, 'loop')[0] as Loop | undefined }
+  get parent(): Loop | undefined
+  {
+    return pickup(this._stack, 'loop')[0] as Loop | undefined
+  }
 
   // There are not supported.
   // get iteration(): number { return this._index + 1 }

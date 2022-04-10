@@ -14,36 +14,36 @@ import { eventTypes } from './event_types.ts'
 import { destroy } from './destroy.ts'
 
 /**
- * Apply a patch to a dom node.
- *
- * @param tree - A virtual tree linked with real tree.
- * @param newTree - A new virtual tree patch tree.
- * @returns If tag names are equal, then the patched tree, else new LinkedVirtualTarget linked with new real element.
- *
+ * Apply a patch to a dom tree.
  */
-export function patch(tree: LinkedVirtualTree, newTree: VirtualTree): LinkedVirtualTree {
-  // console.log('patch:', JSON.parse(JSON.stringify(tree)), newTree)
+export function patch(
+  tree: LinkedVirtualTree,
+  newTree: VirtualTree
+) : LinkedVirtualTree
+{
   patchChildren(tree, newTree)
   tree.el.dispatchEvent(new CustomEvent(eventTypes.patch, {
     bubbles: true,
     composed: true
   }))
-  // console.log('patched:', tree)
   return tree
 }
 
 /**
  * Apply a patch to a dom element.
- *
- * @param ve - A virtual element linked with real element.
- * @param newVe - A new virtual element patch ve.
- * @returns If tag names are equal, then the patched ve, else new LinkedVirtualTarget linked with new real element.
- *
- * @alpha
  */
-function patchElement(ve: LinkedVirtualElement | null, newVe: VirtualElement): LinkedVirtualElement {
-  // if tag is different, 'is' is different or 'new' is true then new element
-  if (!ve || ve.tag !== newVe.tag || ve.is !== newVe.is || newVe.new) {
+export function patchElement(
+  ve: LinkedVirtualElement | null,
+  newVe: VirtualElement
+): LinkedVirtualElement
+{
+  // create new element
+  if (
+    !ve || // ve is null
+    ve.tag !== newVe.tag || // tag is different
+    ve.is !== newVe.is || // 'is' is different
+    newVe.new // 'new' flag is true
+  ) {
     ve = newVe.is ? {
       tag: newVe.tag,
       is : newVe.is,
@@ -71,11 +71,16 @@ function patchElement(ve: LinkedVirtualElement | null, newVe: VirtualElement): L
   return ve
 }
 
-function patchRealElement(ve: LinkedRealTarget | null, newVe: RealTarget): LinkedRealTarget {
+/**
+ * Apply a patch to a real dom element.
+ */
+export function patchRealElement(
+  ve: LinkedRealTarget | null,
+  newVe: RealTarget
+): LinkedRealTarget
+{
   if (!ve || ve.el !== newVe.el) {
-    ve = {
-      el: newVe.el
-    }
+    ve = { el: newVe.el }
     if ('insert' in newVe) {
       ve.insert = newVe.insert
     }
@@ -101,7 +106,14 @@ function patchRealElement(ve: LinkedRealTarget | null, newVe: RealTarget): Linke
   return ve
 }
 
-export function patchClass(ve: LinkedVirtualElement | LinkedRealElement, newVe: HasProps) {
+/**
+ * Apply a patch to a dom element class attribute.
+ */
+export function patchClass(
+  ve: LinkedVirtualElement | LinkedRealElement
+  , newVe: HasProps
+): void
+{
   const currentClass = (ve.class || []).join(' ')
   const newClass = (newVe.class || []).join(' ')
 
@@ -116,7 +128,14 @@ export function patchClass(ve: LinkedVirtualElement | LinkedRealElement, newVe: 
   }
 }
 
-export function patchPart(ve: LinkedVirtualElement | LinkedRealElement, newVe: HasProps) {
+/**
+ * Apply a patch to a dom element part attribute.
+ */
+export function patchPart(
+  ve: LinkedVirtualElement | LinkedRealElement
+  , newVe: HasProps
+): void
+{
   const currentPart = ve.part || []
   const newPart = newVe.part || []
 
@@ -137,7 +156,14 @@ export function patchPart(ve: LinkedVirtualElement | LinkedRealElement, newVe: H
   }
 }
 
-export function patchStyle(ve: LinkedVirtualElement | LinkedRealElement, newVe: HasProps) {
+/**
+ * Apply a patch to a dom element style attribute.
+ */
+export function patchStyle(
+  ve: LinkedVirtualElement | LinkedRealElement,
+  newVe: HasProps
+): void
+{
   if (ve.el instanceof HTMLElement) {
     const style = ve.style || ''
     const newStyle = newVe.style || ''
@@ -154,7 +180,14 @@ export function patchStyle(ve: LinkedVirtualElement | LinkedRealElement, newVe: 
   }
 }
 
-export function patchProps(ve: LinkedVirtualElement | LinkedRealElement, newVe: HasProps) {
+/**
+ * Apply a patch to dom element attributes.
+ */
+export function patchProps(
+  ve: LinkedVirtualElement | LinkedRealElement,
+  newVe: HasProps
+): void
+{
   const currentProps = ve.props || {}
   const newProps = newVe.props || {}
   const currentPropsKeys = Object.keys(currentProps)
@@ -177,7 +210,14 @@ export function patchProps(ve: LinkedVirtualElement | LinkedRealElement, newVe: 
   }
 }
 
-export function patchOn(ve: LinkedVirtualElement | LinkedRealTarget, newVe: HasProps) {
+/**
+ * Apply a patch to dom element event attributes.
+ */
+export function patchOn(
+  ve: LinkedVirtualElement | LinkedRealTarget,
+  newVe: HasProps
+): void
+{
   const currentOn = ve.on || {}
   const newOn = newVe.on || {}
   const currentOnKeys = Object.keys(currentOn)
@@ -229,7 +269,14 @@ export function patchOn(ve: LinkedVirtualElement | LinkedRealTarget, newVe: HasP
   }
 }
 
-export function patchForm(ve: LinkedVirtualElement | LinkedRealElement, newVe: HasProps) {
+/**
+ * Apply a patch to dom element form relation attributes.
+ */
+export function patchForm(
+  ve: LinkedVirtualElement | LinkedRealElement,
+  newVe: HasProps
+): void
+{
   // <input>
   if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.el)) {
     const input = ve.el as HTMLInputElement
@@ -266,6 +313,9 @@ export function patchForm(ve: LinkedVirtualElement | LinkedRealElement, newVe: H
   }
 }
 
+/**
+ * Temporary storage when the order is changed.
+ */
 class Stock {
   stock: Map<unknown, Array<LinkedVirtualElement>>
   constructor() {
@@ -287,14 +337,22 @@ class Stock {
   }
 }
 
-// use boundary numbers algorithm
-function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree) {
+/**
+ * Apply a patch to element children.
+ *
+ *  use boundary numbers algorithm
+ */
+export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): void
+{
   const children = tree.children || []
   const newChildren = newTree.children || []
   const stock = new Stock()
   let index = 0
   let node = tree.el.firstChild as undefined | null | Node
-  const numbers = newChildren.filter(vNode => typeof vNode === 'number').reverse() as Array<number>
+  const numbers =
+    newChildren
+      .filter(vNode => typeof vNode === 'number')
+      .reverse() as Array<number>
   let number = numbers.pop()
 
   // add object
@@ -357,18 +415,25 @@ function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree) {
       case 'object': {
         // real target
         if ('el' in vNode) {
-          if (typeof children[index] === 'object' && vNode.el === (children[index] as LinkedRealTarget).el) {
+          if (
+            typeof children[index] === 'object' &&
+            vNode.el === (children[index] as LinkedRealTarget).el
+          ) {
             // patch real node
             const tmp = patchRealElement((children[index] as LinkedRealTarget), vNode)
-            if (tmp.el === node && tmp.el instanceof Element && tmp.el.getRootNode() === node.getRootNode()) {
+            if (
+              tmp.el === node &&
+              tmp.el instanceof Element &&
+              tmp.el.getRootNode() === node.getRootNode()
+            ) {
               node = (node as Node).nextSibling
             }
             index++
             return tmp
           } else {
             // add real node
-            const tmp = patchRealElement(null, vNode) as LinkedVirtualElement
-            if (tmp.el instanceof Element && tmp.el.parentNode === null) {// el instanceof Element
+            const tmp = patchRealElement(null, vNode)
+            if (tmp.el instanceof Element && tmp.el.parentNode === null) { // el instanceof Element
               tree.el.insertBefore(tmp.el, node || null)
             }
             return tmp
@@ -378,12 +443,15 @@ function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree) {
         // virtual element
         if ('key' in vNode) {
           if (stock.has(vNode.key)) {
-            const tmp = patchElement(stock.shift(vNode.key), vNode) as LinkedVirtualElement
+            const tmp = patchElement(stock.shift(vNode.key), vNode)
             tree.el.insertBefore(tmp.el, node || null)
             return tmp
           } else {
             while (index < children.length && children[index] !== number) {
-              if (typeof children[index] === 'object' && vNode.key === (children[index] as LinkedVirtualElement).key) {
+              if (
+                typeof children[index] === 'object' &&
+                vNode.key === (children[index] as LinkedVirtualElement).key
+              ) {
                 // replace key object
                 return replace(vNode)
               }
@@ -393,7 +461,11 @@ function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree) {
             return add(vNode)
           }
         } else {
-          if (typeof children[index] === 'object' && !('el' in vNode) && !('key' in (children[index] as LinkedVirtualElement))) {
+          if (
+            typeof children[index] === 'object' &&
+            !('el' in vNode) &&
+            !('key' in (children[index] as LinkedVirtualElement))
+          ) {
             // replace non key object
             return replace(vNode)
           } else {

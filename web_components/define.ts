@@ -19,7 +19,12 @@ export function define(name: string, patcher: Patcher): void
 export function define(name: string, patcher: Patcher, data: Variables): void
 export function define(name: string, patcher: Patcher, main: Main): void
 export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | Main): void
-export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | Main = []): void {
+export function define(
+  name: string,
+  template: string | TreeTemplate | Patcher | Component,
+  data: Variables | Record<string, unknown> | Main = []
+): void
+{
   const component = instanceOfComponent(template) ? template : compact(template, data)
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')

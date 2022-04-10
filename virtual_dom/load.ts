@@ -4,15 +4,16 @@ import { LinkedVirtualTree, LinkedVirtualElement } from './types.ts'
 
 /**
  * Create a vertual tree from a dom node.
- * @alpha
  */
-export function load(el: Element | DocumentFragment): LinkedVirtualTree {
+export function load(el: Element | DocumentFragment): LinkedVirtualTree
+{
   const tree = { el } as LinkedVirtualTree
   loadChildren(tree)
   return tree
 }
 
-function loadElement(el: Element): LinkedVirtualElement {
+function loadElement(el: Element): LinkedVirtualElement
+{
   const ve = {
     tag: el.tagName.toLowerCase(),
     el
@@ -24,7 +25,8 @@ function loadElement(el: Element): LinkedVirtualElement {
   return ve
 }
 
-function loadAttr(ve: LinkedVirtualElement) {
+function loadAttr(ve: LinkedVirtualElement)
+{
   if (ve.el.hasAttributes()) {
     const props = {} as Record<string, string>
     ve.el.getAttributeNames().forEach(name => {
@@ -42,7 +44,8 @@ function loadAttr(ve: LinkedVirtualElement) {
   }
 }
 
-function loadChildren(tree: LinkedVirtualTree) {
+function loadChildren(tree: LinkedVirtualTree)
+{
   if (tree.el.hasChildNodes()) {
     const nodeList = tree.el.childNodes
     tree.children = []

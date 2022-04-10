@@ -3,7 +3,11 @@
 import { isLocked, BeakoObject } from './types.ts'
 import { invade } from './watch.ts'
 
-export async function receive(obj: BeakoObject, key: string | string[]): Promise<Record<string, unknown>> {
+export async function receive(
+  obj: BeakoObject,
+  key: string | string[]
+): Promise<Record<string, unknown>>
+{
   if (!obj[isLocked]) {
     const keys = Array.isArray(key) ? key : [key]
     const values = await Promise.all(keys.map(key => {

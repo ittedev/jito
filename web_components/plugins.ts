@@ -64,6 +64,7 @@ export const componentPlugin = {
     }
     return false
   },
+
   exec (
     template: CustomElementTemplate | CustomTemplate,
     stack: Variables,
@@ -164,6 +165,7 @@ export const specialTagPlugin = {
     }
     return false
   },
+
   exec (
     template: CustomElementTemplate,
     stack: Variables,

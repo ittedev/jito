@@ -2,14 +2,17 @@
 // This module is browser compatible.
 import { TokenField, TokenType, Token } from './types.ts'
 
-export class Lexer {
+export class Lexer
+{
   constructor(
     private text: string,
     private field: TokenField,
     private index = 0,
     private token: Token | null = null
   ) {}
-  private _next(start: number): Token | null {
+
+  private _next(start: number): Token | null
+  {
     const token = ['', '']
     for (this.index = start; this.index < this.text.length; this.index++) {
       const nextType = distinguish(this.field, token[1] + this.text[this.index])
@@ -22,7 +25,9 @@ export class Lexer {
     }
     return token as Token
   }
-  skip(): string {
+
+  skip(): string
+  {
     let value = ''
     if (!this.token) {
       for (let i = this.index; i < this.text.length; i++) {
@@ -41,9 +46,11 @@ export class Lexer {
     }
     return value
   }
+
   nextIs(): TokenType
   nextIs(type: TokenType): boolean
-  nextIs(type?: TokenType): TokenType | boolean {
+  nextIs(type?: TokenType): TokenType | boolean
+  {
     this.skip()
     if (this.token) {
       return type ? this.token[0] === type : this.token[0]
@@ -51,13 +58,17 @@ export class Lexer {
       return false
     }
   }
-  pop(): Token | null {
+
+  pop(): Token | null
+  {
     this.skip()
     const token = this.token
     this.token = null
     return token ? token : null
   }
-  expand(field: TokenField, func: () => void): void {
+
+  expand(field: TokenField, func: () => void): void
+  {
     const parent = this.field
     this.field = field
     func()
@@ -67,14 +78,17 @@ export class Lexer {
     }
     this.field = parent
   }
-  must(type: TokenType): Token {
+
+  must(type: TokenType): Token
+  {
     const token = this.pop()
     if (!token || token[0] !== type) throw Error(type + ' is required.')
     return token
   }
 }
 
-function distinguish(field: TokenField, value: string): TokenType {
+function distinguish(field: TokenField, value: string): TokenType
+{
   switch (field) {
     case 'html':
       switch (value) {
@@ -200,7 +214,8 @@ function distinguish(field: TokenField, value: string): TokenType {
   return 'other'
 }
 
-export function unescape(value: string): string {
+export function unescape(value: string): string
+{
   switch (value) {
     case '\\n': return '\n'
     case '\\r': return '\r'

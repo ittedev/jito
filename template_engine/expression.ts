@@ -28,7 +28,8 @@ import { Lexer, unescape } from './lexer.ts'
  */
 export function expression(script: string): Template
 export function expression(lexer: Lexer): Template
-export function expression(script: Lexer | string): Template {
+export function expression(script: Lexer | string): Template
+{
   const lexer = typeof script === 'string' ? new Lexer(script, 'script') : script
   return assignment(lexer)
 }
@@ -39,7 +40,8 @@ export function expression(script: Lexer | string): Template {
  * Precedence: 2
  * @alpha
  */
-function assignment(lexer: Lexer): Template {
+function assignment(lexer: Lexer): Template
+{
   const left = conditional(lexer)
   if (lexer.nextIs('assign')) {
     if (left.type !== 'get') {
@@ -47,7 +49,12 @@ function assignment(lexer: Lexer): Template {
     }
     const operator = (lexer.pop() as Token)[1]
     const right = expression(lexer)
-    return { type: 'assign', operator, left: (left as GetTemplate).value, right } as AssignTemplate
+    return {
+      type: 'assign',
+      operator,
+      left: (left as GetTemplate).value,
+      right
+    } as AssignTemplate
   } else {
     return left
   }
@@ -58,7 +65,8 @@ function assignment(lexer: Lexer): Template {
  * Precedence: 3
  * @alpha
  */
-function conditional(lexer: Lexer): Template {
+function conditional(lexer: Lexer): Template
+{
   let condition = arithmetic(lexer)
   while (lexer.nextIs('?')) {
     lexer.pop()
@@ -75,7 +83,8 @@ function conditional(lexer: Lexer): Template {
  * Precedence: 4 - 14
  * @alpha
  */
- function arithmetic(lexer: Lexer): Template {
+function arithmetic(lexer: Lexer): Template
+{
   const list = new Array<Template | string>()
   list.push(unary(lexer))
   while(lexer.nextIs('multi') || lexer.nextIs('binary')) {
@@ -86,17 +95,28 @@ function conditional(lexer: Lexer): Template {
   // Binary operator precedence
   while (list.length > 1) {
     for (let index = 0; index + 1 < list.length; index += 2) {
-    if (index + 3 >= list.length || precedence(list[index + 1] as string) > precedence(list[index + 3] as string)) {
-        const node = { type: 'binary', operator: list[index + 1] as string, left:list[index] as Template, right: list[index + 2] as Template } as BinaryTemplate
+      if (
+        index + 3 >= list.length ||
+        precedence(list[index + 1] as string) > precedence(list[index + 3] as string)
+      ) {
+        const node = {
+          type: 'binary',
+          operator: list[index + 1] as string,
+          left: list[index] as Template,
+          right: list[index + 2] as Template
+        } as BinaryTemplate
         list.splice(index, 3, node)
       }
     }
   }
 
-  return typeof list[0] === 'string' ? { type: 'variable', name: list[0] } as VariableTemplate : list[0] as Template
+  return typeof list[0] === 'string' ?
+    { type: 'variable', name: list[0] } as VariableTemplate :
+    list[0] as Template
 }
 
-function precedence(operator: string): number {
+function precedence(operator: string): number
+{
   switch (operator) {
     default: return 0
     case '||': case '??': return 4
@@ -118,7 +138,8 @@ function precedence(operator: string): number {
  * Precedence: 15
  * @alpha
  */
-function unary(lexer: Lexer): Template {
+function unary(lexer: Lexer): Template
+{
   switch (lexer.nextIs()) {
     case 'multi':
     case 'unary':
@@ -133,7 +154,8 @@ function unary(lexer: Lexer): Template {
  * Precedence: 18
  * @alpha
  */
-function func(lexer: Lexer): Template {
+function func(lexer: Lexer): Template
+{
   let template = term(lexer)
   while (true) {
     switch (lexer.nextIs()) {
@@ -173,7 +195,8 @@ function func(lexer: Lexer): Template {
  * Precedence: 19
  * @alpha
  */
-function term(lexer: Lexer): Template {
+function term(lexer: Lexer): Template
+{
   const token = lexer.pop() as Token
   switch (token[0]) {
     // w
@@ -257,7 +280,12 @@ function term(lexer: Lexer): Template {
  * String Literal
  * @alpha
  */
-export function stringLiteral(lexer: Lexer, field: TokenField, type: TokenType): Template {
+export function stringLiteral(
+  lexer: Lexer,
+  field: TokenField,
+  type: TokenType
+): Template
+{
   const texts = [''] as Array<string | Template>
   let i = 0
   lexer.expand(field, () => {

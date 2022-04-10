@@ -15,7 +15,8 @@ import { patch } from '../virtual_dom/patch.ts'
 import { builtin } from './builtin.ts'
 import { eventTypes } from '../virtual_dom/event_types.ts'
 
-export class Entity {
+export class Entity
+{
   private _stack?: Variables | null
   private _patcher?: Patcher
   private _cache: SpecialCache
@@ -27,7 +28,8 @@ export class Entity {
   private _refs: Record<string, [Ref, ChangeCallback, ChangeCallback]> = {}
   private _constructor: Promise<void>
 
-  constructor( component: Component, host: Element, tree: LinkedVirtualTree ) {
+  constructor( component: Component, host: Element, tree: LinkedVirtualTree )
+  {
     const root = tree.el as ShadowRoot
     this._component = component
     this._template = component.template
@@ -68,7 +70,8 @@ export class Entity {
     })().then()
   }
 
-  setProp(name: string, value: unknown) {
+  setProp(name: string, value: unknown)
+  {
     // console.log('setProp:', name, value)
     switch (name) {
       case 'is': case 'class': case 'part': case 'style': return
@@ -110,7 +113,8 @@ export class Entity {
     }
   }
 
-  _unwatch() {
+  _unwatch()
+  {
     for (const name in this._refs) {
       const ref = this._refs[name][0]
       unwatch(this._props, name, this._refs[name][1])
@@ -124,11 +128,14 @@ export class Entity {
   get root(): ShadowRoot { return this._tree.el as ShadowRoot }
   get props(): Record<string, unknown> { return this._props }
   get patch() { return this._patch }
-  get whenConstructed() {
+
+  get whenConstructed()
+  {
     return (): Promise<void> | null => this._constructor
   }
 
-  private _patch (template?: string | TreeTemplate | Patcher): void {
+  private _patch (template?: string | TreeTemplate | Patcher): void
+  {
     if (template) {
       if (typeof template === 'function') {
         this._patcher = template

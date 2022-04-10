@@ -7,49 +7,66 @@ import { Entity } from './entity.ts'
 
 export const localComponentElementTag = 'beako-entity'
 
-export class ComponentElement extends HTMLElement {
+export class ComponentElement extends HTMLElement
+{
   entity?: Entity
-  constructor() {
+
+  constructor()
+  {
     super()
   }
+
   // static get observedAttributes() { return ['class', 'part', 'style'] }
-  setProp(name: string, value: unknown) {
+  setProp(name: string, value: unknown)
+  {
     this.entity?.setProp(name, value)
   }
-  static getComponent(): Component | undefined {
+
+  static getComponent(): Component | undefined
+  {
     return undefined
   }
-  loadProps() {
+
+  loadProps()
+  {
     if (this.hasAttributes()) {
       this.getAttributeNames().forEach(name => {
         this.setProp(name, this.getAttribute(name))
       })
     }
   }
-  whenConstructed(): Promise<void> | null {
+
+  whenConstructed(): Promise<void> | null
+  {
     return this.entity?.whenConstructed() || null
   }
 
   // overwraps
-  get attributes(): NamedNodeMap {
+  get attributes(): NamedNodeMap
+  {
     return proxyNamedNodeMap(super.attributes, this.setProp)
   }
-  setAttribute(name: string, value: unknown) {
+
+  setAttribute(name: string, value: unknown)
+  {
     this.setProp(name, value)
     super.setAttribute(name, value as string)
   }
-  // attributeChangedCallback(name: string, oldValue: unknown, newValue: unknown) {
-  //   // console.log('attributeChangedCallback()', name, oldValue, newValue)
-  // }
-  getAttributeNode(name: string): Attr | null {
+
+  getAttributeNode(name: string): Attr | null
+  {
     const attr = super.getAttributeNode(name)
     return attr ? proxyAttr(attr, this.setProp) : attr
   }
-  removeAttribute(name: string) {
+
+  removeAttribute(name: string)
+  {
     this.setProp(name, undefined)
     return super.removeAttribute(name)
   }
-  removeAttributeNode(attr: Attr) {
+
+  removeAttributeNode(attr: Attr)
+  {
     this.setProp(attr.name, undefined)
     return super.removeAttributeNode(attr)
   }
@@ -59,11 +76,14 @@ export class ComponentElement extends HTMLElement {
   // ARIAMixin
 }
 
-class LocalComponentElement extends ComponentElement {
+class LocalComponentElement extends ComponentElement
+{
   constructor() {
     super()
   }
-  setProp(name: string, value: unknown) {
+
+  setProp(name: string, value: unknown)
+  {
     if (name === 'component') {
       switch (typeof value) {
         case 'string': {
@@ -96,7 +116,8 @@ class LocalComponentElement extends ComponentElement {
 
 customElements.define(localComponentElementTag, LocalComponentElement)
 
-function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void) {
+function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void)
+{
   return new Proxy(attr, {
     set(target, prop, value) {
       setProp(prop as string, value)
@@ -107,7 +128,11 @@ function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void) 
   })
 }
 
-function proxyNamedNodeMap(attrs: NamedNodeMap, setProp: (name: string, value: unknown) => void) {
+function proxyNamedNodeMap(
+  attrs: NamedNodeMap,
+  setProp: (name: string, value: unknown) => void
+)
+{
   return new Proxy(attrs, {
     get: function (target, prop) {
       if (prop === 'length') {

@@ -23,7 +23,11 @@ export function compact(patcher: Patcher, data: Variables): Component
 export function compact(patcher: Patcher, data: Record<string, unknown>): Component
 export function compact(patcher: Patcher, main: Main): Component
 export function compact(template: string | TreeTemplate | Patcher, data: Variables | Record<string, unknown> | Main): Component
-export function compact(template: string | TreeTemplate | Patcher, data: Variables | Record<string, unknown> | Main = []): Component {
+export function compact(
+  template: string | TreeTemplate | Patcher,
+  data: Variables | Record<string, unknown> | Main = []
+): Component
+{
   const component: Component = {
     data: (typeof data === 'function' || Array.isArray(data)) ? data : [data],
     options: { mode: 'open' }

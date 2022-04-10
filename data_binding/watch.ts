@@ -1,7 +1,20 @@
 // deno-lint-ignore-file no-explicit-any
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { dictionary, isLocked, reactiveKey, arrayKey, ReactiveTuple, ChangeCallback, ReactiveCallback, Page, Arm, BeakoObject, Bio, Spy } from './types.ts'
+import {
+  dictionary,
+  isLocked,
+  reactiveKey,
+  arrayKey,
+  ReactiveTuple,
+  ChangeCallback,
+  ReactiveCallback,
+  Page,
+  Arm,
+  BeakoObject,
+  Bio,
+  Spy
+} from './types.ts'
 
 export function watch<T>(data: T): T
 export function watch<T>(data: T, callback: ReactiveCallback): T
@@ -9,7 +22,12 @@ export function watch<T>(data: T, key: string, callback: ChangeCallback): T
 export function watch<T>(data: T, key: string, spy: Spy): T
 export function watch<T>(data: T, keys: string[], callback: ChangeCallback): T
 export function watch<T>(data: T, keys: string[], spy: Spy): T
-export function watch<T>(data: T, keyOrCallback?:  ReactiveCallback | Bio | string | string[], callback?: ChangeCallback | Spy): T {
+export function watch<T>(
+  data: T,
+  keyOrCallback?:  ReactiveCallback | Bio | string | string[],
+  callback?: ChangeCallback | Spy
+): T
+{
   if (typeof data === 'object' &&
     data !== null &&
     (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))) {
@@ -62,7 +80,8 @@ export function watch<T>(data: T, keyOrCallback?:  ReactiveCallback | Bio | stri
   return data
 }
 
-export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void {
+export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
+{
   if (!obj[isLocked]) {
     if (!(dictionary in obj)) {
       const reactiveCallback: ReactiveCallback = () => {
@@ -182,7 +201,8 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
   }
 }
 
-function attack(page: Page, value: unknown) {
+function attack(page: Page, value: unknown)
+{
   const old = page[0]
   page[0] = value
 

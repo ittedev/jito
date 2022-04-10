@@ -14,7 +14,8 @@ import { notHasEnd } from './is_primitive.ts'
 
 export function dom(html: string): TemporaryNode | undefined
 export function dom(lexer: Lexer): TemporaryNode | undefined
-export function dom(html: Lexer | string): TemporaryNode | undefined {
+export function dom(html: Lexer | string): TemporaryNode | undefined
+{
   const lexer = typeof html === 'string' ? new Lexer(html, 'html') : html
   const text = { text: lexer.skip() } as TemporaryText
 
@@ -42,7 +43,8 @@ export function dom(html: Lexer | string): TemporaryNode | undefined {
   return text.text ? text : text.next ? text.next : undefined
 }
 
-function el(lexer: Lexer): TemporaryNode | undefined {
+function el(lexer: Lexer): TemporaryNode | undefined
+{
   const el = {
     tag: (lexer.pop() as Token)[1].slice(1).toLocaleLowerCase()
   } as TemporaryElement
@@ -81,7 +83,8 @@ function el(lexer: Lexer): TemporaryNode | undefined {
   }
 }
 
-function attr(lexer: Lexer): Array<[string, string, string]> {
+function attr(lexer: Lexer): Array<[string, string, string]>
+{
   const attrs = [] as Array<[string, string, string]>
   lexer.expand('attr', () => {
     lexer.skip()
@@ -134,7 +137,8 @@ function attr(lexer: Lexer): Array<[string, string, string]> {
   return attrs
 }
 
-function string(lexer: Lexer, field: TokenField, type: TokenType): string {
+function string(lexer: Lexer, field: TokenField, type: TokenType): string
+{
   let text = '' as string
   lexer.expand(field, () => {
     loop: while (true) {

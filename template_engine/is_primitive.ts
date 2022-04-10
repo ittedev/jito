@@ -1,7 +1,8 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 // deno-lint-ignore-file no-fallthrough
-export function isPrimitive(tag: string): boolean {
+export function isPrimitive(tag: string): boolean
+{
   switch(tag) {
     // Main root
     case 'html':
@@ -50,7 +51,8 @@ export function isPrimitive(tag: string): boolean {
   return false
 }
 
-export function notHasEnd(tag: string): boolean {
+export function notHasEnd(tag: string): boolean
+{
   switch (tag) {
     case 'br':
     case 'hr':

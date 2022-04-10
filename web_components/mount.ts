@@ -34,7 +34,12 @@ export function mount(element: Element, patcher: Patcher, data: Variables): void
 export function mount(element: Element, patcher: Patcher, data: Record<string, unknown>): void
 export function mount(element: Element, patcher: Patcher, main: Main): void
 export function mount(target: string | Element, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | Main): void
-export function mount(target: string | Element, template: string | TreeTemplate | Patcher | Component, data: Variables | Record<string, unknown> | Main = []): void {
+export function mount(
+  target: string | Element,
+  template: string | TreeTemplate | Patcher | Component,
+  data: Variables | Record<string, unknown> | Main = []
+): void
+{
   const host: Element =
     typeof target === 'string' ?
       document.querySelector(target) as Element :

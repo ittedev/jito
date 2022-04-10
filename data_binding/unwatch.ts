@@ -1,13 +1,44 @@
 // deno-lint-ignore-file no-explicit-any
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
-import { dictionary, reactiveKey, isLocked, Callback, ChangeCallback, ReactiveCallback, ReactiveTuple, BeakoObject } from './types.ts'
+import {
+  dictionary,
+  reactiveKey,
+  isLocked,
+  Callback,
+  ChangeCallback,
+  ReactiveCallback,
+  ReactiveTuple,
+  BeakoObject
+} from './types.ts'
 
-export function unwatch(data: unknown): unknown
-export function unwatch(data: unknown, callback: ReactiveCallback): unknown
-export function unwatch(data: unknown, key: string, callback: ChangeCallback): unknown
-export function unwatch(data: unknown, keys: string[], callback: ChangeCallback): unknown
-export function unwatch(data: unknown, keyOrCallback?:  ReactiveCallback | string | string[], callback?: ChangeCallback): unknown {
+export function unwatch(
+  data: unknown
+): unknown
+
+export function unwatch(
+  data: unknown,
+  callback: ReactiveCallback
+): unknown
+
+export function unwatch(
+  data: unknown,
+  key: string,
+  callback: ChangeCallback
+): unknown
+
+export function unwatch(
+  data: unknown,
+  keys: string[],
+  callback: ChangeCallback
+): unknown
+
+export function unwatch(
+  data: unknown,
+  keyOrCallback?: ReactiveCallback | string | string[],
+  callback?: ChangeCallback
+): unknown
+{
   if (typeof data === 'object' && data !== null) {
     const obj = data as BeakoObject
     if (!obj[isLocked]) {
@@ -41,7 +72,8 @@ export function unwatch(data: unknown, keyOrCallback?:  ReactiveCallback | strin
 }
 // TODO: Block recursion
 
-export function retreat(obj: BeakoObject, key?: string, callback?: Callback) {
+export function retreat(obj: BeakoObject, key?: string, callback?: Callback)
+{
   if (key !== undefined) {
     if (dictionary in obj) {
       if (key in obj[dictionary]) {
