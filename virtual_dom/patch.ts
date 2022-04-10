@@ -346,19 +346,28 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
 {
   const children = tree.children || []
   const newChildren = newTree.children || []
+  if (children.length === 0 && newChildren.length === 0) return
+
+  // if added for the first time, then use DocumentFragment
+  const parent =
+    (children.length === 0 && newChildren.length > 1) ?
+      new DocumentFragment() :
+      tree.el
+
   const stock = new Stock()
   let index = 0
-  let node = tree.el.firstChild as undefined | null | Node
+  let node = parent.firstChild as undefined | null | Node
   const numbers =
     newChildren
       .filter(vNode => typeof vNode === 'number')
       .reverse() as Array<number>
-  let number = numbers.pop()
+  let currentNumber = numbers.pop()
+
 
   // add object
   const add = (vNode: VirtualElement) => {
     const tmp = patchElement(null, vNode) as LinkedVirtualElement
-    tree.el.insertBefore(tmp.el, node || null)
+    parent.insertBefore(tmp.el, node || null)
     return tmp
   }
 
@@ -367,7 +376,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
     const tmp = patchElement(children[index] as LinkedVirtualElement, vNode) as LinkedVirtualElement
     if (tmp !== children[index]) {
       destroy(children[index] as LinkedVirtualElement)
-      tree.el.replaceChild(tmp.el, (children[index] as LinkedVirtualElement).el)
+      parent.replaceChild(tmp.el, (children[index] as LinkedVirtualElement).el)
     }
     node = tmp.el.nextSibling
     index++
@@ -390,7 +399,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
       }
       const old = node as Node
       node = old.nextSibling
-      tree.el.removeChild(old)
+      parent.removeChild(old)
     }
     index++
   }
@@ -407,7 +416,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
           index++
         } else {
           // add text
-          tree.el.insertBefore(document.createTextNode(vNode), node || null)
+          parent.insertBefore(document.createTextNode(vNode), node || null)
         }
         return vNode
       }
@@ -434,7 +443,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
             // add real node
             const tmp = patchRealElement(null, vNode)
             if (tmp.el instanceof Element && tmp.el.parentNode === null) { // el instanceof Element
-              tree.el.insertBefore(tmp.el, node || null)
+              parent.insertBefore(tmp.el, node || null)
             }
             return tmp
           }
@@ -444,10 +453,10 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
         if ('key' in vNode) {
           if (stock.has(vNode.key)) {
             const tmp = patchElement(stock.shift(vNode.key), vNode)
-            tree.el.insertBefore(tmp.el, node || null)
+            parent.insertBefore(tmp.el, node || null)
             return tmp
           } else {
-            while (index < children.length && children[index] !== number) {
+            while (index < children.length && children[index] !== currentNumber) {
               if (
                 typeof children[index] === 'object' &&
                 vNode.key === (children[index] as LinkedVirtualElement).key
@@ -480,7 +489,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
           remove()
         }
         index++
-        number = numbers.pop()
+        currentNumber = numbers.pop()
         stock.stock.forEach(queue => queue.forEach(ve => destroy(ve)))
         stock.stock.clear()
         return vNode
@@ -496,5 +505,9 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
     tree.children = tmp
   } else {
     delete tree.children
+  }
+
+  if (children.length === 0 && newChildren.length > 1) {
+    tree.el.append(parent)
   }
 }
