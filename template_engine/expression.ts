@@ -24,7 +24,6 @@ import { Lexer, unescape } from './lexer.ts'
  * E = I
  * Operator precedence
  * used: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
- * @alpha
  */
 export function expression(script: string): Template
 export function expression(lexer: Lexer): Template
@@ -38,7 +37,6 @@ export function expression(script: Lexer | string): Template
  * Assignment
  * I = C o E
  * Precedence: 2
- * @alpha
  */
 function assignment(lexer: Lexer): Template
 {
@@ -63,7 +61,6 @@ function assignment(lexer: Lexer): Template
 /**
  * C = A (? E : A)*
  * Precedence: 3
- * @alpha
  */
 function conditional(lexer: Lexer): Template
 {
@@ -81,7 +78,6 @@ function conditional(lexer: Lexer): Template
 /**
  * A = U(oU)*
  * Precedence: 4 - 14
- * @alpha
  */
 function arithmetic(lexer: Lexer): Template
 {
@@ -134,19 +130,48 @@ function precedence(operator: string): number
 }
 
 /**
- * U = oU | F
+ * U = oU | P
  * Precedence: 15
- * @alpha
  */
 function unary(lexer: Lexer): Template
 {
   switch (lexer.nextIs()) {
     case 'multi':
     case 'unary':
-      return { type: 'unary', operator: (lexer.pop() as Token)[1] as string, operand:unary(lexer) } as UnaryTemplate
+      return {
+        type: 'unary',
+        operator: (lexer.pop() as Token)[1],
+        operand: unary(lexer)
+      } as UnaryTemplate
+    case 'crement': // prefix
+      return {
+        type: 'assign',
+        operator: (lexer.pop() as Token)[1].charAt(0) + '=',
+        left: (unary(lexer) as GetTemplate).value,
+        right: { type: 'literal', value: 1 }
+      } as AssignTemplate
     default:
-      return func(lexer)
+      return postfix(lexer)
   }
+}
+
+/**
+ * P = Fo
+ * Precedence: 16
+ */
+function postfix(lexer: Lexer): Template
+{
+  const template = func(lexer)
+  if(lexer.nextIs('crement')) {
+    return {
+      type: 'assign',
+      operator: (lexer.pop() as Token)[1].charAt(0) + '=',
+      left: (template as GetTemplate).value,
+      right: { type: 'literal', value: 1 },
+      prevalue: true
+    } as AssignTemplate
+  }
+  return template
 }
 
 /**
@@ -193,7 +218,6 @@ function func(lexer: Lexer): Template
 /**
  * T = w | L | (E)
  * Precedence: 19
- * @alpha
  */
 function term(lexer: Lexer): Template
 {
@@ -278,7 +302,6 @@ function term(lexer: Lexer): Template
 
 /**
  * String Literal
- * @alpha
  */
 export function stringLiteral(
   lexer: Lexer,

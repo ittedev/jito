@@ -64,7 +64,7 @@ export const evaluate = function (
 
     case 'binary': {
       const left = evaluate(temp.left, stack, cache)
-      if (noCut(temp.operator, left)) {
+        if (continueEvaluation(temp.operator, left)) {
         return operateBinary(temp.operator, left, evaluate(temp.right, stack, cache))
       } else {
         return left
@@ -78,17 +78,18 @@ export const evaluate = function (
       }
 
       const { record, key } = value
+      const prevalue = record[key]
+
       const right = evaluate(temp.right, stack, cache)
       if (temp.operator.length > 1) {
         const operator = temp.operator.slice(0, -1)
-        if (noCut(operator, record[key])) {
-          return record[key] = operateBinary(operator, record[key], right)
-        } else {
-          return record[key]
+        if (continueEvaluation(operator, prevalue)) {
+          record[key] = operateBinary(operator, prevalue, right)
         }
       } else {
-        return record[key] = right
+        record[key] = right
       }
+      return temp.prevalue ? prevalue : record[key]
     }
 
     case 'function': {
@@ -505,7 +506,7 @@ export function operateUnary(operator: string, operand: any)
 }
 
 // deno-lint-ignore no-explicit-any
-export function noCut(operator: string, left: any): boolean
+function continueEvaluation(operator: string, left: any): boolean
 {
   switch (operator) {
     case '&&': return !!left

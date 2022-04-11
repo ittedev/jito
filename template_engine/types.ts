@@ -89,6 +89,7 @@ export interface AssignTemplate {
   operator: string
   left: VariableTemplate | HashTemplate
   right: Template
+  prevalue?: boolean
 }
 
 export interface FunctionTemplate {
