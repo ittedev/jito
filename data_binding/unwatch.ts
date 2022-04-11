@@ -57,13 +57,13 @@ export function unwatch(
           for (const key in obj) {
             unwatch(obj[key])
           }
-          retreat(obj)
+          clean(obj)
         }
       } else { // ChangeCallback
         if (Array.isArray(keyOrCallback)) {
-          keyOrCallback.forEach(key => retreat(obj, key as string, callback))
+          keyOrCallback.forEach(key => clean(obj, key as string, callback))
         } else {
-          retreat(obj, keyOrCallback as string, callback)
+          clean(obj, keyOrCallback as string, callback)
         }
       }
     }
@@ -72,7 +72,7 @@ export function unwatch(
 }
 // TODO: Block recursion
 
-export function retreat(obj: BeakoObject, key?: string, callback?: Callback)
+export function clean(obj: BeakoObject, key?: string, callback?: Callback)
 {
   if (key !== undefined) {
     if (dictionary in obj) {

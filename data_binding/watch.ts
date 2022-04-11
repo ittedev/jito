@@ -33,14 +33,14 @@ export function watch<T>(
     (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))) {
     const obj = data as unknown as BeakoObject
     if (!obj[isLocked]) {
-      invade(obj)
+      pollute(obj)
       if (callback === undefined) { // bio
         const callbacks = (obj[dictionary][reactiveKey] as ReactiveTuple)[1]
         if (typeof keyOrCallback === 'function') {
           callbacks.add(keyOrCallback)
         }
         for (const key in obj) {
-          invade(obj, key, (obj[dictionary][reactiveKey] as ReactiveTuple)[0])
+          pollute(obj, key, (obj[dictionary][reactiveKey] as ReactiveTuple)[0])
           const value = obj[key]
           // Change all child objects to beako objects
           // and set parent bio to all child object
@@ -62,7 +62,7 @@ export function watch<T>(
           const len = obj[dictionary][arrayKey].length
           if (obj.length < len) {
             for (let index = obj.length; index < len; index++) {
-              invade(obj, index)
+              pollute(obj, index)
             }
           }
           obj.length = len
@@ -70,9 +70,9 @@ export function watch<T>(
       } else { // spy
         const spy = typeof callback === 'function' ? ['spy', callback] as Spy : callback as Spy
         if (Array.isArray(keyOrCallback)) {
-          keyOrCallback.forEach(key => invade(obj, key as string, spy))
+          keyOrCallback.forEach(key => pollute(obj, key as string, spy))
         } else {
-          invade(obj, keyOrCallback as string, spy)
+          pollute(obj, keyOrCallback as string, spy)
         }
       }
     }
@@ -80,7 +80,7 @@ export function watch<T>(
   return data
 }
 
-export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
+export function pollute(obj: BeakoObject, key?: string | number, arm?: Arm): void
 {
   if (!obj[isLocked]) {
     if (!(dictionary in obj)) {
@@ -167,7 +167,7 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
             get() { return this[dictionary][key][0] },
             set(value) {
               (obj[dictionary][reactiveKey] as ReactiveTuple)[1].forEach(callback => watch(value, callback))
-              attack(this[dictionary][key] as Page, value)
+              launch(this[dictionary][key] as Page, value)
             }
           })
         }
@@ -201,7 +201,7 @@ export function invade(obj: BeakoObject, key?: string | number, arm?: Arm): void
   }
 }
 
-function attack(page: Page, value: unknown)
+function launch(page: Page, value: unknown)
 {
   const old = page[0]
   page[0] = value

@@ -1,7 +1,7 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import { isLocked, BeakoObject } from './types.ts'
-import { invade } from './watch.ts'
+import { pollute } from './watch.ts'
 
 export async function receive(
   obj: BeakoObject,
@@ -13,7 +13,7 @@ export async function receive(
     const values = await Promise.all(keys.map(key => {
       if (obj[key] === undefined) {
         return new Promise(resolve => {
-          invade(obj, key, ['bom', resolve])
+          pollute(obj, key, ['bom', resolve])
         })
       } else {
         return obj[key]
