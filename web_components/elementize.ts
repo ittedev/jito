@@ -5,11 +5,12 @@ import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { Entity } from './entity.ts'
 
-export const componentElementTag = 'beako-entity'
+export const componentElementTag = 'beako-element'
 
 export function elementize(component: Component): Element
 export function elementize(tag: string): Element
-export function elementize(component: Component | string): Element {
+export function elementize(component: Component | string): Element
+{
   if (typeof component === 'string') {
     return document.createElement(component)
   } else {
@@ -24,13 +25,11 @@ export class ComponentElement extends HTMLElement
   private _entity?: Entity
   private _run?: (value: void | PromiseLike<void>) => void
 
-
   constructor()
   {
     super()
   }
 
-  // static get observedAttributes() { return ['class', 'part', 'style'] }
   setProp(name: string, value: unknown)
   {
     this._entity?.setProp(name, value)
@@ -109,7 +108,7 @@ export class ComponentElement extends HTMLElement
   // ARIAMixin
 }
 
-class LocalComponentElement extends ComponentElement
+class GrobalComponentElement extends ComponentElement
 {
   constructor() {
     super()
@@ -147,7 +146,7 @@ class LocalComponentElement extends ComponentElement
   }
 }
 
-customElements.define(componentElementTag, LocalComponentElement)
+customElements.define(componentElementTag, GrobalComponentElement)
 
 function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void)
 {
