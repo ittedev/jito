@@ -5,11 +5,25 @@ import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { Entity } from './entity.ts'
 
-export const localComponentElementTag = 'beako-entity'
+export const componentElementTag = 'beako-entity'
+
+export function elementize(component: Component): Element
+export function elementize(tag: string): Element
+export function elementize(component: Component | string): Element {
+  if (typeof component === 'string') {
+    return document.createElement(component)
+  } else {
+    const el = document.createElement(componentElementTag)
+    el.setAttribute('component', component as unknown as string)
+    return el
+  }
+}
 
 export class ComponentElement extends HTMLElement
 {
-  entity?: Entity
+  private _entity?: Entity
+  private _run?: (value: void | PromiseLike<void>) => void
+
 
   constructor()
   {
@@ -19,7 +33,7 @@ export class ComponentElement extends HTMLElement
   // static get observedAttributes() { return ['class', 'part', 'style'] }
   setProp(name: string, value: unknown)
   {
-    this.entity?.setProp(name, value)
+    this._entity?.setProp(name, value)
   }
 
   static getComponent(): Component | undefined
@@ -36,9 +50,28 @@ export class ComponentElement extends HTMLElement
     }
   }
 
-  whenConstructed(): Promise<void> | null
+  whenRunning(): Promise<void>
   {
-    return this.entity?.whenConstructed() || null
+    if (this._entity) {
+      return this._entity.whenRunning()
+    } else {
+      return new Promise<void>(resolve => {
+        this._run = resolve
+      })
+    }
+  }
+
+  protected _setEntity(entity: Entity)
+  {
+    this._entity = entity
+    if (this._run) {
+      this._entity.whenRunning().then(this._run)
+    }
+  }
+
+  get entity()
+  {
+    return this._entity
   }
 
   // overwraps
@@ -93,7 +126,7 @@ class LocalComponentElement extends ComponentElement
             const component = (def as typeof ComponentElement).getComponent()
             if (component) {
               const tree = load(this.attachShadow(component.options))
-              this.entity = new Entity(component, this, tree)
+              this._setEntity(new Entity(component, this, tree))
             }
           } else {
             throw Error(value + ' is not a component.')
@@ -103,7 +136,7 @@ class LocalComponentElement extends ComponentElement
         case 'object':
           if (instanceOfComponent(value)) {
             const tree = load(this.attachShadow(value.options))
-            this.entity = new Entity(value, this, tree)
+            this._setEntity(new Entity(value, this, tree))
           } else if (value !== null) {
             throw Error('The object is not a component.')
           }
@@ -114,7 +147,7 @@ class LocalComponentElement extends ComponentElement
   }
 }
 
-customElements.define(localComponentElementTag, LocalComponentElement)
+customElements.define(componentElementTag, LocalComponentElement)
 
 function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void)
 {

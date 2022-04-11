@@ -5,7 +5,7 @@ import { Variables, TreeTemplate } from '../template_engine/types.ts'
 import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { compact } from './compact.ts'
-import { ComponentElement } from './element.ts'
+import { ComponentElement } from './elementize.ts'
 import { Entity } from './entity.ts'
 
 export function define(name: string, component: Component): void
@@ -33,7 +33,7 @@ export function define(
     constructor() {
       super()
       const tree = load(this.attachShadow(component.options))
-      this.entity = new Entity(component, this, tree)
+      this._setEntity(new Entity(component, this, tree))
 
       if(this.innerHTML) { // TODO: empty?
         // if this is rendered from html

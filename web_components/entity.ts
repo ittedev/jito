@@ -26,9 +26,9 @@ export class Entity
   private _tree: LinkedVirtualTree
   private _props: Record<string, unknown> = {}
   private _refs: Record<string, [Ref, ChangeCallback, ChangeCallback]> = {}
-  private _constructor: Promise<void>
+  private _running: Promise<void>
 
-  constructor( component: Component, host: Element, tree: LinkedVirtualTree )
+  constructor(component: Component, host: Element, tree: LinkedVirtualTree)
   {
     const root = tree.el as ShadowRoot
     this._component = component
@@ -44,7 +44,7 @@ export class Entity
     }
 
     const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
-    this._constructor = (async () => {
+    this._running = (async () => {
       const result = await data
       const stack = result ? Array.isArray(result) ? result : [result] : []
       this._stack = [builtin, { host, root }, watch(this._props), ...stack]
@@ -129,9 +129,9 @@ export class Entity
   get props(): Record<string, unknown> { return this._props }
   get patch() { return this._patch }
 
-  get whenConstructed()
+  get whenRunning()
   {
-    return (): Promise<void> | null => this._constructor
+    return (): Promise<void> => this._running
   }
 
   private _patch (template?: string | TreeTemplate | Patcher): void

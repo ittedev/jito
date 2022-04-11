@@ -18,7 +18,7 @@ import {
   Cache,
   EvaluatePlugin
 } from '../template_engine/types.ts'
-import { ComponentElement, localComponentElementTag } from './element.ts'
+import { ComponentElement, componentElementTag } from './elementize.ts'
 import { evaluate, evaluateProps } from '../template_engine/evaluate.ts'
 import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'
@@ -37,7 +37,7 @@ export const componentPlugin = {
   ): boolean
   {
     if (template.type === 'custom') {
-      if (template.tag === localComponentElementTag) {
+      if (template.tag === componentElementTag) {
         // local entity
         return true
       }
@@ -73,11 +73,11 @@ export const componentPlugin = {
   {
     const temp = template as ComponentTemplate
     const ve: VirtualElement = {
-      tag: localComponentElementTag // 'beako-entity'
+      tag: componentElementTag // 'beako-entity'
     }
 
     let component
-    if (temp.tag !== localComponentElementTag) {
+    if (temp.tag !== componentElementTag) {
       component = pickup(stack, temp.tag)[0]
       if (component) {
         // local component
@@ -122,7 +122,7 @@ export const componentPlugin = {
 
     evaluateProps(temp, stack, cache, ve)
 
-    if (temp.tag === localComponentElementTag) {
+    if (temp.tag === componentElementTag) {
       // local entity
       component = ve.props?.component
       ;(ve.props ?? (ve.props = {})).component = component

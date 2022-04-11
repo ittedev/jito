@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
-<title>virtual_dom/load.test.js</title>
+<title>Web Components test</title>
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <div id="mocha"></div>
 <div id="define_target1" style="display: none;"></div>
@@ -44,18 +44,13 @@ var sleep = t => new Promise(r => setTimeout(r, t || 0))
 import {
   watch,
   receive,
-  unwatch,
-  reach,
-  lock,
-  unlock,
   load,
-  patch,
-  expression,
   parse,
   evaluate,
   define,
   compact,
-  mount
+  mount,
+  elementize
 } from '../beako.js'
 
 mocha.setup('bdd')
@@ -246,7 +241,7 @@ describe('Web Components', function() {
     })
   })
 
-  describe('ComponentElement', function() {
+  describe('elementize', function() {
     it('no component prop', async () => {
       const el = document.querySelector('#element_target1')
       const component = compact('<beako-entity></beako-entity>')
@@ -292,6 +287,15 @@ describe('Web Components', function() {
       state.component = compact(`Hello world!`)
       await sleep()
       equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, 'Hello world!')
+    })
+    it('elementize tag', async () => {
+      const el = elementize('a')
+      equal(el.tagName, 'A')
+    })
+    it('elementize component', async () => {
+      const el = elementize(compact(`Hello beako!`))
+      await el.whenRunning()
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
   })
 
