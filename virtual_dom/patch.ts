@@ -346,9 +346,16 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
 {
   const oldChildren = tree.children || []
   const newChildren = newTree.children || []
-  if (oldChildren.length === 0 && newChildren.length === 0) return
+  if (oldChildren.length === 0 && newChildren.length === 0) {
+    return
+  }
 
-  // if added for the first time, then use DocumentFragment
+  // If children already exists
+  if (oldChildren.length === 0 && tree.el.hasChildNodes()) {
+    return
+  }
+
+  // If added for the first time, then use DocumentFragment
   const parent =
     (oldChildren.length === 0 && newChildren.length > 1) ?
       new DocumentFragment() :
