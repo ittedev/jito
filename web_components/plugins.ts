@@ -37,7 +37,7 @@ export const componentPlugin = {
   ): boolean
   {
     if (template.type === 'custom') {
-      if (template.tag === componentElementTag) {
+      if (template.tag === componentElementTag || template.tag === 'element') {
         // local entity
         return true
       }
@@ -79,7 +79,7 @@ export const componentPlugin = {
     let component
 
     // If tag is not "beako-element"
-    if (temp.tag !== componentElementTag) {
+    if (temp.tag !== componentElementTag && temp.tag !== 'element') {
       component = pickup(stack, temp.tag)[0]
       if (component) {
         // If local component,
@@ -130,7 +130,7 @@ export const componentPlugin = {
     // If tag is "beako-element",
     // require a component property
     // because attach shadow error occurs
-    if (temp.tag === componentElementTag) {
+    if (temp.tag === componentElementTag || temp.tag === 'element') {
       component = ve.props?.component
       ;(ve.props ?? (ve.props = {})).component = component
     }

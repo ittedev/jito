@@ -16,6 +16,7 @@
 <div id="compact_target3" style="display: none;"></div>
 <div id="compact_target4" style="display: none;"></div>
 <div id="compact_target5" style="display: none;"></div>
+<div id="compact_target7" style="display: none;"></div>
 <div id="element_target1" style="display: none;"></div>
 <div id="element_target2" style="display: none;"></div>
 <div id="element_target3" style="display: none;"></div>
@@ -237,56 +238,69 @@ describe('Web Components', function() {
       const component = compact('<hello></hello>', { hello: local })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
   })
 
   describe('elementize', function() {
     it('no component prop', async () => {
       const el = document.querySelector('#element_target1')
-      const component = compact('<beako-entity></beako-entity>')
+      const component = compact('<beako-element></beako-element>')
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot, null)
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
     })
     it('component is null', async () => {
       const el = document.querySelector('#element_target2')
-      const component = compact('<beako-entity component:="component"></beako-entity>', { component: null })
+      const component = compact('<beako-element component:="component"></beako-element>', { component: null })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot, null)
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
     })
     it('component is undefined', async () => {
       const el = document.querySelector('#element_target3')
-      const component = compact('<beako-entity component:="component"></beako-entity>', { component: undefined })
+      const component = compact('<beako-element component:="component"></beako-element>', { component: undefined })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot, null)
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
     })
     it('component is a defined component', async () => {
       define('element-3', compact(`Hello beako!`))
       const el = document.querySelector('#element_target4')
-      const component = compact('<beako-entity component="element-3"></beako-entity>')
+      const component = compact('<beako-element component="element-3"></beako-element>')
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('component is a local component', async () => {
       const el = document.querySelector('#element_target5')
-      const component = compact('<beako-entity component:="component"></beako-entity>', { component: compact(`Hello beako!`) })
+      const component = compact(
+        '<beako-element component:="component"></beako-element>',
+        { component: compact(`Hello beako!`)
+      })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('component is a changed component', async () => {
       const el = document.querySelector('#element_target6')
       const state = watch({ component: compact(`Hello beako!`) })
-      const component = compact('<beako-entity component:="component"></beako-entity>', state)
+      const component = compact('<beako-element component:="component"></beako-element>', state)
       mount(el, component)
       await sleep()
       state.component = compact(`Hello world!`)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.innerHTML, 'Hello world!')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello world!')
+    })
+    it('component name is "element" only', async () => {
+      const el = document.querySelector('#element_target7')
+      const component = compact(
+        '<element component:="component"></element>',
+        { component: compact(`Hello beako!`)
+      })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('elementize tag', async () => {
       const el = elementize('a')
@@ -346,7 +360,7 @@ describe('Web Components', function() {
       const component = compact('<hello name:="name"></hello>', { hello: local, name: 'beako' })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
     // TODO: test seal
     // TODO: test Patcher
@@ -360,12 +374,12 @@ describe('Web Components', function() {
       `, { local, add: 2 })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
     })
 
     it('expand @as', async () => {
@@ -377,12 +391,12 @@ describe('Web Components', function() {
       `, { local, add: 2 })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
     })
 
     it('expand @as and <group>', async () => {
@@ -398,8 +412,8 @@ describe('Web Components', function() {
       `, { local })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('h2').innerText, 'Beako.js')
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('p').innerText, 'Welcome!')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('h2').innerText, 'Beako.js')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Welcome!')
     })
 
     it('expand content, @as and slot', async () => {
@@ -418,9 +432,9 @@ describe('Web Components', function() {
       `, { local })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('h2').innerText, 'Welcome!')
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('button').innerText, 'Click me')
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Good bye!')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('h2').innerText, 'Welcome!')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('button').innerText, 'Click me')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Good bye!')
     })
 
     it('expand no content', async () => {
@@ -432,12 +446,12 @@ describe('Web Components', function() {
       `, { local, add: 2 })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[0].innerText, '1')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[1].innerText, '2')
-      equal(el.shadowRoot.querySelectorAll('beako-entity')[1].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('p')[2].innerText, '3')
     })
 
     it('expand chain', async () => {
@@ -451,7 +465,7 @@ describe('Web Components', function() {
       `, { local, add: 2 })
       mount(el, component)
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-entity').shadowRoot.querySelector('span').innerText, '2')
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('span').innerText, '2')
     })
   })
 })
