@@ -105,7 +105,6 @@ export class ComponentElement extends HTMLElement
 
   toJSON() {
     return {
-      tag: componentElementTag,
       entity: this._entity
     }
   }
