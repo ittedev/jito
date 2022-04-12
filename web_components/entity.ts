@@ -151,11 +151,17 @@ export class Entity
         patch(this._tree, tree)
       } else {
         if (this._tree && this._component.template) {
-          // patch(this._tree, evaluate(this._component.template, this.stack) as VirtualTree)
-          const tree = evaluate(this._component.template, this._stack, this._cache) as VirtualTree
-          patch(this._tree, tree)
+          patch(this._tree, evaluate(this._component.template, this._stack, this._cache) as VirtualTree)
         }
       }
+    }
+  }
+
+  toJSON() {
+    return {
+      component: this._component,
+      props: this._props,
+      tree: this._tree,
     }
   }
 }

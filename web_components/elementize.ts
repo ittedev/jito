@@ -103,6 +103,13 @@ export class ComponentElement extends HTMLElement
     return super.removeAttributeNode(attr)
   }
 
+  toJSON() {
+    return {
+      tag: componentElementTag,
+      entity: this._entity
+    }
+  }
+
   // not spport
   // getAttributeNodeNS()
   // ARIAMixin
@@ -116,6 +123,7 @@ class GrobalComponentElement extends ComponentElement
 
   setProp(name: string, value: unknown)
   {
+    // if change a component property
     if (name === 'component') {
       switch (typeof value) {
         case 'string': {

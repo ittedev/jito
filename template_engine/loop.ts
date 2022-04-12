@@ -25,6 +25,16 @@ export class Loop
     return pickup(this._stack, 'loop')[0] as Loop | undefined
   }
 
+  toJSON() {
+    return {
+      key: this._key,
+      value: this._value,
+      _index: this._index,
+      size: this._entries.length,
+      isFirst: this._index === 0,
+      isLast: this._index === this._entries.length - 1
+    }
+  }
   // There are not supported.
   // get iteration(): number { return this._index + 1 }
   // get remaining(): number { return this._entries.length - this._index }
