@@ -1,5 +1,8 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
+
+export const eventTypes = Symbol.for('Beako Event Types')
+
 export interface HasProps {
   class?: Array<string>
   part?: Array<string>
