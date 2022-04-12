@@ -12,6 +12,7 @@ import { unwatch } from '../data_binding/unwatch.ts'
 import { parse } from '../template_engine/parse.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
 import { patch } from '../virtual_dom/patch.ts'
+import { destroy } from '../virtual_dom/destroy.ts'
 import { builtin } from './builtin.ts'
 import { eventTypes } from '../virtual_dom/event_types.ts'
 
@@ -42,6 +43,9 @@ export class Entity
     if (this._component.options.mode === 'closed') {
       root.addEventListener(eventTypes.patch, event => event.stopPropagation())
     }
+    host.addEventListener(eventTypes.destroy, () => {
+      this._patch({ type: 'tree' })
+    })
 
     const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
     this._running = (async () => {
@@ -72,7 +76,6 @@ export class Entity
 
   setProp(name: string, value: unknown)
   {
-    // console.log('setProp:', name, value)
     switch (name) {
       case 'is': case 'class': case 'part': case 'style': return
       default: {
@@ -150,7 +153,9 @@ export class Entity
         const tree = this._patcher(this._stack)
         patch(this._tree, tree)
       } else {
-        if (this._tree && this._component.template) {
+        if (this._template) {
+          patch(this._tree, evaluate(this._template, this._stack, this._cache) as VirtualTree)
+        } else if (this._tree && this._component.template) {
           patch(this._tree, evaluate(this._component.template, this._stack, this._cache) as VirtualTree)
         }
       }

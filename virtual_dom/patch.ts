@@ -344,160 +344,160 @@ class Stock {
  */
 export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): void
 {
-  const children = tree.children || []
+  const oldChildren = tree.children || []
   const newChildren = newTree.children || []
-  if (children.length === 0 && newChildren.length === 0) return
+  if (oldChildren.length === 0 && newChildren.length === 0) return
 
   // if added for the first time, then use DocumentFragment
   const parent =
-    (children.length === 0 && newChildren.length > 1) ?
+    (oldChildren.length === 0 && newChildren.length > 1) ?
       new DocumentFragment() :
       tree.el
 
   const stock = new Stock()
   let index = 0
-  let node = parent.firstChild as undefined | null | Node
+  let currentNode = parent.firstChild as undefined | null | Node
   const numbers =
     newChildren
-      .filter(vNode => typeof vNode === 'number')
+      .filter(newVNode => typeof newVNode === 'number')
       .reverse() as Array<number>
   let currentNumber = numbers.pop()
 
 
   // add object
-  const add = (vNode: VirtualElement) => {
-    const tmp = patchElement(null, vNode) as LinkedVirtualElement
-    parent.insertBefore(tmp.el, node || null)
+  const add = (newVNode: VirtualElement) => {
+    const tmp = patchElement(null, newVNode) as LinkedVirtualElement
+    parent.insertBefore(tmp.el, currentNode || null)
     return tmp
   }
 
   // replace object
-  const replace = (vNode: VirtualElement) => {
-    const tmp = patchElement(children[index] as LinkedVirtualElement, vNode) as LinkedVirtualElement
-    if (tmp !== children[index]) {
-      destroy(children[index] as LinkedVirtualElement)
-      parent.replaceChild(tmp.el, (children[index] as LinkedVirtualElement).el)
+  const replace = (newVNode: VirtualElement) => {
+    const tmp = patchElement(oldChildren[index] as LinkedVirtualElement, newVNode) as LinkedVirtualElement
+    if (tmp !== oldChildren[index]) {
+      destroy(oldChildren[index] as LinkedVirtualElement)
+      parent.replaceChild(tmp.el, (oldChildren[index] as LinkedVirtualElement).el)
     }
-    node = tmp.el.nextSibling
+    currentNode = tmp.el.nextSibling
     index++
     return tmp
   }
 
   // remove node
   const remove = (useStore = false) => {
-    if (typeof children[index] !== 'number') {
-      if (typeof children[index] === 'object') {
-        if (node !== (children[index] as LinkedRealTarget).el) {
-          destroy(children[index++] as LinkedVirtualElement)
+    if (typeof oldChildren[index] !== 'number') {
+      if (typeof oldChildren[index] === 'object') {
+        if (currentNode !== (oldChildren[index] as LinkedRealTarget).el) {
+          destroy(oldChildren[index++] as LinkedVirtualElement)
           return
         }
-        if (useStore && 'key' in (children[index] as LinkedVirtualElement)) {
-          stock.push((children[index] as LinkedVirtualElement).key, children[index] as LinkedVirtualElement)
+        if (useStore && 'key' in (oldChildren[index] as LinkedVirtualElement)) {
+          stock.push((oldChildren[index] as LinkedVirtualElement).key, oldChildren[index] as LinkedVirtualElement)
         } else {
-          destroy(children[index] as LinkedVirtualElement)
+          destroy(oldChildren[index] as LinkedVirtualElement)
         }
       }
-      const old = node as Node
-      node = old.nextSibling
+      const old = currentNode as Node
+      currentNode = old.nextSibling
       parent.removeChild(old)
     }
     index++
   }
 
-  const tmp = newChildren.map(vNode => {
-    switch (typeof vNode) {
+  const tmp = newChildren.map(newVNode => {
+    switch (typeof newVNode) {
       case 'string': {
-        if (typeof children[index] === 'string') {
+        if (typeof oldChildren[index] === 'string') {
           // replace text
-          if ((node as Text).data !== vNode) {
-            (node as Text).data = vNode
+          if ((currentNode as Text).data !== newVNode) {
+            (currentNode as Text).data = newVNode
           }
-          node = (node as Text).nextSibling
+          currentNode = (currentNode as Text).nextSibling
           index++
         } else {
           // add text
-          parent.insertBefore(document.createTextNode(vNode), node || null)
+          parent.insertBefore(document.createTextNode(newVNode), currentNode || null)
         }
-        return vNode
+        return newVNode
       }
 
       case 'object': {
         // real target
-        if ('el' in vNode) {
+        if ('el' in newVNode) {
           if (
-            typeof children[index] === 'object' &&
-            vNode.el === (children[index] as LinkedRealTarget).el
+            typeof oldChildren[index] === 'object' &&
+            newVNode.el === (oldChildren[index] as LinkedRealTarget).el
           ) {
             // patch real node
-            const tmp = patchRealElement((children[index] as LinkedRealTarget), vNode)
+            const tmp = patchRealElement((oldChildren[index] as LinkedRealTarget), newVNode)
             if (
-              tmp.el === node &&
+              tmp.el === currentNode &&
               tmp.el instanceof Element &&
-              tmp.el.getRootNode() === node.getRootNode()
+              tmp.el.getRootNode() === currentNode.getRootNode() // Already in the same root
             ) {
-              node = (node as Node).nextSibling
+              currentNode = currentNode.nextSibling
             }
             index++
             return tmp
           } else {
             // add real node
-            const tmp = patchRealElement(null, vNode)
+            const tmp = patchRealElement(null, newVNode)
             if (tmp.el instanceof Element && tmp.el.parentNode === null) { // el instanceof Element
-              parent.insertBefore(tmp.el, node || null)
+              parent.insertBefore(tmp.el, currentNode || null)
             }
             return tmp
           }
         }
 
         // virtual element
-        if ('key' in vNode) {
-          if (stock.has(vNode.key)) {
-            const tmp = patchElement(stock.shift(vNode.key), vNode)
-            parent.insertBefore(tmp.el, node || null)
+        if ('key' in newVNode) {
+          if (stock.has(newVNode.key)) {
+            const tmp = patchElement(stock.shift(newVNode.key), newVNode)
+            parent.insertBefore(tmp.el, currentNode || null)
             return tmp
           } else {
-            while (index < children.length && children[index] !== currentNumber) {
+            while (index < oldChildren.length && oldChildren[index] !== currentNumber) {
               if (
-                typeof children[index] === 'object' &&
-                vNode.key === (children[index] as LinkedVirtualElement).key
+                typeof oldChildren[index] === 'object' &&
+                newVNode.key === (oldChildren[index] as LinkedVirtualElement).key
               ) {
                 // replace key object
-                return replace(vNode)
+                return replace(newVNode)
               }
               remove(true)
             }
             // add key object
-            return add(vNode)
+            return add(newVNode)
           }
         } else {
           if (
-            typeof children[index] === 'object' &&
-            !('el' in vNode) &&
-            !('key' in (children[index] as LinkedVirtualElement))
+            typeof oldChildren[index] === 'object' &&
+            !('el' in newVNode) &&
+            !('key' in (oldChildren[index] as LinkedVirtualElement))
           ) {
             // replace non key object
-            return replace(vNode)
+            return replace(newVNode)
           } else {
             // add object
-            return add(vNode)
+            return add(newVNode)
           }
         }
       }
 
       case 'number': {
-        while (index < children.length && children[index] !== vNode) {
+        while (index < oldChildren.length && oldChildren[index] !== newVNode) {
           remove()
         }
         index++
         currentNumber = numbers.pop()
         stock.stock.forEach(queue => queue.forEach(ve => destroy(ve)))
         stock.stock.clear()
-        return vNode
+        return newVNode
       }
     }
   })
 
-  while (index < children.length) {
+  while (index < oldChildren.length) {
     remove()
   }
 
@@ -507,7 +507,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
     delete tree.children
   }
 
-  if (children.length === 0 && newChildren.length > 1) {
+  if (oldChildren.length === 0 && newChildren.length > 1) {
     tree.el.append(parent)
   }
 }

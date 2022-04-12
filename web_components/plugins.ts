@@ -73,21 +73,26 @@ export const componentPlugin = {
   {
     const temp = template as ComponentTemplate
     const ve: VirtualElement = {
-      tag: componentElementTag // 'beako-entity'
+      tag: componentElementTag // 'beako-element'
     }
 
     let component
+
+    // If tag is not "beako-element"
     if (temp.tag !== componentElementTag) {
       component = pickup(stack, temp.tag)[0]
       if (component) {
-        // local component
+        // If local component,
+        // set a component property
         (ve.props ?? (ve.props = {})).component = component
       } else {
-        // global component
+        // If global component,
+        // don't change the tag
         ve.tag = temp.tag
       }
     }
 
+    // Resolve properties
     const values = [] as Array<Template | string>
     const contents = [] as Array<[string, Template]>
     const children = (temp.children || [])?.flatMap(child => {
@@ -122,8 +127,10 @@ export const componentPlugin = {
 
     evaluateProps(temp, stack, cache, ve)
 
+    // If tag is "beako-element",
+    // require a component property
+    // because attach shadow error occurs
     if (temp.tag === componentElementTag) {
-      // local entity
       component = ve.props?.component
       ;(ve.props ?? (ve.props = {})).component = component
     }
@@ -140,6 +147,8 @@ export const componentPlugin = {
       ;(ve.props ?? (ve.props = {})).component = component
     }
 
+    // Create new element,
+    // to avoid attach shadow error
     if (temp.cache !== component) {
       ve.new = true
     }
@@ -158,7 +167,6 @@ export const specialTagPlugin = {
   {
     if (template.type === 'custom') {
       if (special in cache && !isPrimitive(template.tag)) {
-        // console.log('cache:', cache)
         const el = pickup(stack, template.tag)[0]
         return cache[special].some(tag => tag === el)
       }
