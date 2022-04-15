@@ -4,7 +4,9 @@ import {
   special,
   instanceOfComponent,
   ComponentTemplate,
-  SpecialCache
+  SpecialCache,
+  Module,
+  instanceOfModule
 } from './types.ts'
 import { RealTarget, VirtualElement } from '../virtual_dom/types.ts'
 import {
@@ -22,12 +24,6 @@ import { ComponentElement, componentElementTag } from './element.ts'
 import { evaluate, evaluateProps } from '../template_engine/evaluate.ts'
 import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'
-
-type Module = {
-  [Symbol.toStringTag]: 'Module'
-  default?: unknown
-  [prop: string]: unknown
-}
 
 export const componentPlugin = {
   match (
@@ -49,10 +45,8 @@ export const componentPlugin = {
         (
           // local component
           instanceOfComponent(element) ||
-            // default module
-            'default' in element &&
-            (element as Module)[Symbol.toStringTag] === 'Module' &&
-            instanceOfComponent((element as Module).default)
+          // default module
+          instanceOfModule(element) && instanceOfComponent(element.default)
         )
       ) {
         return true

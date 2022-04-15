@@ -49,3 +49,16 @@ export function instanceOfComponent(object: any): object is Component {
 export interface SpecialCache extends Cache {
   [special]: Array<Element | DocumentFragment | ShadowRoot | EventTarget>
 }
+
+export type Module = {
+  [Symbol.toStringTag]: 'Module'
+  default?: unknown
+  [prop: string]: unknown
+}
+
+export function instanceOfModule(object: any): object is Module {
+  return  typeof object === 'object' &&
+    object !== null &&
+    'default' in object &&
+    (object as Module)[Symbol.toStringTag] === 'Module'
+}
