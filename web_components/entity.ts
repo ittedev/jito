@@ -130,14 +130,15 @@ export class Entity
   get host(): Element { return this._host }
   get root(): ShadowRoot { return this._tree.el as ShadowRoot }
   get props(): Record<string, unknown> { return this._props }
-  get patch() { return this._patch }
+  get patch(){ return this._patch }
+  get dispatch(){ return this._dispatch }
 
   get whenRunning()
   {
     return (): Promise<void> => this._running
   }
 
-  private _patch (template?: string | TreeTemplate | Patcher): void
+  private _patch(template?: string | TreeTemplate | Patcher): void
   {
     if (template) {
       if (typeof template === 'function') {
@@ -162,7 +163,15 @@ export class Entity
     }
   }
 
-  toJSON() {
+  private _dispatch(typeArg: string, detail: unknown = null): void
+  {
+    this._host.dispatchEvent(new CustomEvent(typeArg, {
+      detail: detail
+    }))
+  }
+
+  toJSON()
+  {
     return {
       component: this._component,
       props: this._props,
