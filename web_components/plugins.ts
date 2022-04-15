@@ -18,7 +18,7 @@ import {
   Cache,
   EvaluatePlugin
 } from '../template_engine/types.ts'
-import { ComponentElement, componentElementTag } from './elementize.ts'
+import { ComponentElement, componentElementTag } from './element.ts'
 import { evaluate, evaluateProps } from '../template_engine/evaluate.ts'
 import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'

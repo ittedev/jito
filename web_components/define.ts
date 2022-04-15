@@ -5,7 +5,7 @@ import { Variables, TreeTemplate } from '../template_engine/types.ts'
 import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { compact } from './compact.ts'
-import { ComponentElement } from './elementize.ts'
+import { ComponentElement } from './element.ts'
 import { Entity } from './entity.ts'
 
 export function define(name: string, component: Component): void
