@@ -197,7 +197,7 @@ export class SafeUpdater
 {
   private header?: VirtualTree
   private body?: VirtualTree
-  private _updateBody?: () => void
+  private _update?: () => void
   private _waitUrls = new Set<string>()
   private loaded: (event: Event) => void
 
@@ -215,43 +215,55 @@ export class SafeUpdater
     const header = hoist(tree, isHoistingTarget)
     const body = tree
 
-    // compare new and old header
-    // pick up load events
+    // pre update
     if (header.children !== undefined || this.header?.children !== undefined) {
       const oldLinks = (this.header?.children?.filter(el => (el as VirtualElement).tag === 'link') || []) as Array<VirtualElement>
       const newLinks = (header.children?.filter(el => (el as VirtualElement).tag === 'link') || []) as Array<VirtualElement>
-      newLinks
-        .forEach(link => {
+      const addedLinks = newLinks
+        .filter(link => oldLinks.every(el => el.props?.href !== link.props?.href))
+      const removedLinks = oldLinks
+        .filter(link => newLinks.every(el => el.props?.href !== link.props?.href))
+      if (addedLinks.length) {
+        // set a load event listener
+        newLinks.forEach(link => {
           ((link.on ??= {}).load ??= []).push(this.loaded)
-
-          const url = link.props?.href as string
-          if (oldLinks.every(el => el.props?.href !== link.props?.href)) {
-            this.addWaitUrl(url)
-          }
-        })
-      oldLinks
-        .forEach(link => {
-          const url = link.props?.href as string
-          if (newLinks.every(el => el.props?.href !== link.props?.href)) {
-            this.removeWaitUrl(url)
-          }
         })
 
-      // patch new header
-      patch(this.tree, concat(header, this.body))
-      this.header = header
+        // add to wait list
+        addedLinks.forEach(link => {
+          this.addWaitUrl(link.props?.href as string)
+          link.new = true
+        })
+
+        // remove from wait list
+        removedLinks.forEach(link => this.removeWaitUrl(link.props?.href as string))
+
+        if (removedLinks) {
+          // patch old header and new header
+          // because href may have changed
+          patch(this.tree, concat(this.header, header, this.body))
+        } else {
+          // patch new header
+          patch(this.tree, concat(header, this.body))
+        }
+
+        // remove new flag
+        addedLinks.forEach(link => link.new = false)
+
+        this.header = header
+      }
     }
 
     // patch new body
-    this.updateBody = () => {
+    this.update = () => {
       patch(this.tree, concat(this.header, body))
       this.body = body
     }
   }
 
-  set updateBody(callback: () => void) {
-    this._updateBody = callback
-    this._executeUpdateBody()
+  set update(callback: () => void) {
+    this._update = callback
+    this._executeUpdate()
   }
 
   addWaitUrl(url: string) {
@@ -260,13 +272,13 @@ export class SafeUpdater
 
   removeWaitUrl(url: string) {
     this._waitUrls.delete(url)
-    this._executeUpdateBody()
+    this._executeUpdate()
   }
 
-  _executeUpdateBody() {
-    if (!this._waitUrls.size && this._updateBody) {
-      this._updateBody()
-      this._updateBody = undefined
+  _executeUpdate() {
+    if (!this._waitUrls.size && this._update) {
+      this._update()
+      this._update = undefined
     }
   }
 }
