@@ -238,6 +238,7 @@ describe('Web Components', function() {
       const component = compact('<hello></hello>', { hello: local })
       mount(el, component)
       await sleep()
+      await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
   })
@@ -270,6 +271,7 @@ describe('Web Components', function() {
       const component = compact('<beako-element component="element-3"></beako-element>')
       mount(el, component)
       await sleep()
+      await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('component is a local component', async () => {
@@ -279,6 +281,7 @@ describe('Web Components', function() {
         { component: compact(`Hello beako!`)
       })
       mount(el, component)
+      await sleep()
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
@@ -290,6 +293,7 @@ describe('Web Components', function() {
       await sleep()
       state.component = compact(`Hello world!`)
       await sleep()
+      await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello world!')
     })
     it('component name is "element" only', async () => {
@@ -300,6 +304,7 @@ describe('Web Components', function() {
       })
       mount(el, component)
       await sleep()
+      await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('elementize tag', async () => {
@@ -309,6 +314,7 @@ describe('Web Components', function() {
     it('elementize component', async () => {
       const el = elementize(compact(`Hello beako!`))
       await el.whenRunning()
+      await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
   })
@@ -351,6 +357,7 @@ describe('Web Components', function() {
       )
       mount(el, component)
       await sleep()
+      await sleep()
       equal(el.shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
 
@@ -359,6 +366,7 @@ describe('Web Components', function() {
       const local = compact('<p>Hello {{ name }}!</p>')
       const component = compact('<hello name:="name"></hello>', { hello: local, name: 'beako' })
       mount(el, component)
+      await sleep()
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
@@ -373,6 +381,7 @@ describe('Web Components', function() {
         <local><span>{{ loop.value + add }}</span></local>
       `, { local, add: 2 })
       mount(el, component)
+      await sleep()
       await sleep()
       equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
       equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
@@ -390,6 +399,7 @@ describe('Web Components', function() {
         <local><span @as="num">{{ loop.value + add }}</span></local>
       `, { local, add: 2 })
       mount(el, component)
+      await sleep()
       await sleep()
       equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
       equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
@@ -412,6 +422,7 @@ describe('Web Components', function() {
       `, { local })
       mount(el, component)
       await sleep()
+      await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('h2').innerText, 'Beako.js')
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Welcome!')
     })
@@ -432,6 +443,7 @@ describe('Web Components', function() {
       `, { local })
       mount(el, component)
       await sleep()
+      await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('h2').innerText, 'Welcome!')
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('button').innerText, 'Click me')
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Good bye!')
@@ -445,6 +457,7 @@ describe('Web Components', function() {
         <local><span @as="num">{{ loop.value + add }}</span><span slot="header">Hello</span></local>
       `, { local, add: 2 })
       mount(el, component)
+      await sleep()
       await sleep()
       equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
       equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
@@ -464,6 +477,7 @@ describe('Web Components', function() {
         </local>
       `, { local, add: 2 })
       mount(el, component)
+      await sleep()
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('span').innerText, '2')
     })
