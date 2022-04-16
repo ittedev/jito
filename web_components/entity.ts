@@ -193,22 +193,19 @@ function isHoistingTarget(el: VirtualElement | RealTarget) {
   )
 }
 
-export class SafeUpdater
+class SafeUpdater
 {
   private header?: VirtualTree
   private body?: VirtualTree
   private _update?: () => void
   private _waitUrls = new Set<string>()
-  private loaded: (event: Event) => void
+  private loaded = (event: Event) => {
+    this.removeWaitUrl((event.target as HTMLLinkElement).href)
+  }
 
   public constructor(
     private tree: LinkedVirtualTree
-  )
-  {
-    this.loaded = (event: Event) => {
-      this.removeWaitUrl((event.target as HTMLLinkElement).href)
-    }
-  }
+  ) {}
 
   public patch(tree: VirtualTree) {
     // hoisting link[rel="stylesheet"] element
