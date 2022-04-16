@@ -6,7 +6,8 @@ import type {
   VirtualElement,
   RealTarget,
   VirtualTree,
-  LinkedVirtualTree
+  LinkedVirtualTree,
+  VirtualNode
 } from '../virtual_dom/types.ts'
 import type { TreeTemplate, Variables, Ref } from '../template_engine/types.ts'
 import { special } from './types.ts'
@@ -185,12 +186,13 @@ export class Entity
 }
 
 function isHoistingTarget(el: VirtualElement | RealTarget) {
-  return 'tag' in el && (
-    el.tag === 'style' ||
-      el.tag === 'link' &&
-      el.props?.href !== '' &&
-      (el.props?.rel as string).toLocaleLowerCase() === 'stylesheet'
-  )
+  return 'tag' in el && (el.tag === 'style' || el.tag === 'link')
+}
+
+function isWaitingTarget(el: VirtualNode) {
+  return (el as VirtualElement).tag === 'link' &&
+    (el as VirtualElement).props?.href !== '' &&
+    ((el as VirtualElement).props?.rel as string).toLocaleLowerCase() === 'stylesheet'
 }
 
 class SafeUpdater
@@ -214,8 +216,8 @@ class SafeUpdater
 
     // pre update
     if (header.children !== undefined || this.header?.children !== undefined) {
-      const oldLinks = (this.header?.children?.filter(el => (el as VirtualElement).tag === 'link') || []) as Array<VirtualElement>
-      const newLinks = (header.children?.filter(el => (el as VirtualElement).tag === 'link') || []) as Array<VirtualElement>
+      const oldLinks = (this.header?.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
+      const newLinks = (header.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
       const addedLinks = newLinks
         .filter(link => oldLinks.every(el => el.props?.href !== link.props?.href))
       const removedLinks = oldLinks
