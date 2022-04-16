@@ -200,7 +200,7 @@ class SafeUpdater
   private _update?: () => void
   private _waitUrls = new Set<string>()
   private loaded = (event: Event) => {
-    this.removeWaitUrl((event.target as HTMLLinkElement).href)
+    this.removeWaitUrl((event.target as HTMLLinkElement).getAttribute('href') as string)
   }
 
   public constructor(
@@ -224,6 +224,7 @@ class SafeUpdater
         // set a load event listener
         newLinks.forEach(link => {
           ((link.on ??= {}).load ??= []).push(this.loaded)
+          ;(link.on.error ??= []).push(this.loaded)
         })
 
         // add to wait list

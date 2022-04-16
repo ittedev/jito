@@ -140,7 +140,9 @@ class GrobalComponentElement extends ComponentElement
   }
 }
 
-customElements.define(componentElementTag, GrobalComponentElement)
+if (!customElements.get(componentElementTag)) {
+  customElements.define(componentElementTag, GrobalComponentElement)
+}
 
 function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void)
 {
