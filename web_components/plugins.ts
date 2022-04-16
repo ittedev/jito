@@ -78,7 +78,7 @@ export const componentPlugin = {
       if (component) {
         // If local component,
         // set a component property
-        (ve.props ?? (ve.props = {})).component = component
+        (ve.props ??= {}).component = component
       } else {
         // If global component,
         // don't change the tag
@@ -126,7 +126,7 @@ export const componentPlugin = {
     // because attach shadow error occurs
     if (temp.tag === componentElementTag || temp.tag === 'element') {
       component = ve.props?.component
-      ;(ve.props ?? (ve.props = {})).component = component
+      ;(ve.props ??= {}).component = component
     }
 
     if (
@@ -138,7 +138,7 @@ export const componentPlugin = {
     ) {
       // default module
       component = (component as Module).default
-      ;(ve.props ?? (ve.props = {})).component = component
+      ;(ve.props ??= {}).component = component
     }
 
     // Create new element,

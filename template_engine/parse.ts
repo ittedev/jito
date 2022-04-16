@@ -178,13 +178,13 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
             }
             case 'class':
             case 'part': {
-              return (template[name] ?? (template[name] = [])).push(value.split(/\s+/))
+              return (template[name] ??= []).push(value.split(/\s+/))
             }
             case 'style': {
               return style.push(value)
             }
           }
-          if (!(name in (template.props ?? (template.props = {}) as Record<string, unknown | Template>))) {
+          if (!(name in (template.props ??= {}))) {
             return (template.props as Record<string, unknown | Template>)[name] = value
           }
           return
@@ -196,14 +196,14 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
               return template.is = expression(value)
             case 'class':
             case 'part': {
-              return (template[name] ?? (template[name] = []) as Array<Array<string> | Template>)
+              return (template[name] ??= [])
                 .push({ type: 'flags', value: expression(value) } as FlagsTemplate)
             }
             case 'style': {
               return style.push(expression(value))
             }
           }
-          return (template.props ?? (template.props = {}))[name] = expression(value)
+          return (template.props ??= {})[name] = expression(value)
         }
 
         case '*=': { // ref attribute
@@ -211,13 +211,13 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
           if (instanceOfTemplate(ref) && ref.type === 'get') {
             ref = (ref as GetTemplate).value
           }
-          return (template.props ?? (template.props = {}))[name] = ref
+          return (template.props ??= {})[name] = ref
         }
 
         case 'on': { // on attribute
           const type = name.slice(2)
           const handler = { type: 'handler', value: expression(value) } as HandlerTemplate
-          return ((template.on ?? (template.on = {}))[type] ?? (template.on[type] = [])).push(handler)
+          return ((template.on ??= {})[type] ??= []).push(handler)
         }
       }
     })
@@ -233,7 +233,7 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
      // boolean attribute
     el.attrs?.forEach(([name, assign, value]) => {
       if (assign === '&=') {
-        (template.bools ?? (template.bools = {}) as Record<string, unknown | Template>)[name] = expression(value)
+        (template.bools ??= {})[name] = expression(value)
         if (template.props) {
           delete template.props[name]
           if (!Object.keys(template.props).length) {

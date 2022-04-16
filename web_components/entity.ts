@@ -222,13 +222,7 @@ export class SafeUpdater
       const newLinks = (header.children?.filter(el => (el as VirtualElement).tag === 'link') || []) as Array<VirtualElement>
       newLinks
         .forEach(link => {
-          if (!link.on) {
-            link.on = {}
-          }
-          if (!link.on.load) {
-            link.on.load = []
-          }
-          link.on.load.push(this.loaded)
+          ((link.on ??= {}).load ??= []).push(this.loaded)
 
           const url = link.props?.href as string
           if (oldLinks.every(el => el.props?.href !== link.props?.href)) {
