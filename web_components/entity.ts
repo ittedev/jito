@@ -47,14 +47,15 @@ export class Entity
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._updater = new SafeUpdater(tree)
-    this._patch = this._patch.bind(this)
+    this.patch = this.patch.bind(this)
+    this.dispatch = this.dispatch.bind(this)
     this._cache = { [special]: [host, root] }
 
     if (this._component.options.mode === 'closed') {
       root.addEventListener(eventTypes.patch, event => event.stopPropagation())
     }
     host.addEventListener(eventTypes.destroy, () => {
-      this._patch({ type: 'tree' })
+      this.patch({ type: 'tree' })
     })
 
     const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
@@ -62,8 +63,8 @@ export class Entity
       const result = await data
       const stack = result ? Array.isArray(result) ? result : [result] : []
       this._stack = [builtin, { host, root }, watch(this._props), ...stack]
-      reach(this._stack, this._patch)
-      this._patch()
+      reach(this._stack, this.patch)
+      this.patch()
       stack.forEach(data => {
         if (typeof data === 'object' && data !== null) {
           for (const name in data) {
@@ -101,7 +102,7 @@ export class Entity
               delete this._refs[name]
             }
           }
-          unwatch(old, this._patch)
+          unwatch(old, this.patch)
           if (instanceOfRef(value)) { // ref prop
             const childCallback = (newValue: unknown) => {
               value.record[value.key] = newValue
@@ -117,10 +118,10 @@ export class Entity
             this._props[name] = value
           }
           if (old === undefined) {
-            watch(this._props, name, this._patch)
+            watch(this._props, name, this.patch)
           }
-          reach(this._props, this._patch)
-          this._patch()
+          reach(this._props, this.patch)
+          this.patch()
         }
       }
     }
@@ -130,15 +131,13 @@ export class Entity
   public get host(): Element { return this._host }
   public get root(): ShadowRoot { return this._tree.el as ShadowRoot }
   public get props(): Record<string, unknown> { return this._props }
-  public get patch(){ return this._patch }
-  public get dispatch(){ return this._dispatch }
 
   public get whenRunning()
   {
     return (): Promise<void> => this._running
   }
 
-  private _patch(template?: string | TreeTemplate | Patcher): void
+  public patch(template?: string | TreeTemplate | Patcher): void
   {
     if (template) {
       if (typeof template === 'function') {
@@ -168,7 +167,7 @@ export class Entity
     }
   }
 
-  private _dispatch(typeArg: string, detail: unknown = null): void
+  public dispatch(typeArg: string, detail: unknown = null): void
   {
     this._host.dispatchEvent(new CustomEvent(typeArg, {
       detail: detail
