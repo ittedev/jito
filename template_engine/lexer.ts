@@ -26,12 +26,13 @@ export class Lexer
     return token as Token
   }
 
-  skip(): string
+  skip(skipArray: Array<string> = []): string
   {
+    skipArray.unshift('other')
     let value = ''
     if (!this.token) {
       for (let i = this.index; i < this.text.length; i++) {
-        if (distinguish(this.field, this.text[i]) === 'other') {
+        if (skipArray.includes(distinguish(this.field, this.text[i]))) {
           value += this.text[i]
         } else {
           this.token = this._next(i)

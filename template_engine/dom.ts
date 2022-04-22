@@ -17,13 +17,13 @@ export function dom(lexer: Lexer): TemporaryNode | undefined
 export function dom(html: Lexer | string): TemporaryNode | undefined
 {
   const lexer = typeof html === 'string' ? new Lexer(html, 'html') : html
-  const text = { text: lexer.skip() } as TemporaryText
+  const text = { text: lexer.skip(['>', '/']) } as TemporaryText
 
   // remove comment
   while (lexer.nextIs('<!--')) {
     lexer.pop()
     lexer.expand('comment', () => lexer.must('-->'))
-    text.text += lexer.skip()
+    text.text += lexer.skip(['>', '/'])
     continue
   }
 
@@ -46,7 +46,7 @@ export function dom(html: Lexer | string): TemporaryNode | undefined
 function el(lexer: Lexer): TemporaryNode | undefined
 {
   const el = {
-    tag: (lexer.pop() as Token)[1].slice(1).toLocaleLowerCase()
+    tag: (lexer.pop() as Token)[1].slice(1).toLocaleLowerCase() // start = <.*
   } as TemporaryElement
 
   // get attributes
@@ -68,7 +68,7 @@ function el(lexer: Lexer): TemporaryNode | undefined
     }
     // Not supported: p, dt, dd, li, option, thead, tfoot, th, tr, td, rt, rp, optgroup, caption
     if (lexer.must('end')[1].slice(2) !== el.tag) {
-      throw Error('end is required.')
+      throw Error(`end tag <${el.tag}> is required.`)
     }
     lexer.must('>')
   }

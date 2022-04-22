@@ -544,6 +544,40 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse "/" and ">" in element', () => {
+        {
+          const template = parse('<p>/</p>')
+          equal(template, {
+            type: 'tree',
+            children: [
+              {
+                tag: "p",
+                type: "element",
+                children: [
+                  "/"
+                ]
+              }
+            ]
+          })
+        }
+        {
+          const template = parse('<p>></p>')
+          equal(template, {
+            type: 'tree',
+            children: [
+              {
+                tag: "p",
+                type: "element",
+                children: [
+                  ">"
+                ]
+              }
+            ]
+          })
+        }
+      })
+
       it('parse a element in Text Node', () => {
         const template = parse('Hello <span>beako</span>!')
         equal(template, {
