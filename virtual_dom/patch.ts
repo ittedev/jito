@@ -84,6 +84,9 @@ export function patchRealElement(
     if ('override' in newVe) {
       ve.override = newVe.override
     }
+    if ('keep' in newVe) {
+      ve.keep = newVe.keep
+    }
     if ('invalid' in newVe) {
       ve.invalid = { ...newVe.invalid }
     }

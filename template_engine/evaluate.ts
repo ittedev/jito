@@ -349,8 +349,13 @@ const realElementPlugin = {
     const el = pickup(stack, temp.tag)[0] as Element | DocumentFragment | ShadowRoot | EventTarget
     const re = { el } as RealTarget
     evaluateProps(temp, stack, cache, re)
-    if (el instanceof Element && temp.props && '@override' in temp.props) {
-      re.override = true
+    if (el instanceof Element && temp.props) {
+      if ('@override' in temp.props) {
+        re.override = true
+      }
+      if ('@keep' in temp.props) {
+        re.keep = true
+      }
     }
     if (
       (
