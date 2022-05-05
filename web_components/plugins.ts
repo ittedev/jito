@@ -177,6 +177,7 @@ export const specialTagPlugin = {
     const el = pickup(stack, template.tag)[0] as Element || ShadowRoot
     const re = {
       el,
+      override: true,
       invalid: {
         props: true,
         children: true

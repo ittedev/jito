@@ -26,7 +26,7 @@ export interface VirtualElement extends VirtualTree, HasProps {
 
 export interface RealTarget extends VirtualTree, HasProps {
   el: Element | DocumentFragment | ShadowRoot | EventTarget
-  insert?: boolean
+  override?: boolean
   invalid?: {
     props?: boolean
     on?: boolean
@@ -61,7 +61,7 @@ export interface LinkedVirtualElement extends LinkedVirtualRoot, HasProps {
 
 export interface LinkedRealTarget extends LinkedVirtualRoot, HasProps {
   el: Element | DocumentFragment | ShadowRoot | EventTarget
-  insert?: boolean
+  override?: boolean
   invalid?: {
     props?: boolean
     on?: boolean

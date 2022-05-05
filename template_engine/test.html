@@ -1813,13 +1813,13 @@ describe('Template Engine', function() {
         equal(tree.children[0].el === window, true)
       })
 
-      it('evaluate real tag', () => {
+      it('evaluate real element', () => {
         const test = document.createElement('div')
         const tree = evaluate(parse('<test />'), [{ test }])
         equal(tree.children[0].el === test, true)
       })
 
-      it('evaluate real tag has children', () => {
+      it('evaluate real element has children', () => {
         const test = document.createElement('div')
         const tree = evaluate(parse('<test>beako</test>'), [{ test }])
         equal(tree, {
@@ -1831,6 +1831,38 @@ describe('Template Engine', function() {
           ]
         })
         equal(tree.children[0].el === test, true)
+      })
+
+      it('evaluate real element @override', () => {
+        const test = document.createElement('div')
+        const tree = evaluate(parse('<test @override />'), [{ test }])
+        console.log('tree:', tree)
+        equal(tree, {
+          children: [
+            {
+              el: {},
+              invalid: {
+                children: true
+              },
+              override: true,
+            }
+          ]
+        })
+      })
+
+      it('evaluate real element has children @override', () => {
+        const test = document.createElement('div')
+        const tree = evaluate(parse('<test @override>beako</test>'), [{ test }])
+        console.log('tree:', tree)
+        equal(tree, {
+          children: [
+            {
+              el: {},
+              children: ["beako"],
+              override: true,
+            }
+          ]
+        })
       })
     })
 

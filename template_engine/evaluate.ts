@@ -337,6 +337,7 @@ const realElementPlugin = {
     if (template.tag === 'window') {
       const re = {
         el: window,
+        override: true,
         invalid: {
           props: true,
           children: true
@@ -348,6 +349,9 @@ const realElementPlugin = {
     const el = pickup(stack, temp.tag)[0] as Element | DocumentFragment | ShadowRoot | EventTarget
     const re = { el } as RealTarget
     evaluateProps(temp, stack, cache, re)
+    if (el instanceof Element && temp.props && '@override' in temp.props) {
+      re.override = true
+    }
     if (
       (
         el instanceof Element ||
@@ -431,13 +435,10 @@ export function evaluateProps(
   }
 
   if (template.props) {
-    if (!ve.props) {
-      ve.props = {}
-    }
     for (const key in template.props) {
       if (!key.startsWith('@')) { // Remove syntax attributes
-        const value = template.props[key]
-        ve.props[key] = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
+        const value = template.props[key];
+        (ve.props ?? (ve.props = {}))[key] = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
       }
     }
   }

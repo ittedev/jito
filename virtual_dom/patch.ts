@@ -81,8 +81,8 @@ export function patchRealElement(
 {
   if (!ve || ve.el !== newVe.el) {
     ve = { el: newVe.el }
-    if ('insert' in newVe) {
-      ve.insert = newVe.insert
+    if ('override' in newVe) {
+      ve.override = newVe.override
     }
     if ('invalid' in newVe) {
       ve.invalid = { ...newVe.invalid }
@@ -438,6 +438,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
             // patch real node
             const tmp = patchRealElement((oldChildren[index] as LinkedRealTarget), newVNode)
             if (
+              !tmp.override &&
               tmp.el === currentNode &&
               tmp.el instanceof Element &&
               tmp.el.getRootNode() === currentNode.getRootNode() // Already in the same root
@@ -449,7 +450,11 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
           } else {
             // add real node
             const tmp = patchRealElement(null, newVNode)
-            if (tmp.el instanceof Element && tmp.el.parentNode === null) { // el instanceof Element
+            if (
+              !tmp.override &&
+              tmp.el instanceof Element && // el instanceof Element
+              tmp.el.parentNode === null
+            ) {
               parent.insertBefore(tmp.el, currentNode || null)
             }
             return tmp
