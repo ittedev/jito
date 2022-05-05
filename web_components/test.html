@@ -308,12 +308,11 @@ describe('Web Components', function() {
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('elementize tag', async () => {
-      const el = elementize('a')
+      const el = await elementize('a')
       equal(el.tagName, 'A')
     })
     it('elementize component', async () => {
-      const el = elementize(compact(`Hello beako!`))
-      await el.whenRunning()
+      const el = await elementize(compact(`Hello beako!`))
       await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })

@@ -82,7 +82,7 @@ export class Entity
           }
         }
       })
-    })().then()
+    })()
   }
 
   public setProp(name: string, value: unknown)
