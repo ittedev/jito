@@ -69,7 +69,7 @@ export class Entity
         if (typeof data === 'object' && data !== null) {
           for (const name in data) {
             if (
-              typeof data[name] === 'function' && // The value is function
+              (typeof data[name] === 'function' || data[name] instanceof Element) && // The value is function or Element
               isNaN(name as unknown as number) && // The name is not number
               !(name in this._host) // Do not override same property name
             ) {
