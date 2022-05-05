@@ -10,11 +10,15 @@ import { componentElementTag, ComponentElement } from './element.ts'
 
 export async function elementize(component: Component): Promise<Element>
 export async function elementize(component: Component, props: Record<string, unknown>): Promise<Element>
+export async function elementize(component: Promise<Component>): Promise<Element>
+export async function elementize(component: Promise<Component>, props: Record<string, unknown>): Promise<Element>
 export async function elementize(module: Module): Promise<Element>
 export async function elementize(module: Module, props: Record<string, unknown>): Promise<Element>
+export async function elementize(module: Promise<Module>): Promise<Element>
+export async function elementize(module: Promise<Module>, props: Record<string, unknown>): Promise<Element>
 export async function elementize(tag: string): Promise<Element>
 export async function elementize(tag: string, props: Record<string, unknown>): Promise<Element>
-export async function elementize(component: Component | Module | string, props?: Record<string, unknown>): Promise<Element>
+export async function elementize(component: Component | Promise<Component> | Module | Promise<Module> | string, props?: Record<string, unknown>): Promise<Element>
 {
   // Createm Element
   let el
@@ -22,10 +26,11 @@ export async function elementize(component: Component | Module | string, props?:
     el = document.createElement(component) as ComponentElement
   } else {
     el = document.createElement(componentElementTag) as ComponentElement
+    const result = await Promise.resolve(component)
     const prop =
-      instanceOfModule(component) && instanceOfComponent(component.default) ?
-        component.default as unknown as string :
-        component as unknown as string
+      instanceOfModule(result) && instanceOfComponent(result.default) ?
+        result.default as unknown as string :
+        result as unknown as string
     el.setAttribute('component', prop)
   }
 
