@@ -73,10 +73,13 @@ export class Entity
               isNaN(name as unknown as number) && // The name is not number
               !(name in this._host) // Do not override same property name
             ) {
-              // deno-lint-ignore ban-types
-              const method = (data[name] as Function).bind(this)
+              const datum =
+                typeof data[name] === 'function' ?
+                  // deno-lint-ignore ban-types
+                  (data[name] as Function).bind(this) :
+                  data[name]
               Object.defineProperty(this._host, name, {
-                get () { return method }
+                get () { return datum }
               })
             }
           }
