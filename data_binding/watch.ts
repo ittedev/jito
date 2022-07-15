@@ -18,11 +18,9 @@ export function watch<T>(data: T): T
 export function watch<T>(data: T, callback: ReactiveCallback): T
 export function watch<T>(data: T, key: string, callback: ChangeCallback): T
 export function watch<T>(data: T, key: string, spy: Spy): T
-export function watch<T>(data: T, keys: string[], callback: ChangeCallback): T
-export function watch<T>(data: T, keys: string[], spy: Spy): T
 export function watch<T>(
   data: T,
-  keyOrCallback?:  ReactiveCallback | Bio | string | string[],
+  keyOrCallback?:  ReactiveCallback | Bio | string,
   callback?: ChangeCallback | Spy
 ): T
 {
@@ -67,11 +65,7 @@ export function watch<T>(
         }
       } else { // spy
         const spy = typeof callback === 'function' ? ['spy', callback] as Spy : callback as Spy
-        if (Array.isArray(keyOrCallback)) {
-          keyOrCallback.forEach(key => pollute(obj, key as string, spy))
-        } else {
-          pollute(obj, keyOrCallback as string, spy)
-        }
+        pollute(obj, keyOrCallback as string, spy)
       }
     }
   }
