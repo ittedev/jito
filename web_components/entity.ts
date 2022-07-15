@@ -1,4 +1,4 @@
-import type { ChangeCallback } from '../data_binding/types.ts'
+import type { TargetCallback } from '../data_binding/types.ts'
 import type { Component, SpecialCache, Patcher } from './types.ts'
 import type {
   VirtualElement,
@@ -31,7 +31,7 @@ export class Entity
   private _host: Element
   private _tree: LinkedVirtualTree
   private _props: Record<string, unknown> = {}
-  private _refs: Record<string, [Ref, ChangeCallback, ChangeCallback]> = {}
+  private _refs: Record<string, [Ref, TargetCallback, TargetCallback]> = {}
   private _running: Promise<void>
   private _requirePatch = false
   private _updater: SafeUpdater
