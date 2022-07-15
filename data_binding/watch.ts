@@ -4,46 +4,48 @@ import {
   isLocked,
   reactiveKey,
   arrayKey,
-  ReactiveTuple,
+  RecursiveTuple,
   TargetCallback,
-  ReactiveCallback,
-  Page,
-  Arm,
+  RecursiveCallback,
+  PageTuple,
+  ArmTuple,
   BeakoObject,
-  Bio,
-  Spy
+  BioTuple,
+  SpyTuple
 } from './types.ts'
 
 export function watch<T>(data: T): T
-export function watch<T>(data: T, callback: ReactiveCallback): T
+export function watch<T>(data: T, callback: RecursiveCallback): T
 export function watch<T>(data: T, key: string, callback: TargetCallback): T
-export function watch<T>(data: T, key: string, spy: Spy): T
+export function watch<T>(data: T, key: string, spy: SpyTuple): T
 export function watch<T>(
   data: T,
-  keyOrCallback?:  ReactiveCallback | Bio | string,
-  callback?: TargetCallback | Spy
+  keyOrCallback?:  RecursiveCallback | BioTuple | string,
+  callback?: TargetCallback | SpyTuple
 ): T
 {
-  if (typeof data === 'object' &&
+  if (
+    typeof data === 'object' &&
     data !== null &&
-    (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))) {
+    (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))
+  ) {
     const obj = data as unknown as BeakoObject
     if (!obj[isLocked]) {
       pollute(obj)
       if (callback === undefined) { // bio
-        const callbacks = (obj[dictionary][reactiveKey] as ReactiveTuple)[1]
+        const callbacks = (obj[dictionary][reactiveKey] as RecursiveTuple)[1]
         if (typeof keyOrCallback === 'function') {
           callbacks.add(keyOrCallback)
         }
         for (const key in obj) {
-          pollute(obj, key, (obj[dictionary][reactiveKey] as ReactiveTuple)[0])
+          pollute(obj, key, (obj[dictionary][reactiveKey] as RecursiveTuple)[0])
           const value = obj[key]
           // Change all child objects to beako objects
           // and set parent bio to all child object
           if (typeof value === 'object' && value !== null) {
             if (callbacks.size) {
               callbacks.forEach(callback => {
-                if (!(dictionary in value) || !((value as BeakoObject)[dictionary][reactiveKey] as ReactiveTuple)[1].has(callback)) { // Block recursion
+                if (!(dictionary in value) || !(value as BeakoObject)[dictionary][reactiveKey][1].has(callback)) { // Block recursion
                   watch(value, callback)
                 }
               })
@@ -54,17 +56,8 @@ export function watch<T>(
             }
           }
         }
-        if (Array.isArray(obj)) {
-          const len = obj[dictionary][arrayKey].length
-          if (obj.length < len) {
-            for (let index = obj.length; index < len; index++) {
-              pollute(obj, index)
-            }
-          }
-          obj.length = len
-        }
       } else { // spy
-        const spy = typeof callback === 'function' ? ['spy', callback] as Spy : callback as Spy
+        const spy = typeof callback === 'function' ? ['spy', callback] as SpyTuple : callback as SpyTuple
         pollute(obj, keyOrCallback as string, spy)
       }
     }
@@ -72,55 +65,60 @@ export function watch<T>(
   return data
 }
 
-export function pollute(obj: BeakoObject, key?: string | number, arm?: Arm): void
+export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple): void
 {
   if (!obj[isLocked]) {
     if (!(dictionary in obj)) {
-      const reactiveCallback: ReactiveCallback = () => {
-        (obj[dictionary][reactiveKey] as ReactiveTuple)[1].forEach(callback => callback())
+      const recursiveCallback: RecursiveCallback = () => {
+        (obj[dictionary][reactiveKey] as RecursiveTuple)[1].forEach(callback => callback())
       }
       obj[dictionary] = {
-        [reactiveKey]: [['bio', reactiveCallback], new Set<ReactiveCallback>()] as ReactiveTuple
+        [reactiveKey]: [['bio', recursiveCallback], new Set<RecursiveCallback>()] as RecursiveTuple
       }
       if (Array.isArray(obj)) {
         const array = obj[dictionary][arrayKey] = obj.slice() as Array<unknown>
         const reactive = <T>(value: T): T => {
-          reactiveCallback()
+          recursiveCallback()
           return value
         }
-        const rewatch = <T>(value: T): T => {
-          watch(obj)
-          reactiveCallback()
-          return value
+        const relength = <T>(value: T): T => {
+          const len = (obj[dictionary][arrayKey] as Array<unknown>).length
+          if (obj.length < len) {
+            for (let index = obj.length; index < len; index++) {
+              pollute(obj, index)
+            }
+          }
+          obj.length = len
+          return reactive(value)
         }
         Object.defineProperties(obj, {
           unshift: {
             get() {
               return (...items: any[]): number =>
-                rewatch(Array.prototype['unshift'].call(array, ...items))
+              relength(Array.prototype['unshift'].call(array, ...items.map(item => infect(obj, item))))
             }
           },
           push: {
             get() {
               return (...items: any[]): number =>
-                rewatch(Array.prototype['push'].call(array, ...items))
+              relength(Array.prototype['push'].call(array, ...items.map(item => infect(obj, item))))
             }
           },
           splice: {
             get() {
               return (start: number, deleteCount?: number | undefined, ...items: any[]) =>
-                rewatch(
+                relength(
                   deleteCount === undefined ?
                     Array.prototype['splice'].call(array, start, array.length - start) :
-                    Array.prototype['splice'].apply(array, [start, deleteCount, ...items])
+                    Array.prototype['splice'].apply(array, [start, deleteCount, ...items.map(item => infect(obj, item))])
                 )
               }
           },
           pop: {
-            get() { return () => rewatch(Array.prototype['pop'].call(array)) }
+            get() { return () => relength(Array.prototype['pop'].call(array)) }
           },
           shift: {
-            get() { return () => rewatch(Array.prototype['shift'].call(array)) }
+            get() { return () => relength(Array.prototype['shift'].call(array)) }
           },
           sort: {
             get() {
@@ -154,12 +152,12 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: Arm): voi
     if (key !== undefined) {
       if (!Array.isArray(obj) || typeof key !== 'number' && isNaN(key as unknown as number)) {
         if (!(key in obj[dictionary])) {
-          obj[dictionary][key] = [obj[key], new Set<Arm>()]
+          obj[dictionary][key] = [obj[key], new Set<ArmTuple>()]
           Object.defineProperty(obj, key, {
             get() { return this[dictionary][key][0] },
             set(value) {
-              (obj[dictionary][reactiveKey] as ReactiveTuple)[1].forEach(callback => watch(value, callback))
-              launch(this[dictionary][key] as Page, value)
+              infect(obj, value)
+              launch(this[dictionary][key] as PageTuple, value)
             }
           })
         }
@@ -172,15 +170,15 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: Arm): voi
       } else {
         const descriptor = Object.getOwnPropertyDescriptor(obj, key)
         if (!descriptor || 'value' in descriptor) {
-          if (key in obj[dictionary][arrayKey]) {
+          if (key in (obj[dictionary][arrayKey] as Array<unknown>)) {
             Object.defineProperty(obj, key, {
               get() { return this[dictionary][arrayKey][key] },
               set(value) {
-                (obj[dictionary][reactiveKey] as ReactiveTuple)[1].forEach(callback => watch(value, callback))
+                infect(obj, value)
                 const old = this[dictionary][arrayKey][key]
                 this[dictionary][arrayKey][key] = value
                 if (old !== value) {
-                  (obj[dictionary][reactiveKey] as ReactiveTuple)[0][1]()
+                  obj[dictionary][reactiveKey][0][1]()
                 }
               },
               configurable: true,
@@ -193,7 +191,15 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: Arm): voi
   }
 }
 
-function launch(page: Page, value: unknown)
+/**
+ * Copy bio only
+ */
+function infect(obj: BeakoObject, data: unknown) {
+  obj[dictionary][reactiveKey][1].forEach(callback => watch(data, callback))
+  return data
+}
+
+function launch(page: PageTuple, value: unknown)
 {
   const old = page[0]
   page[0] = value
@@ -202,7 +208,7 @@ function launch(page: Page, value: unknown)
     page[1].forEach(arm => {
       switch(arm[0]) {
         case 'bio':
-          (arm[1] as ReactiveCallback)()
+          (arm[1] as RecursiveCallback)()
           break
         // deno-lint-ignore no-fallthrough
         case 'bom':

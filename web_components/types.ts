@@ -1,4 +1,5 @@
-import type { VirtualTree, LinkedVirtualTree } from '../virtual_dom/types.ts'
+// deno-lint-ignore-file no-explicit-any
+import type { VirtualTree } from '../virtual_dom/types.ts'
 import type {
   Variables,
   TreeTemplate,
@@ -35,7 +36,6 @@ export interface Component {
   }
 }
 
-// deno-lint-ignore no-explicit-any
 export function instanceOfComponent(object: any): object is Component {
   return typeof object === 'object' &&
     object !== null &&

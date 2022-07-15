@@ -1836,7 +1836,6 @@ describe('Template Engine', function() {
       it('evaluate real element @override', () => {
         const test = document.createElement('div')
         const tree = evaluate(parse('<test @override />'), [{ test }])
-        console.log('tree:', tree)
         equal(tree, {
           children: [
             {
@@ -1853,7 +1852,6 @@ describe('Template Engine', function() {
       it('evaluate real element has children @override', () => {
         const test = document.createElement('div')
         const tree = evaluate(parse('<test @override>beako</test>'), [{ test }])
-        console.log('tree:', tree)
         equal(tree, {
           children: [
             {

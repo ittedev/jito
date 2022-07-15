@@ -5,8 +5,8 @@ import {
   isLocked,
   Callback,
   TargetCallback,
-  ReactiveCallback,
-  ReactiveTuple,
+  RecursiveCallback,
+  RecursiveTuple,
   BeakoObject
 } from './types.ts'
 
@@ -16,7 +16,7 @@ export function unwatch(
 
 export function unwatch(
   data: unknown,
-  callback: ReactiveCallback
+  callback: RecursiveCallback
 ): unknown
 
 export function unwatch(
@@ -33,23 +33,23 @@ export function unwatch(
 
 export function unwatch(
   data: unknown,
-  keyOrCallback?: ReactiveCallback | string | string[],
+  keyOrCallback?: RecursiveCallback | string | string[],
   callback?: TargetCallback
 ): unknown
 {
   if (typeof data === 'object' && data !== null) {
     const obj = data as BeakoObject
     if (!obj[isLocked]) {
-      if (callback === undefined) { // ReactiveCallback
+      if (callback === undefined) { // RecursiveCallback
         if (keyOrCallback) {
-          const reactiveCallback = keyOrCallback as ReactiveCallback
+          const RecursiveCallback = keyOrCallback as RecursiveCallback
 
           // Remove bio from all properties
           if (obj[dictionary]) {
-            (obj[dictionary][reactiveKey] as ReactiveTuple)[1].delete(reactiveCallback)
+            (obj[dictionary][reactiveKey] as RecursiveTuple)[1].delete(RecursiveCallback)
           }
           for (const key in obj) {
-            unwatch(obj[key], reactiveCallback)
+            unwatch(obj[key], RecursiveCallback)
           }
         } else {
           for (const key in obj) {
