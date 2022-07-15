@@ -195,6 +195,9 @@ function isWaitingTarget(el: VirtualNode) {
     ((el as VirtualElement).props?.rel as string).toLocaleLowerCase() === 'stylesheet'
 }
 
+/**
+ * Stop rendering until the link tag has finished loading
+ */
 class SafeUpdater
 {
   private header?: VirtualTree
@@ -214,45 +217,46 @@ class SafeUpdater
     const header = hoist(tree, isHoistingTarget)
     const body = tree
 
-    // pre update
-    if (header.children !== undefined || this.header?.children !== undefined) {
-      const oldLinks = (this.header?.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
-      const newLinks = (header.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
-      const addedLinks = newLinks
-        .filter(link => oldLinks.every(el => el.props?.href !== link.props?.href))
-      const removedLinks = oldLinks
-        .filter(link => newLinks.every(el => el.props?.href !== link.props?.href))
-      if (addedLinks.length) {
-        // set a load event listener
-        newLinks.forEach(link => {
-          ((link.on ??= {}).load ??= []).push(this.loaded)
-          ;(link.on.error ??= []).push(this.loaded)
-        })
+    // pre patch
+    const oldLinks = (this.header?.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
+    const newLinks = (header.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
+    const addedLinks = newLinks
+      .filter(link => oldLinks.every(el => el.props?.href !== link.props?.href))
+    const removedLinks = oldLinks
+      .filter(link => newLinks.every(el => el.props?.href !== link.props?.href))
 
-        // add to wait list
-        addedLinks.forEach(link => {
-          this.addWaitUrl(link.props?.href as string)
-          link.new = true
-        })
-
-        // remove from wait list
-        removedLinks.forEach(link => this.removeWaitUrl(link.props?.href as string))
-
-        if (removedLinks) {
-          // patch old header and new header
-          // because href may have changed
-          patch(this.tree, concat(this.header, header, this.body))
-        } else {
-          // patch new header
-          patch(this.tree, concat(header, this.body))
-        }
-
-        // remove new flag
-        addedLinks.forEach(link => link.new = false)
-
-        this.header = header
+    // set a load event listener
+    newLinks.forEach(link => {
+      if (!((link.on ??= {}).load ??= []).includes(this.loaded)) {
+        link.on.load.push(this.loaded)
       }
+      if (!(link.on.error ??= []).includes(this.loaded)) {
+        link.on.error.push(this.loaded)
+      }
+    })
+
+    // add to wait list
+    addedLinks.forEach(link => {
+      this.addWaitUrl(link.props?.href as string)
+      link.new = true
+    })
+
+    // remove from wait list
+    removedLinks.forEach(link => this.removeWaitUrl(link.props?.href as string))
+
+    if (removedLinks) {
+      // patch old header and new header
+      // because href may have changed
+      patch(this.tree, concat(this.header, header, this.body))
+    } else {
+      // patch new header
+      patch(this.tree, concat(header, this.body))
     }
+
+    // remove new flag
+    addedLinks.forEach(link => link.new = false)
+
+    this.header = header
 
     // patch new body
     this.update = () => {
