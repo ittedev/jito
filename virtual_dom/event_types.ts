@@ -1,5 +1,3 @@
-// Copyright 2022 itte.dev. All rights reserved. MIT license.
-// This module is browser compatible.
 import { eventTypes as symbol } from './types.ts'
 
 let destroy = 'destroy'

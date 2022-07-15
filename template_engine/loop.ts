@@ -1,5 +1,3 @@
-// Copyright 2022 itte.dev. All rights reserved. MIT license.
-// This module is browser compatible.
 import { Variables } from './types.ts'
 import { pickup } from './pickup.ts'
 

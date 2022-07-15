@@ -1,5 +1,3 @@
-// Copyright 2022 itte.dev. All rights reserved. MIT license.
-// This module is browser compatible.
 import type { Component } from './types.ts'
 import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'

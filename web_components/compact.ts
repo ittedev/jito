@@ -1,5 +1,3 @@
-// Copyright 2022 itte.dev. All rights reserved. MIT license.
-// This module is browser compatible.
 import { Main, Component, Patcher } from './types.ts'
 import { Variables, TreeTemplate } from '../template_engine/types.ts'
 import { lock } from '../data_binding/lock.ts'

@@ -1,6 +1,3 @@
-// Copyright 2022 itte.dev. All rights reserved. MIT license.
-// This module is browser compatible.
-
 export const dictionary = Symbol.for('Beako Dictionary')
 export const reactiveKey = Symbol.for('Beako Reactive')
 export const arrayKey = Symbol.for('Beako Array')

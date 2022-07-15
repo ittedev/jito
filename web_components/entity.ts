@@ -1,5 +1,3 @@
-// Copyright 2022 itte.dev. All rights reserved. MIT license.
-// This module is browser compatible.
 import type { ChangeCallback } from '../data_binding/types.ts'
 import type { Component, SpecialCache, Patcher } from './types.ts'
 import type {
