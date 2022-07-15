@@ -4,7 +4,7 @@ import {
   reactiveKey,
   isLocked,
   Callback,
-  ChangeCallback,
+  TargetCallback,
   ReactiveCallback,
   ReactiveTuple,
   BeakoObject
@@ -22,19 +22,19 @@ export function unwatch(
 export function unwatch(
   data: unknown,
   key: string,
-  callback: ChangeCallback
+  callback: TargetCallback
 ): unknown
 
 export function unwatch(
   data: unknown,
   keys: string[],
-  callback: ChangeCallback
+  callback: TargetCallback
 ): unknown
 
 export function unwatch(
   data: unknown,
   keyOrCallback?: ReactiveCallback | string | string[],
-  callback?: ChangeCallback
+  callback?: TargetCallback
 ): unknown
 {
   if (typeof data === 'object' && data !== null) {
@@ -57,7 +57,7 @@ export function unwatch(
           }
           clean(obj)
         }
-      } else { // ChangeCallback
+      } else { // TargetCallback
         if (Array.isArray(keyOrCallback)) {
           keyOrCallback.forEach(key => clean(obj, key as string, callback))
         } else {

@@ -277,50 +277,6 @@ describe('Data Binding', function() {
         data.x = 2
         equal(y, 2)
       })
-      it('watch multi properties', () => {
-        const data = {
-          x1: 2,
-          x2: 20,
-          x3: 200
-        }
-        let y = 0
-        watch(data, ['x1', 'x3'], v => { y += v })
-        data.x1 = 1
-        data.x2 = 10
-        data.x3 = 100
-        equal(y, 101)
-      })
-
-      it('double watch a function', () => {
-        const data = {
-          x1: 2,
-          x2: 20,
-          x3: 200
-        }
-        let y = 0
-        const f = v => { y += v }
-        watch(data, ['x1', 'x3'], f)
-        watch(data, ['x1', 'x3'], f)
-        data.x1 = 1
-        data.x2 = 10
-        data.x3 = 100
-        equal(y, 101)
-      })
-
-      it('double watch difference functions', () => {
-        const data = {
-          x1: 2,
-          x2: 20,
-          x3: 200
-        }
-        let y = 0
-        watch(data, ['x1', 'x3'], v => { y += v })
-        watch(data, ['x1', 'x3'], v => { y += v })
-        data.x1 = 1
-        data.x2 = 10
-        data.x3 = 100
-        equal(y, 202)
-      })
 
       it('bio and spy watch', () => {
         const data = {
@@ -472,7 +428,8 @@ describe('Data Binding', function() {
       }
       let y = 0
       const f = v => { y += v }
-      watch(data, ['x1', 'x3'], f)
+      watch(data, 'x1', f)
+      watch(data, 'x3', f)
       unwatch(data, 'x1', f)
       data.x1 = 1
       data.x2 = 10

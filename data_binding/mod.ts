@@ -1,6 +1,6 @@
 export type {
   ReactiveCallback,
-  ChangeCallback,
+  TargetCallback,
   Callback
 } from './types.ts'
 

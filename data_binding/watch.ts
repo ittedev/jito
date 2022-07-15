@@ -5,7 +5,7 @@ import {
   reactiveKey,
   arrayKey,
   ReactiveTuple,
-  ChangeCallback,
+  TargetCallback,
   ReactiveCallback,
   Page,
   Arm,
@@ -16,12 +16,12 @@ import {
 
 export function watch<T>(data: T): T
 export function watch<T>(data: T, callback: ReactiveCallback): T
-export function watch<T>(data: T, key: string, callback: ChangeCallback): T
+export function watch<T>(data: T, key: string, callback: TargetCallback): T
 export function watch<T>(data: T, key: string, spy: Spy): T
 export function watch<T>(
   data: T,
   keyOrCallback?:  ReactiveCallback | Bio | string,
-  callback?: ChangeCallback | Spy
+  callback?: TargetCallback | Spy
 ): T
 {
   if (typeof data === 'object' &&

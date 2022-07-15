@@ -16,12 +16,12 @@ export type ArmType = 'bio' | 'spy' | 'bom'
 
 export type Arm = [ArmType, Callback]
 export type Bio = ['bio', ReactiveCallback]
-export type Spy = ['spy', ChangeCallback]
+export type Spy = ['spy', TargetCallback]
 
 export type ReactiveCallback = () => void
 // deno-lint-ignore no-explicit-any
-export type ChangeCallback = ((newValue: any, oldValue: any) => void)
-export type Callback = ReactiveCallback | ChangeCallback
+export type TargetCallback = ((newValue: any, oldValue: any) => void)
+export type Callback = ReactiveCallback | TargetCallback
 
 export interface BeakoObject {
   [key: string]: unknown
