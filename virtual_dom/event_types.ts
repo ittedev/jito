@@ -13,21 +13,9 @@ if (!(symbol in window)) {
   Object.defineProperty(window, symbol, {
     value: Object.seal({
       get destroy(): string { return destroy },
-      set destroy(value: string) {
-        if (typeof value === 'string' && value !== '') {
-          destroy = value
-        } else {
-          throw Error('Event type must be string')
-        }
-      },
+      set destroy(value: string) { destroy = value },
       get patch(): string { return patch },
-      set patch(value: string) {
-        if (typeof value === 'string' && value !== '') {
-          patch = value
-        } else {
-          throw Error('Event type must be string')
-        }
-      }
+      set patch(value: string) { patch = value }
     })
   })
 }
