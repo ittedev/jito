@@ -310,7 +310,25 @@ describe('Data Binding', function() {
         x: 1,
         y: 'hello'
       }
+      const data2 = await receive(data, 'x', 'y')
+      equal(JSON.stringify(data2), '{"x":1,"y":"hello"}')
+    })
+
+    it('receive multi defined array', async () => {
+      const data = {
+        x: 1,
+        y: 'hello'
+      }
       const data2 = await receive(data, ['x', 'y'])
+      equal(JSON.stringify(data2), '{"x":1,"y":"hello"}')
+    })
+
+    it('receive multi defined multi array', async () => {
+      const data = {
+        x: 1,
+        y: 'hello'
+      }
+      const data2 = await receive(data, ['x'], ['y'])
       equal(JSON.stringify(data2), '{"x":1,"y":"hello"}')
     })
 

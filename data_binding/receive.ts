@@ -1,14 +1,13 @@
 import { isLocked, BeakoObject } from './types.ts'
 import { pollute } from './watch.ts'
 
-export async function receive(
-  obj: BeakoObject,
-  key: string | string[]
-): Promise<Record<string, unknown>>
+export async function receive(obj: BeakoObject, ...keys: string[]): Promise<Record<string, unknown>>
+export async function receive(obj: BeakoObject, keys: string[]): Promise<Record<string, unknown>>
+export async function receive(obj: BeakoObject, ...keys: string[] | string[][]): Promise<Record<string, unknown>>
 {
   if (!obj[isLocked]) {
-    const keys = Array.isArray(key) ? key : [key]
-    const values = await Promise.all(keys.map(key => {
+    const keys2 = Array.isArray(keys[0]) ? (keys as string[][]).flatMap(k => k) : keys as string[]
+    const values = await Promise.all(keys2.map(key => {
       if (obj[key] === undefined) {
         return new Promise(resolve => {
           pollute(obj, key, ['bom', resolve])
@@ -17,7 +16,7 @@ export async function receive(
         return obj[key]
       }
     }))
-    return keys.reduce((obj, key, index) => {
+    return keys2.reduce((obj, key, index) => {
       obj[key] = values[index]
       return obj
     }, {} as Record<string, unknown>)
