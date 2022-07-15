@@ -1,7 +1,2914 @@
-var u=Symbol.for("Beako Dictionary"),g=Symbol.for("Beako Reactive"),L=Symbol.for("Beako Array"),T=Symbol.for("Beako Lock");function b(t,e,n){if(typeof t=="object"&&t!==null&&(Object.getPrototypeOf(t)===Object.prototype||Array.isArray(t))){let r=t;if(!r[T])if(R(r),n===void 0){let a=r[u][g][1];typeof e=="function"&&a.add(e);for(let o in r){R(r,o,r[u][g][0]);let s=r[o];typeof s=="object"&&s!==null&&(a.size?a.forEach(i=>{(!(u in s)||!s[u][g][1].has(i))&&b(s,i)}):u in s||b(s))}if(Array.isArray(r)){let o=r[u][L].length;if(r.length<o)for(let s=r.length;s<o;s++)R(r,s);r.length=o}}else{let a=typeof n=="function"?["spy",n]:n;Array.isArray(e)?e.forEach(o=>R(r,o,a)):R(r,e,a)}}return t}function R(t,e,n){if(!t[T]){if(!(u in t)){let r=()=>{t[u][g][1].forEach(a=>a())};if(t[u]={[g]:[["bio",r],new Set]},Array.isArray(t)){let a=t[u][L]=t.slice(),o=i=>(r(),i),s=i=>(b(t),r(),i);Object.defineProperties(t,{unshift:{get(){return(...i)=>s(Array.prototype.unshift.call(a,...i))}},push:{get(){return(...i)=>s(Array.prototype.push.call(a,...i))}},splice:{get(){return(i,p,...c)=>s(p===void 0?Array.prototype.splice.call(a,i,a.length-i):Array.prototype.splice.apply(a,[i,p,...c]))}},pop:{get(){return()=>s(Array.prototype.pop.call(a))}},shift:{get(){return()=>s(Array.prototype.shift.call(a))}},sort:{get(){return i=>o(i===void 0?Array.prototype.sort.call(a):Array.prototype.sort.call(a,i))}},reverse:{get(){return()=>o(Array.prototype.reverse.call(a))}},copyWithin:{get(){return(i,p,c)=>o(Array.prototype.copyWithin.call(a,i,p!==void 0?p:0,c!==void 0?c:a.length))}}})}}if(e!==void 0)if(!Array.isArray(t)||typeof e!="number"&&isNaN(e)){if(e in t[u]||(t[u][e]=[t[e],new Set],Object.defineProperty(t,e,{get(){return this[u][e][0]},set(r){t[u][g][1].forEach(a=>b(r,a)),$e(this[u][e],r)}})),n){for(let r of t[u][e][1])if(r[1]===n[1])return;t[u][e][1].add(n)}}else{let r=Object.getOwnPropertyDescriptor(t,e);(!r||"value"in r)&&e in t[u][L]&&Object.defineProperty(t,e,{get(){return this[u][L][e]},set(a){t[u][g][1].forEach(s=>b(a,s));let o=this[u][L][e];this[u][L][e]=a,o!==a&&t[u][g][0][1]()},configurable:!0,enumerable:!0})}}}function $e(t,e){let n=t[0];t[0]=e,n!==e&&t[1].forEach(r=>{switch(r[0]){case"bio":r[1]();break;case"bom":t[1].delete(r);case"spy":r[1](e,n);break}})}async function Ge(t,e){if(!t[T]){let n=Array.isArray(e)?e:[e],r=await Promise.all(n.map(a=>t[a]===void 0?new Promise(o=>{R(t,a,["bom",o])}):t[a]));return n.reduce((a,o,s)=>(a[o]=r[s],a),{})}return{}}function P(t,e,n){if(typeof t=="object"&&t!==null){let r=t;if(!r[T])if(n===void 0)if(e){let a=e;r[u]&&r[u][g][1].delete(a);for(let o in r)P(r[o],a)}else{for(let a in r)P(r[a]);oe(r)}else Array.isArray(e)?e.forEach(a=>oe(r,a,n)):oe(r,e,n)}return t}function oe(t,e,n){if(e!==void 0)u in t&&e in t[u]&&(n?t[u][e][1].forEach(r=>{r[1]===n&&t[u][e][1].delete(r)}):t[u][e][1].clear());else{for(let r in t[u])Object.defineProperty(t,r,{enumerable:!0,configurable:!0,writable:!0,value:t[u][r][0]}),delete t[u][r];Array.isArray(t)&&(delete t.push,delete t.sort,delete t.splice),delete t[u]}}function H(t,e){if(typeof t=="object"&&t!==null&&(Object.getPrototypeOf(t)===Object.prototype||Array.isArray(t))){let n=t;if(!n[T]){u in n&&n[u][g][1].add(e);for(let r in n)H(n[r],e)}}return t}function N(t){return t[T]=!0,t}function ze(t){return delete t[T],t}var z=Symbol.for("Beako Event Types");var ge="destroy",Te="patch";z in window||Object.defineProperty(window,z,{value:Object.seal({get destroy(){return ge},set destroy(t){if(typeof t=="string"&&t!=="")ge=t;else throw Error("Event type must be string")},get patch(){return Te},set patch(t){if(typeof t=="string"&&t!=="")Te=t;else throw Error("Event type must be string")}})});var C=window[z];function A(t){let e={el:t};return ke(e),e}function De(t){let e={tag:t.tagName.toLowerCase(),el:t};return Ue(e),ke(e),e}function Ue(t){if(t.el.hasAttributes()){let e={};t.el.getAttributeNames().forEach(n=>{if(n.startsWith("on"))return;let r=t.el.getAttribute(n);switch(n){case"class":case"part":return t[n]=r.split(/\s+/);case"style":case"is":return t[n]=r;default:return e[n]=r}}),Object.keys(e).length&&(t.props=e)}}function ke(t){if(t.el.hasChildNodes()){let e=t.el.childNodes;t.children=[];for(let n=0;n<e.length;n++)switch(e[n].nodeType){case 1:if(e[n].tagName==="SCRIPT")break;t.children.push(De(e[n]));break;case 3:t.children.push(e[n].data);break}}}function _(t){if(!t.invalid?.children&&t.el instanceof Node){t.children?.forEach(n=>typeof n=="object"&&_(n));let e=t.el;for(;e.firstChild;)e.removeChild(e.firstChild)}t.keep||t.el.dispatchEvent(new CustomEvent(C.destroy,{bubbles:!1})),t.invalid?.on||W(t,{}),!t.invalid?.props&&t.el instanceof Element&&(D(t,{}),U(t,{}),J(t,{}),K(t,{}),q(t,{}))}function I(t,e){return ie(t,e),t.el.dispatchEvent(new CustomEvent(C.patch,{bubbles:!0,composed:!0})),t}function se(t,e){return(!t||t.tag!==e.tag||t.is!==e.is||e.new)&&(t=e.is?{tag:e.tag,is:e.is,el:document.createElement(e.tag,{is:e.is})}:{tag:e.tag,el:document.createElement(e.tag)}),D(t,e),U(t,e),J(t,e),K(t,e),q(t,e),W(t,e),ie(t,e),"key"in e?t.key=e.key:delete t.key,t}function be(t,e){return(!t||t.el!==e.el)&&(t={el:e.el},"override"in e&&(t.override=e.override),"keep"in e&&(t.keep=e.keep),"invalid"in e&&(t.invalid={...e.invalid})),!t.invalid?.props&&t.el instanceof Element&&(D(t,e),U(t,e),J(t,e),K(t,e),q(t,e)),t.invalid?.on||W(t,e),!t.invalid?.children&&t.el instanceof Node&&ie(t,e),t}function D(t,e){let n=(t.class||[]).join(" "),r=(e.class||[]).join(" ");n!==r&&(t.el.className=r),r.length?t.class=(e.class||[]).slice():delete t.class}function U(t,e){let n=t.part||[],r=e.part||[],a=r.filter(s=>!n.includes(s));a.length&&t.el.part.add(...a);let o=n.filter(s=>!r.includes(s));o.length&&t.el.part.remove(...o),r.length?t.part=r.slice():delete t.part}function J(t,e){if(t.el instanceof HTMLElement){let n=t.style||"",r=e.style||"";n!=r&&(t.el.style.cssText=r,r!=""?t.style=r:delete t.style)}}function K(t,e){let n=t.props||{},r=e.props||{},a=Object.keys(n),o=Object.keys(r);o.filter(s=>!a.includes(s)||n[s]!==r[s]).forEach(s=>t.el.setAttribute(s,r[s])),a.filter(s=>!o.includes(s)).forEach(s=>t.el.removeAttribute(s)),o.length?t.props={...r}:delete t.props}function W(t,e){let n=t.on||{},r=e.on||{},a=Object.keys(n),o=Object.keys(r);o.filter(s=>!a.includes(s)).forEach(s=>{r[s].forEach(i=>{t.el.addEventListener(s,i)})}),a.filter(s=>!o.includes(s)).forEach(s=>{n[s].forEach(i=>{t.el.removeEventListener(s,i)})}),o.filter(s=>a.includes(s)).forEach(s=>{let i=r[s],p=n[s];i.filter(c=>!p.includes(c)).forEach(c=>t.el.addEventListener(s,c)),p.filter(c=>!i.includes(c)).forEach(c=>t.el.removeEventListener(s,c))}),o.length?t.on=o.reduce((s,i)=>(s[i]=[...r[i]],s),{}):delete t.on}function q(t,e){if(Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype,t.el)){let n=t.el;n.value!==e.props?.value&&(e.props&&"value"in e.props?n.value!==(e.props?.value).toString()&&(n.value=e.props.value):t.el.value!==""&&(t.el.value="")),!n.checked&&e.props&&"checked"in e.props?n.checked=!0:n.checked&&!(e.props&&"checked"in e.props)&&(n.checked=!1)}if(Object.prototype.isPrototypeOf.call(HTMLOptionElement.prototype,t.el)){let n=t.el;!n.selected&&e.props&&"selected"in e.props?n.selected=!0:n.selected&&!(e.props&&"selected"in e.props)&&(n.selected=!1)}}var Ee=class{constructor(){this.stock=new Map}has(e){return this.stock.get(e)?.length}push(e,n){this.stock.has(e)?this.stock.get(e).push(n):this.stock.set(e,[n])}shift(e){return this.stock.get(e).shift()}};function ie(t,e){let n=t.children||[],r=e.children||[];if(n.length===0&&r.length===0||n.length===0&&t.el.hasChildNodes())return;let a=n.length===0&&r.length>1?new DocumentFragment:t.el,o=new Ee,s=0,i=a.firstChild,p=r.filter(m=>typeof m=="number").reverse(),c=p.pop(),h=m=>{let f=se(null,m);return a.insertBefore(f.el,i||null),f},v=m=>{let f=se(n[s],m);return f!==n[s]&&(_(n[s]),a.replaceChild(f.el,n[s].el)),i=f.el.nextSibling,s++,f},ae=(m=!1)=>{if(typeof n[s]!="number"){if(typeof n[s]=="object"){if(i!==n[s].el){_(n[s++]);return}m&&"key"in n[s]?o.push(n[s].key,n[s]):_(n[s])}let f=i;i=f.nextSibling,a.removeChild(f)}s++},ye=r.map(m=>{switch(typeof m){case"string":return typeof n[s]=="string"?(i.data!==m&&(i.data=m),i=i.nextSibling,s++):a.insertBefore(document.createTextNode(m),i||null),m;case"object":{if("el"in m)if(typeof n[s]=="object"&&m.el===n[s].el){let f=be(n[s],m);return!f.override&&f.el===i&&f.el instanceof Element&&f.el.getRootNode()===i.getRootNode()&&(i=i.nextSibling),s++,f}else{let f=be(null,m);return!f.override&&f.el instanceof Element&&f.el.parentNode===null&&a.insertBefore(f.el,i||null),f}if("key"in m)if(o.has(m.key)){let f=se(o.shift(m.key),m);return a.insertBefore(f.el,i||null),f}else{for(;s<n.length&&n[s]!==c;){if(typeof n[s]=="object"&&m.key===n[s].key)return v(m);ae(!0)}return h(m)}else return typeof n[s]=="object"&&!("el"in m)&&!("key"in n[s])?v(m):h(m)}case"number":{for(;s<n.length&&n[s]!==m;)ae();return s++,c=p.pop(),o.stock.forEach(f=>f.forEach(Be=>_(Be))),o.stock.clear(),m}}});for(;s<n.length;)ae();ye.length?t.children=ye:delete t.children,n.length===0&&r.length>1&&t.el.append(a)}function y(t,e,n=t.length-1){for(let r=n;r>=0;r--)if(e in t[r])return[t[r][e],r];return[void 0,-1]}var Z=class{constructor(e,n,r,a,o){this._key=e;this._value=n;this._index=r;this._entries=a;this._stack=o}get key(){return this._key}get value(){return this._value}get index(){return this._index}get size(){return this._entries.length}get isFirst(){return this._index===0}get isLast(){return this._index===this._entries.length-1}get parent(){return y(this._stack,"loop")[0]}toJSON(){return{key:this._key,value:this._value,_index:this._index,size:this._entries.length,isFirst:this._index===0,isLast:this._index===this._entries.length-1}}};var Q=Symbol.for("Beako Ref");function O(t){return typeof t=="object"&&t!==null&&typeof t.type=="string"}function le(t){return typeof t=="object"&&t!==null&&t[Q]===!0}function M(t){return"tag"in t}var V=class{constructor(e,n,r=0,a=null){this.text=e;this.field=n;this.index=r;this.token=a}_next(e){let n=["",""];for(this.index=e;this.index<this.text.length;this.index++){let r=xe(this.field,n[1]+this.text[this.index]);if(r==="other")return n;n[0]=r,n[1]=n[1]+this.text[this.index]}return n}skip(e=[]){e.unshift("other");let n="";if(!this.token)for(let r=this.index;r<this.text.length;r++)if(e.includes(xe(this.field,this.text[r])))n+=this.text[r];else if(this.token=this._next(r),this.token&&this.token[0]==="partial")n+=this.token[1],this.token=null;else return n;return n}nextIs(e){return this.skip(),this.token?e?this.token[0]===e:this.token[0]:!1}pop(){this.skip();let e=this.token;return this.token=null,e||null}expand(e,n){let r=this.field;this.field=e,n(),this.token&&(this.index-=this.token[1].length,this.token=null),this.field=r}must(e){let n=this.pop();if(!n||n[0]!==e)throw Error(e+" is required.");return n}};function xe(t,e){switch(t){case"html":switch(e){case">":case"<!--":case"/":return e;case"<":case"</":case"<!":case"<!-":return"partial"}switch(!0){case/^\/\/.*$/.test(e):return"//";case/^<[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(e):return"start";case/^<\/[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(e):return"end"}break;case"attr":switch(e){case"@if":case"@else":case"@for":case"@each":return"@";case"=":case":=":case"&=":case"*=":return"assign";case">":case"/":case"'":case'"':return e;case":":case"&":case"*":return"partial"}switch(!0){case/^on[_\$\-a-zA-Z0-9]+$/.test(e):return"on";case/^[_\$\-@a-zA-Z0-9]+$/.test(e):return"name"}break;case"comment":switch(e){case"-->":return e;case"-":case"--":return"partial"}break;case"script":switch(e){case"+":case"-":return"multi";case"void":case"typeof":case"~":case"!":return"unary";case"/":case"*":case"%":case"**":case"in":case"instanceof":case"<":case">":case"<=":case">=":case"==":case"!=":case"===":case"!==":case"<<":case">>":case">>>":case"&":case"|":case"^":case"&&":case"||":case"??":return"binary";case"=":case"*=":case"**=":case"/=":case"%=":case"+=":case"-=":case"<<=":case">>=":case">>>=":case"&=":case"^=":case"|=":case"&&=":case"||=":case"??=":return"assign";case"++":case"--":return"crement";case"false":case"true":return"boolean";case"null":case"undefined":case".":case"?.":case"[":case"]":case"{":case"}":case"(":case")":case"...":case"?":case":":case",":case"'":case'"':case"`":return e}switch(!0){case/^\/\/.*$/.test(e):return"//";case/^[_\$a-zA-Z][_\$a-zA-Z0-9]*$/.test(e):return"word";case/^\d+\.?\d*$|^\.?\d+$/.test(e):return"number"}break;case"template":switch(e){case"$":return"partial";case"${":return e;case"}":return e;case"`":return"`";case"\r":case`
-`:case`\r
-`:return"other"}case"single":case"double":switch(e){case"\\":return"partial";case"\r":case`
-`:case`\r
-`:return"return";case`\\\r
-`:return"escape";case"'":if(t==="single")return e;break;case'"':if(t==="double")return e;break}switch(!0){case/^\\u[0-9a-fA-F]{0,3}$/.test(e):case/^\\x[0-9a-fA-F]{0,1}$/.test(e):case/^\\u\{(0?[0-9a-fA-F]{0,5}|10[0-9a-fA-F]{0,4})$/.test(e):return"partial";case/^\\.$/.test(e):case/^\\u[0-9a-fA-F]{4}$/.test(e):case/^\\u\{(0?[0-9a-fA-F]{1,5}|10[0-9a-fA-F]{1,4})\}$/.test(e):case/^\\x[0-9a-fA-F]{2}$/.test(e):return"escape"}break;case"text":switch(e){case"{":case"}":return"partial";case"{{":case"}}":return e}break}return"other"}function X(t){switch(t){case"\\n":return`
-`;case"\\r":return"\r";case"\\v":return"\v";case"\\t":return"	";case"\\b":return"\b";case"\\f":return"\f"}switch(!0){case/^\\u[0-9a-fA-F]{4}$/.test(t):case/^\\x[0-9a-fA-F]{2}$/.test(t):return String.fromCodePoint(parseInt(t.slice(2),16));case/^\\u\{(0?[0-9a-fA-F]{1,5}|10[0-9a-fA-F]{1,4})\}$/.test(t):return String.fromCodePoint(parseInt(t.slice(3,-1),16))}return t.slice(1)}function d(t){let e=typeof t=="string"?new V(t,"script"):t;return Je(e)}function Je(t){let e=Ke(t);if(t.nextIs("assign")){if(e.type!=="get")throw Error("The left operand is not variable");let n=t.pop()[1],r=d(t);return{type:"assign",operator:n,left:e.value,right:r}}else return e}function Ke(t){let e=we(t);for(;t.nextIs("?");){t.pop();let n=d(t);t.must(":");let r=we(t);e={type:"if",condition:e,truthy:n,falsy:r}}return e}function we(t){let e=new Array;for(e.push(Y(t));t.nextIs("multi")||t.nextIs("binary");)e.push(t.pop()[1]),e.push(Y(t));for(;e.length>1;)for(let n=0;n+1<e.length;n+=2)if(n+3>=e.length||ve(e[n+1])>ve(e[n+3])){let r={type:"binary",operator:e[n+1],left:e[n],right:e[n+2]};e.splice(n,3,r)}return typeof e[0]=="string"?{type:"variable",name:e[0]}:e[0]}function ve(t){switch(t){default:return 0;case"||":case"??":return 4;case"&&":return 5;case"|":return 6;case"^":return 7;case"&":return 8;case"==":case"!=":case"===":case"!==":return 9;case"in":case"instanceof":case"<":case">":case"<=":case">=":return 10;case"<<":case">>":case">>>":return 11;case"+":case"-":return 12;case"*":case"/":case"%":return 13;case"**":return 14}}function Y(t){switch(t.nextIs()){case"multi":case"unary":return{type:"unary",operator:t.pop()[1],operand:Y(t)};case"crement":return{type:"assign",operator:t.pop()[1].charAt(0)+"=",left:Y(t).value,right:{type:"literal",value:1}};default:return We(t)}}function We(t){let e=qe(t);return t.nextIs("crement")?{type:"assign",operator:t.pop()[1].charAt(0)+"=",left:e.value,right:{type:"literal",value:1},prevalue:!0}:e}function qe(t){let e=Ze(t);for(;;){switch(t.nextIs()){case"(":{t.pop();let n=[];for(;!t.nextIs(")")&&(n.push(d(t)),t.nextIs(","));)t.pop();t.must(")"),e={type:"function",name:e,params:n};continue}case".":{t.pop();let n=t.must("word");e={type:"get",value:{type:"hash",object:e,key:{type:"literal",value:n[1]}}};continue}case"[":{t.pop();let n=d(t);t.must("]"),e={type:"get",value:{type:"hash",object:e,key:n}};continue}}break}return e}function Ze(t){let e=t.pop();switch(e[0]){case"word":return{type:"get",value:{type:"variable",name:e[1]}};case"number":return{type:"literal",value:Number(e[1])};case"boolean":return{type:"literal",value:e[1]==="true"};case"undefined":return{type:"literal",value:void 0};case"null":return{type:"literal",value:null};case'"':return j(t,"double",e[0]);case"'":return j(t,"single",e[0]);case"`":return j(t,"template",e[0]);case"(":{let n=d(t);return t.must(")"),n}case"[":{let n=[];for(;!t.nextIs("]");)if(n.push(d(t)),t.nextIs(","))t.pop();else if(t.nextIs("]")){t.pop();break}else throw Error("']' is required");return{type:"array",values:n}}case"{":{let n=[];for(;!t.nextIs("}");){let r=Array(2),a=t.pop();if(a[0]==="word"?r[0]={type:"literal",value:a[1]}:a[0]==='"'?r[0]=j(t,"double",a[0]):a[0]==="'"?r[0]=j(t,"single",a[0]):a[0]==="["&&(r[0]=d(t),t.must("]")),a[0]==="word"&&(t.nextIs(",")||t.nextIs("}"))?r[1]={type:"get",value:{type:"variable",name:a[1]}}:(t.must(":"),r[1]=d(t)),n.push(r),t.nextIs(","))t.pop();else if(t.nextIs("}")){t.pop();break}else throw Error("'}' is required")}return{type:"object",entries:n}}default:throw new Error(e[0]+" is invalid")}}function j(t,e,n){let r=[""],a=0;return t.expand(e,()=>{e:for(;;){r[a]+=t.skip();let o=t.pop();switch(o[0]){case n:break e;case"return":throw Error("Newline cannot be used");case"escape":r[a]+=X(o[1]);continue;case"${":t.expand("script",()=>{r.push(d(t))}),t.must("}"),r.push(t.skip()),a+=2}}}),a===0?{type:"literal",value:r[0]}:{type:"join",values:r.filter(o=>o!==""),separator:""}}function S(t){switch(t){case"html":case"base":case"head":case"link":case"meta":case"style":case"title":case"body":case"address":case"article":case"aside":case"footer":case"header":case"h1":case"h2":case"h3":case"h4":case"h5":case"h6":case"main":case"nav":case"section":case"blockquote":case"dd":case"div":case"dl":case"dt":case"figcaption":case"figure":case"hr":case"li":case"ol":case"p":case"pre":case"ul":case"a":case"abbr":case"b":case"bdi":case"bdo":case"br":case"cite":case"code":case"data":case"dfn":case"em":case"i":case"kbd":case"mark":case"q":case"rp":case"rt":case"ruby":case"s":case"samp":case"small":case"span":case"strong":case"sub":case"sup":case"time":case"u":case"var":case"wbr":case"area":case"audio":case"img":case"map":case"track":case"video":case"embed":case"iframe":case"object":case"param":case"picture":case"portal":case"source":case"svg":case"math":case"canvas":case"noscript":case"script":case"del":case"ins":case"caption":case"col":case"colgroup":case"table":case"tbody":case"td":case"tfoot":case"th":case"thead":case"tr":case"button":case"datalist":case"fieldset":case"form":case"input":case"label":case"legend":case"meter":case"optgroup":case"option":case"output":case"progress":case"select":case"textarea":case"details":case"dialog":case"menu":case"summary":case"slot":case"template":return!0}return!1}function Ce(t){switch(t){case"br":case"hr":case"img":case"input":case"meta":case"area":case"base":case"col":case"embed":case"keygen":case"link":case"param":case"source":return!0}return!1}function ee(t){let e=typeof t=="string"?new V(t,"html"):t,n={text:e.skip([">","/"])};for(;e.nextIs("<!--");)e.pop(),e.expand("comment",()=>e.must("-->")),n.text+=e.skip([">","/"]);if(e.nextIs("start")){let r=Qe(e);r&&(M(r)?n.next=r:(n.text=r.text,r.next&&(n.next=r.next)))}return n.text?n:n.next?n.next:void 0}function Qe(t){let e={tag:t.pop()[1].slice(1).toLocaleLowerCase()},n=Xe(t);if(n.length&&(e.attrs=n),t.nextIs("/"))t.pop(),t.must(">");else if(Ce(e.tag))t.must(">");else{t.must(">");let a=ee(t);if(a&&(e.child=a),t.must("end")[1].slice(2)!==e.tag)throw Error(`end tag <${e.tag}> is required.`);t.must(">")}let r=ee(t);return r&&(e.next=r),e.tag==="script"&&e.next?e.next:e}function Xe(t){let e=[];return t.expand("attr",()=>{for(t.skip();t.nextIs()&&!t.nextIs(">");){let n=new Array(3);if(t.nextIs("name"))if(n[0]=t.pop()[1],t.nextIs("assign"))n[1]=t.must("assign")[1];else if(t.nextIs("name")||t.nextIs(">")||t.nextIs("/"))n[1]="=",n[2]=n[0];else throw Error("assign is required.");else{if(t.nextIs("on"))n[0]=t.pop()[1],n[1]="on";else if(t.nextIs("@"))n[0]=t.pop()[1],n[1]="@";else break;if(n[0]==="@else")n[2]=n[0];else if(t.must("assign")[1]!=="=")throw Error("= is required.")}n[2]===void 0&&(t.nextIs('"')?n[2]=Ae(t,"double",t.pop()[0]):t.nextIs("'")&&(n[2]=Ae(t,"single",t.pop()[0]))),e.push(n),t.skip()}}),e}function Ae(t,e,n){let r="";return t.expand(e,()=>{e:for(;;){r+=t.skip();let a=t.pop();switch(a[0]){case n:break e;case"return":throw Error("Newline cannot be used");case"escape":r+=X(a[1]);continue}}}),r}function B(t){let e=ee(t),n=e?ce(e):[];return n.length?{type:"tree",children:n}:{type:"tree"}}var Pe=class{constructor(e){this.node=e}isSkippable(e){for(let n=this.node;n;n=n.next){if(M(n))return ue(n,e);if(!/^\s*$/.test(n.text))return!1}return!1}skip(){for(;;){if(M(this.node))return this;this.node=this.node.next}}pop(){let e=this.node;return this.node=this.node?.next,e}};function ce(t){let e=new Pe(t),n=[];for(;e.node;){let r=Ye(e);r!==void 0&&n.push(r)}return n}function Ye(t){if(!t.node)t.pop();else return M(t.node)?_e(t):nt(new V(t.pop().text,"text"))}function et(t){return _e(t)}function _e(t){let e=t.node;if(ue(e,"@for")){let n=pe(e,"@each")||void 0,r=d(pe(e,"@for"));return{type:"for",each:n,array:r,value:Le(t)}}else return Le(t)}function Le(t){let e=t.node;if(ue(e,"@if")){let n=d(pe(e,"@if")),r=Re(e);t.pop();let a={type:"if",condition:n,truthy:r};return t.isSkippable("@else")&&(a.falsy=et(t.skip())),a}else return Re(t.pop())}function Re(t){if(t.tag==="group"){let e={type:"group"};if(t.attrs?.forEach(([n,,r])=>{n.match(/^@(if|else|for|each)$/)||n.match(/^@.*$/)&&(e.props||(e.props={}),e.props[n]=r)}),t.child){let n=ce(t.child);n.length&&(e.children=n)}return e}else return tt(t)}function tt(t){let e={type:"element",tag:t.tag};{let n=[];t.attrs?.forEach(([r,a,o])=>{switch(a){case"=":{switch(r){case"is":{r in e||(e.is=o);return}case"class":case"part":return(e[r]??=[]).push(o.split(/\s+/));case"style":return n.push(o)}return r in(e.props??={})?void 0:e.props[r]=o}case":=":{switch(r){case"is":return e.is=d(o);case"class":case"part":return(e[r]??=[]).push({type:"flags",value:d(o)});case"style":return n.push(d(o))}return(e.props??={})[r]=d(o)}case"*=":{let s=d(o);return O(s)&&s.type==="get"&&(s=s.value),(e.props??={})[r]=s}case"on":{let s=r.slice(2),i={type:"handler",value:d(o)};return((e.on??={})[s]??=[]).push(i)}}}),n.length&&(n.length===1&&typeof n[0]=="string"?e.style=n[0]:e.style={type:"join",values:n.filter(r=>r!==""),separator:";"}),t.attrs?.forEach(([r,a,o])=>{a==="&="&&((e.bools??={})[r]=d(o),e.props&&(delete e.props[r],Object.keys(e.props).length||delete e.props))})}if(t.child){let n=ce(t.child);n.length&&(e.children=n)}return(!S(e.tag)||e.is)&&(e.type="custom"),e}function ue(t,e){return t.attrs?.some(n=>n[0]===e)}function pe(t,e){let n=t.attrs?.find(r=>r[0]===e);return n?n[2]:""}function nt(t){let e=[];for(e.push(t.skip());t.nextIs();)t.nextIs("{{")?(t.pop(),t.expand("script",()=>{e.push({type:"draw",value:d(t)})}),t.must("}}"),e.push(t.skip())):t.pop();return e.length===1&&typeof e[0]=="string"?e[0]:{type:"flat",values:e}}var me=new Array,l=function(t,e=[],n={}){let r=t;switch(r.type){case"literal":return r.value;case"array":return r.values.map(a=>l(a,e,n));case"object":return Object.fromEntries(r.entries.map(a=>a.map(o=>l(o,e))));case"variable":{let[,a]=y(e,r.name);return a>=0?{record:e[a],key:r.name,[Q]:!0}:void 0}case"unary":return at(r.operator,l(r.operand,e,n));case"binary":{let a=l(r.left,e,n);return Ve(r.operator,a)?Oe(r.operator,a,l(r.right,e,n)):a}case"assign":{let a=l(r.left,e,n);if(!a)throw Error(r.left?r.left.name:"key is not defined");let{record:o,key:s}=a,i=o[s],p=l(r.right,e,n);if(r.operator.length>1){let c=r.operator.slice(0,-1);Ve(c,i)&&(o[s]=Oe(c,i,p))}else o[s]=p;return r.prevalue?i:o[s]}case"function":{if(r.name.type==="get"&&r.name.value.type==="hash"){let a=l(r.name.value,e,n);if(!a)throw Error(l(r.name.value.key,e,n)+" is not defined");let o=a.record[a.key];if(typeof o=="function")return o.apply(a.record,r.params.map(s=>l(s,e,n)))}else{let a=l(r.name,e,n);if(typeof a=="function")return a(...r.params.map(o=>l(o,e,n)))}throw Error(r.name.toString()+" is not a function")}case"hash":return{record:l(r.object,e,n),key:l(r.key,e,n),[Q]:!0};case"get":{let a=l(r.value,e,n);return a&&a.record[a.key]}case"flat":{let a=r.values.flatMap(o=>typeof o=="string"?[o]:fe(l(o,e,n))).filter(o=>o!=="").reduce((o,s)=>{let i=o.length;return i&&typeof s=="string"&&typeof o[i-1]=="string"?o[i-1]+=s:o.push(s),o},[]);return a.length===1&&typeof a[0]=="string"?a[0]:a}case"draw":{let a=l(r.value,e,n);if(typeof a=="object")if(O(a))if(a.type==="tree"){a.type="group";let o=l(a,e,n);return a.type="tree",o}else return l(a,e,n);else return Object.getPrototypeOf(a)===Object.prototype?JSON.stringify(a):"";else return a==null?"":a+""}case"join":return r.values.reduce((a,o,s)=>{if(O(o)){let i=l(o,e,n);return a+(s?r.separator:"")+(typeof i=="object"?"":i)}else return a+(s?r.separator:"")+o},"");case"flags":{let a=l(r.value,e,n);if(typeof a=="string")return a.split(/\s+/);if(typeof a=="object"){if(Array.isArray(a))return a;if(a)return Object.keys(a).filter(o=>a[o])}return[]}case"if":return l(r.condition,e,n)?l(r.truthy,e,n):r.falsy?l(r.falsy,e,n):null;case"for":{let a=l(r.array,e,n),o;if(typeof a=="object"&&a!==null)if(Symbol.iterator in a)if("entries"in a)o=[...a.entries()];else{let s=0;o=[];for(let i of a)o.push([s++,i])}else o=Object.entries(a);else o=[[0,a]];return o.flatMap(([s,i],p)=>{let c=new Z(s,i,p,o,e),h=fe(l(r.value,e.concat([r.each?{[r.each]:i,loop:c}:{loop:c}]),n)).filter(v=>typeof v!="number");return typeof c.value=="object"&&h.filter(v=>typeof v=="object").forEach(v=>v.key=c.value),h})}case"tree":{let a=te(r,e,n);return a.length?{children:a}:{}}case"custom":{let a=me.find(o=>o.match(r,e,n))?.exec(r,e,n);if(a)return a}case"element":{let a=te(r,e,n),s=a.length?{children:a}:{};return s.tag=r.tag,r.is&&(s.is=typeof r.is=="string"?r.is:l(r.is,e,n)),F(r,e,n,s),s}case"group":return te(r,e,n);case"handler":{n.handler||(n.handler=new WeakMap),n.handler.has(r)||n.handler.set(r,[]);let a=n.handler.get(r);for(let s of a)if(Me(s[0],e))return s[1];let o=s=>l(r.value,[...e,{event:s}],n);return a.push([e,o]),o}case"evaluation":return l(r.template,r.stack?r.stack.concat(e):e,n);default:return me.find(a=>a.match(t,e,n))?.exec(t,e,n)}};l.plugin=t=>{me.unshift(t)};var rt={match(t,e,n){if(t.type==="custom"){let r=t;if(!S(r.tag))return r.tag==="window"||y(e,r.tag)[0]instanceof EventTarget}return!1},exec(t,e,n){let r=t;if(t.tag==="window"){let s={el:window,override:!0,invalid:{props:!0,children:!0}};return F(r,e,n,s),s}let a=y(e,r.tag)[0],o={el:a};return F(r,e,n,o),a instanceof Element&&r.props&&("@override"in r.props&&(o.override=!0),"@keep"in r.props&&(o.keep=!0)),(a instanceof Element||a instanceof DocumentFragment||a instanceof ShadowRoot)&&r.children&&r.children.length?o.children=te(r,e,n):o.invalid={children:!0},o}};l.plugin(rt);function te(t,e,n){let r=t.children||[],a=0;r.length&&((n.groups??(n.groups=[new WeakMap,0]))[0].has(t)?a=n.groups[0].get(t):(a=n.groups[1]=n.groups[1]+r.length,n.groups[0].set(t,a)));let o=r.flatMap((s,i)=>{if(O(s)){let p=fe(l(s,e,n));switch(s.type){case"if":case"for":case"group":p.push(a-i)}return p}else return[s]});return typeof o[o.length-1]=="number"&&o.pop(),o}function F(t,e,n,r){if(t.style&&(r.style=typeof t.style=="string"?t.style:l(t.style,e,n)),t.bools){for(let a in t.bools)if(!a.startsWith("@")){let o=t.bools[a],s=typeof o=="string"?o:l(o,e,n);s&&((r.props??(r.props={}))[a]=s)}}if(t.props){for(let a in t.props)if(!a.startsWith("@")){let o=t.props[a];(r.props??(r.props={}))[a]=typeof o=="string"?o:l(o,e,n)}}if(t.class&&t.class.forEach(a=>r.class=(r.class||[]).concat(Array.isArray(a)?a:l(a,e,n))),t.part&&t.part.forEach(a=>r.part=(r.part||[]).concat(Array.isArray(a)?a:l(a,e,n))),t.on){r.on||(r.on={});for(let a in t.on)r.on[a]=t.on[a].map(o=>l(o,e,n))}}function Me(t,e,n=t.length-1,r=e.length-1){let[a,o]=y(t,"loop",n),[s,i]=y(e,"loop",r);return!a&&!s?!0:!a||!s?!1:a.index===s.index&&a.key===s.key&&a.value===s.value&&Me(t,e,o-1,i-1)}function fe(t){return t==null?[]:Array.isArray(t)?t:[t]}function at(t,e){switch(t){case"void":return;case"typeof":return typeof e;case"+":return+e;case"-":return-e;case"~":return~e;case"!":return!e;default:throw Error(t+" does not exist")}}function Ve(t,e){switch(t){case"&&":return!!e;case"||":return!e;case"??":return e==null;default:return!0}}function Oe(t,e,n){switch(t){case"+":return e+n;case"-":return e-n;case"/":return e/n;case"*":return e*n;case"%":return e%n;case"**":return e**n;case"in":return e in n;case"instanceof":return e instanceof n;case"<":return e<n;case">":return e>n;case"<=":return e<=n;case">=":return e>=n;case"==":return e==n;case"!=":return e!=n;case"===":return e===n;case"!==":return e!==n;case"<<":return e<<n;case">>":return e>>n;case">>>":return e>>>n;case"&":return e&n;case"|":return e|n;case"^":return e^n;case"&&":return e&&n;case"||":return e||n;case"??":return e??n;default:throw Error(t+" does not exist")}}var de=N({alert,console,Object,Number,Math,Date,Array,JSON,String,isNaN,isFinite,location,history,navigator,setTimeout,setInterval});var $=Symbol.for("Beako Special");function k(t){return typeof t=="object"&&t!==null&&(t.template||t.patcher)&&t.data&&t.options}function ne(t){return typeof t=="object"&&t!==null&&"default"in t&&t[Symbol.toStringTag]==="Module"}function he(t,e,n={children:[]}){return t.children&&(t.children=t.children.filter(r=>{if(typeof r=="object"){if(e(r))return n.children.push(r),!1;"tag"in r&&he(r,e,n)}return!0}),t.children.length||delete t.children),n.children.length?n:{}}function re(...t){let e={children:[]};return t.forEach(n=>{n&&n.children&&(e.children=e.children.concat(n.children))}),e.children.length?e:{}}var x=class{constructor(e,n,r){this._props={};this._refs={};this._requirePatch=!1;let a=r.el;this._component=e,this._template=e.template,this._patcher=e.patcher,this._host=n,this._tree=r,this._updater=new Fe(r),this.patch=this.patch.bind(this),this.dispatch=this.dispatch.bind(this),this._cache={[$]:[n,a]},this._component.options.mode==="closed"&&a.addEventListener(C.patch,s=>s.stopPropagation()),n.addEventListener(C.destroy,()=>{this.patch({type:"tree"})});let o=typeof this._component.data=="function"?this._component.data(this):this._component.data;this._running=(async()=>{let s=await o,i=s?Array.isArray(s)?s:[s]:[];this._stack=[de,{host:n,root:a},b(this._props),...i],H(this._stack,this.patch),this.patch(),i.forEach(p=>{if(typeof p=="object"&&p!==null){for(let c in p)if((typeof p[c]=="function"||p[c]instanceof Element)&&isNaN(c)&&!(c in this._host)){let h=typeof p[c]=="function"?p[c].bind(this):p[c];Object.defineProperty(this._host,c,{get(){return h}})}}})})()}setProp(e,n){switch(e){case"is":case"class":case"part":case"style":return;default:{let r=this._props[e];if(r!==n){if(e in this._refs){let a=this._refs[e][0];if(le(n)&&n.record===a.record)return;P(this._props,e,this._refs[e][1]),P(a.record,a.key,this._refs[e][2]),delete this._refs[e]}if(P(r,this.patch),le(n)){let a=s=>{n.record[n.key]=s},o=s=>{this._props[e]=s};this._refs[e]=[n,a,o],b(this._props,e,a),b(n.record,n.key,o),this._props[e]=n.record[n.key]}else this._props[e]=n;r===void 0&&b(this._props,e,this.patch),H(this._props,this.patch),this.patch()}}}}get component(){return this._component}get host(){return this._host}get root(){return this._tree.el}get props(){return this._props}get whenRunning(){return()=>this._running}patch(e){e&&(typeof e=="function"?(this._patcher=e,this._template=void 0):(this._patcher=void 0,this._template=typeof e=="string"?B(e):e)),this._requirePatch||(this._requirePatch=!0,setTimeout(()=>{if(this._requirePatch=!1,this._stack){let n=this._patcher?this._patcher(this._stack):this._template?l(this._template,this._stack,this._cache):this._tree&&this._component.template?l(this._component.template,this._stack,this._cache):void 0;n&&this._updater.patch(n)}}))}dispatch(e,n=null){this._host.dispatchEvent(new CustomEvent(e,{detail:n}))}toJSON(){return{component:this._component,props:this._props,tree:this._tree}}};function ot(t){return"tag"in t&&(t.tag==="style"||t.tag==="link")}function Se(t){return t.tag==="link"&&t.props?.href!==""&&(t.props?.rel).toLocaleLowerCase()==="stylesheet"}var Fe=class{constructor(e){this.tree=e;this._waitUrls=new Set;this.loaded=e=>{this.removeWaitUrl(e.target.getAttribute("href"))}}patch(e){let n=he(e,ot),r=e;if(n.children!==void 0||this.header?.children!==void 0){let a=this.header?.children?.filter(Se)||[],o=n.children?.filter(Se)||[],s=o.filter(p=>a.every(c=>c.props?.href!==p.props?.href)),i=a.filter(p=>o.every(c=>c.props?.href!==p.props?.href));s.length&&(o.forEach(p=>{((p.on??={}).load??=[]).push(this.loaded),(p.on.error??=[]).push(this.loaded)}),s.forEach(p=>{this.addWaitUrl(p.props?.href),p.new=!0}),i.forEach(p=>this.removeWaitUrl(p.props?.href)),i?I(this.tree,re(this.header,n,this.body)):I(this.tree,re(n,this.body)),s.forEach(p=>p.new=!1),this.header=n)}this.update=()=>{I(this.tree,re(this.header,r)),this.body=r}}set update(e){this._update=e,this._executeUpdate()}addWaitUrl(e){this._waitUrls.add(e)}removeWaitUrl(e){this._waitUrls.delete(e),this._executeUpdate()}_executeUpdate(){!this._waitUrls.size&&this._update&&(this._update(),this._update=void 0)}};var w="beako-element",E=class extends HTMLElement{constructor(){super()}setProp(e,n){this._entity?.setProp(e,n)}static getComponent(){}loadProps(){this.hasAttributes()&&this.getAttributeNames().forEach(e=>{this.setProp(e,this.getAttribute(e))})}whenRunning(){return this._entity?this._entity.whenRunning():new Promise(e=>{this._run=e})}_setEntity(e){this._entity=e,this._run&&this._entity.whenRunning().then(this._run)}get entity(){return this._entity}get attributes(){return st(super.attributes,this.setProp)}setAttribute(e,n){this.setProp(e,n),super.setAttribute(e,n)}getAttributeNode(e){let n=super.getAttributeNode(e);return n&&Ne(n,this.setProp)}removeAttribute(e){return this.setProp(e,void 0),super.removeAttribute(e)}removeAttributeNode(e){return this.setProp(e.name,void 0),super.removeAttributeNode(e)}toJSON(){return{entity:this._entity}}},He=class extends E{constructor(){super()}setProp(e,n){if(e==="component")switch(typeof n){case"string":{let r=customElements.get(n);if(r&&E.isPrototypeOf(r)){let a=r.getComponent();if(a){let o=A(this.attachShadow(a.options));this._setEntity(new x(a,this,o))}}else throw Error(n+" is not a component.");break}case"object":if(k(n)){let r=A(this.attachShadow(n.options));this._setEntity(new x(n,this,r))}else if(n!==null)throw Error("The object is not a component.");break}super.setProp(e,n)}};customElements.get(w)||customElements.define(w,He);function Ne(t,e){return new Proxy(t,{set(n,r,a){if(e(r,a),r==="value")return n.value=a}})}function st(t,e){return new Proxy(t,{get:function(n,r){return r==="length"?n[r]:Ne(n[r],e)}})}async function it(t,e){let n;if(typeof t=="string")n=document.createElement(t);else{n=document.createElement(w);let r=await Promise.resolve(t),a=ne(r)&&k(r.default)?r.default:r;n.setAttribute("component",a)}if(e)for(let r in e)n.setAttribute(r,e[r]);if(typeof t=="string"){let r=customElements.get(t);r!==void 0&&Object.prototype.isPrototypeOf.call(E,r)&&await n.whenRunning()}else await n.whenRunning();return n}var Ie={match(t,e,n){if(t.type==="custom"){if(t.tag===w||t.tag==="element")return!0;let r=t,a=y(e,r.tag)[0];if(typeof a=="object"&&a!==null&&(k(a)||ne(a)&&k(a.default)))return!0;{let o=customElements.get(r.tag);return o!==void 0&&Object.prototype.isPrototypeOf.call(E,o)}}return!1},exec(t,e,n){let r=t,a={tag:w},o;r.tag!==w&&r.tag!=="element"&&(o=y(e,r.tag)[0],o?(a.props??={}).component=o:a.tag=r.tag);let s=[],i=[],p=(r.children||[])?.flatMap(c=>{if(typeof c!="string"){let h=c;if(h.props){if(h.props["@as"])return i.push([h.props["@as"],h]),[];if(h.props.slot)return[l(c,e,n)]}}return s.push(c),[]});return s.length&&i.push(["content",{type:"group",children:s}]),i.length&&(a.props||(a.props={}),i.forEach(([c,h])=>{a.props[c]={type:"evaluation",template:h,stack:e}})),p.length&&(a.children=p),F(r,e,n,a),(r.tag===w||r.tag==="element")&&(o=a.props?.component,(a.props??={}).component=o),typeof o=="object"&&o!==null&&"default"in o&&o[Symbol.toStringTag]==="Module"&&k(o.default)&&(o=o.default,(a.props??={}).component=o),r.cache!==o&&(a.new=!0),r.cache=o,a}},je={match(t,e,n){if(t.type==="custom"&&$ in n&&!S(t.tag)){let r=y(e,t.tag)[0];return n[$].some(a=>a===r)}return!1},exec(t,e,n){let a={el:y(e,t.tag)[0]||ShadowRoot,override:!0,invalid:{props:!0,children:!0}};return F(t,e,n,a),a}};l.plugin(Ie);l.plugin(je);function G(t,e=[]){let n={data:typeof e=="function"||Array.isArray(e)?e:[e],options:{mode:"open"}};return typeof t=="function"?n.patcher=t:n.template=typeof t=="string"?B(t):t,N(n)}function lt(t,e,n=[]){let r=k(e)?e:G(e,n);if(r.options.localeOnly)throw Error("This componet is local only.");customElements.define(t,class extends E{constructor(){super();let a=A(this.attachShadow(r.options));this._setEntity(new x(r,this,a)),this.innerHTML?(this.entity.setProp("content",this.innerHTML),this.hasAttributes()&&this.getAttributeNames().forEach(o=>{this.entity.setProp(o,this.getAttribute(o))})):this.loadProps()}static getComponent(){return r}})}function pt(t,e,n=[]){let r=typeof t=="string"?document.querySelector(t):t,a=k(e)?e:G(e,n);if(a.options.localeOnly)throw Error("This componet is local only.");let o=A(r.attachShadow(a.options)),s=new x(a,r,o);r.innerHTML&&s.setProp("content",r.innerHTML),r.hasAttributes()&&r.getAttributeNames().forEach(i=>{s.setProp(i,r.getAttribute(i))})}function ct(t,e={}){return t.options=Object.freeze({mode:"closed",...e}),Object.freeze(t)}export{E as ComponentElement,x as Entity,Z as Loop,de as builtin,G as compact,lt as define,_ as destroy,it as elementize,l as evaluate,C as eventTypes,d as expression,A as load,N as lock,pt as mount,B as parse,I as patch,y as pickup,H as reach,Ge as receive,ct as seal,ze as unlock,P as unwatch,b as watch};
+// data_binding/types.ts
+var dictionary = Symbol.for("Beako Dictionary");
+var reactiveKey = Symbol.for("Beako Reactive");
+var arrayKey = Symbol.for("Beako Array");
+var isLocked = Symbol.for("Beako Lock");
+
+// data_binding/watch.ts
+function watch(data, keyOrCallback, callback) {
+  if (typeof data === "object" && data !== null && (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))) {
+    const obj = data;
+    if (!obj[isLocked]) {
+      pollute(obj);
+      if (callback === void 0) {
+        const callbacks = obj[dictionary][reactiveKey][1];
+        if (typeof keyOrCallback === "function") {
+          callbacks.add(keyOrCallback);
+        }
+        for (const key in obj) {
+          pollute(obj, key, obj[dictionary][reactiveKey][0]);
+          const value = obj[key];
+          if (typeof value === "object" && value !== null) {
+            if (callbacks.size) {
+              callbacks.forEach((callback2) => {
+                if (!(dictionary in value) || !value[dictionary][reactiveKey][1].has(callback2)) {
+                  watch(value, callback2);
+                }
+              });
+            } else {
+              if (!(dictionary in value)) {
+                watch(value);
+              }
+            }
+          }
+        }
+        if (Array.isArray(obj)) {
+          const len = obj[dictionary][arrayKey].length;
+          if (obj.length < len) {
+            for (let index = obj.length; index < len; index++) {
+              pollute(obj, index);
+            }
+          }
+          obj.length = len;
+        }
+      } else {
+        const spy = typeof callback === "function" ? ["spy", callback] : callback;
+        if (Array.isArray(keyOrCallback)) {
+          keyOrCallback.forEach((key) => pollute(obj, key, spy));
+        } else {
+          pollute(obj, keyOrCallback, spy);
+        }
+      }
+    }
+  }
+  return data;
+}
+function pollute(obj, key, arm) {
+  if (!obj[isLocked]) {
+    if (!(dictionary in obj)) {
+      const reactiveCallback = () => {
+        obj[dictionary][reactiveKey][1].forEach((callback) => callback());
+      };
+      obj[dictionary] = {
+        [reactiveKey]: [["bio", reactiveCallback], /* @__PURE__ */ new Set()]
+      };
+      if (Array.isArray(obj)) {
+        const array = obj[dictionary][arrayKey] = obj.slice();
+        const reactive = (value) => {
+          reactiveCallback();
+          return value;
+        };
+        const rewatch = (value) => {
+          watch(obj);
+          reactiveCallback();
+          return value;
+        };
+        Object.defineProperties(obj, {
+          unshift: {
+            get() {
+              return (...items) => rewatch(Array.prototype["unshift"].call(array, ...items));
+            }
+          },
+          push: {
+            get() {
+              return (...items) => rewatch(Array.prototype["push"].call(array, ...items));
+            }
+          },
+          splice: {
+            get() {
+              return (start, deleteCount, ...items) => rewatch(deleteCount === void 0 ? Array.prototype["splice"].call(array, start, array.length - start) : Array.prototype["splice"].apply(array, [start, deleteCount, ...items]));
+            }
+          },
+          pop: {
+            get() {
+              return () => rewatch(Array.prototype["pop"].call(array));
+            }
+          },
+          shift: {
+            get() {
+              return () => rewatch(Array.prototype["shift"].call(array));
+            }
+          },
+          sort: {
+            get() {
+              return (compareFn) => reactive(compareFn === void 0 ? Array.prototype["sort"].call(array) : Array.prototype["sort"].call(array, compareFn));
+            }
+          },
+          reverse: {
+            get() {
+              return () => reactive(Array.prototype["reverse"].call(array));
+            }
+          },
+          copyWithin: {
+            get() {
+              return (target, start, end) => reactive(Array.prototype["copyWithin"].call(array, target, start !== void 0 ? start : 0, end !== void 0 ? end : array.length));
+            }
+          }
+        });
+      }
+    }
+    if (key !== void 0) {
+      if (!Array.isArray(obj) || typeof key !== "number" && isNaN(key)) {
+        if (!(key in obj[dictionary])) {
+          obj[dictionary][key] = [obj[key], /* @__PURE__ */ new Set()];
+          Object.defineProperty(obj, key, {
+            get() {
+              return this[dictionary][key][0];
+            },
+            set(value) {
+              obj[dictionary][reactiveKey][1].forEach((callback) => watch(value, callback));
+              launch(this[dictionary][key], value);
+            }
+          });
+        }
+        if (arm) {
+          for (const item of obj[dictionary][key][1]) {
+            if (item[1] === arm[1])
+              return;
+          }
+          obj[dictionary][key][1].add(arm);
+        }
+      } else {
+        const descriptor = Object.getOwnPropertyDescriptor(obj, key);
+        if (!descriptor || "value" in descriptor) {
+          if (key in obj[dictionary][arrayKey]) {
+            Object.defineProperty(obj, key, {
+              get() {
+                return this[dictionary][arrayKey][key];
+              },
+              set(value) {
+                obj[dictionary][reactiveKey][1].forEach((callback) => watch(value, callback));
+                const old = this[dictionary][arrayKey][key];
+                this[dictionary][arrayKey][key] = value;
+                if (old !== value) {
+                  obj[dictionary][reactiveKey][0][1]();
+                }
+              },
+              configurable: true,
+              enumerable: true
+            });
+          }
+        }
+      }
+    }
+  }
+}
+function launch(page, value) {
+  const old = page[0];
+  page[0] = value;
+  if (old !== value) {
+    page[1].forEach((arm) => {
+      switch (arm[0]) {
+        case "bio":
+          arm[1]();
+          break;
+        case "bom":
+          page[1].delete(arm);
+        case "spy":
+          arm[1](value, old);
+          break;
+      }
+    });
+  }
+}
+
+// data_binding/receive.ts
+async function receive(obj, key) {
+  if (!obj[isLocked]) {
+    const keys = Array.isArray(key) ? key : [key];
+    const values = await Promise.all(keys.map((key2) => {
+      if (obj[key2] === void 0) {
+        return new Promise((resolve) => {
+          pollute(obj, key2, ["bom", resolve]);
+        });
+      } else {
+        return obj[key2];
+      }
+    }));
+    return keys.reduce((obj2, key2, index) => {
+      obj2[key2] = values[index];
+      return obj2;
+    }, {});
+  }
+  return {};
+}
+
+// data_binding/unwatch.ts
+function unwatch(data, keyOrCallback, callback) {
+  if (typeof data === "object" && data !== null) {
+    const obj = data;
+    if (!obj[isLocked]) {
+      if (callback === void 0) {
+        if (keyOrCallback) {
+          const reactiveCallback = keyOrCallback;
+          if (obj[dictionary]) {
+            obj[dictionary][reactiveKey][1].delete(reactiveCallback);
+          }
+          for (const key in obj) {
+            unwatch(obj[key], reactiveCallback);
+          }
+        } else {
+          for (const key in obj) {
+            unwatch(obj[key]);
+          }
+          clean(obj);
+        }
+      } else {
+        if (Array.isArray(keyOrCallback)) {
+          keyOrCallback.forEach((key) => clean(obj, key, callback));
+        } else {
+          clean(obj, keyOrCallback, callback);
+        }
+      }
+    }
+  }
+  return data;
+}
+function clean(obj, key, callback) {
+  if (key !== void 0) {
+    if (dictionary in obj) {
+      if (key in obj[dictionary]) {
+        if (callback) {
+          obj[dictionary][key][1].forEach((arm) => {
+            if (arm[1] === callback) {
+              obj[dictionary][key][1].delete(arm);
+            }
+          });
+        } else {
+          obj[dictionary][key][1].clear();
+        }
+      }
+    }
+  } else {
+    for (const key2 in obj[dictionary]) {
+      Object.defineProperty(obj, key2, {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: obj[dictionary][key2][0]
+      });
+      delete obj[dictionary][key2];
+    }
+    if (Array.isArray(obj)) {
+      delete obj.push;
+      delete obj.sort;
+      delete obj.splice;
+    }
+    delete obj[dictionary];
+  }
+}
+
+// data_binding/reach.ts
+function reach(data, callback) {
+  if (typeof data === "object" && data !== null && (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))) {
+    const obj = data;
+    if (!obj[isLocked]) {
+      if (dictionary in obj) {
+        obj[dictionary][reactiveKey][1].add(callback);
+      }
+      for (const key in obj) {
+        reach(obj[key], callback);
+      }
+    }
+  }
+  return data;
+}
+
+// data_binding/lock.ts
+function lock(obj) {
+  obj[isLocked] = true;
+  return obj;
+}
+
+// data_binding/unlock.ts
+function unlock(obj) {
+  delete obj[isLocked];
+  return obj;
+}
+
+// virtual_dom/types.ts
+var eventTypes = Symbol.for("Beako Event Types");
+
+// virtual_dom/event_types.ts
+var destroy = "destroy";
+var patch = "patch";
+if (!(eventTypes in window)) {
+  Object.defineProperty(window, eventTypes, {
+    value: Object.seal({
+      get destroy() {
+        return destroy;
+      },
+      set destroy(value) {
+        if (typeof value === "string" && value !== "") {
+          destroy = value;
+        } else {
+          throw Error("Event type must be string");
+        }
+      },
+      get patch() {
+        return patch;
+      },
+      set patch(value) {
+        if (typeof value === "string" && value !== "") {
+          patch = value;
+        } else {
+          throw Error("Event type must be string");
+        }
+      }
+    })
+  });
+}
+var eventTypes2 = window[eventTypes];
+
+// virtual_dom/load.ts
+function load(el2) {
+  const tree = { el: el2 };
+  loadChildren(tree);
+  return tree;
+}
+function loadElement(el2) {
+  const ve = {
+    tag: el2.tagName.toLowerCase(),
+    el: el2
+  };
+  loadAttr(ve);
+  loadChildren(ve);
+  return ve;
+}
+function loadAttr(ve) {
+  if (ve.el.hasAttributes()) {
+    const props = {};
+    ve.el.getAttributeNames().forEach((name) => {
+      if (name.startsWith("on"))
+        return;
+      const value = ve.el.getAttribute(name);
+      switch (name) {
+        case "class":
+        case "part":
+          return ve[name] = value.split(/\s+/);
+        case "style":
+        case "is":
+          return ve[name] = value;
+        default:
+          return props[name] = value;
+      }
+    });
+    if (Object.keys(props).length) {
+      ve.props = props;
+    }
+  }
+}
+function loadChildren(tree) {
+  if (tree.el.hasChildNodes()) {
+    const nodeList = tree.el.childNodes;
+    tree.children = [];
+    for (let i = 0; i < nodeList.length; i++) {
+      switch (nodeList[i].nodeType) {
+        case 1:
+          if (nodeList[i].tagName === "SCRIPT") {
+            break;
+          }
+          tree.children.push(loadElement(nodeList[i]));
+          break;
+        case 3:
+          tree.children.push(nodeList[i].data);
+          break;
+      }
+    }
+  }
+}
+
+// virtual_dom/destroy.ts
+function destroy2(tree) {
+  if (!tree.invalid?.children && tree.el instanceof Node) {
+    tree.children?.forEach((child) => typeof child === "object" && destroy2(child));
+    const el2 = tree.el;
+    while (el2.firstChild) {
+      el2.removeChild(el2.firstChild);
+    }
+  }
+  if (!tree.keep) {
+    tree.el.dispatchEvent(new CustomEvent(eventTypes2.destroy, {
+      bubbles: false
+    }));
+  }
+  if (!tree.invalid?.on) {
+    patchOn(tree, {});
+  }
+  if (!tree.invalid?.props && tree.el instanceof Element) {
+    patchClass(tree, {});
+    patchPart(tree, {});
+    patchStyle(tree, {});
+    patchProps(tree, {});
+    patchForm(tree, {});
+  }
+}
+
+// virtual_dom/patch.ts
+function patch2(tree, newTree) {
+  patchChildren(tree, newTree);
+  tree.el.dispatchEvent(new CustomEvent(eventTypes2.patch, {
+    bubbles: true,
+    composed: true
+  }));
+  return tree;
+}
+function patchElement(ve, newVe) {
+  if (!ve || ve.tag !== newVe.tag || ve.is !== newVe.is || newVe.new) {
+    ve = newVe.is ? {
+      tag: newVe.tag,
+      is: newVe.is,
+      el: document.createElement(newVe.tag, { is: newVe.is })
+    } : {
+      tag: newVe.tag,
+      el: document.createElement(newVe.tag)
+    };
+  }
+  patchClass(ve, newVe);
+  patchPart(ve, newVe);
+  patchStyle(ve, newVe);
+  patchProps(ve, newVe);
+  patchForm(ve, newVe);
+  patchOn(ve, newVe);
+  patchChildren(ve, newVe);
+  if ("key" in newVe) {
+    ve.key = newVe.key;
+  } else {
+    delete ve.key;
+  }
+  return ve;
+}
+function patchRealElement(ve, newVe) {
+  if (!ve || ve.el !== newVe.el) {
+    ve = { el: newVe.el };
+    if ("override" in newVe) {
+      ve.override = newVe.override;
+    }
+    if ("keep" in newVe) {
+      ve.keep = newVe.keep;
+    }
+    if ("invalid" in newVe) {
+      ve.invalid = { ...newVe.invalid };
+    }
+  }
+  if (!ve.invalid?.props && ve.el instanceof Element) {
+    patchClass(ve, newVe);
+    patchPart(ve, newVe);
+    patchStyle(ve, newVe);
+    patchProps(ve, newVe);
+    patchForm(ve, newVe);
+  }
+  if (!ve.invalid?.on) {
+    patchOn(ve, newVe);
+  }
+  if (!ve.invalid?.children && ve.el instanceof Node) {
+    patchChildren(ve, newVe);
+  }
+  return ve;
+}
+function patchClass(ve, newVe) {
+  const currentClass = (ve.class || []).join(" ");
+  const newClass = (newVe.class || []).join(" ");
+  if (currentClass !== newClass) {
+    ve.el.className = newClass;
+  }
+  if (newClass.length) {
+    ve.class = (newVe.class || []).slice();
+  } else {
+    delete ve.class;
+  }
+}
+function patchPart(ve, newVe) {
+  const currentPart = ve.part || [];
+  const newPart = newVe.part || [];
+  const shortage = newPart.filter((part) => !currentPart.includes(part));
+  if (shortage.length) {
+    ve.el.part.add(...shortage);
+  }
+  const surplus = currentPart.filter((part) => !newPart.includes(part));
+  if (surplus.length) {
+    ve.el.part.remove(...surplus);
+  }
+  if (newPart.length) {
+    ve.part = newPart.slice();
+  } else {
+    delete ve.part;
+  }
+}
+function patchStyle(ve, newVe) {
+  if (ve.el instanceof HTMLElement) {
+    const style = ve.style || "";
+    const newStyle = newVe.style || "";
+    if (style != newStyle) {
+      ve.el.style.cssText = newStyle;
+      if (newStyle != "") {
+        ve.style = newStyle;
+      } else {
+        delete ve.style;
+      }
+    }
+  }
+}
+function patchProps(ve, newVe) {
+  const currentProps = ve.props || {};
+  const newProps = newVe.props || {};
+  const currentPropsKeys = Object.keys(currentProps);
+  const newPropsKeys = Object.keys(newProps);
+  newPropsKeys.filter((key) => !currentPropsKeys.includes(key) || currentProps[key] !== newProps[key]).forEach((key) => ve.el.setAttribute(key, newProps[key]));
+  currentPropsKeys.filter((key) => !newPropsKeys.includes(key)).forEach((key) => ve.el.removeAttribute(key));
+  if (newPropsKeys.length) {
+    ve.props = { ...newProps };
+  } else {
+    delete ve.props;
+  }
+}
+function patchOn(ve, newVe) {
+  const currentOn = ve.on || {};
+  const newOn = newVe.on || {};
+  const currentOnKeys = Object.keys(currentOn);
+  const newOnKeys = Object.keys(newOn);
+  newOnKeys.filter((type) => !currentOnKeys.includes(type)).forEach((type) => {
+    newOn[type].forEach((listener) => {
+      ve.el.addEventListener(type, listener);
+    });
+  });
+  currentOnKeys.filter((type) => !newOnKeys.includes(type)).forEach((type) => {
+    currentOn[type].forEach((listener) => {
+      ve.el.removeEventListener(type, listener);
+    });
+  });
+  newOnKeys.filter((type) => currentOnKeys.includes(type)).forEach((type) => {
+    const news = newOn[type];
+    const currents = currentOn[type];
+    news.filter((listener) => !currents.includes(listener)).forEach((listener) => ve.el.addEventListener(type, listener));
+    currents.filter((listener) => !news.includes(listener)).forEach((listener) => ve.el.removeEventListener(type, listener));
+  });
+  if (newOnKeys.length) {
+    ve.on = newOnKeys.reduce((on, type) => {
+      on[type] = [...newOn[type]];
+      return on;
+    }, {});
+  } else {
+    delete ve.on;
+  }
+}
+function patchForm(ve, newVe) {
+  if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.el)) {
+    const input = ve.el;
+    if (input.value !== newVe.props?.value) {
+      if (newVe.props && "value" in newVe.props) {
+        if (input.value !== (newVe.props?.value).toString()) {
+          input.value = newVe.props.value;
+        }
+      } else {
+        if (ve.el.value !== "") {
+          ve.el.value = "";
+        }
+      }
+    }
+    if (!input.checked && newVe.props && "checked" in newVe.props) {
+      input.checked = true;
+    } else if (input.checked && !(newVe.props && "checked" in newVe.props)) {
+      input.checked = false;
+    }
+  }
+  if (Object.prototype.isPrototypeOf.call(HTMLOptionElement.prototype, ve.el)) {
+    const option = ve.el;
+    if (!option.selected && newVe.props && "selected" in newVe.props) {
+      option.selected = true;
+    } else if (option.selected && !(newVe.props && "selected" in newVe.props)) {
+      option.selected = false;
+    }
+  }
+}
+var Stock = class {
+  constructor() {
+    this.stock = /* @__PURE__ */ new Map();
+  }
+  has(key) {
+    return this.stock.get(key)?.length;
+  }
+  push(key, value) {
+    if (this.stock.has(key)) {
+      this.stock.get(key).push(value);
+    } else {
+      this.stock.set(key, [value]);
+    }
+  }
+  shift(key) {
+    return this.stock.get(key).shift();
+  }
+};
+function patchChildren(tree, newTree) {
+  const oldChildren = tree.children || [];
+  const newChildren = newTree.children || [];
+  if (oldChildren.length === 0 && newChildren.length === 0) {
+    return;
+  }
+  if (oldChildren.length === 0 && tree.el.hasChildNodes()) {
+    return;
+  }
+  const parent = oldChildren.length === 0 && newChildren.length > 1 ? new DocumentFragment() : tree.el;
+  const stock = new Stock();
+  let index = 0;
+  let currentNode = parent.firstChild;
+  const numbers = newChildren.filter((newVNode) => typeof newVNode === "number").reverse();
+  let currentNumber = numbers.pop();
+  const add = (newVNode) => {
+    const tmp2 = patchElement(null, newVNode);
+    parent.insertBefore(tmp2.el, currentNode || null);
+    return tmp2;
+  };
+  const replace = (newVNode) => {
+    const tmp2 = patchElement(oldChildren[index], newVNode);
+    if (tmp2 !== oldChildren[index]) {
+      destroy2(oldChildren[index]);
+      parent.replaceChild(tmp2.el, oldChildren[index].el);
+    }
+    currentNode = tmp2.el.nextSibling;
+    index++;
+    return tmp2;
+  };
+  const remove = (useStore = false) => {
+    if (typeof oldChildren[index] !== "number") {
+      if (typeof oldChildren[index] === "object") {
+        if (currentNode !== oldChildren[index].el) {
+          destroy2(oldChildren[index++]);
+          return;
+        }
+        if (useStore && "key" in oldChildren[index]) {
+          stock.push(oldChildren[index].key, oldChildren[index]);
+        } else {
+          destroy2(oldChildren[index]);
+        }
+      }
+      const old = currentNode;
+      currentNode = old.nextSibling;
+      parent.removeChild(old);
+    }
+    index++;
+  };
+  const tmp = newChildren.map((newVNode) => {
+    switch (typeof newVNode) {
+      case "string": {
+        if (typeof oldChildren[index] === "string") {
+          if (currentNode.data !== newVNode) {
+            currentNode.data = newVNode;
+          }
+          currentNode = currentNode.nextSibling;
+          index++;
+        } else {
+          parent.insertBefore(document.createTextNode(newVNode), currentNode || null);
+        }
+        return newVNode;
+      }
+      case "object": {
+        if ("el" in newVNode) {
+          if (typeof oldChildren[index] === "object" && newVNode.el === oldChildren[index].el) {
+            const tmp2 = patchRealElement(oldChildren[index], newVNode);
+            if (!tmp2.override && tmp2.el === currentNode && tmp2.el instanceof Element && tmp2.el.getRootNode() === currentNode.getRootNode()) {
+              currentNode = currentNode.nextSibling;
+            }
+            index++;
+            return tmp2;
+          } else {
+            const tmp2 = patchRealElement(null, newVNode);
+            if (!tmp2.override && tmp2.el instanceof Element && tmp2.el.parentNode === null) {
+              parent.insertBefore(tmp2.el, currentNode || null);
+            }
+            return tmp2;
+          }
+        }
+        if ("key" in newVNode) {
+          if (stock.has(newVNode.key)) {
+            const tmp2 = patchElement(stock.shift(newVNode.key), newVNode);
+            parent.insertBefore(tmp2.el, currentNode || null);
+            return tmp2;
+          } else {
+            while (index < oldChildren.length && oldChildren[index] !== currentNumber) {
+              if (typeof oldChildren[index] === "object" && newVNode.key === oldChildren[index].key) {
+                return replace(newVNode);
+              }
+              remove(true);
+            }
+            return add(newVNode);
+          }
+        } else {
+          if (typeof oldChildren[index] === "object" && !("el" in newVNode) && !("key" in oldChildren[index])) {
+            return replace(newVNode);
+          } else {
+            return add(newVNode);
+          }
+        }
+      }
+      case "number": {
+        while (index < oldChildren.length && oldChildren[index] !== newVNode) {
+          remove();
+        }
+        index++;
+        currentNumber = numbers.pop();
+        stock.stock.forEach((queue) => queue.forEach((ve) => destroy2(ve)));
+        stock.stock.clear();
+        return newVNode;
+      }
+    }
+  });
+  while (index < oldChildren.length) {
+    remove();
+  }
+  if (tmp.length) {
+    tree.children = tmp;
+  } else {
+    delete tree.children;
+  }
+  if (oldChildren.length === 0 && newChildren.length > 1) {
+    tree.el.append(parent);
+  }
+}
+
+// template_engine/pickup.ts
+function pickup(stack, name, start = stack.length - 1) {
+  for (let i = start; i >= 0; i--) {
+    if (name in stack[i])
+      return [stack[i][name], i];
+  }
+  return [void 0, -1];
+}
+
+// template_engine/loop.ts
+var Loop = class {
+  constructor(_key, _value, _index, _entries, _stack) {
+    this._key = _key;
+    this._value = _value;
+    this._index = _index;
+    this._entries = _entries;
+    this._stack = _stack;
+  }
+  get key() {
+    return this._key;
+  }
+  get value() {
+    return this._value;
+  }
+  get index() {
+    return this._index;
+  }
+  get size() {
+    return this._entries.length;
+  }
+  get isFirst() {
+    return this._index === 0;
+  }
+  get isLast() {
+    return this._index === this._entries.length - 1;
+  }
+  get parent() {
+    return pickup(this._stack, "loop")[0];
+  }
+  toJSON() {
+    return {
+      key: this._key,
+      value: this._value,
+      _index: this._index,
+      size: this._entries.length,
+      isFirst: this._index === 0,
+      isLast: this._index === this._entries.length - 1
+    };
+  }
+};
+
+// template_engine/types.ts
+var isRef = Symbol.for("Beako Ref");
+function instanceOfTemplate(object) {
+  return typeof object === "object" && object !== null && typeof object.type === "string";
+}
+function instanceOfRef(object) {
+  return typeof object === "object" && object !== null && object[isRef] === true;
+}
+function instanceOfTemporaryElement(node) {
+  return "tag" in node;
+}
+
+// template_engine/lexer.ts
+var Lexer = class {
+  constructor(text, field, index = 0, token = null) {
+    this.text = text;
+    this.field = field;
+    this.index = index;
+    this.token = token;
+  }
+  _next(start) {
+    const token = ["", ""];
+    for (this.index = start; this.index < this.text.length; this.index++) {
+      const nextType = distinguish(this.field, token[1] + this.text[this.index]);
+      if (nextType === "other") {
+        return token;
+      } else {
+        token[0] = nextType;
+        token[1] = token[1] + this.text[this.index];
+      }
+    }
+    return token;
+  }
+  skip(skipArray = []) {
+    skipArray.unshift("other");
+    let value = "";
+    if (!this.token) {
+      for (let i = this.index; i < this.text.length; i++) {
+        if (skipArray.includes(distinguish(this.field, this.text[i]))) {
+          value += this.text[i];
+        } else {
+          this.token = this._next(i);
+          if (this.token && this.token[0] === "partial") {
+            value += this.token[1];
+            this.token = null;
+          } else {
+            return value;
+          }
+        }
+      }
+    }
+    return value;
+  }
+  nextIs(type) {
+    this.skip();
+    if (this.token) {
+      return type ? this.token[0] === type : this.token[0];
+    } else {
+      return false;
+    }
+  }
+  pop() {
+    this.skip();
+    const token = this.token;
+    this.token = null;
+    return token ? token : null;
+  }
+  expand(field, func2) {
+    const parent = this.field;
+    this.field = field;
+    func2();
+    if (this.token) {
+      this.index -= this.token[1].length;
+      this.token = null;
+    }
+    this.field = parent;
+  }
+  must(type) {
+    const token = this.pop();
+    if (!token || token[0] !== type)
+      throw Error(type + " is required.");
+    return token;
+  }
+};
+function distinguish(field, value) {
+  switch (field) {
+    case "html":
+      switch (value) {
+        case ">":
+        case "<!--":
+        case "/":
+          return value;
+        case "<":
+        case "</":
+        case "<!":
+        case "<!-":
+          return "partial";
+      }
+      switch (true) {
+        case /^\/\/.*$/.test(value):
+          return "//";
+        case /^<[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(value):
+          return "start";
+        case /^<\/[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(value):
+          return "end";
+      }
+      break;
+    case "attr":
+      switch (value) {
+        case "@if":
+        case "@else":
+        case "@for":
+        case "@each":
+          return "@";
+        case "=":
+        case ":=":
+        case "&=":
+        case "*=":
+          return "assign";
+        case ">":
+        case "/":
+        case "'":
+        case '"':
+          return value;
+        case ":":
+        case "&":
+        case "*":
+          return "partial";
+      }
+      switch (true) {
+        case /^on[_\$\-a-zA-Z0-9]+$/.test(value):
+          return "on";
+        case /^[_\$\-@a-zA-Z0-9]+$/.test(value):
+          return "name";
+      }
+      break;
+    case "comment":
+      switch (value) {
+        case "-->":
+          return value;
+        case "-":
+        case "--":
+          return "partial";
+      }
+      break;
+    case "script":
+      switch (value) {
+        case "+":
+        case "-":
+          return "multi";
+        case "void":
+        case "typeof":
+        case "~":
+        case "!":
+          return "unary";
+        case "/":
+        case "*":
+        case "%":
+        case "**":
+        case "in":
+        case "instanceof":
+        case "<":
+        case ">":
+        case "<=":
+        case ">=":
+        case "==":
+        case "!=":
+        case "===":
+        case "!==":
+        case "<<":
+        case ">>":
+        case ">>>":
+        case "&":
+        case "|":
+        case "^":
+        case "&&":
+        case "||":
+        case "??":
+          return "binary";
+        case "=":
+        case "*=":
+        case "**=":
+        case "/=":
+        case "%=":
+        case "+=":
+        case "-=":
+        case "<<=":
+        case ">>=":
+        case ">>>=":
+        case "&=":
+        case "^=":
+        case "|=":
+        case "&&=":
+        case "||=":
+        case "??=":
+          return "assign";
+        case "++":
+        case "--":
+          return "crement";
+        case "false":
+        case "true":
+          return "boolean";
+        case "null":
+        case "undefined":
+        case ".":
+        case "?.":
+        case "[":
+        case "]":
+        case "{":
+        case "}":
+        case "(":
+        case ")":
+        case "...":
+        case "?":
+        case ":":
+        case ",":
+        case "'":
+        case '"':
+        case "`":
+          return value;
+      }
+      switch (true) {
+        case /^\/\/.*$/.test(value):
+          return "//";
+        case /^[_\$a-zA-Z][_\$a-zA-Z0-9]*$/.test(value):
+          return "word";
+        case /^\d+\.?\d*$|^\.?\d+$/.test(value):
+          return "number";
+      }
+      break;
+    case "template":
+      switch (value) {
+        case "$":
+          return "partial";
+        case "${":
+          return value;
+        case "}":
+          return value;
+        case "`":
+          return "`";
+        case "\r":
+        case "\n":
+        case "\r\n":
+          return "other";
+      }
+    case "single":
+    case "double":
+      switch (value) {
+        case "\\":
+          return "partial";
+        case "\r":
+        case "\n":
+        case "\r\n":
+          return "return";
+        case "\\\r\n":
+          return "escape";
+        case "'":
+          if (field === "single")
+            return value;
+          break;
+        case '"':
+          if (field === "double")
+            return value;
+          break;
+      }
+      switch (true) {
+        case /^\\u[0-9a-fA-F]{0,3}$/.test(value):
+        case /^\\x[0-9a-fA-F]{0,1}$/.test(value):
+        case /^\\u\{(0?[0-9a-fA-F]{0,5}|10[0-9a-fA-F]{0,4})$/.test(value):
+          return "partial";
+        case /^\\.$/.test(value):
+        case /^\\u[0-9a-fA-F]{4}$/.test(value):
+        case /^\\u\{(0?[0-9a-fA-F]{1,5}|10[0-9a-fA-F]{1,4})\}$/.test(value):
+        case /^\\x[0-9a-fA-F]{2}$/.test(value):
+          return "escape";
+      }
+      break;
+    case "text":
+      switch (value) {
+        case "{":
+        case "}":
+          return "partial";
+        case "{{":
+        case "}}":
+          return value;
+      }
+      break;
+  }
+  return "other";
+}
+function unescape(value) {
+  switch (value) {
+    case "\\n":
+      return "\n";
+    case "\\r":
+      return "\r";
+    case "\\v":
+      return "\v";
+    case "\\t":
+      return "	";
+    case "\\b":
+      return "\b";
+    case "\\f":
+      return "\f";
+  }
+  switch (true) {
+    case /^\\u[0-9a-fA-F]{4}$/.test(value):
+    case /^\\x[0-9a-fA-F]{2}$/.test(value):
+      return String.fromCodePoint(parseInt(value.slice(2), 16));
+    case /^\\u\{(0?[0-9a-fA-F]{1,5}|10[0-9a-fA-F]{1,4})\}$/.test(value):
+      return String.fromCodePoint(parseInt(value.slice(3, -1), 16));
+  }
+  return value.slice(1);
+}
+
+// template_engine/expression.ts
+function expression(script) {
+  const lexer = typeof script === "string" ? new Lexer(script, "script") : script;
+  return assignment(lexer);
+}
+function assignment(lexer) {
+  const left = conditional(lexer);
+  if (lexer.nextIs("assign")) {
+    if (left.type !== "get") {
+      throw Error("The left operand is not variable");
+    }
+    const operator = lexer.pop()[1];
+    const right = expression(lexer);
+    return {
+      type: "assign",
+      operator,
+      left: left.value,
+      right
+    };
+  } else {
+    return left;
+  }
+}
+function conditional(lexer) {
+  let condition = arithmetic(lexer);
+  while (lexer.nextIs("?")) {
+    lexer.pop();
+    const truthy = expression(lexer);
+    lexer.must(":");
+    const falsy = arithmetic(lexer);
+    condition = { type: "if", condition, truthy, falsy };
+  }
+  return condition;
+}
+function arithmetic(lexer) {
+  const list = new Array();
+  list.push(unary(lexer));
+  while (lexer.nextIs("multi") || lexer.nextIs("binary")) {
+    list.push(lexer.pop()[1]);
+    list.push(unary(lexer));
+  }
+  while (list.length > 1) {
+    for (let index = 0; index + 1 < list.length; index += 2) {
+      if (index + 3 >= list.length || precedence(list[index + 1]) > precedence(list[index + 3])) {
+        const node = {
+          type: "binary",
+          operator: list[index + 1],
+          left: list[index],
+          right: list[index + 2]
+        };
+        list.splice(index, 3, node);
+      }
+    }
+  }
+  return typeof list[0] === "string" ? { type: "variable", name: list[0] } : list[0];
+}
+function precedence(operator) {
+  switch (operator) {
+    default:
+      return 0;
+    case "||":
+    case "??":
+      return 4;
+    case "&&":
+      return 5;
+    case "|":
+      return 6;
+    case "^":
+      return 7;
+    case "&":
+      return 8;
+    case "==":
+    case "!=":
+    case "===":
+    case "!==":
+      return 9;
+    case "in":
+    case "instanceof":
+    case "<":
+    case ">":
+    case "<=":
+    case ">=":
+      return 10;
+    case "<<":
+    case ">>":
+    case ">>>":
+      return 11;
+    case "+":
+    case "-":
+      return 12;
+    case "*":
+    case "/":
+    case "%":
+      return 13;
+    case "**":
+      return 14;
+  }
+}
+function unary(lexer) {
+  switch (lexer.nextIs()) {
+    case "multi":
+    case "unary":
+      return {
+        type: "unary",
+        operator: lexer.pop()[1],
+        operand: unary(lexer)
+      };
+    case "crement":
+      return {
+        type: "assign",
+        operator: lexer.pop()[1].charAt(0) + "=",
+        left: unary(lexer).value,
+        right: { type: "literal", value: 1 }
+      };
+    default:
+      return postfix(lexer);
+  }
+}
+function postfix(lexer) {
+  const template = func(lexer);
+  if (lexer.nextIs("crement")) {
+    return {
+      type: "assign",
+      operator: lexer.pop()[1].charAt(0) + "=",
+      left: template.value,
+      right: { type: "literal", value: 1 },
+      prevalue: true
+    };
+  }
+  return template;
+}
+function func(lexer) {
+  let template = term(lexer);
+  while (true) {
+    switch (lexer.nextIs()) {
+      case "(": {
+        lexer.pop();
+        const params = [];
+        while (!lexer.nextIs(")")) {
+          params.push(expression(lexer));
+          if (lexer.nextIs(","))
+            lexer.pop();
+          else
+            break;
+        }
+        lexer.must(")");
+        template = { type: "function", name: template, params };
+        continue;
+      }
+      case ".": {
+        lexer.pop();
+        const key = lexer.must("word");
+        template = { type: "get", value: { type: "hash", object: template, key: { type: "literal", value: key[1] } } };
+        continue;
+      }
+      case "[": {
+        lexer.pop();
+        const key = expression(lexer);
+        lexer.must("]");
+        template = { type: "get", value: { type: "hash", object: template, key } };
+        continue;
+      }
+    }
+    break;
+  }
+  return template;
+}
+function term(lexer) {
+  const token = lexer.pop();
+  switch (token[0]) {
+    case "word":
+      return { type: "get", value: { type: "variable", name: token[1] } };
+    case "number":
+      return { type: "literal", value: Number(token[1]) };
+    case "boolean":
+      return { type: "literal", value: token[1] === "true" ? true : false };
+    case "undefined":
+      return { type: "literal", value: void 0 };
+    case "null":
+      return { type: "literal", value: null };
+    case '"':
+      return stringLiteral(lexer, "double", token[0]);
+    case "'":
+      return stringLiteral(lexer, "single", token[0]);
+    case "`":
+      return stringLiteral(lexer, "template", token[0]);
+    case "(": {
+      const node = expression(lexer);
+      lexer.must(")");
+      return node;
+    }
+    case "[": {
+      const values = [];
+      while (!lexer.nextIs("]")) {
+        values.push(expression(lexer));
+        if (lexer.nextIs(",")) {
+          lexer.pop();
+        } else if (lexer.nextIs("]")) {
+          lexer.pop();
+          break;
+        } else {
+          throw Error("']' is required");
+        }
+      }
+      return { type: "array", values };
+    }
+    case "{": {
+      const entries = [];
+      while (!lexer.nextIs("}")) {
+        const entry = Array(2);
+        const token2 = lexer.pop();
+        if (token2[0] === "word") {
+          entry[0] = { type: "literal", value: token2[1] };
+        } else if (token2[0] === '"') {
+          entry[0] = stringLiteral(lexer, "double", token2[0]);
+        } else if (token2[0] === "'") {
+          entry[0] = stringLiteral(lexer, "single", token2[0]);
+        } else if (token2[0] === "[") {
+          entry[0] = expression(lexer);
+          lexer.must("]");
+        }
+        if (token2[0] === "word" && (lexer.nextIs(",") || lexer.nextIs("}"))) {
+          entry[1] = { type: "get", value: { type: "variable", name: token2[1] } };
+        } else {
+          lexer.must(":");
+          entry[1] = expression(lexer);
+        }
+        entries.push(entry);
+        if (lexer.nextIs(",")) {
+          lexer.pop();
+        } else if (lexer.nextIs("}")) {
+          lexer.pop();
+          break;
+        } else {
+          throw Error("'}' is required");
+        }
+      }
+      return { type: "object", entries };
+    }
+    default:
+      throw new Error(token[0] + " is invalid");
+  }
+}
+function stringLiteral(lexer, field, type) {
+  const texts = [""];
+  let i = 0;
+  lexer.expand(field, () => {
+    loop:
+      while (true) {
+        texts[i] += lexer.skip();
+        const token = lexer.pop();
+        switch (token[0]) {
+          case type:
+            break loop;
+          case "return":
+            throw Error("Newline cannot be used");
+          case "escape":
+            texts[i] += unescape(token[1]);
+            continue;
+          case "${":
+            lexer.expand("script", () => {
+              texts.push(expression(lexer));
+            });
+            lexer.must("}");
+            texts.push(lexer.skip());
+            i += 2;
+        }
+      }
+  });
+  if (i === 0) {
+    return { type: "literal", value: texts[0] };
+  } else {
+    return { type: "join", values: texts.filter((value) => value !== ""), separator: "" };
+  }
+}
+
+// template_engine/is_primitive.ts
+function isPrimitive(tag) {
+  switch (tag) {
+    case "html":
+    case "base":
+    case "head":
+    case "link":
+    case "meta":
+    case "style":
+    case "title":
+    case "body":
+    case "address":
+    case "article":
+    case "aside":
+    case "footer":
+    case "header":
+    case "h1":
+    case "h2":
+    case "h3":
+    case "h4":
+    case "h5":
+    case "h6":
+    case "main":
+    case "nav":
+    case "section":
+    case "blockquote":
+    case "dd":
+    case "div":
+    case "dl":
+    case "dt":
+    case "figcaption":
+    case "figure":
+    case "hr":
+    case "li":
+    case "ol":
+    case "p":
+    case "pre":
+    case "ul":
+    case "a":
+    case "abbr":
+    case "b":
+    case "bdi":
+    case "bdo":
+    case "br":
+    case "cite":
+    case "code":
+    case "data":
+    case "dfn":
+    case "em":
+    case "i":
+    case "kbd":
+    case "mark":
+    case "q":
+    case "rp":
+    case "rt":
+    case "ruby":
+    case "s":
+    case "samp":
+    case "small":
+    case "span":
+    case "strong":
+    case "sub":
+    case "sup":
+    case "time":
+    case "u":
+    case "var":
+    case "wbr":
+    case "area":
+    case "audio":
+    case "img":
+    case "map":
+    case "track":
+    case "video":
+    case "embed":
+    case "iframe":
+    case "object":
+    case "param":
+    case "picture":
+    case "portal":
+    case "source":
+    case "svg":
+    case "math":
+    case "canvas":
+    case "noscript":
+    case "script":
+    case "del":
+    case "ins":
+    case "caption":
+    case "col":
+    case "colgroup":
+    case "table":
+    case "tbody":
+    case "td":
+    case "tfoot":
+    case "th":
+    case "thead":
+    case "tr":
+    case "button":
+    case "datalist":
+    case "fieldset":
+    case "form":
+    case "input":
+    case "label":
+    case "legend":
+    case "meter":
+    case "optgroup":
+    case "option":
+    case "output":
+    case "progress":
+    case "select":
+    case "textarea":
+    case "details":
+    case "dialog":
+    case "menu":
+    case "summary":
+    case "slot":
+    case "template":
+      return true;
+  }
+  return false;
+}
+function notHasEnd(tag) {
+  switch (tag) {
+    case "br":
+    case "hr":
+    case "img":
+    case "input":
+    case "meta":
+    case "area":
+    case "base":
+    case "col":
+    case "embed":
+    case "keygen":
+    case "link":
+    case "param":
+    case "source":
+      return true;
+  }
+  return false;
+}
+
+// template_engine/dom.ts
+function dom(html) {
+  const lexer = typeof html === "string" ? new Lexer(html, "html") : html;
+  const text = { text: lexer.skip([">", "/"]) };
+  while (lexer.nextIs("<!--")) {
+    lexer.pop();
+    lexer.expand("comment", () => lexer.must("-->"));
+    text.text += lexer.skip([">", "/"]);
+    continue;
+  }
+  if (lexer.nextIs("start")) {
+    const next = el(lexer);
+    if (next) {
+      if (instanceOfTemporaryElement(next)) {
+        text.next = next;
+      } else {
+        text.text = next.text;
+        if (next.next) {
+          text.next = next.next;
+        }
+      }
+    }
+  }
+  return text.text ? text : text.next ? text.next : void 0;
+}
+function el(lexer) {
+  const el2 = {
+    tag: lexer.pop()[1].slice(1).toLocaleLowerCase()
+  };
+  const attrs = attr(lexer);
+  if (attrs.length) {
+    el2.attrs = attrs;
+  }
+  if (lexer.nextIs("/")) {
+    lexer.pop();
+    lexer.must(">");
+  } else if (notHasEnd(el2.tag)) {
+    lexer.must(">");
+  } else {
+    lexer.must(">");
+    const child = dom(lexer);
+    if (child) {
+      el2.child = child;
+    }
+    if (lexer.must("end")[1].slice(2) !== el2.tag) {
+      throw Error(`end tag <${el2.tag}> is required.`);
+    }
+    lexer.must(">");
+  }
+  const next = dom(lexer);
+  if (next) {
+    el2.next = next;
+  }
+  if (el2.tag === "script") {
+    return el2.next ? el2.next : el2;
+  } else {
+    return el2;
+  }
+}
+function attr(lexer) {
+  const attrs = [];
+  lexer.expand("attr", () => {
+    lexer.skip();
+    while (lexer.nextIs()) {
+      if (lexer.nextIs(">")) {
+        break;
+      } else {
+        const attr2 = new Array(3);
+        if (lexer.nextIs("name")) {
+          attr2[0] = lexer.pop()[1];
+          if (lexer.nextIs("assign")) {
+            attr2[1] = lexer.must("assign")[1];
+          } else if (lexer.nextIs("name") || lexer.nextIs(">") || lexer.nextIs("/")) {
+            attr2[1] = "=";
+            attr2[2] = attr2[0];
+          } else {
+            throw Error("assign is required.");
+          }
+        } else {
+          if (lexer.nextIs("on")) {
+            attr2[0] = lexer.pop()[1];
+            attr2[1] = "on";
+          } else if (lexer.nextIs("@")) {
+            attr2[0] = lexer.pop()[1];
+            attr2[1] = "@";
+          } else {
+            break;
+          }
+          if (attr2[0] === "@else") {
+            attr2[2] = attr2[0];
+          } else {
+            const token = lexer.must("assign");
+            if (token[1] !== "=") {
+              throw Error("= is required.");
+            }
+          }
+        }
+        if (attr2[2] === void 0) {
+          if (lexer.nextIs('"')) {
+            attr2[2] = string(lexer, "double", lexer.pop()[0]);
+          } else if (lexer.nextIs("'")) {
+            attr2[2] = string(lexer, "single", lexer.pop()[0]);
+          }
+        }
+        attrs.push(attr2);
+        lexer.skip();
+      }
+    }
+  });
+  return attrs;
+}
+function string(lexer, field, type) {
+  let text = "";
+  lexer.expand(field, () => {
+    loop:
+      while (true) {
+        text += lexer.skip();
+        const token = lexer.pop();
+        switch (token[0]) {
+          case type:
+            break loop;
+          case "return":
+            throw Error("Newline cannot be used");
+          case "escape":
+            text += unescape(token[1]);
+            continue;
+        }
+      }
+  });
+  return text;
+}
+
+// template_engine/parse.ts
+function parse(html) {
+  const node = dom(html);
+  const children = node ? parseTree(node) : [];
+  return children.length ? { type: "tree", children } : { type: "tree" };
+}
+var DomLexer = class {
+  constructor(node) {
+    this.node = node;
+  }
+  isSkippable(prop) {
+    for (let node = this.node; node; node = node.next) {
+      if (instanceOfTemporaryElement(node)) {
+        return hasAttr(node, prop);
+      } else {
+        if (!/^\s*$/.test(node.text)) {
+          return false;
+        }
+      }
+    }
+    return false;
+  }
+  skip() {
+    while (true) {
+      if (instanceOfTemporaryElement(this.node)) {
+        return this;
+      }
+      this.node = this.node.next;
+    }
+  }
+  pop() {
+    const node = this.node;
+    this.node = this.node?.next;
+    return node;
+  }
+};
+function parseTree(node) {
+  const lexer = new DomLexer(node);
+  const children = [];
+  while (lexer.node) {
+    const result = parseNode(lexer);
+    if (result !== void 0) {
+      children.push(result);
+    }
+  }
+  return children;
+}
+function parseNode(lexer) {
+  if (!lexer.node) {
+    lexer.pop();
+  } else if (instanceOfTemporaryElement(lexer.node)) {
+    return parseFor(lexer);
+  } else {
+    return parseText(new Lexer(lexer.pop().text, "text"));
+  }
+}
+function parseChild(lexer) {
+  return parseFor(lexer);
+}
+function parseFor(lexer) {
+  const el2 = lexer.node;
+  if (hasAttr(el2, "@for")) {
+    const each = getAttr(el2, "@each") || void 0;
+    const array = expression(getAttr(el2, "@for"));
+    return { type: "for", each, array, value: parseIf(lexer) };
+  } else {
+    return parseIf(lexer);
+  }
+}
+function parseIf(lexer) {
+  const el2 = lexer.node;
+  if (hasAttr(el2, "@if")) {
+    const condition = expression(getAttr(el2, "@if"));
+    const truthy = parseGroup(el2);
+    lexer.pop();
+    const template = { type: "if", condition, truthy };
+    if (lexer.isSkippable("@else")) {
+      template.falsy = parseChild(lexer.skip());
+    }
+    return template;
+  } else {
+    return parseGroup(lexer.pop());
+  }
+}
+function parseGroup(el2) {
+  if (el2.tag === "group") {
+    const template = {
+      type: "group"
+    };
+    el2.attrs?.forEach(([name, , value]) => {
+      if (name.match(/^@(if|else|for|each)$/))
+        return;
+      if (name.match(/^@.*$/)) {
+        if (!template.props) {
+          template.props = {};
+        }
+        template.props[name] = value;
+      }
+    });
+    if (el2.child) {
+      const children = parseTree(el2.child);
+      if (children.length) {
+        template.children = children;
+      }
+    }
+    return template;
+  } else {
+    return parseElement(el2);
+  }
+}
+function parseElement(el2) {
+  const template = {
+    type: "element",
+    tag: el2.tag
+  };
+  {
+    const style = [];
+    el2.attrs?.forEach(([name, assign, value]) => {
+      switch (assign) {
+        case "=": {
+          switch (name) {
+            case "is": {
+              if (!(name in template)) {
+                template.is = value;
+              }
+              return;
+            }
+            case "class":
+            case "part": {
+              return (template[name] ??= []).push(value.split(/\s+/));
+            }
+            case "style": {
+              return style.push(value);
+            }
+          }
+          if (!(name in (template.props ??= {}))) {
+            return template.props[name] = value;
+          }
+          return;
+        }
+        case ":=": {
+          switch (name) {
+            case "is":
+              return template.is = expression(value);
+            case "class":
+            case "part": {
+              return (template[name] ??= []).push({ type: "flags", value: expression(value) });
+            }
+            case "style": {
+              return style.push(expression(value));
+            }
+          }
+          return (template.props ??= {})[name] = expression(value);
+        }
+        case "*=": {
+          let ref = expression(value);
+          if (instanceOfTemplate(ref) && ref.type === "get") {
+            ref = ref.value;
+          }
+          return (template.props ??= {})[name] = ref;
+        }
+        case "on": {
+          const type = name.slice(2);
+          const handler = { type: "handler", value: expression(value) };
+          return ((template.on ??= {})[type] ??= []).push(handler);
+        }
+      }
+    });
+    if (style.length) {
+      if (style.length === 1 && typeof style[0] === "string") {
+        template.style = style[0];
+      } else {
+        template.style = { type: "join", values: style.filter((value) => value !== ""), separator: ";" };
+      }
+    }
+    el2.attrs?.forEach(([name, assign, value]) => {
+      if (assign === "&=") {
+        (template.bools ??= {})[name] = expression(value);
+        if (template.props) {
+          delete template.props[name];
+          if (!Object.keys(template.props).length) {
+            delete template.props;
+          }
+        }
+      }
+    });
+  }
+  if (el2.child) {
+    const children = parseTree(el2.child);
+    if (children.length) {
+      template.children = children;
+    }
+  }
+  if (!isPrimitive(template.tag) || template.is) {
+    template.type = "custom";
+  }
+  return template;
+}
+function hasAttr(el2, prop) {
+  return el2.attrs?.some((attr2) => attr2[0] === prop);
+}
+function getAttr(el2, prop) {
+  const attr2 = el2.attrs?.find((attr3) => attr3[0] === prop);
+  return attr2 ? attr2[2] : "";
+}
+function parseText(lexer) {
+  const values = [];
+  values.push(lexer.skip());
+  while (lexer.nextIs()) {
+    if (lexer.nextIs("{{")) {
+      lexer.pop();
+      lexer.expand("script", () => {
+        values.push({ type: "draw", value: expression(lexer) });
+      });
+      lexer.must("}}");
+      values.push(lexer.skip());
+    } else {
+      lexer.pop();
+    }
+  }
+  if (values.length === 1 && typeof values[0] === "string") {
+    return values[0];
+  } else {
+    return { type: "flat", values };
+  }
+}
+
+// template_engine/evaluate.ts
+var plugins = new Array();
+var evaluate = function(template, stack = [], cache = {}) {
+  const temp = template;
+  switch (temp.type) {
+    case "literal":
+      return temp.value;
+    case "array":
+      return temp.values.map((value) => evaluate(value, stack, cache));
+    case "object":
+      return Object.fromEntries(temp.entries.map((entry) => entry.map((value) => evaluate(value, stack))));
+    case "variable": {
+      const [, index] = pickup(stack, temp.name);
+      if (index >= 0) {
+        return { record: stack[index], key: temp.name, [isRef]: true };
+      }
+      return void 0;
+    }
+    case "unary":
+      return operateUnary(temp.operator, evaluate(temp.operand, stack, cache));
+    case "binary": {
+      const left = evaluate(temp.left, stack, cache);
+      if (continueEvaluation(temp.operator, left)) {
+        return operateBinary(temp.operator, left, evaluate(temp.right, stack, cache));
+      } else {
+        return left;
+      }
+    }
+    case "assign": {
+      const value = evaluate(temp.left, stack, cache);
+      if (!value) {
+        throw Error(temp.left ? temp.left.name : "key is not defined");
+      }
+      const { record, key } = value;
+      const prevalue = record[key];
+      const right = evaluate(temp.right, stack, cache);
+      if (temp.operator.length > 1) {
+        const operator = temp.operator.slice(0, -1);
+        if (continueEvaluation(operator, prevalue)) {
+          record[key] = operateBinary(operator, prevalue, right);
+        }
+      } else {
+        record[key] = right;
+      }
+      return temp.prevalue ? prevalue : record[key];
+    }
+    case "function": {
+      if (temp.name.type === "get" && temp.name.value.type === "hash") {
+        const value = evaluate(temp.name.value, stack, cache);
+        if (!value) {
+          throw Error(evaluate(temp.name.value.key, stack, cache) + " is not defined");
+        }
+        const f = value.record[value.key];
+        if (typeof f === "function") {
+          return f.apply(value.record, temp.params.map((param) => evaluate(param, stack, cache)));
+        }
+      } else {
+        const f = evaluate(temp.name, stack, cache);
+        if (typeof f === "function") {
+          return f(...temp.params.map((param) => evaluate(param, stack, cache)));
+        }
+      }
+      throw Error(temp.name.toString() + " is not a function");
+    }
+    case "hash":
+      return {
+        record: evaluate(temp.object, stack, cache),
+        key: evaluate(temp.key, stack, cache),
+        [isRef]: true
+      };
+    case "get": {
+      const value = evaluate(temp.value, stack, cache);
+      return value ? value.record[value.key] : value;
+    }
+    case "flat": {
+      const values = temp.values.flatMap((value) => typeof value === "string" ? [value] : flatwrap(evaluate(value, stack, cache))).filter((value) => value !== "").reduce((result, child) => {
+        const len = result.length;
+        if (len && typeof child === "string" && typeof result[len - 1] === "string") {
+          result[len - 1] += child;
+        } else {
+          result.push(child);
+        }
+        return result;
+      }, []);
+      if (values.length === 1 && typeof values[0] === "string") {
+        return values[0];
+      } else {
+        return values;
+      }
+    }
+    case "draw": {
+      const value = evaluate(temp.value, stack, cache);
+      if (typeof value === "object") {
+        if (instanceOfTemplate(value)) {
+          if (value.type === "tree") {
+            value.type = "group";
+            const result = evaluate(value, stack, cache);
+            value.type = "tree";
+            return result;
+          } else {
+            return evaluate(value, stack, cache);
+          }
+        } else {
+          return Object.getPrototypeOf(value) === Object.prototype ? JSON.stringify(value) : "";
+        }
+      } else {
+        return value === null || value === void 0 ? "" : value + "";
+      }
+    }
+    case "join":
+      return temp.values.reduce((result, value, index) => {
+        if (instanceOfTemplate(value)) {
+          const text = evaluate(value, stack, cache);
+          return result + (index ? temp.separator : "") + (typeof text === "object" ? "" : text);
+        } else {
+          return result + (index ? temp.separator : "") + value;
+        }
+      }, "");
+    case "flags": {
+      const value = evaluate(temp.value, stack, cache);
+      if (typeof value === "string") {
+        return value.split(/\s+/);
+      } else if (typeof value === "object") {
+        if (Array.isArray(value)) {
+          return value;
+        } else if (value) {
+          return Object.keys(value).filter((key) => value[key]);
+        }
+      }
+      return [];
+    }
+    case "if":
+      return evaluate(temp.condition, stack, cache) ? evaluate(temp.truthy, stack, cache) : temp.falsy ? evaluate(temp.falsy, stack, cache) : null;
+    case "for": {
+      const array = evaluate(temp.array, stack, cache);
+      let entries;
+      if (typeof array === "object" && array !== null) {
+        if (Symbol.iterator in array) {
+          if ("entries" in array) {
+            entries = [...array.entries()];
+          } else {
+            let i = 0;
+            entries = [];
+            for (const value of array) {
+              entries.push([i++, value]);
+            }
+          }
+        } else {
+          entries = Object.entries(array);
+        }
+      } else {
+        entries = [[0, array]];
+      }
+      return entries.flatMap(([key, value], index) => {
+        const loop = new Loop(key, value, index, entries, stack);
+        const result = flatwrap(evaluate(temp.value, stack.concat([temp.each ? { [temp.each]: value, loop } : { loop }]), cache)).filter((child) => typeof child !== "number");
+        if (typeof loop.value === "object") {
+          result.filter((child) => typeof child === "object").forEach((child) => child.key = loop.value);
+        }
+        return result;
+      });
+    }
+    case "tree": {
+      const children = evaluateChildren(temp, stack, cache);
+      return children.length ? { children } : {};
+    }
+    case "custom": {
+      const el2 = plugins.find((plugin) => plugin.match(temp, stack, cache))?.exec(temp, stack, cache);
+      if (el2) {
+        return el2;
+      }
+    }
+    case "element": {
+      const children = evaluateChildren(temp, stack, cache);
+      const tree = children.length ? { children } : {};
+      const el2 = tree;
+      el2.tag = temp.tag;
+      if (temp.is) {
+        el2.is = typeof temp.is === "string" ? temp.is : evaluate(temp.is, stack, cache);
+      }
+      evaluateProps(temp, stack, cache, el2);
+      return el2;
+    }
+    case "group":
+      return evaluateChildren(temp, stack, cache);
+    case "handler": {
+      if (!cache.handler) {
+        cache.handler = /* @__PURE__ */ new WeakMap();
+      }
+      if (!cache.handler.has(temp)) {
+        cache.handler.set(temp, []);
+      }
+      const thisHandlerCache = cache.handler.get(temp);
+      for (const cache2 of thisHandlerCache) {
+        if (compareCache(cache2[0], stack)) {
+          return cache2[1];
+        }
+      }
+      const handler = (event) => evaluate(temp.value, [...stack, { event }], cache);
+      thisHandlerCache.push([stack, handler]);
+      return handler;
+    }
+    case "evaluation":
+      return evaluate(temp.template, temp.stack ? temp.stack.concat(stack) : stack, cache);
+    default:
+      return plugins.find((plugin) => plugin.match(template, stack, cache))?.exec(template, stack, cache);
+  }
+};
+evaluate.plugin = (plugin) => {
+  plugins.unshift(plugin);
+};
+var realElementPlugin = {
+  match(template, stack, _cache) {
+    if (template.type === "custom") {
+      const temp = template;
+      if (!isPrimitive(temp.tag)) {
+        return temp.tag === "window" || pickup(stack, temp.tag)[0] instanceof EventTarget;
+      }
+    }
+    return false;
+  },
+  exec(template, stack, cache) {
+    const temp = template;
+    if (template.tag === "window") {
+      const re2 = {
+        el: window,
+        override: true,
+        invalid: {
+          props: true,
+          children: true
+        }
+      };
+      evaluateProps(temp, stack, cache, re2);
+      return re2;
+    }
+    const el2 = pickup(stack, temp.tag)[0];
+    const re = { el: el2 };
+    evaluateProps(temp, stack, cache, re);
+    if (el2 instanceof Element && temp.props) {
+      if ("@override" in temp.props) {
+        re.override = true;
+      }
+      if ("@keep" in temp.props) {
+        re.keep = true;
+      }
+    }
+    if ((el2 instanceof Element || el2 instanceof DocumentFragment || el2 instanceof ShadowRoot) && temp.children && temp.children.length) {
+      re.children = evaluateChildren(temp, stack, cache);
+    } else {
+      re.invalid = {
+        children: true
+      };
+    }
+    return re;
+  }
+};
+evaluate.plugin(realElementPlugin);
+function evaluateChildren(template, stack, cache) {
+  const children = template.children || [];
+  let i = 0;
+  if (children.length) {
+    if ((cache.groups ?? (cache.groups = [/* @__PURE__ */ new WeakMap(), 0]))[0].has(template)) {
+      i = cache.groups[0].get(template);
+    } else {
+      i = cache.groups[1] = cache.groups[1] + children.length;
+      cache.groups[0].set(template, i);
+    }
+  }
+  const result = children.flatMap((child, index) => {
+    if (instanceOfTemplate(child)) {
+      const result2 = flatwrap(evaluate(child, stack, cache));
+      switch (child.type) {
+        case "if":
+        case "for":
+        case "group":
+          result2.push(i - index);
+      }
+      return result2;
+    } else {
+      return [child];
+    }
+  });
+  if (typeof result[result.length - 1] === "number") {
+    result.pop();
+  }
+  return result;
+}
+function evaluateProps(template, stack, cache, ve) {
+  if (template.style) {
+    ve.style = typeof template.style === "string" ? template.style : evaluate(template.style, stack, cache);
+  }
+  if (template.bools) {
+    for (const key in template.bools) {
+      if (!key.startsWith("@")) {
+        const value = template.bools[key];
+        const result = typeof value === "string" ? value : evaluate(value, stack, cache);
+        if (result) {
+          (ve.props ?? (ve.props = {}))[key] = result;
+        }
+      }
+    }
+  }
+  if (template.props) {
+    for (const key in template.props) {
+      if (!key.startsWith("@")) {
+        const value = template.props[key];
+        (ve.props ?? (ve.props = {}))[key] = typeof value === "string" ? value : evaluate(value, stack, cache);
+      }
+    }
+  }
+  if (template.class) {
+    template.class.forEach((value) => ve.class = (ve.class || []).concat(Array.isArray(value) ? value : evaluate(value, stack, cache)));
+  }
+  if (template.part) {
+    template.part.forEach((value) => ve.part = (ve.part || []).concat(Array.isArray(value) ? value : evaluate(value, stack, cache)));
+  }
+  if (template.on) {
+    if (!ve.on) {
+      ve.on = {};
+    }
+    for (const type in template.on) {
+      ve.on[type] = template.on[type].map((listener) => evaluate(listener, stack, cache));
+    }
+  }
+}
+function compareCache(cache, stack, cacheIndex = cache.length - 1, stackIndex = stack.length - 1) {
+  const [cacheLoop, newCacheIndex] = pickup(cache, "loop", cacheIndex);
+  const [stackLoop, newStackIndex] = pickup(stack, "loop", stackIndex);
+  if (!cacheLoop && !stackLoop)
+    return true;
+  if (!cacheLoop || !stackLoop)
+    return false;
+  return cacheLoop.index === stackLoop.index && cacheLoop.key === stackLoop.key && cacheLoop.value === stackLoop.value && compareCache(cache, stack, newCacheIndex - 1, newStackIndex - 1);
+}
+function flatwrap(value) {
+  return value === null || value === void 0 ? [] : Array.isArray(value) ? value : [value];
+}
+function operateUnary(operator, operand) {
+  switch (operator) {
+    case "void":
+      return void 0;
+    case "typeof":
+      return typeof operand;
+    case "+":
+      return +operand;
+    case "-":
+      return -operand;
+    case "~":
+      return ~operand;
+    case "!":
+      return !operand;
+    default:
+      throw Error(operator + " does not exist");
+  }
+}
+function continueEvaluation(operator, left) {
+  switch (operator) {
+    case "&&":
+      return !!left;
+    case "||":
+      return !left;
+    case "??":
+      return left === null || left === void 0;
+    default:
+      return true;
+  }
+}
+function operateBinary(operator, left, right) {
+  switch (operator) {
+    case "+":
+      return left + right;
+    case "-":
+      return left - right;
+    case "/":
+      return left / right;
+    case "*":
+      return left * right;
+    case "%":
+      return left % right;
+    case "**":
+      return left ** right;
+    case "in":
+      return left in right;
+    case "instanceof":
+      return left instanceof right;
+    case "<":
+      return left < right;
+    case ">":
+      return left > right;
+    case "<=":
+      return left <= right;
+    case ">=":
+      return left >= right;
+    case "==":
+      return left == right;
+    case "!=":
+      return left != right;
+    case "===":
+      return left === right;
+    case "!==":
+      return left !== right;
+    case "<<":
+      return left << right;
+    case ">>":
+      return left >> right;
+    case ">>>":
+      return left >>> right;
+    case "&":
+      return left & right;
+    case "|":
+      return left | right;
+    case "^":
+      return left ^ right;
+    case "&&":
+      return left && right;
+    case "||":
+      return left || right;
+    case "??":
+      return left ?? right;
+    default:
+      throw Error(operator + " does not exist");
+  }
+}
+
+// web_components/builtin.ts
+var builtin = lock({
+  alert,
+  console,
+  Object,
+  Number,
+  Math,
+  Date,
+  Array,
+  JSON,
+  String,
+  isNaN,
+  isFinite,
+  location,
+  history,
+  navigator,
+  setTimeout,
+  setInterval
+});
+
+// web_components/types.ts
+var special = Symbol.for("Beako Special");
+function instanceOfComponent(object) {
+  return typeof object === "object" && object !== null && (object.template || object.patcher) && object.data && object.options;
+}
+function instanceOfModule(object) {
+  return typeof object === "object" && object !== null && "default" in object && object[Symbol.toStringTag] === "Module";
+}
+
+// virtual_dom/hoist.ts
+function hoist(tree, callback, _header = { children: [] }) {
+  if (tree.children) {
+    tree.children = tree.children.filter((child) => {
+      if (typeof child === "object") {
+        if (callback(child)) {
+          _header.children.push(child);
+          return false;
+        } else if ("tag" in child) {
+          hoist(child, callback, _header);
+        }
+      }
+      return true;
+    });
+    if (!tree.children.length) {
+      delete tree.children;
+    }
+  }
+  return _header.children.length ? _header : {};
+}
+
+// virtual_dom/concat.ts
+function concat(...trees) {
+  const result = { children: [] };
+  trees.forEach((tree) => {
+    if (tree && tree.children) {
+      result.children = result.children.concat(tree.children);
+    }
+  });
+  return result.children.length ? result : {};
+}
+
+// web_components/entity.ts
+var Entity = class {
+  constructor(component, host, tree) {
+    this._props = {};
+    this._refs = {};
+    this._requirePatch = false;
+    const root = tree.el;
+    this._component = component;
+    this._template = component.template;
+    this._patcher = component.patcher;
+    this._host = host;
+    this._tree = tree;
+    this._updater = new SafeUpdater(tree);
+    this.patch = this.patch.bind(this);
+    this.dispatch = this.dispatch.bind(this);
+    this._cache = { [special]: [host, root] };
+    if (this._component.options.mode === "closed") {
+      root.addEventListener(eventTypes2.patch, (event) => event.stopPropagation());
+    }
+    host.addEventListener(eventTypes2.destroy, () => {
+      this.patch({ type: "tree" });
+    });
+    const data = typeof this._component.data === "function" ? this._component.data(this) : this._component.data;
+    this._running = (async () => {
+      const result = await data;
+      const stack = result ? Array.isArray(result) ? result : [result] : [];
+      this._stack = [builtin, { host, root }, watch(this._props), ...stack];
+      reach(this._stack, this.patch);
+      this.patch();
+      stack.forEach((data2) => {
+        if (typeof data2 === "object" && data2 !== null) {
+          for (const name in data2) {
+            if ((typeof data2[name] === "function" || data2[name] instanceof Element) && isNaN(name) && !(name in this._host)) {
+              const datum = typeof data2[name] === "function" ? data2[name].bind(this) : data2[name];
+              Object.defineProperty(this._host, name, {
+                get() {
+                  return datum;
+                }
+              });
+            }
+          }
+        }
+      });
+    })();
+  }
+  setProp(name, value) {
+    switch (name) {
+      case "is":
+      case "class":
+      case "part":
+      case "style":
+        return;
+      default: {
+        const old = this._props[name];
+        if (old !== value) {
+          if (name in this._refs) {
+            const ref = this._refs[name][0];
+            if (instanceOfRef(value) && value.record === ref.record) {
+              return;
+            } else {
+              unwatch(this._props, name, this._refs[name][1]);
+              unwatch(ref.record, ref.key, this._refs[name][2]);
+              delete this._refs[name];
+            }
+          }
+          unwatch(old, this.patch);
+          if (instanceOfRef(value)) {
+            const childCallback = (newValue) => {
+              value.record[value.key] = newValue;
+            };
+            const parentCallback = (newValue) => {
+              this._props[name] = newValue;
+            };
+            this._refs[name] = [value, childCallback, parentCallback];
+            watch(this._props, name, childCallback);
+            watch(value.record, value.key, parentCallback);
+            this._props[name] = value.record[value.key];
+          } else {
+            this._props[name] = value;
+          }
+          if (old === void 0) {
+            watch(this._props, name, this.patch);
+          }
+          reach(this._props, this.patch);
+          this.patch();
+        }
+      }
+    }
+  }
+  get component() {
+    return this._component;
+  }
+  get host() {
+    return this._host;
+  }
+  get root() {
+    return this._tree.el;
+  }
+  get props() {
+    return this._props;
+  }
+  get whenRunning() {
+    return () => this._running;
+  }
+  patch(template) {
+    if (template) {
+      if (typeof template === "function") {
+        this._patcher = template;
+        this._template = void 0;
+      } else {
+        this._patcher = void 0;
+        this._template = typeof template === "string" ? parse(template) : template;
+      }
+    }
+    if (!this._requirePatch) {
+      this._requirePatch = true;
+      setTimeout(() => {
+        this._requirePatch = false;
+        if (this._stack) {
+          const tree = this._patcher ? this._patcher(this._stack) : this._template ? evaluate(this._template, this._stack, this._cache) : this._tree && this._component.template ? evaluate(this._component.template, this._stack, this._cache) : void 0;
+          if (tree) {
+            this._updater.patch(tree);
+          }
+        }
+      });
+    }
+  }
+  dispatch(typeArg, detail = null) {
+    this._host.dispatchEvent(new CustomEvent(typeArg, {
+      detail
+    }));
+  }
+  toJSON() {
+    return {
+      component: this._component,
+      props: this._props,
+      tree: this._tree
+    };
+  }
+};
+function isHoistingTarget(el2) {
+  return "tag" in el2 && (el2.tag === "style" || el2.tag === "link");
+}
+function isWaitingTarget(el2) {
+  return el2.tag === "link" && el2.props?.href !== "" && (el2.props?.rel).toLocaleLowerCase() === "stylesheet";
+}
+var SafeUpdater = class {
+  constructor(tree) {
+    this.tree = tree;
+    this._waitUrls = /* @__PURE__ */ new Set();
+    this.loaded = (event) => {
+      this.removeWaitUrl(event.target.getAttribute("href"));
+    };
+  }
+  patch(tree) {
+    const header = hoist(tree, isHoistingTarget);
+    const body = tree;
+    const oldLinks = this.header?.children?.filter(isWaitingTarget) || [];
+    const newLinks = header.children?.filter(isWaitingTarget) || [];
+    const addedLinks = newLinks.filter((link) => oldLinks.every((el2) => el2.props?.href !== link.props?.href));
+    const removedLinks = oldLinks.filter((link) => newLinks.every((el2) => el2.props?.href !== link.props?.href));
+    newLinks.forEach((link) => {
+      if (!((link.on ??= {}).load ??= []).includes(this.loaded)) {
+        link.on.load.push(this.loaded);
+      }
+      if (!(link.on.error ??= []).includes(this.loaded)) {
+        link.on.error.push(this.loaded);
+      }
+    });
+    addedLinks.forEach((link) => {
+      this.addWaitUrl(link.props?.href);
+      link.new = true;
+    });
+    removedLinks.forEach((link) => this.removeWaitUrl(link.props?.href));
+    if (removedLinks) {
+      patch2(this.tree, concat(this.header, header, this.body));
+    } else {
+      patch2(this.tree, concat(header, this.body));
+    }
+    addedLinks.forEach((link) => link.new = false);
+    this.header = header;
+    this.update = () => {
+      patch2(this.tree, concat(this.header, body));
+      this.body = body;
+    };
+  }
+  set update(callback) {
+    this._update = callback;
+    this._executeUpdate();
+  }
+  addWaitUrl(url) {
+    this._waitUrls.add(url);
+  }
+  removeWaitUrl(url) {
+    this._waitUrls.delete(url);
+    this._executeUpdate();
+  }
+  _executeUpdate() {
+    if (!this._waitUrls.size && this._update) {
+      this._update();
+      this._update = void 0;
+    }
+  }
+};
+
+// web_components/element.ts
+var componentElementTag = "beako-element";
+var ComponentElement = class extends HTMLElement {
+  constructor() {
+    super();
+  }
+  setProp(name, value) {
+    this._entity?.setProp(name, value);
+  }
+  static getComponent() {
+    return void 0;
+  }
+  loadProps() {
+    if (this.hasAttributes()) {
+      this.getAttributeNames().forEach((name) => {
+        this.setProp(name, this.getAttribute(name));
+      });
+    }
+  }
+  whenRunning() {
+    if (this._entity) {
+      return this._entity.whenRunning();
+    } else {
+      return new Promise((resolve) => {
+        this._run = resolve;
+      });
+    }
+  }
+  _setEntity(entity) {
+    this._entity = entity;
+    if (this._run) {
+      this._entity.whenRunning().then(this._run);
+    }
+  }
+  get entity() {
+    return this._entity;
+  }
+  get attributes() {
+    return proxyNamedNodeMap(super.attributes, this.setProp);
+  }
+  setAttribute(name, value) {
+    this.setProp(name, value);
+    super.setAttribute(name, value);
+  }
+  getAttributeNode(name) {
+    const attr2 = super.getAttributeNode(name);
+    return attr2 ? proxyAttr(attr2, this.setProp) : attr2;
+  }
+  removeAttribute(name) {
+    this.setProp(name, void 0);
+    return super.removeAttribute(name);
+  }
+  removeAttributeNode(attr2) {
+    this.setProp(attr2.name, void 0);
+    return super.removeAttributeNode(attr2);
+  }
+  toJSON() {
+    return {
+      entity: this._entity
+    };
+  }
+};
+var GrobalComponentElement = class extends ComponentElement {
+  constructor() {
+    super();
+  }
+  setProp(name, value) {
+    if (name === "component") {
+      switch (typeof value) {
+        case "string": {
+          const def = customElements.get(value);
+          if (def && ComponentElement.isPrototypeOf(def)) {
+            const component = def.getComponent();
+            if (component) {
+              const tree = load(this.attachShadow(component.options));
+              this._setEntity(new Entity(component, this, tree));
+            }
+          } else {
+            throw Error(value + " is not a component.");
+          }
+          break;
+        }
+        case "object":
+          if (instanceOfComponent(value)) {
+            const tree = load(this.attachShadow(value.options));
+            this._setEntity(new Entity(value, this, tree));
+          } else if (value !== null) {
+            throw Error("The object is not a component.");
+          }
+          break;
+      }
+    }
+    super.setProp(name, value);
+  }
+};
+if (!customElements.get(componentElementTag)) {
+  customElements.define(componentElementTag, GrobalComponentElement);
+}
+function proxyAttr(attr2, setProp) {
+  return new Proxy(attr2, {
+    set(target, prop, value) {
+      setProp(prop, value);
+      if (prop === "value") {
+        return target.value = value;
+      }
+    }
+  });
+}
+function proxyNamedNodeMap(attrs, setProp) {
+  return new Proxy(attrs, {
+    get: function(target, prop) {
+      if (prop === "length") {
+        return target[prop];
+      } else {
+        return proxyAttr(target[prop], setProp);
+      }
+    }
+  });
+}
+
+// web_components/elementize.ts
+async function elementize(component, props) {
+  let el2;
+  if (typeof component === "string") {
+    el2 = document.createElement(component);
+  } else {
+    el2 = document.createElement(componentElementTag);
+    const result = await Promise.resolve(component);
+    const prop = instanceOfModule(result) && instanceOfComponent(result.default) ? result.default : result;
+    el2.setAttribute("component", prop);
+  }
+  if (props) {
+    for (const key in props) {
+      el2.setAttribute(key, props[key]);
+    }
+  }
+  if (typeof component === "string") {
+    const El = customElements.get(component);
+    if (El !== void 0 && Object.prototype.isPrototypeOf.call(ComponentElement, El)) {
+      await el2.whenRunning();
+    }
+  } else {
+    await el2.whenRunning();
+  }
+  return el2;
+}
+
+// web_components/plugins.ts
+var componentPlugin = {
+  match(template, stack, _cache) {
+    if (template.type === "custom") {
+      if (template.tag === componentElementTag || template.tag === "element") {
+        return true;
+      }
+      const temp = template;
+      const element = pickup(stack, temp.tag)[0];
+      if (typeof element === "object" && element !== null && (instanceOfComponent(element) || instanceOfModule(element) && instanceOfComponent(element.default))) {
+        return true;
+      } else {
+        const El = customElements.get(temp.tag);
+        return El !== void 0 && Object.prototype.isPrototypeOf.call(ComponentElement, El);
+      }
+    }
+    return false;
+  },
+  exec(template, stack, cache) {
+    const temp = template;
+    const ve = {
+      tag: componentElementTag
+    };
+    let component;
+    if (temp.tag !== componentElementTag && temp.tag !== "element") {
+      component = pickup(stack, temp.tag)[0];
+      if (component) {
+        (ve.props ??= {}).component = component;
+      } else {
+        ve.tag = temp.tag;
+      }
+    }
+    const values = [];
+    const contents = [];
+    const children = (temp.children || [])?.flatMap((child) => {
+      if (!(typeof child === "string")) {
+        const temp2 = child;
+        if (temp2.props) {
+          if (temp2.props["@as"]) {
+            contents.push([temp2.props["@as"], temp2]);
+            return [];
+          } else if (temp2.props.slot) {
+            return [evaluate(child, stack, cache)];
+          }
+        }
+      }
+      values.push(child);
+      return [];
+    });
+    if (values.length) {
+      contents.push(["content", { type: "group", children: values }]);
+    }
+    if (contents.length) {
+      if (!ve.props) {
+        ve.props = {};
+      }
+      contents.forEach(([name, template2]) => {
+        ve.props[name] = { type: "evaluation", template: template2, stack };
+      });
+    }
+    if (children.length) {
+      ve.children = children;
+    }
+    evaluateProps(temp, stack, cache, ve);
+    if (temp.tag === componentElementTag || temp.tag === "element") {
+      component = ve.props?.component;
+      (ve.props ??= {}).component = component;
+    }
+    if (typeof component === "object" && component !== null && "default" in component && component[Symbol.toStringTag] === "Module" && instanceOfComponent(component.default)) {
+      component = component.default;
+      (ve.props ??= {}).component = component;
+    }
+    if (temp.cache !== component) {
+      ve.new = true;
+    }
+    temp.cache = component;
+    return ve;
+  }
+};
+var specialTagPlugin = {
+  match(template, stack, cache) {
+    if (template.type === "custom") {
+      if (special in cache && !isPrimitive(template.tag)) {
+        const el2 = pickup(stack, template.tag)[0];
+        return cache[special].some((tag) => tag === el2);
+      }
+    }
+    return false;
+  },
+  exec(template, stack, cache) {
+    const el2 = pickup(stack, template.tag)[0] || ShadowRoot;
+    const re = {
+      el: el2,
+      override: true,
+      invalid: {
+        props: true,
+        children: true
+      }
+    };
+    evaluateProps(template, stack, cache, re);
+    return re;
+  }
+};
+
+// web_components/compact.ts
+evaluate.plugin(componentPlugin);
+evaluate.plugin(specialTagPlugin);
+function compact(template, data = []) {
+  const component = {
+    data: typeof data === "function" || Array.isArray(data) ? data : [data],
+    options: { mode: "open" }
+  };
+  if (typeof template === "function") {
+    component.patcher = template;
+  } else {
+    component.template = typeof template === "string" ? parse(template) : template;
+  }
+  return lock(component);
+}
+
+// web_components/define.ts
+function define(name, template, data = []) {
+  const component = instanceOfComponent(template) ? template : compact(template, data);
+  if (component.options.localeOnly) {
+    throw Error("This componet is local only.");
+  }
+  customElements.define(name, class extends ComponentElement {
+    constructor() {
+      super();
+      const tree = load(this.attachShadow(component.options));
+      this._setEntity(new Entity(component, this, tree));
+      if (this.innerHTML) {
+        this.entity.setProp("content", this.innerHTML);
+        if (this.hasAttributes()) {
+          this.getAttributeNames().forEach((name2) => {
+            this.entity.setProp(name2, this.getAttribute(name2));
+          });
+        }
+      } else {
+        this.loadProps();
+      }
+    }
+    static getComponent() {
+      return component;
+    }
+  });
+}
+
+// web_components/mount.ts
+function mount(target, template, data = []) {
+  const host = typeof target === "string" ? document.querySelector(target) : target;
+  const component = instanceOfComponent(template) ? template : compact(template, data);
+  if (component.options.localeOnly) {
+    throw Error("This componet is local only.");
+  }
+  const tree = load(host.attachShadow(component.options));
+  const entity = new Entity(component, host, tree);
+  if (host.innerHTML) {
+    entity.setProp("content", host.innerHTML);
+  }
+  if (host.hasAttributes()) {
+    host.getAttributeNames().forEach((name) => {
+      entity.setProp(name, host.getAttribute(name));
+    });
+  }
+}
+
+// web_components/seal.ts
+function seal(component, options = {}) {
+  component.options = Object.freeze({ mode: "closed", ...options });
+  return Object.freeze(component);
+}
+export {
+  ComponentElement,
+  Entity,
+  Loop,
+  builtin,
+  compact,
+  define,
+  destroy2 as destroy,
+  elementize,
+  evaluate,
+  eventTypes2 as eventTypes,
+  expression,
+  load,
+  lock,
+  mount,
+  parse,
+  patch2 as patch,
+  pickup,
+  reach,
+  receive,
+  seal,
+  unlock,
+  unwatch,
+  watch
+};
