@@ -1,9 +1,12 @@
+// Interfaces
 export type {
+  // Callback functions
   RecursiveCallback,
   TargetCallback,
   Callback
 } from './types.ts'
 
+// Functions
 export { watch } from './watch.ts'
 export { receive } from './receive.ts'
 export { unwatch } from './unwatch.ts'

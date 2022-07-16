@@ -1,5 +1,7 @@
 import { ComponentOptions, Component } from './types.ts'
-
+/*
+ * @alpha
+ */
 export function seal(
   component: Component,
   options: ComponentOptions = {}
