@@ -1,5 +1,5 @@
 export type {
-  Variables,
+  StateStack,
   Template,
   LiteralTemplate,
   ArrayTemplate,

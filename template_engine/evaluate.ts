@@ -5,7 +5,7 @@ import {
 } from '../virtual_dom/types.ts'
 import {
   isRef,
-  Variables,
+  StateStack,
   Template,
   HasChildrenTemplate,
   HasAttrTemplate,
@@ -25,14 +25,14 @@ import {
   Ref,
 } from './types.ts'
 import { Loop } from './loop.ts'
-import { pickup } from './pickup.ts'
+import { pickup, pickupIndex } from './pickup.ts'
 import { isPrimitive } from './is_primitive.ts'
 
 const plugins = new Array<EvaluatePlugin>()
 
 export const evaluate = function (
   template: Template | CustomTemplate,
-  stack: Variables = [],
+  stack: StateStack = [],
   cache: Cache = {}
 ): unknown
 {
@@ -50,7 +50,7 @@ export const evaluate = function (
       )
 
     case 'variable': {
-      const [, index] = pickup(stack, (temp as VariableTemplate).name)
+      const [, index] = pickupIndex(stack, (temp as VariableTemplate).name)
       if (index >= 0) {
         return { record: stack[index], key: (temp as VariableTemplate).name, [isRef]: true } as Ref
       }
@@ -279,12 +279,12 @@ export const evaluate = function (
 
     case 'handler': {
       if (!cache.handler) {
-        cache.handler = new WeakMap<HandlerTemplate, Array<[Variables, EventListener]>>()
+        cache.handler = new WeakMap<HandlerTemplate, Array<[StateStack, EventListener]>>()
       }
       if (!cache.handler.has(temp)) {
         cache.handler.set(temp, [])
       }
-      const thisHandlerCache = cache.handler.get(temp) as Array<[Variables, EventListener]>
+      const thisHandlerCache = cache.handler.get(temp) as Array<[StateStack, EventListener]>
       for (const cache of thisHandlerCache) {
         if (compareCache(cache[0], stack)) {
           return cache[1]
@@ -313,21 +313,21 @@ evaluate.plugin = (plugin: EvaluatePlugin) => {
 const realElementPlugin = {
   match (
     template: CustomElementTemplate | CustomTemplate,
-    stack: Variables,
+    stack: StateStack,
     _cache: Cache
   ): boolean
   {
     if (template.type === 'custom') {
       const temp = template as CustomElementTemplate
       if (!isPrimitive(temp.tag)) {
-        return temp.tag === 'window' || pickup(stack, temp.tag)[0] instanceof EventTarget
+        return temp.tag === 'window' || pickup(stack, temp.tag) instanceof EventTarget
       }
     }
     return false
   },
   exec (
     template: CustomElementTemplate | CustomTemplate,
-    stack: Variables,
+    stack: StateStack,
     cache: Cache
   ): RealTarget
   {
@@ -344,7 +344,7 @@ const realElementPlugin = {
       evaluateAttrs(temp, stack, cache, re)
       return re
     }
-    const el = pickup(stack, temp.tag)[0] as Element | DocumentFragment | ShadowRoot | EventTarget
+    const el = pickup(stack, temp.tag) as Element | DocumentFragment | ShadowRoot | EventTarget
     const re = { el } as RealTarget
     evaluateAttrs(temp, stack, cache, re)
     if (el instanceof Element && temp.attrs) {
@@ -375,7 +375,7 @@ evaluate.plugin(realElementPlugin)
 
 export function evaluateChildren(
   template: HasChildrenTemplate,
-  stack: Variables,
+  stack: StateStack,
   cache: Cache
 ): Array<string | VirtualElement | RealTarget | number>
 {
@@ -413,7 +413,7 @@ export function evaluateChildren(
 
 export function evaluateAttrs(
   template: HasAttrTemplate,
-  stack: Variables,
+  stack: StateStack,
   cache: Cache,
   ve: VirtualElement | RealTarget
 ): void
@@ -466,14 +466,14 @@ export function evaluateAttrs(
 }
 
 function compareCache(
-  cache: Variables,
-  stack: Variables,
+  cache: StateStack,
+  stack: StateStack,
   cacheIndex: number = cache.length - 1,
   stackIndex: number = stack.length - 1
 ): boolean
 {
-  const [cacheLoop, newCacheIndex] = pickup(cache, 'loop', cacheIndex) as [Loop | undefined, number]
-  const [stackLoop, newStackIndex] = pickup(stack, 'loop', stackIndex) as [Loop | undefined, number]
+  const [cacheLoop, newCacheIndex] = pickupIndex(cache, 'loop', cacheIndex) as [Loop | undefined, number]
+  const [stackLoop, newStackIndex] = pickupIndex(stack, 'loop', stackIndex) as [Loop | undefined, number]
 
   if (!cacheLoop && !stackLoop) return true
   if (!cacheLoop || !stackLoop) return false

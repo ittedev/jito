@@ -1,5 +1,5 @@
 import { Main, Component, Patcher } from './types.ts'
-import { Variables, TreeTemplate } from '../template_engine/types.ts'
+import { StateStack, TreeTemplate } from '../template_engine/types.ts'
 import { lock } from '../data_binding/lock.ts'
 import { parse } from '../template_engine/parse.ts'
 import { componentPlugin, specialTagPlugin } from './plugins.ts'
@@ -9,21 +9,21 @@ evaluate.plugin(componentPlugin)
 evaluate.plugin(specialTagPlugin)
 
 export function compact(html: string): Component
-export function compact(html: string, data: Variables): Component
+export function compact(html: string, data: StateStack): Component
 export function compact(html: string, data: Record<string, unknown>): Component
 export function compact(html: string, main: Main): Component
 export function compact(template: TreeTemplate): Component
-export function compact(template: TreeTemplate, data: Variables): Component
+export function compact(template: TreeTemplate, data: StateStack): Component
 export function compact(template: TreeTemplate, data: Record<string, unknown>): Component
 export function compact(template: TreeTemplate, main: Main): Component
 export function compact(patcher: Patcher): Component
-export function compact(patcher: Patcher, data: Variables): Component
+export function compact(patcher: Patcher, data: StateStack): Component
 export function compact(patcher: Patcher, data: Record<string, unknown>): Component
 export function compact(patcher: Patcher, main: Main): Component
-export function compact(template: string | TreeTemplate | Patcher, data: Variables | Record<string, unknown> | Main): Component
+export function compact(template: string | TreeTemplate | Patcher, data: StateStack | Record<string, unknown> | Main): Component
 export function compact(
   template: string | TreeTemplate | Patcher,
-  data: Variables | Record<string, unknown> | Main = []
+  data: StateStack | Record<string, unknown> | Main = []
 ): Component
 {
   const component: Component = {

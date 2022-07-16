@@ -7,7 +7,7 @@ import type {
   LinkedVirtualTree,
   VirtualNode
 } from '../virtual_dom/types.ts'
-import type { TreeTemplate, Variables, Ref } from '../template_engine/types.ts'
+import type { TreeTemplate, StateStack, Ref } from '../template_engine/types.ts'
 import { special } from './types.ts'
 import { instanceOfRef } from '../template_engine/types.ts'
 import { watch } from '../data_binding/watch.ts'
@@ -24,7 +24,7 @@ import { eventTypes } from '../virtual_dom/event_types.ts'
 
 export class Entity
 {
-  private _stack?: Variables | null
+  private _stack?: StateStack | null
   private _patcher?: Patcher
   private _cache: SpecialCache
   private _component: Component

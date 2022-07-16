@@ -8,7 +8,7 @@ import {
 } from './types.ts'
 import { RealTarget, VirtualElement } from '../virtual_dom/types.ts'
 import {
-  Variables,
+  StateStack,
   Template,
   EvaluationTemplate,
   HasAttrTemplate,
@@ -26,7 +26,7 @@ import { pickup } from '../template_engine/pickup.ts'
 export const componentPlugin = {
   match (
     template: CustomElementTemplate | CustomTemplate,
-    stack: Variables,
+    stack: StateStack,
     _cache: Cache
   ): boolean
   {
@@ -36,7 +36,7 @@ export const componentPlugin = {
         return true
       }
       const temp = template as CustomElementTemplate
-      const element = pickup(stack, temp.tag)[0]
+      const element = pickup(stack, temp.tag)
       if (
         typeof element === 'object' &&
         element !== null &&
@@ -59,7 +59,7 @@ export const componentPlugin = {
 
   exec (
     template: CustomElementTemplate | CustomTemplate,
-    stack: Variables,
+    stack: StateStack,
     cache: Cache
   ): VirtualElement
   {
@@ -72,7 +72,7 @@ export const componentPlugin = {
 
     // If tag is not "beako-element"
     if (temp.tag !== componentElementTag ) {
-      component = pickup(stack, temp.tag)[0]
+      component = pickup(stack, temp.tag)
       if (component) {
         // If local component,
         // set a component property
@@ -153,13 +153,13 @@ export const componentPlugin = {
 export const specialTagPlugin = {
   match (
     template: CustomElementTemplate,
-    stack: Variables,
+    stack: StateStack,
     cache: SpecialCache
   ): boolean
   {
     if (template.type === 'custom') {
       if (special in cache && !isPrimitive(template.tag)) {
-        const el = pickup(stack, template.tag)[0]
+        const el = pickup(stack, template.tag)
         return cache[special].some(tag => tag === el)
       }
     }
@@ -168,11 +168,11 @@ export const specialTagPlugin = {
 
   exec (
     template: CustomElementTemplate,
-    stack: Variables,
+    stack: StateStack,
     cache: Cache
   ): RealTarget
   {
-    const el = pickup(stack, template.tag)[0] as Element || ShadowRoot
+    const el = pickup(stack, template.tag) as Element || ShadowRoot
     const re = {
       el,
       override: true,

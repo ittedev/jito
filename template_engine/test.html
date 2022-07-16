@@ -2180,7 +2180,6 @@ describe('Template Engine', function() {
 
       it('evaluate: ref attrs', () => {
         const tree = evaluate(parse(`<p id*="x"></p>`), { x: 1 })
-        console.log('tree:', tree)
         equal(tree, {
           children: [
             {

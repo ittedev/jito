@@ -1,7 +1,15 @@
-import { Variables } from './types.ts'
+import { StateStack } from './types.ts'
 
 export function pickup(
-  stack: Variables,
+  stack: StateStack,
+  name: string
+): unknown
+{
+  return pickupIndex(stack, name)[0]
+}
+
+export function pickupIndex(
+  stack: StateStack,
   name: string,
   start: number = stack.length - 1
 ): [unknown | undefined, number]

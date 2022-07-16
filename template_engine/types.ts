@@ -1,6 +1,6 @@
 export const isRef = Symbol.for('Beako Ref')
 
-export type Variables = Array<Record<string, unknown>>
+export type StateStack = Array<Record<string, unknown>>
 
 export type Template =
   LiteralTemplate |
@@ -182,7 +182,7 @@ export interface GroupTemplate {
 export interface EvaluationTemplate {
   type: 'evaluation'
   template: Template
-  stack?: Variables
+  stack?: StateStack
 }
 
 export interface HandlerTemplate {
@@ -196,7 +196,7 @@ export interface CustomTemplate {
 }
 
 export interface Cache {
-  handler?: WeakMap<HandlerTemplate, Array<[Variables, EventListener]>>
+  handler?: WeakMap<HandlerTemplate, Array<[StateStack, EventListener]>>
   groups?: [WeakMap<HasChildrenTemplate, number>, number]
 }
 
@@ -225,12 +225,12 @@ export interface Pluginable<T extends Plugin> extends Function {
 }
 
 export interface EvaluatePlugin extends Plugin {
-  match: (template: CustomElementTemplate | CustomTemplate, stack: Variables, cache: Cache) => boolean,
-  exec: (template: CustomElementTemplate | CustomTemplate, stack: Variables, cache: Cache) => unknown
+  match: (template: CustomElementTemplate | CustomTemplate, stack: StateStack, cache: Cache) => boolean,
+  exec: (template: CustomElementTemplate | CustomTemplate, stack: StateStack, cache: Cache) => unknown
 }
 
 export interface Evaluate extends Pluginable<EvaluatePlugin> {
-  (template: Template | CustomTemplate, stack?: Variables, cache?: Cache): unknown
+  (template: Template | CustomTemplate, stack?: StateStack, cache?: Cache): unknown
   plugin(plugin: EvaluatePlugin): void
 }
 

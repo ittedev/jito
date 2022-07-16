@@ -1,4 +1,4 @@
-import { Variables } from './types.ts'
+import { StateStack } from './types.ts'
 import { pickup } from './pickup.ts'
 
 export class Loop
@@ -8,7 +8,7 @@ export class Loop
     private _value: unknown,
     private _index: number,
     private _entries: Array<[unknown, unknown]>,
-    private _stack: Variables
+    private _stack: StateStack
   )
   {}
 
@@ -20,7 +20,7 @@ export class Loop
   get isLast(): boolean { return this._index === this._entries.length - 1 }
   get parent(): Loop | undefined
   {
-    return pickup(this._stack, 'loop')[0] as Loop | undefined
+    return pickup(this._stack, 'loop') as Loop | undefined
   }
 
   toJSON() {

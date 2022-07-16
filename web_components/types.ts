@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import type { VirtualTree } from '../virtual_dom/types.ts'
 import type {
-  Variables,
+  StateStack,
   TreeTemplate,
   CustomElementTemplate,
   Cache
@@ -10,14 +10,14 @@ import { Entity } from './entity.ts'
 
 export const special = Symbol.for('Beako Special')
 
-export type Patcher = (stack: Variables) => VirtualTree
+export type Patcher = (stack: StateStack) => VirtualTree
 
 export interface ComponentTemplate extends CustomElementTemplate {
   isForce?: boolean // Evaluate as an component without verifying whether it is a component
   cache?: string | Component | unknown
 }
 
-export type Main = (entity: Entity) => Variables | Record<string, unknown> | void | Promise<Variables | Record<string, unknown> | void>
+export type Main = (entity: Entity) => StateStack | Record<string, unknown> | void | Promise<StateStack | Record<string, unknown> | void>
 
 export interface ComponentOptions {
   mode?: ShadowRootMode
@@ -28,7 +28,7 @@ export interface ComponentOptions {
 export interface Component {
   patcher?: Patcher
   template?: TreeTemplate
-  data: Main | Variables
+  data: Main | StateStack
   options: {
     mode: ShadowRootMode
     delegatesFocus?: boolean

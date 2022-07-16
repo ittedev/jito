@@ -39,6 +39,12 @@
 <div id="sync_target12" style="display: none;"></div>
 <div id="sync_target13" style="display: none;"></div>
 <div id="sync_target14" style="display: none;"></div>
+<div id="real_target1" style="display: none;"></div>
+<div id="real_target2" style="display: none;"></div>
+<div id="real_target3" style="display: none;"></div>
+<div id="real_target4" style="display: none;"></div>
+<div id="patcher_target1" style="display: none;"></div>
+<div id="patcher_target2" style="display: none;"></div>
 <script src="https://unpkg.com/chai/chai.js"></script>
 <script>
 var i = 0
@@ -56,6 +62,7 @@ import {
   define,
   compact,
   mount,
+  pickup,
   elementize
 } from '../beako.js'
 
@@ -549,6 +556,27 @@ describe('Web Components', function() {
   })
 
   describe('patcher', function() {
+    it('patcher', async () => {
+      const el = document.querySelector('#patcher_target1')
+      const component = compact(() => { return { children: ['x'] } })
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.innerHTML, 'x')
+    })
+
+    it('patcher use stack', async () => {
+      const el = document.querySelector('#patcher_target2')
+      const state = { x: 6 }
+      const component = compact(stack => {
+        return { children: [pickup(stack, 'x') + ''] }
+      }, [state])
+      mount(el, component)
+      await sleep()
+      equal(el.shadowRoot.innerHTML, '6')
+    })
+  })
+
+  describe('seal', function() {
   })
 })
 
