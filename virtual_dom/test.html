@@ -97,6 +97,34 @@ describe('Virtual Dom', function() {
   // Test patch() function
   describe('patch()', function() {
     describe(': element', function() {
+      it('patch add tag', () => {
+        const parent = document.createElement('div')
+        const tree = { el: parent }
+        const newTree = { children: [{ tag: 'p' }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'p',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.tagName, 'P')
+      })
+
+      it('patch remove tag', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('div')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ tag: 'div', el }] }
+        const newTree = {}
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          el: {}
+        })
+        equal(parent.childNodes.length, 0)
+      })
+
       it('patch change tag', () => {
         const parent = document.createElement('div')
         const el = document.createElement('div')
@@ -806,10 +834,6 @@ describe('Virtual Dom', function() {
         equal(output, 'attrs-a: value 2;')
       })
     })
-    // TODO: test bools
-    // TODO: test refs
-    // TODO: test override
-    // TODO: test invalid
 
     describe(': on', function() {
       it('patch new on', () => {
@@ -1654,7 +1678,144 @@ describe('Virtual Dom', function() {
         equal(parent.firstChild.childNodes[2] !== h1, true)
       })
     })
-    // TODO: test real element
+
+    describe(': real element', function() {
+      it('patch add element', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('p')
+        const tree = { el: parent }
+        const newTree = { children: [{ el }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild === el, true)
+      })
+
+      it('patch remove element', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('p')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ el }] }
+        const newTree = {}
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          el: {}
+        })
+        equal(parent.firstChild === null, true)
+      })
+
+      it('patch change element', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('p')
+        parent.appendChild(el)
+        const el2 = document.createElement('span')
+        const tree = { el: parent, children: [{ el }] }
+        const newTree = { children: [{ el: el2 }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild === el2, true)
+      })
+
+      it('patch add atters', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('p')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ el }] }
+        const newTree = { children: [{
+          el,
+          attrs: {
+            'attrs-a': 'value 1'
+          }
+        }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            el: {},
+            attrs: {
+              'attrs-a': 'value 1'
+            }
+          }],
+          el: {}
+        })
+        equal(parent.firstChild === el, true)
+        let output = ''
+        for(const attrs of parent.firstChild.attributes) {
+          output += attrs.name + ': ' + attrs.value + ';';
+        }
+        equal(output, 'attrs-a: value 1;')
+      })
+
+      it('invalid attrs', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('p')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{
+          el,
+          invalid: { attrs: true }
+        }] }
+        const newTree = { children: [{
+          el,
+          attrs: {
+            'attrs-a': 'value 1'
+          },
+          invalid: { attrs: true }
+        }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            el: {},
+            invalid: { attrs: true }
+          }],
+          el: {}
+        })
+        equal(parent.firstChild === el, true)
+        let output = ''
+        for(const attrs of parent.firstChild.attributes) {
+          output += attrs.name + ': ' + attrs.value + ';';
+        }
+        equal(output, '')
+      })
+
+      it('patch element @override', () => {
+        const parent = document.createElement('div')
+        const el = document.createElement('p')
+        parent.appendChild(el)
+        const tree = { el: parent, children: [{ el }] }
+        const newTree = { children: [{ el }, { el, override: true, children: [{ tag: 'p' }] }] }
+        const patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [
+            { el: {} },
+            { el: {}, override: true, children: [{ el: {}, tag: 'p' }] }
+          ],
+          el: {}
+        })
+        equal(parent.childNodes.length, 1)
+        equal(parent.firstChild === el, true)
+        equal(parent.firstChild.childNodes[0].tagName, 'P')
+        const newTree2 = { children: [{ el }, { el, override: true, children: [{ tag: 'span' }] }] }
+        const patchedTree2 = patch(tree, newTree2)
+        equal(patchedTree2, {
+          children: [
+            { el: {} },
+            { el: {}, override: true, children: [{ el: {}, tag: 'span' }] }
+          ],
+          el: {}
+        })
+        equal(parent.childNodes.length, 1)
+        equal(parent.firstChild === el, true)
+        equal(parent.firstChild.childNodes[0].tagName, 'SPAN')
+      })
+    })
   })
 })
 

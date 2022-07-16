@@ -59,7 +59,4 @@ export function mount(
       entity.setAttr(name, host.getAttribute(name))
     })
   }
-
-  // TODO: override setAttributes
-  // TODO: override innerHTML ?
 }

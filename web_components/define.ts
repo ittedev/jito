@@ -35,7 +35,7 @@ export function define(
       const tree = load(this.attachShadow(component.options))
       this._setEntity(new Entity(component, this, tree))
 
-      if(this.innerHTML) { // TODO: empty?
+      if(this.innerHTML) {
         // if this is rendered from html
         (this.entity as Entity).setAttr('content', this.innerHTML)
         if (this.hasAttributes()) {

@@ -242,10 +242,7 @@ export type TokenField =
   'double' |
   'template' |
   'comment' |
-  'lineComment' |
-  'attr' |
-  'blockComment'
-  // TODO: comment
+  'attr'
 
 export type TokenType =
   '' |

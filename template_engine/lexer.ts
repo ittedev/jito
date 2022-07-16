@@ -165,7 +165,7 @@ function distinguish(field: TokenField, value: string): TokenType
       switch (true) {
         case /^\/\/.*$/.test(value): return '//'
         case /^[_\$a-zA-Z][_\$a-zA-Z0-9]*$/.test(value): return 'word'
-        case /^\d+\.?\d*$|^\.?\d+$/.test(value): return 'number' // TODO: lex number
+        case /^\d+\.?\d*$|^\.?\d+$/.test(value): return 'number'
       }
       break
     // deno-lint-ignore no-fallthrough

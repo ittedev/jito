@@ -11,6 +11,7 @@
 <div id="mount_target2" style="display: none;"></div>
 <div id="mount_target3" style="display: none;"></div>
 <div id="mount_target4" style="display: none;"></div>
+<div id="mount_target5" style="display: none;"></div>
 <div id="compact_target1" style="display: none;"></div>
 <div id="compact_target2" style="display: none;"></div>
 <div id="compact_target3" style="display: none;"></div>
@@ -33,6 +34,11 @@
 <div id="sync_target7" style="display: none;"></div>
 <div id="sync_target8" style="display: none;"></div>
 <div id="sync_target9" style="display: none;"></div>
+<div id="sync_target10" style="display: none;"></div>
+<div id="sync_target11" style="display: none;"></div>
+<div id="sync_target12" style="display: none;"></div>
+<div id="sync_target13" style="display: none;"></div>
+<div id="sync_target14" style="display: none;"></div>
 <script src="https://unpkg.com/chai/chai.js"></script>
 <script>
 var i = 0
@@ -177,6 +183,12 @@ describe('Web Components', function() {
     it('mount component', async () => {
       const el = document.querySelector('#mount_target4')
       mount(el, compact(`Hello beako!`))
+      await sleep()
+      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+    })
+    it('mount query string', async () => {
+      const el = document.querySelector('#mount_target5')
+      mount('#mount_target5', compact(`Hello beako!`))
       await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
@@ -358,7 +370,6 @@ describe('Web Components', function() {
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
     // TODO: test seal
-    // TODO: test Patcher
 
     it('expand content', async () => {
       const el = document.querySelector('#sync_target4')
@@ -468,6 +479,76 @@ describe('Web Components', function() {
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('span').innerText, '2')
     })
+
+    it('attrs', async () => {
+      const el = document.querySelector('#sync_target10')
+      const local = compact(`{{ x }}`)
+      const component = compact(`
+        <local x="9" />
+      `, { local })
+      mount(el, component)
+      await sleep()
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '9')
+    })
+
+    it('assign attrs', async () => {
+      const el = document.querySelector('#sync_target11')
+      const local = compact(`{{ x }}`)
+      const component = compact(`
+        <local x:="9 + 4" />
+      `, { local })
+      mount(el, component)
+      await sleep()
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '13')
+    })
+
+    it('boolean attrs truthy', async () => {
+      const el = document.querySelector('#sync_target12')
+      const local = compact(`{{ x }}`)
+      const component = compact(`
+        <local x&="9 + 9" />
+      `, { local })
+      mount(el, component)
+      await sleep()
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '18')
+    })
+
+    it('boolean attrs falsy', async () => {
+      const el = document.querySelector('#sync_target13')
+      const local = compact(`{{ x }}`)
+      const component = compact(`
+        <local x&="9 - 9" />
+      `, { local })
+      mount(el, component)
+      await sleep()
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '')
+    })
+
+    it('ref attrs', async () => {
+      const el = document.querySelector('#sync_target14')
+      const local = compact(`{{ x = 2 }}`)
+      const state = {
+        y: 1
+      }
+      const component = compact(`
+        <local x*="y" />
+      `, [{ local }, state])
+      mount(el, component)
+      await sleep()
+      await sleep()
+      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '2')
+      equal(state.y, 2)
+    })
+  })
+
+  describe('real element', function() {
+  })
+
+  describe('patcher', function() {
   })
 })
 

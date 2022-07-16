@@ -44,12 +44,30 @@ describe('Template Engine', function() {
       add: (a, b) => a + b
     }
 
-    it('expression: number', () => {
-      equal(evaluate(expression('50.5'), [stack]), 50.5)
+    it('expression: null', () => {
+      equal(evaluate(expression('null'), [stack]), null)
     })
 
-    it('expression: true', () => {
+    it('expression: undefined', () => {
+      equal(evaluate(expression('undefined'), [stack]), undefined)
+    })
+
+    it('expression: boolean', () => {
       equal(evaluate(expression('true'), [stack]), true)
+      equal(evaluate(expression('false'), [stack]), false)
+    })
+
+    it('expression: number: integer decimal', () => {
+      equal(evaluate(expression('0'), [stack]), 0)
+      equal(evaluate(expression('50'), [stack]), 50)
+      equal(evaluate(expression('-50'), [stack]), -50)
+    })
+
+    it('expression: number: floating-point', () => {
+      equal(evaluate(expression('3.1415'), [stack]), 3.1415)
+      equal(evaluate(expression('.1234565'), [stack]), .1234565)
+      equal(evaluate(expression('-3.1415'), [stack]), -3.1415)
+      equal(evaluate(expression('-.1234565'), [stack]), -.1234565)
     })
 
     it('expression: string: single', () => {
@@ -113,10 +131,6 @@ describe('Template Engine', function() {
       equal(evaluate(expression('[]'), [stack]), [])
     })
 
-    it('expression: array [...a]', () => {
-      equal(evaluate(expression('[2, ...a[2]]'), [stack]), [2, 6])
-    })
-
     it('expression: object { x: "", [x]: ""}', () => {
       equal(evaluate(expression('{ y: "x", [s]: 1 + x, ["t"]: "" }'), [stack]), { y: "x", o: 2, t: '' })
     })
@@ -133,10 +147,6 @@ describe('Template Engine', function() {
       equal(evaluate(expression('{ "y": x, \'c-d\': x }'), [stack]), { y: 1, "c-d": 1 })
     })
 
-    it('expression: object { ...x }', () => {
-      equal(evaluate(expression('{ y: "x", ...a[3]}'), [stack]), { y: "x", x: 8 })
-    })
-
     it('expression: hash h.x', () => {
       equal(evaluate(expression('h.x'), [stack]), 2)
     })
@@ -149,22 +159,12 @@ describe('Template Engine', function() {
       equal(evaluate(expression('h.y.x'), [stack]), 3)
     })
 
-    it('expression: hash h.y?.x', () => {
-      equal(evaluate(expression('h.y?.x'), [stack]), 3)
-      equal(evaluate(expression('h.y?.y'), [stack]), undefined)
-      equal(evaluate(expression('h.t?.x'), [stack]), undefined)
-    })
-
     it('expression: function f()', () => {
       equal(evaluate(expression('f()'), [stack]), 5)
     })
 
     it('expression: function f(a, b)', () => {
       equal(evaluate(expression('add(4, 7)'), [stack]), 11)
-    })
-
-    it('expression: function f(...a)', () => {
-      equal(evaluate(expression('add(...a)'), [stack]), 9)
     })
 
     it('expression: hash a[0]', () => {
@@ -456,11 +456,6 @@ describe('Template Engine', function() {
       equal(data.a, 3)
       equal(data.b, 2)
     })
-
-    // TODO: test destructuring assignment
-    // TODO: test new operator
-    // TODO: test delete operator
-    // TODO: test camma operator
   })
 
   describe('parse()', function() {
@@ -1128,6 +1123,25 @@ describe('Template Engine', function() {
         })
       })
 
+      it('parse: ref attrs variable', () => {
+        const template = parse(`<p id*="id"></p>`)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              attrs: {
+                id: {
+                  type: "variable",
+                  name: "id"
+                }
+              }
+            }
+          ]
+        })
+      })
+
       it('parse: assign attrs already variable', () => {
         const template = parse(`<p id="id" id:="id"></p>`)
         equal(template, {
@@ -1734,7 +1748,6 @@ describe('Template Engine', function() {
         })
       })
     })
-    // TODO: test loop parent
   })
 
   describe('evaluate()', function() {
@@ -2140,7 +2153,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: truthy attrs variable', () => {
+      it('evaluate: boolean attrs truthy', () => {
         const tree = evaluate(parse(`<p id&="1"></p>`))
         equal(tree, {
           children: [
@@ -2154,12 +2167,27 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: falsy attrs variable', () => {
+      it('evaluate: boolean attrs falsy', () => {
         const tree = evaluate(parse(`<p id&="0"></p>`))
         equal(tree, {
           children: [
             {
               tag: "p"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: ref attrs', () => {
+        const tree = evaluate(parse(`<p id*="x"></p>`), { x: 1 })
+        console.log('tree:', tree)
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                id: undefined
+              }
             }
           ]
         })
@@ -2487,6 +2515,69 @@ describe('Template Engine', function() {
           ]
         })
       })
+      it('evaluate: @for nested', () => {
+        const tree = evaluate(parse('<p @for="array1"><span @for="array2">{{ loop.value }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: [
+                { tag: "span", children: ['3'] },
+                { tag: "span", children: ['5'] }
+              ]
+            },
+            {
+              tag: "p",
+              children: [
+                { tag: "span", children: ['3'] },
+                { tag: "span", children: ['5'] }
+              ]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for nested @each', () => {
+        const tree = evaluate(parse('<p @for="array1" @each="x"><span @for="array2" @each="y">{{ x * y }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: [
+                { tag: "span", children: ['3'] },
+                { tag: "span", children: ['5'] }
+              ]
+            },
+            {
+              tag: "p",
+              children: [
+                { tag: "span", children: ['6'] },
+                { tag: "span", children: ['10'] }
+              ]
+            },
+          ]
+        })
+      })
+      it('evaluate: @for nested loop', () => {
+        const tree = evaluate(parse('<p @for="array1"><span @for="array2">{{ loop.parent.value * loop.value }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: [
+                { tag: "span", children: ['3'] },
+                { tag: "span", children: ['5'] }
+              ]
+            },
+            {
+              tag: "p",
+              children: [
+                { tag: "span", children: ['6'] },
+                { tag: "span", children: ['10'] }
+              ]
+            },
+          ]
+        })
+      })
     })
 
     describe(': <group>', function() {
@@ -2710,6 +2801,146 @@ describe('Template Engine', function() {
           ]
         })
       })
+    })
+    describe(': comment', function() {
+      it('evaluate: html comment', () => {
+        const tree = evaluate(parse('<!-- <p></p> --><span></span>'))
+        equal(tree, {
+          children: [
+            { tag: "span" },
+          ]
+        })
+      })
+      it('evaluate: html comment multi line', () => {
+        const tree = evaluate(parse(`<!-- <p>
+          </p> --><span></span>`))
+        equal(tree, {
+          children: [
+            { tag: "span" },
+          ]
+        })
+      })
+    })
+  })
+  describe('Future support', function() {
+    const stack = {
+      x: 1,
+      y: 10,
+      s: 'o',
+      h: { x: 2, y: { x: 3 }, z: [7] },
+      a: [4, 5, [6], { x: 8 }],
+      text: 'x',
+      f: () => 5,
+      add: (a, b) => a + b
+    }
+    const xx = { name: 'xx' }
+    const yy = { name: 'yy' }
+    const zz = { name: 'zz' }
+    const collection = [xx, yy, zz]
+
+    it('expression: number: integer hexadecimal', () => {
+      equal(evaluate(expression('0x000'), [stack]), 0x000)
+      equal(evaluate(expression('0x190AF'), [stack]), 0x190AF)
+      equal(evaluate(expression('-0x190AF'), [stack]), -0x190AF)
+    })
+
+    it('expression: number: bigint', () => {
+      equal(evaluate(expression('86885378418394941n'), [stack]), 86885378418394941n)
+      equal(evaluate(expression('-86885378418394941n'), [stack]), -86885378418394941n)
+    })
+
+    it('expression: array [...a]', () => {
+      equal(evaluate(expression('[2, ...a[2]]'), [stack]), [2, 6])
+    })
+
+    it('expression: object { ...x }', () => {
+      equal(evaluate(expression('{ y: "x", ...a[3]}'), [stack]), { y: "x", x: 8 })
+    })
+
+    it('expression: hash h.y?.x', () => {
+      equal(evaluate(expression('h.y?.x'), [stack]), 3)
+      equal(evaluate(expression('h.y?.y'), [stack]), undefined)
+      equal(evaluate(expression('h.t?.x'), [stack]), undefined)
+    })
+
+    it('expression: function f(...a)', () => {
+      equal(evaluate(expression('add(...a)'), [stack]), 9)
+    })
+
+    it('expression: destructuring assignment', () => {
+      const local = {
+        obj: { x: 0, y: 0 }
+      }
+      evaluate(expression('{ x, y: z } = h'), [local])
+      equal(obj.x, 2)
+      equal(obj.y, [7])
+    })
+
+    it('expression: new', () => {
+      equal(evaluate(expression('new Date()')).getSeconds(), (new Date()).getSeconds())
+    })
+
+    it('expression: destructuring assignment', () => {
+      const local = {
+        obj: { x: 0 }
+      }
+      evaluate(expression('delete obj.x'), [local])
+      equal(obj.x === undefined, true)
+    })
+
+    it('expression: camma', () => {
+      equal(evaluate(expression('y + 3, 5'), [stack]), 5)
+    })
+
+    it('evaluate: collection: @for @each destructuring assignment', () => {
+      const tree = evaluate(parse('<p @for="collection" @each="{ name }">{{ name }}</p>'), [{ collection }])
+      equal(tree, {
+        children: [
+          { tag: "p", key: xx, children: ['xx'] },
+          { tag: "p", key: yy, children: ['yy'] },
+          { tag: "p", key: zz, children: ['zz'] }
+        ]
+      })
+    })
+
+    it('evaluate: js comment', () => {
+      equal(evaluate(expression('10 /* * 2*/ + 1')), 11)
+    })
+    it('evaluate: js comment multi line', () => {
+      equal(evaluate(expression(`10 /*
+        * 2*/ + 1`)), 11)
+    })
+  })
+  describe('Not support', function() {
+    const stack = {
+      x: 1,
+      y: 10,
+      s: 'o',
+      h: { x: 2, y: { x: 3 }, z: [7] },
+      a: [4, 5, [6], { x: 8 }],
+      text: 'x',
+      f: () => 5,
+      add: (a, b) => a + b
+    }
+
+    it('expression: number: integer binary', () => {
+      equal(evaluate(expression('0b000'), [stack]), 0b000)
+      equal(evaluate(expression('0b0011'), [stack]), 0b0011)
+      equal(evaluate(expression('-0b0011'), [stack]), -0b0011)
+    })
+
+    it('expression: number: floating-point index part', () => {
+      equal(evaluate(expression('0E+0'), [stack]), 0E+0)
+      equal(evaluate(expression('0E-0'), [stack]), 0E-0)
+      equal(evaluate(expression('0e+0'), [stack]), 0e+0)
+      equal(evaluate(expression('0e-0'), [stack]), 0e-0)
+      equal(evaluate(expression('3.14E+10'), [stack]), 3.14E+10)
+      equal(evaluate(expression('.123E-10'), [stack]), .123E-10)
+      equal(evaluate(expression('-3.14E+10'), [stack]), -3.14E+10)
+      equal(evaluate(expression('-.123E-10'), [stack]), -.123E-10)
+    })
+    it('evaluate: js line comment', () => {
+      equal(evaluate(expression('10  + 1 // * 2')), 11)
     })
   })
 })
