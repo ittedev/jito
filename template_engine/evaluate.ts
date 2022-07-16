@@ -351,9 +351,6 @@ const realElementPlugin = {
       if ('@override' in temp.props) {
         re.override = true
       }
-      if ('@keep' in temp.props) {
-        re.keep = true
-      }
     }
     if (
       (

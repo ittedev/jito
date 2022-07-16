@@ -23,7 +23,6 @@
 <div id="element_target4" style="display: none;"></div>
 <div id="element_target5" style="display: none;"></div>
 <div id="element_target6" style="display: none;"></div>
-<div id="element_target7" style="display: none;"></div>
 <div id="sync_target1_1" style="display: none;"></div>
 <div id="sync_target1_2" style="display: none;"></div>
 <div id="sync_target2" style="display: none;"></div>
@@ -295,17 +294,6 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello world!')
-    })
-    it('component name is "element" only', async () => {
-      const el = document.querySelector('#element_target7')
-      const component = compact(
-        '<element component:="component"></element>',
-        { component: compact(`Hello beako!`)
-      })
-      mount(el, component)
-      await sleep()
-      await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('elementize tag', async () => {
       const el = await elementize('a')

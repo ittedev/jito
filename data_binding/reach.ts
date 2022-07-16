@@ -2,12 +2,17 @@ import {
   dictionary,
   isLocked,
   reactiveKey,
-  RecursiveTuple,
   RecursiveCallback,
   BeakoObject
 } from './types.ts'
 
-export function reach(data: unknown, callback:  RecursiveCallback): unknown
+export function reach(data: unknown, callback: RecursiveCallback): unknown
+{
+  _reach(data, callback, [])
+  return data
+}
+
+export function _reach(data: unknown, callback: RecursiveCallback, blocker: unknown[]): unknown
 {
   if (
     typeof data === 'object' &&
@@ -16,12 +21,14 @@ export function reach(data: unknown, callback:  RecursiveCallback): unknown
   ) {
     const obj = data as BeakoObject
     if (!obj[isLocked]) {
+      blocker.push(data)
       if (dictionary in obj) {
-        (obj[dictionary][reactiveKey] as RecursiveTuple)[1].add(callback)
+        obj[dictionary][reactiveKey][1].add(callback)
       }
       for (const key in obj) {
-        reach(obj[key], callback)
+        _reach(obj[key], callback, blocker)
       }
+      blocker.pop()
     }
   }
   return data

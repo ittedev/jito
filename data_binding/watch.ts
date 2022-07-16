@@ -31,8 +31,8 @@ export function watch<T>(
   ) {
     const obj = data as unknown as BeakoObject
     if (!obj[isLocked]) {
-      pollute(obj)
       if (callback === undefined) { // bio
+        pollute(obj)
         const callbacks = (obj[dictionary][reactiveKey] as RecursiveTuple)[1]
         if (typeof keyOrCallback === 'function') {
           callbacks.add(keyOrCallback)
@@ -194,7 +194,8 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple)
 /**
  * Copy bio only
  */
-function infect(obj: BeakoObject, data: unknown) {
+function infect(obj: BeakoObject, data: unknown)
+{
   obj[dictionary][reactiveKey][1].forEach(callback => watch(data, callback))
   return data
 }

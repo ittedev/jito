@@ -16,6 +16,7 @@ import {
   receive,
   unwatch,
   reach,
+  unreach,
   change,
   lock,
   unlock,
@@ -405,6 +406,22 @@ describe('Data Binding', function() {
       })
     })
 
+    it('unwatch recursive object', () => {
+      const obj = {
+        z: 2
+      }
+      const data = {
+        x: 1,
+        obj
+      }
+      obj.data = data
+      watch(data)
+      unwatch(data)
+      equal(data.x, 1)
+      equal(data.obj.z, 2)
+      equal(data.obj.data.x, 1)
+    })
+
     it('unwatch object exec function', () => {
       const data = {
         x: 1
@@ -534,6 +551,36 @@ describe('Data Binding', function() {
       reach(data, () => { y += 2 })
       data.x++
       equal(y, 4)
+    })
+  })
+
+  describe('unreach()', function() {
+    it('unreach object', () => {
+      const data = {
+        x: 1
+      }
+      let y = 0
+      watch(data)
+      const f = () => { y = 2 }
+      reach(data, f)
+      unreach(data, f)
+      data.x++
+      equal(y, 0)
+    })
+    it('unreach nested object', () => {
+      const data = {
+        x: 1,
+        y: {
+          z: 3
+        }
+      }
+      let y = 0
+      watch(data.y)
+      const f = () => { y = 2 }
+      reach(data, f)
+      unreach(data, f)
+      data.y.z += 1
+      equal(y, 0)
     })
   })
 

@@ -1,14 +1,13 @@
 // deno-lint-ignore-file no-explicit-any
 import {
   dictionary,
-  reactiveKey,
-  isLocked,
   Callback,
   TargetCallback,
   RecursiveCallback,
-  RecursiveTuple,
   BeakoObject
 } from './types.ts'
+
+import { _unreach } from './unreach.ts'
 
 export function unwatch(
   data: unknown
@@ -27,48 +26,17 @@ export function unwatch(
 
 export function unwatch(
   data: unknown,
-  keys: string[],
-  callback: TargetCallback
-): unknown
-
-export function unwatch(
-  data: unknown,
-  keyOrCallback?: RecursiveCallback | string | string[],
+  keyOrCallback?: RecursiveCallback | string,
   callback?: TargetCallback
 ): unknown
 {
-  if (typeof data === 'object' && data !== null) {
-    const obj = data as BeakoObject
-    if (!obj[isLocked]) {
-      if (callback === undefined) { // RecursiveCallback
-        if (keyOrCallback) {
-          const RecursiveCallback = keyOrCallback as RecursiveCallback
-
-          // Remove bio from all properties
-          if (obj[dictionary]) {
-            (obj[dictionary][reactiveKey] as RecursiveTuple)[1].delete(RecursiveCallback)
-          }
-          for (const key in obj) {
-            unwatch(obj[key], RecursiveCallback)
-          }
-        } else {
-          for (const key in obj) {
-            unwatch(obj[key])
-          }
-          clean(obj)
-        }
-      } else { // TargetCallback
-        if (Array.isArray(keyOrCallback)) {
-          keyOrCallback.forEach(key => clean(obj, key as string, callback))
-        } else {
-          clean(obj, keyOrCallback as string, callback)
-        }
-      }
-    }
+  if (callback === undefined) { // RecursiveCallback
+    _unreach(data, keyOrCallback as RecursiveCallback, true, [])
+  } else { // TargetCallback
+    clean(data as BeakoObject, keyOrCallback as string, callback)
   }
   return data
 }
-// TODO: Block recursion
 
 export function clean(obj: BeakoObject, key?: string, callback?: Callback)
 {
@@ -97,10 +65,14 @@ export function clean(obj: BeakoObject, key?: string, callback?: Callback)
       delete obj[dictionary][key]
     }
     if (Array.isArray(obj)) {
+      delete (obj as any).unshift
       delete (obj as any).push
-      delete (obj as any).sort
       delete (obj as any).splice
-
+      delete (obj as any).pop
+      delete (obj as any).shift
+      delete (obj as any).sort
+      delete (obj as any).reverse
+      delete (obj as any).copyWithin
     }
     delete (obj as any)[dictionary]
   }

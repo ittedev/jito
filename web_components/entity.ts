@@ -12,6 +12,7 @@ import { special } from './types.ts'
 import { instanceOfRef } from '../template_engine/types.ts'
 import { watch } from '../data_binding/watch.ts'
 import { reach } from '../data_binding/reach.ts'
+import { unreach } from '../data_binding/unreach.ts'
 import { unwatch } from '../data_binding/unwatch.ts'
 import { parse } from '../template_engine/parse.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
@@ -54,6 +55,7 @@ export class Entity
     }
     host.addEventListener(eventTypes.destroy, () => {
       this.patch({ type: 'tree' })
+      unreach(this._stack, this.patch)
     })
 
     const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
