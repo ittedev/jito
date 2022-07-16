@@ -461,19 +461,18 @@ describe('Data Binding', function() {
       equal(y, 0)
     })
 
-    it('unwatch multi properties', () => {
+    it('unwatch all', () => {
       const data = {
-        x1: 2,
-        x2: 20,
-        x3: 200
+        x: 1,
+        y: {
+          z: 2
+        }
       }
       let y = 0
-      const f = v => { y += v }
-      watch(data, ['x1', 'x3'], f)
-      unwatch(data, ['x1', 'x3'], f)
-      data.x1 = 1
-      data.x2 = 10
-      data.x3 = 100
+      const f = () => { y = 2 }
+      watch(data, f)
+      unwatch(data)
+      data.y.z = 3
       equal(y, 0)
     })
 

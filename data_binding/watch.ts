@@ -37,11 +37,9 @@ export function watch<T>(
         if (typeof keyOrCallback === 'function') {
           callbacks.add(keyOrCallback)
         }
+        // parent bio to all child object
         for (const key in obj) {
-          pollute(obj, key, (obj[dictionary][reactiveKey] as RecursiveTuple)[0])
           const value = obj[key]
-          // Change all child objects to beako objects
-          // and set parent bio to all child object
           if (typeof value === 'object' && value !== null) {
             if (callbacks.size) {
               callbacks.forEach(callback => {
@@ -72,8 +70,9 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple)
       const recursiveCallback: RecursiveCallback = () => {
         (obj[dictionary][reactiveKey] as RecursiveTuple)[1].forEach(callback => callback())
       }
+      const bio = ['bio', recursiveCallback] as BioTuple
       obj[dictionary] = {
-        [reactiveKey]: [['bio', recursiveCallback], new Set<RecursiveCallback>()] as RecursiveTuple
+        [reactiveKey]: [bio, new Set<RecursiveCallback>()] as RecursiveTuple
       }
       if (Array.isArray(obj)) {
         const array = obj[dictionary][arrayKey] = obj.slice() as Array<unknown>
@@ -146,6 +145,9 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple)
             }
           }
         })
+      }
+      for (const key in obj) {
+        pollute(obj, key, bio)
       }
     }
 

@@ -4,7 +4,9 @@ import {
   Callback,
   TargetCallback,
   RecursiveCallback,
-  BeakoObject
+  BeakoObject,
+  reactiveKey,
+  isLocked
 } from './types.ts'
 
 import { _unreach } from './unreach.ts'
@@ -30,8 +32,10 @@ export function unwatch(
   callback?: TargetCallback
 ): unknown
 {
-  if (callback === undefined) { // RecursiveCallback
-    _unreach(data, keyOrCallback as RecursiveCallback, true, [])
+  if (keyOrCallback === undefined) { // All clean
+    _unreach(data, [], true)
+  } else if (callback === undefined) { // RecursiveCallback
+    _unreach(data, [], true, keyOrCallback as RecursiveCallback)
   } else { // TargetCallback
     clean(data as BeakoObject, keyOrCallback as string, callback)
   }
@@ -43,37 +47,42 @@ export function clean(obj: BeakoObject, key?: string, callback?: Callback)
   if (key !== undefined) {
     if (dictionary in obj) {
       if (key in obj[dictionary]) {
-        if (callback) {
-          obj[dictionary][key][1].forEach(arm => {
-            if (arm[1] === callback) {
-              obj[dictionary][key as string][1].delete(arm)
-            }
-          })
-        } else {
-          obj[dictionary][key][1].clear()
-        }
+        obj[dictionary][key][1].forEach(arm => {
+          if (arm[1] === callback) {
+            obj[dictionary][key as string][1].delete(arm)
+          }
+        })
       }
     }
-  } else {
-    for (const key in obj[dictionary]) {
-      Object.defineProperty(obj, key, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: obj[dictionary][key][0]
-      })
-      delete obj[dictionary][key]
+  }
+  if (dictionary in obj && obj[dictionary][reactiveKey][1].size) {
+    let hasTarget = false
+    for (const key in obj) {
+      if (obj[dictionary][key][1].size > 1) {
+        hasTarget = true
+      }
     }
-    if (Array.isArray(obj)) {
-      delete (obj as any).unshift
-      delete (obj as any).push
-      delete (obj as any).splice
-      delete (obj as any).pop
-      delete (obj as any).shift
-      delete (obj as any).sort
-      delete (obj as any).reverse
-      delete (obj as any).copyWithin
+    if (!hasTarget) {
+      for (const key in obj[dictionary]) {
+        Object.defineProperty(obj, key, {
+          enumerable: true,
+          configurable: true,
+          writable: true,
+          value: obj[dictionary][key][0]
+        })
+        delete obj[dictionary][key]
+      }
+      if (Array.isArray(obj)) {
+        delete (obj as any).unshift
+        delete (obj as any).push
+        delete (obj as any).splice
+        delete (obj as any).pop
+        delete (obj as any).shift
+        delete (obj as any).sort
+        delete (obj as any).reverse
+        delete (obj as any).copyWithin
+      }
+      delete (obj as any)[dictionary]
     }
-    delete (obj as any)[dictionary]
   }
 }
