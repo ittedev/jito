@@ -15,9 +15,9 @@ export class ComponentElement extends HTMLElement
     super()
   }
 
-  setProp(name: string, value: unknown)
+  setAttr(name: string, value: unknown)
   {
-    this._entity?.setProp(name, value)
+    this._entity?.setAttr(name, value)
   }
 
   static getComponent(): Component | undefined
@@ -25,11 +25,11 @@ export class ComponentElement extends HTMLElement
     return undefined
   }
 
-  loadProps()
+  loadAttrs()
   {
     if (this.hasAttributes()) {
       this.getAttributeNames().forEach(name => {
-        this.setProp(name, this.getAttribute(name))
+        this.setAttr(name, this.getAttribute(name))
       })
     }
   }
@@ -61,30 +61,30 @@ export class ComponentElement extends HTMLElement
   // overwraps
   get attributes(): NamedNodeMap
   {
-    return proxyNamedNodeMap(super.attributes, this.setProp)
+    return proxyNamedNodeMap(super.attributes, this.setAttr)
   }
 
   setAttribute(name: string, value: unknown)
   {
-    this.setProp(name, value)
+    this.setAttr(name, value)
     super.setAttribute(name, value as string)
   }
 
   getAttributeNode(name: string): Attr | null
   {
     const attr = super.getAttributeNode(name)
-    return attr ? proxyAttr(attr, this.setProp) : attr
+    return attr ? proxyAttr(attr, this.setAttr) : attr
   }
 
   removeAttribute(name: string)
   {
-    this.setProp(name, undefined)
+    this.setAttr(name, undefined)
     return super.removeAttribute(name)
   }
 
   removeAttributeNode(attr: Attr)
   {
-    this.setProp(attr.name, undefined)
+    this.setAttr(attr.name, undefined)
     return super.removeAttributeNode(attr)
   }
 
@@ -105,7 +105,7 @@ class GrobalComponentElement extends ComponentElement
     super()
   }
 
-  setProp(name: string, value: unknown)
+  setAttr(name: string, value: unknown)
   {
     // if change a component property
     if (name === 'component') {
@@ -134,7 +134,7 @@ class GrobalComponentElement extends ComponentElement
           break
       }
     }
-    super.setProp(name, value)
+    super.setAttr(name, value)
   }
 }
 
@@ -142,12 +142,12 @@ if (!customElements.get(componentElementTag)) {
   customElements.define(componentElementTag, GrobalComponentElement)
 }
 
-function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void)
+function proxyAttr(attr: Attr, setAttr: (name: string, value: unknown) => void)
 {
   return new Proxy(attr, {
-    set(target, prop, value) {
-      setProp(prop as string, value)
-      if (prop === 'value') {
+    set(target, attr, value) {
+      setAttr(attr as string, value)
+      if (attr === 'value') {
         return target.value = value
       }
     }
@@ -156,15 +156,15 @@ function proxyAttr(attr: Attr, setProp: (name: string, value: unknown) => void)
 
 function proxyNamedNodeMap(
   attrs: NamedNodeMap,
-  setProp: (name: string, value: unknown) => void
+  setAttr: (name: string, value: unknown) => void
 )
 {
   return new Proxy(attrs, {
-    get: function (target, prop) {
-      if (prop === 'length') {
-        return target[prop]
+    get: function (target, attr) {
+      if (attr === 'length') {
+        return target[attr]
       } else {
-        return proxyAttr(target[prop as unknown as number] as Attr, setProp)
+        return proxyAttr(target[attr as unknown as number] as Attr, setAttr)
       }
     }
   })

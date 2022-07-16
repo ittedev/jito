@@ -52,11 +52,11 @@ export function mount(
   const entity = new Entity(component, host, tree)
 
   if (host.innerHTML) {
-    entity.setProp('content', host.innerHTML)
+    entity.setAttr('content', host.innerHTML)
   }
   if (host.hasAttributes()) {
     host.getAttributeNames().forEach(name => {
-      entity.setProp(name, host.getAttribute(name))
+      entity.setAttr(name, host.getAttribute(name))
     })
   }
 

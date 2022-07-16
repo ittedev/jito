@@ -37,14 +37,14 @@ export function define(
 
       if(this.innerHTML) { // TODO: empty?
         // if this is rendered from html
-        (this.entity as Entity).setProp('content', this.innerHTML)
+        (this.entity as Entity).setAttr('content', this.innerHTML)
         if (this.hasAttributes()) {
           this.getAttributeNames().forEach(name => {
-            (this.entity as Entity).setProp(name, this.getAttribute(name))
+            (this.entity as Entity).setAttr(name, this.getAttribute(name))
           })
         }
       } else {
-        this.loadProps()
+        this.loadAttrs()
       }
     }
     static getComponent(): Component | undefined {

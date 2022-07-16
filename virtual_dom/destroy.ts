@@ -9,7 +9,7 @@ import {
   patchClass,
   patchPart,
   patchStyle,
-  patchProps,
+  patchAttrs,
   patchForm,
   patchOn
 } from './patch.ts'
@@ -32,11 +32,11 @@ export function destroy(tree: LinkedVirtualRoot)
   if (!(tree as LinkedRealTarget).invalid?.on) {
     patchOn(tree, {})
   }
-  if (!(tree as LinkedRealTarget).invalid?.props && tree.el instanceof Element) {
+  if (!(tree as LinkedRealTarget).invalid?.attrs && tree.el instanceof Element) {
     patchClass(tree as LinkedVirtualElement | LinkedRealElement, {})
     patchPart(tree as LinkedVirtualElement | LinkedRealElement, {})
     patchStyle(tree as LinkedVirtualElement | LinkedRealElement, {})
-    patchProps(tree as LinkedVirtualElement | LinkedRealElement, {})
+    patchAttrs(tree as LinkedVirtualElement | LinkedRealElement, {})
     patchForm(tree as LinkedVirtualElement | LinkedRealElement, {})
   }
 }

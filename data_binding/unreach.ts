@@ -3,7 +3,6 @@ import {
   reactiveKey,
   isLocked,
   RecursiveCallback,
-  RecursiveTuple,
   BeakoObject
 } from './types.ts'
 

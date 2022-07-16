@@ -51,7 +51,7 @@ export interface SpecialCache extends Cache {
 export type Module = {
   [Symbol.toStringTag]: 'Module'
   default?: unknown
-  [prop: string]: unknown
+  [attr: string]: unknown
 }
 
 export function instanceOfModule(object: any): object is Module {

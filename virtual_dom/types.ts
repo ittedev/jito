@@ -1,10 +1,10 @@
 export const eventTypes = Symbol.for('Beako Event Types')
 
-export interface HasProps {
+export interface HasAttrs {
   class?: Array<string>
   part?: Array<string>
   style?: string
-  props?: Record<string, unknown>
+  attrs?: Record<string, unknown>
   on?: Record<string, Array<EventListener>>
 }
 
@@ -14,18 +14,18 @@ export interface VirtualTree {
   children?: Array<VirtualNode>
 }
 
-export interface VirtualElement extends VirtualTree, HasProps {
+export interface VirtualElement extends VirtualTree, HasAttrs {
   tag: string
   is?: string
   key?: unknown
   new?: boolean
 }
 
-export interface RealTarget extends VirtualTree, HasProps {
+export interface RealTarget extends VirtualTree, HasAttrs {
   el: Element | DocumentFragment | ShadowRoot | EventTarget
   override?: boolean
   invalid?: {
-    props?: boolean
+    attrs?: boolean
     on?: boolean
     children?: boolean
   }
@@ -49,18 +49,18 @@ export interface LinkedVirtualTree extends  LinkedVirtualRoot {
   el: Element | DocumentFragment | ShadowRoot
 }
 
-export interface LinkedVirtualElement extends LinkedVirtualRoot, HasProps {
+export interface LinkedVirtualElement extends LinkedVirtualRoot, HasAttrs {
   el: Element
   tag: string
   is?: string
   key?: unknown
 }
 
-export interface LinkedRealTarget extends LinkedVirtualRoot, HasProps {
+export interface LinkedRealTarget extends LinkedVirtualRoot, HasAttrs {
   el: Element | DocumentFragment | ShadowRoot | EventTarget
   override?: boolean
   invalid?: {
-    props?: boolean
+    attrs?: boolean
     on?: boolean
     children?: boolean
   }

@@ -7,16 +7,16 @@ import {
 import { componentElementTag, ComponentElement } from './element.ts'
 
 export async function elementize(component: Component): Promise<Element>
-export async function elementize(component: Component, props: Record<string, unknown>): Promise<Element>
+export async function elementize(component: Component, attrs: Record<string, unknown>): Promise<Element>
 export async function elementize(component: Promise<Component>): Promise<Element>
-export async function elementize(component: Promise<Component>, props: Record<string, unknown>): Promise<Element>
+export async function elementize(component: Promise<Component>, attrs: Record<string, unknown>): Promise<Element>
 export async function elementize(module: Module): Promise<Element>
-export async function elementize(module: Module, props: Record<string, unknown>): Promise<Element>
+export async function elementize(module: Module, attrs: Record<string, unknown>): Promise<Element>
 export async function elementize(module: Promise<Module>): Promise<Element>
-export async function elementize(module: Promise<Module>, props: Record<string, unknown>): Promise<Element>
+export async function elementize(module: Promise<Module>, attrs: Record<string, unknown>): Promise<Element>
 export async function elementize(tag: string): Promise<Element>
-export async function elementize(tag: string, props: Record<string, unknown>): Promise<Element>
-export async function elementize(component: Component | Promise<Component> | Module | Promise<Module> | string, props?: Record<string, unknown>): Promise<Element>
+export async function elementize(tag: string, attrs: Record<string, unknown>): Promise<Element>
+export async function elementize(component: Component | Promise<Component> | Module | Promise<Module> | string, attrs?: Record<string, unknown>): Promise<Element>
 {
   // Createm Element
   let el
@@ -25,17 +25,17 @@ export async function elementize(component: Component | Promise<Component> | Mod
   } else {
     el = document.createElement(componentElementTag) as ComponentElement
     const result = await Promise.resolve(component)
-    const prop =
+    const attr =
       instanceOfModule(result) && instanceOfComponent(result.default) ?
         result.default as unknown as string :
         result as unknown as string
-    el.setAttribute('component', prop)
+    el.setAttribute('component', attr)
   }
 
-  // Set props
-  if (props) {
-    for (const key in props) {
-      el.setAttribute(key, props[key])
+  // Set attrs
+  if (attrs) {
+    for (const key in attrs) {
+      el.setAttribute(key, attrs[key])
     }
   }
 

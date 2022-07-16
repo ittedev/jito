@@ -26,18 +26,18 @@ function loadElement(el: Element): LinkedVirtualElement
 function loadAttr(ve: LinkedVirtualElement)
 {
   if (ve.el.hasAttributes()) {
-    const props = {} as Record<string, string>
+    const attrs = {} as Record<string, string>
     ve.el.getAttributeNames().forEach(name => {
       if (name.startsWith('on')) return
       const value = ve.el.getAttribute(name) as string
       switch (name) {
         case 'class': case 'part': return ve[name] = value.split(/\s+/)
         case 'style': case 'is': return ve[name] = value
-        default: return props[name] = value
+        default: return attrs[name] = value
       }
     })
-    if (Object.keys(props).length) {
-      ve.props = props
+    if (Object.keys(attrs).length) {
+      ve.attrs = attrs
     }
   }
 }

@@ -5,8 +5,7 @@ import {
   TargetCallback,
   RecursiveCallback,
   BeakoObject,
-  reactiveKey,
-  isLocked
+  reactiveKey
 } from './types.ts'
 
 import { _unreach } from './unreach.ts'

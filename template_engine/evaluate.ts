@@ -269,7 +269,7 @@ export const evaluate = function (
       if (temp.is) {
         el.is = typeof temp.is === 'string' ? temp.is : evaluate(temp.is, stack, cache) as string
       }
-      evaluateProps(temp, stack, cache, el)
+      evaluateAttrs(temp, stack, cache, el)
 
       return el
     }
@@ -337,18 +337,18 @@ const realElementPlugin = {
         el: window,
         override: true,
         invalid: {
-          props: true,
+          attrs: true,
           children: true
         }
       }
-      evaluateProps(temp, stack, cache, re)
+      evaluateAttrs(temp, stack, cache, re)
       return re
     }
     const el = pickup(stack, temp.tag)[0] as Element | DocumentFragment | ShadowRoot | EventTarget
     const re = { el } as RealTarget
-    evaluateProps(temp, stack, cache, re)
-    if (el instanceof Element && temp.props) {
-      if ('@override' in temp.props) {
+    evaluateAttrs(temp, stack, cache, re)
+    if (el instanceof Element && temp.attrs) {
+      if ('@override' in temp.attrs) {
         re.override = true
       }
     }
@@ -411,7 +411,7 @@ export function evaluateChildren(
   return result
 }
 
-export function evaluateProps(
+export function evaluateAttrs(
   template: HasAttrTemplate,
   stack: Variables,
   cache: Cache,
@@ -428,17 +428,17 @@ export function evaluateProps(
         const value = template.bools[key]
         const result = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
         if (result) {
-          (ve.props ?? (ve.props = {}))[key] = result
+          (ve.attrs ?? (ve.attrs = {}))[key] = result
         }
       }
     }
   }
 
-  if (template.props) {
-    for (const key in template.props) {
+  if (template.attrs) {
+    for (const key in template.attrs) {
       if (!key.startsWith('@')) { // Remove syntax attributes
-        const value = template.props[key];
-        (ve.props ?? (ve.props = {}))[key] = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
+        const value = template.attrs[key];
+        (ve.attrs ?? (ve.attrs = {}))[key] = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
       }
     }
   }

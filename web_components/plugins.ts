@@ -19,7 +19,7 @@ import {
   EvaluatePlugin
 } from '../template_engine/types.ts'
 import { ComponentElement, componentElementTag } from './element.ts'
-import { evaluate, evaluateProps } from '../template_engine/evaluate.ts'
+import { evaluate, evaluateAttrs } from '../template_engine/evaluate.ts'
 import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'
 
@@ -76,7 +76,7 @@ export const componentPlugin = {
       if (component) {
         // If local component,
         // set a component property
-        (ve.props ??= {}).component = component
+        (ve.attrs ??= {}).component = component
       } else {
         // If global component,
         // don't change the tag
@@ -90,11 +90,11 @@ export const componentPlugin = {
     const children = (temp.children || [])?.flatMap(child => {
       if (!(typeof child === 'string')) {
         const temp = child as HasAttrTemplate
-        if (temp.props) {
-          if (temp.props['@as']) {
-            contents.push([temp.props['@as'] as string, temp])
+        if (temp.attrs) {
+          if (temp.attrs['@as']) {
+            contents.push([temp.attrs['@as'] as string, temp])
             return []
-          } else if(temp.props.slot) {
+          } else if(temp.attrs.slot) {
             return [evaluate(child, stack, cache) as string | VirtualElement | number]
           }
         }
@@ -106,25 +106,25 @@ export const componentPlugin = {
       contents.push(['content', { type: 'group', children: values } as GroupTemplate])
     }
     if (contents.length) {
-      if (!ve.props) {
-        ve.props = {}
+      if (!ve.attrs) {
+        ve.attrs = {}
       }
       contents.forEach(([name, template]) => {
-        (ve.props as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
+        (ve.attrs as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
       })
     }
     if (children.length) {
       ve.children = children
     }
 
-    evaluateProps(temp, stack, cache, ve)
+    evaluateAttrs(temp, stack, cache, ve)
 
     // If tag is "beako-element",
     // require a component property
     // because attach shadow error occurs
     if (temp.tag === componentElementTag) {
-      component = ve.props?.component
-      ;(ve.props ??= {}).component = component
+      component = ve.attrs?.component
+      ;(ve.attrs ??= {}).component = component
     }
 
     if (
@@ -136,7 +136,7 @@ export const componentPlugin = {
     ) {
       // default module
       component = (component as Module).default
-      ;(ve.props ??= {}).component = component
+      ;(ve.attrs ??= {}).component = component
     }
 
     // Create new element,
@@ -177,11 +177,11 @@ export const specialTagPlugin = {
       el,
       override: true,
       invalid: {
-        props: true,
+        attrs: true,
         children: true
       }
     }
-    evaluateProps(template, stack, cache, re)
+    evaluateAttrs(template, stack, cache, re)
     return re
   }
 } as EvaluatePlugin

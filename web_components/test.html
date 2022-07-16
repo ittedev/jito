@@ -206,8 +206,8 @@ describe('Web Components', function() {
 
     it('compact use constructer with receive from HTML', async () => {
       const el = document.querySelector('#compact_target3')
-      const component = compact(`Hello {{ name }}!`, async ({ props }) => {
-        const { name } = await receive(props, ['name'])
+      const component = compact(`Hello {{ name }}!`, async ({ attrs }) => {
+        const { name } = await receive(attrs, ['name'])
         return [{ name }]
       })
       define('compact-3', component)
@@ -219,8 +219,8 @@ describe('Web Components', function() {
 
     it('compact use constructer with receive from setAttribute', async () => {
       const el = document.querySelector('#compact_target4')
-      const component = compact(`Hello {{ name }}!`, async ({ props }) => {
-        const { name } = await receive(props, ['name'])
+      const component = compact(`Hello {{ name }}!`, async ({ attrs }) => {
+        const { name } = await receive(attrs, ['name'])
         return [{ name }]
       })
       define('compact-4', component)
@@ -243,7 +243,7 @@ describe('Web Components', function() {
   })
 
   describe('elementize', function() {
-    it('no component prop', async () => {
+    it('no component attr', async () => {
       const el = document.querySelector('#element_target1')
       const component = compact('<beako-element></beako-element>')
       mount(el, component)
@@ -348,7 +348,7 @@ describe('Web Components', function() {
       equal(el.shadowRoot.querySelector('p').innerText, 'Hello beako!')
     })
 
-    it('compact receive props', async () => {
+    it('compact receive attrs', async () => {
       const el = document.querySelector('#sync_target3')
       const local = compact('<p>Hello {{ name }}!</p>')
       const component = compact('<hello name:="name"></hello>', { hello: local, name: 'beako' })

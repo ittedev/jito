@@ -31,7 +31,7 @@ export class Entity
   private _template?: TreeTemplate
   private _host: Element
   private _tree: LinkedVirtualTree
-  private _props: Record<string, unknown> = {}
+  private _attrs: Record<string, unknown> = {}
   private _refs: Record<string, [Ref, TargetCallback, TargetCallback]> = {}
   private _running: Promise<void>
   private _requirePatch = false
@@ -62,7 +62,7 @@ export class Entity
     this._running = (async () => {
       const result = await data
       const stack = result ? Array.isArray(result) ? result : [result] : []
-      this._stack = [builtin, { host, root }, watch(this._props), ...stack]
+      this._stack = [builtin, { host, root }, watch(this._attrs), ...stack]
       reach(this._stack, this.patch)
       this.patch()
       stack.forEach(data => {
@@ -88,42 +88,42 @@ export class Entity
     })()
   }
 
-  public setProp(name: string, value: unknown)
+  public setAttr(name: string, value: unknown)
   {
     switch (name) {
       case 'is': case 'class': case 'part': case 'style': return
       default: {
-        const old = this._props[name]
+        const old = this._attrs[name]
         if (old !== value) {
           if (name in this._refs) {
             const ref = this._refs[name][0]
             if (instanceOfRef(value) && value.record === ref.record) {
               return
             } else {
-              unwatch(this._props, name, this._refs[name][1])
+              unwatch(this._attrs, name, this._refs[name][1])
               unwatch(ref.record, ref.key as string, this._refs[name][2])
               delete this._refs[name]
             }
           }
           unwatch(old, this.patch)
-          if (instanceOfRef(value)) { // ref prop
+          if (instanceOfRef(value)) { // ref attr
             const childCallback = (newValue: unknown) => {
               value.record[value.key] = newValue
             }
             const parentCallback = (newValue: unknown) => {
-              this._props[name] = newValue
+              this._attrs[name] = newValue
             }
             this._refs[name] = [value, childCallback, parentCallback]
-            watch(this._props, name, childCallback)
+            watch(this._attrs, name, childCallback)
             watch(value.record, value.key as string, parentCallback)
-            this._props[name] = value.record[value.key]
+            this._attrs[name] = value.record[value.key]
           } else {
-            this._props[name] = value
+            this._attrs[name] = value
           }
           if (old === undefined) {
-            watch(this._props, name, this.patch)
+            watch(this._attrs, name, this.patch)
           }
-          reach(this._props, this.patch)
+          reach(this._attrs, this.patch)
           this.patch()
         }
       }
@@ -133,7 +133,7 @@ export class Entity
   public get component(): Component { return this._component }
   public get host(): Element { return this._host }
   public get root(): ShadowRoot { return this._tree.el as ShadowRoot }
-  public get props(): Record<string, unknown> { return this._props }
+  public get attrs(): Record<string, unknown> { return this._attrs }
 
   public get whenRunning()
   {
@@ -181,7 +181,7 @@ export class Entity
   {
     return {
       component: this._component,
-      props: this._props,
+      attrs: this._attrs,
       tree: this._tree,
     }
   }
@@ -193,8 +193,8 @@ function isHoistingTarget(el: VirtualElement | RealTarget) {
 
 function isWaitingTarget(el: VirtualNode) {
   return (el as VirtualElement).tag === 'link' &&
-    (el as VirtualElement).props?.href !== '' &&
-    ((el as VirtualElement).props?.rel as string).toLocaleLowerCase() === 'stylesheet'
+    (el as VirtualElement).attrs?.href !== '' &&
+    ((el as VirtualElement).attrs?.rel as string).toLocaleLowerCase() === 'stylesheet'
 }
 
 /**
@@ -223,9 +223,9 @@ class SafeUpdater
     const oldLinks = (this.header?.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
     const newLinks = (header.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
     const addedLinks = newLinks
-      .filter(link => oldLinks.every(el => el.props?.href !== link.props?.href))
+      .filter(link => oldLinks.every(el => el.attrs?.href !== link.attrs?.href))
     const removedLinks = oldLinks
-      .filter(link => newLinks.every(el => el.props?.href !== link.props?.href))
+      .filter(link => newLinks.every(el => el.attrs?.href !== link.attrs?.href))
 
     // set a load event listener
     newLinks.forEach(link => {
@@ -239,12 +239,12 @@ class SafeUpdater
 
     // add to wait list
     addedLinks.forEach(link => {
-      this.addWaitUrl(link.props?.href as string)
+      this.addWaitUrl(link.attrs?.href as string)
       link.new = true
     })
 
     // remove from wait list
-    removedLinks.forEach(link => this.removeWaitUrl(link.props?.href as string))
+    removedLinks.forEach(link => this.removeWaitUrl(link.attrs?.href as string))
 
     if (removedLinks) {
       // patch old header and new header

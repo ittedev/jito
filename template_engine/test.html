@@ -1067,8 +1067,8 @@ describe('Template Engine', function() {
       })
     })
 
-    describe(': props', function() {
-      it('parse: props', () => {
+    describe(': attrs', function() {
+      it('parse: attrs', () => {
         const template = parse('<p id="beako"></p>')
         equal(template, {
           type: 'tree',
@@ -1076,7 +1076,7 @@ describe('Template Engine', function() {
             {
               tag: "p",
               type: "element",
-              props: {
+              attrs: {
                 id: "beako"
               }
             }
@@ -1084,7 +1084,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: assign props variable', () => {
+      it('parse: assign attrs variable', () => {
         const template = parse(`<p id:="id"></p>`)
         equal(template, {
           type: 'tree',
@@ -1092,7 +1092,7 @@ describe('Template Engine', function() {
             {
               tag: "p",
               type: "element",
-              props: {
+              attrs: {
                 id: {
                   type: "get",
                   value: {
@@ -1106,7 +1106,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: boolean props variable', () => {
+      it('parse: boolean attrs variable', () => {
         const template = parse(`<p id&="id"></p>`)
         equal(template, {
           type: 'tree',
@@ -1128,7 +1128,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: assign props already variable', () => {
+      it('parse: assign attrs already variable', () => {
         const template = parse(`<p id="id" id:="id"></p>`)
         equal(template, {
           type: 'tree',
@@ -1136,7 +1136,7 @@ describe('Template Engine', function() {
             {
               tag: "p",
               type: "element",
-              props: {
+              attrs: {
                 id: {
                   type: "get",
                   value: {
@@ -1150,7 +1150,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: boolean props override props', () => {
+      it('parse: boolean attrs override attrs', () => {
         const template = parse(`<p id="id" id&="id"></p>`)
         equal(template, {
           type: 'tree',
@@ -1172,7 +1172,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: boolean props override assign props', () => {
+      it('parse: boolean attrs override assign attrs', () => {
         const template = parse(`<p id:="id" id&="id"></p>`)
         equal(template, {
           type: 'tree',
@@ -1194,7 +1194,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: multi props', () => {
+      it('parse: multi attrs', () => {
         const template = parse('<p id:="id" slot="my-slot"></p>')
         equal(template, {
           type: 'tree',
@@ -1202,7 +1202,7 @@ describe('Template Engine', function() {
             {
               tag: "p",
               type: "element",
-              props: {
+              attrs: {
                 id: {
                   type: "get",
                   value: {
@@ -1545,14 +1545,14 @@ describe('Template Engine', function() {
           ]
         })
       })
-      it('parse: group has props', () => {
+      it('parse: group has attrs', () => {
         const template = parse('<group title="name" @as="header">Hello</group>')
         equal(template, {
           type: 'tree',
           children: [
             {
               type: "group",
-              props: {
+              attrs: {
                 ["@as"]: "header"
               },
               children: ["Hello"]
@@ -2097,14 +2097,14 @@ describe('Template Engine', function() {
       })
     })
 
-    describe(': props', function() {
-      it('evaluate: props', () => {
+    describe(': attrs', function() {
+      it('evaluate: attrs', () => {
         const tree = evaluate(parse('<p id="beako"></p>'))
         equal(tree, {
           children: [
             {
               tag: "p",
-              props: {
+              attrs: {
                 id: "beako"
               }
             }
@@ -2112,13 +2112,13 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: add props variable', () => {
+      it('evaluate: add attrs variable', () => {
         const tree = evaluate(parse(`<p id:="id"></p>`), [{ id: 'beako' }])
         equal(tree, {
           children: [
             {
               tag: "p",
-              props: {
+              attrs: {
                 id: "beako"
               }
             }
@@ -2126,13 +2126,13 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: multi props is not string', () => {
+      it('evaluate: multi attrs is not string', () => {
         const tree = evaluate(parse('<p value:="value"></p>'), [{ value: 10 }])
         equal(tree, {
           children: [
             {
               tag: "p",
-              props: {
+              attrs: {
                 value: 10
               }
             }
@@ -2140,13 +2140,13 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: truthy props variable', () => {
+      it('evaluate: truthy attrs variable', () => {
         const tree = evaluate(parse(`<p id&="1"></p>`))
         equal(tree, {
           children: [
             {
               tag: "p",
-              props: {
+              attrs: {
                 id: 1
               }
             }
@@ -2154,7 +2154,7 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: falsy props variable', () => {
+      it('evaluate: falsy attrs variable', () => {
         const tree = evaluate(parse(`<p id&="0"></p>`))
         equal(tree, {
           children: [
@@ -2165,13 +2165,13 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: multi props', () => {
+      it('evaluate: multi attrs', () => {
         const tree = evaluate(parse('<p id:="id" slot="my-slot" value:="value"></p>'), [{ id: 'beako', value: 10 }])
         equal(tree, {
           children: [
             {
               tag: "p",
-              props: {
+              attrs: {
                 id: "beako",
                 slot: "my-slot",
                 value: 10

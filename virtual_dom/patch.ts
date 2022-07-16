@@ -1,5 +1,5 @@
 import {
-  HasProps,
+  HasAttrs,
   VirtualTree,
   LinkedVirtualTree,
   VirtualElement,
@@ -55,7 +55,7 @@ export function patchElement(
   patchClass(ve, newVe)
   patchPart(ve, newVe)
   patchStyle(ve, newVe)
-  patchProps(ve, newVe)
+  patchAttrs(ve, newVe)
   patchForm(ve, newVe)
   patchOn(ve, newVe)
   patchChildren(ve, newVe)
@@ -87,11 +87,11 @@ export function patchRealElement(
     }
   }
 
-  if (!ve.invalid?.props && ve.el instanceof Element) {
+  if (!ve.invalid?.attrs && ve.el instanceof Element) {
     patchClass(ve as LinkedRealElement, newVe)
     patchPart(ve as LinkedRealElement, newVe)
     patchStyle(ve as LinkedRealElement, newVe)
-    patchProps(ve as LinkedRealElement, newVe)
+    patchAttrs(ve as LinkedRealElement, newVe)
     patchForm(ve as LinkedRealElement, newVe)
   }
   if (!ve.invalid?.on) {
@@ -109,7 +109,7 @@ export function patchRealElement(
  */
 export function patchClass(
   ve: LinkedVirtualElement | LinkedRealElement
-  , newVe: HasProps
+  , newVe: HasAttrs
 ): void
 {
   const currentClass = (ve.class || []).join(' ')
@@ -131,7 +131,7 @@ export function patchClass(
  */
 export function patchPart(
   ve: LinkedVirtualElement | LinkedRealElement
-  , newVe: HasProps
+  , newVe: HasAttrs
 ): void
 {
   const currentPart = ve.part || []
@@ -159,7 +159,7 @@ export function patchPart(
  */
 export function patchStyle(
   ve: LinkedVirtualElement | LinkedRealElement,
-  newVe: HasProps
+  newVe: HasAttrs
 ): void
 {
   if (ve.el instanceof HTMLElement) {
@@ -181,30 +181,30 @@ export function patchStyle(
 /**
  * Apply a patch to dom element attributes.
  */
-export function patchProps(
+export function patchAttrs(
   ve: LinkedVirtualElement | LinkedRealElement,
-  newVe: HasProps
+  newVe: HasAttrs
 ): void
 {
-  const currentProps = ve.props || {}
-  const newProps = newVe.props || {}
-  const currentPropsKeys = Object.keys(currentProps)
-  const newPropsKeys = Object.keys(newProps)
+  const currentAttrs = ve.attrs || {}
+  const newAttrs = newVe.attrs || {}
+  const currentAttrsKeys = Object.keys(currentAttrs)
+  const newAttrsKeys = Object.keys(newAttrs)
 
   // shortageOrUpdated
-  newPropsKeys
-    .filter(key => !currentPropsKeys.includes(key) || currentProps[key] !== newProps[key])
-    .forEach(key => ve.el.setAttribute(key, newProps[key] as string))
+  newAttrsKeys
+    .filter(key => !currentAttrsKeys.includes(key) || currentAttrs[key] !== newAttrs[key])
+    .forEach(key => ve.el.setAttribute(key, newAttrs[key] as string))
 
   // surplus
-  currentPropsKeys
-    .filter(key => !newPropsKeys.includes(key))
+  currentAttrsKeys
+    .filter(key => !newAttrsKeys.includes(key))
     .forEach(key => ve.el.removeAttribute(key))
 
-  if (newPropsKeys.length) {
-    ve.props = { ...newProps }
+  if (newAttrsKeys.length) {
+    ve.attrs = { ...newAttrs }
   } else {
-    delete ve.props
+    delete ve.attrs
   }
 }
 
@@ -213,7 +213,7 @@ export function patchProps(
  */
 export function patchOn(
   ve: LinkedVirtualElement | LinkedRealTarget,
-  newVe: HasProps
+  newVe: HasAttrs
 ): void
 {
   const currentOn = ve.on || {}
@@ -272,17 +272,17 @@ export function patchOn(
  */
 export function patchForm(
   ve: LinkedVirtualElement | LinkedRealElement,
-  newVe: HasProps
+  newVe: HasAttrs
 ): void
 {
   // <input>
   if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.el)) {
     const input = ve.el as HTMLInputElement
     // value
-    if (input.value !== newVe.props?.value) {
-      if (newVe.props && 'value' in newVe.props) {
-        if (input.value !== (newVe.props?.value as string).toString()) { // Object.create(null)?
-          input.value = newVe.props.value as string
+    if (input.value !== newVe.attrs?.value) {
+      if (newVe.attrs && 'value' in newVe.attrs) {
+        if (input.value !== (newVe.attrs?.value as string).toString()) { // Object.create(null)?
+          input.value = newVe.attrs.value as string
         }
       } else {
         if ((ve.el as HTMLInputElement).value !== '') {
@@ -292,9 +292,9 @@ export function patchForm(
     }
 
     // checked
-    if (!input.checked && newVe.props && 'checked' in newVe.props) {
+    if (!input.checked && newVe.attrs && 'checked' in newVe.attrs) {
       input.checked = true
-    } else if (input.checked && !(newVe.props && 'checked' in newVe.props)) {
+    } else if (input.checked && !(newVe.attrs && 'checked' in newVe.attrs)) {
       input.checked = false
     }
   }
@@ -303,9 +303,9 @@ export function patchForm(
   if (Object.prototype.isPrototypeOf.call(HTMLOptionElement.prototype, ve.el)) {
     const option = ve.el as HTMLOptionElement
     // selected
-    if (!option.selected && newVe.props && 'selected' in newVe.props) {
+    if (!option.selected && newVe.attrs && 'selected' in newVe.attrs) {
       option.selected = true
-    } else if (option.selected && !(newVe.props && 'selected' in newVe.props)) {
+    } else if (option.selected && !(newVe.attrs && 'selected' in newVe.attrs)) {
       option.selected = false
     }
   }

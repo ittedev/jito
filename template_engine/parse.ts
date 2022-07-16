@@ -36,11 +36,11 @@ class DomLexer
     public node?: TemporaryNode
   ) {}
 
-  isSkippable(prop: string): boolean
+  isSkippable(attr: string): boolean
   {
     for (let node = this.node; node; node = (node as TemporaryNode).next) {
       if (instanceOfTemporaryElement(node)) {
-        return hasAttr(node, prop)
+        return hasAttr(node, attr)
       } else {
         if (!/^\s*$/.test((node as TemporaryText).text)) {
           return false
@@ -137,10 +137,10 @@ function parseGroup(el: TemporaryElement): Template
       // syntax attribute
       if (name.match(/^@(if|else|for|each)$/)) return
       if (name.match(/^@.*$/)) {
-        if (!template.props) {
-          template.props = {} as Record<string, unknown | Template>
+        if (!template.attrs) {
+          template.attrs = {} as Record<string, unknown | Template>
         }
-        (template.props as Record<string, unknown | Template>)[name] = value
+        (template.attrs as Record<string, unknown | Template>)[name] = value
       }
     })
     if (el.child) {
@@ -182,8 +182,8 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
               return style.push(value)
             }
           }
-          if (!(name in (template.props ??= {}))) {
-            return (template.props as Record<string, unknown | Template>)[name] = value
+          if (!(name in (template.attrs ??= {}))) {
+            return (template.attrs as Record<string, unknown | Template>)[name] = value
           }
           return
         }
@@ -201,7 +201,7 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
               return style.push(expression(value))
             }
           }
-          return (template.props ??= {})[name] = expression(value)
+          return (template.attrs ??= {})[name] = expression(value)
         }
 
         case '*=': { // ref attribute
@@ -209,7 +209,7 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
           if (instanceOfTemplate(ref) && ref.type === 'get') {
             ref = (ref as GetTemplate).value
           }
-          return (template.props ??= {})[name] = ref
+          return (template.attrs ??= {})[name] = ref
         }
 
         case 'on': { // on attribute
@@ -232,10 +232,10 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
     el.attrs?.forEach(([name, assign, value]) => {
       if (assign === '&=') {
         (template.bools ??= {})[name] = expression(value)
-        if (template.props) {
-          delete template.props[name]
-          if (!Object.keys(template.props).length) {
-            delete template.props
+        if (template.attrs) {
+          delete template.attrs[name]
+          if (!Object.keys(template.attrs).length) {
+            delete template.attrs
           }
         }
       }
@@ -257,15 +257,15 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
   return template
 }
 
-function hasAttr(el: TemporaryElement, prop: string): boolean
+function hasAttr(el: TemporaryElement, attr: string): boolean
 {
-  return el.attrs?.some(attr => attr[0] === prop)
+  return el.attrs?.some(a => a[0] === attr)
 }
 
-function getAttr(el: TemporaryElement, prop: string): string
+function getAttr(el: TemporaryElement, attr: string): string
 {
-  const attr = el.attrs?.find(attr => attr[0] === prop)
-  return attr ? attr[2] : ''
+  const a = el.attrs?.find(a => a[0] === attr)
+  return a ? a[2] : ''
 }
 
 function parseText(lexer: Lexer): Template | string
