@@ -2,9 +2,9 @@
 export type {
   // Virtual DOM elements
   VirtualNode,
-  VirtualElement,
+  VirtualElement, // @alpha
   VirtualTree,
-  LinkedVirtualElement,
+  LinkedVirtualElement, // @alpha
   LinkedVirtualTree,
   RealElement,
   RealTarget,

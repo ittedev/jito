@@ -14,6 +14,9 @@ export interface VirtualTree {
   children?: Array<VirtualNode>
 }
 
+/**
+ * @alpha
+ */
 export interface VirtualElement extends VirtualTree, HasAttrs {
   tag: string
   is?: string
@@ -49,6 +52,9 @@ export interface LinkedVirtualTree extends  LinkedVirtualRoot {
   el: Element | DocumentFragment | ShadowRoot
 }
 
+/**
+ * @alpha
+ */
 export interface LinkedVirtualElement extends LinkedVirtualRoot, HasAttrs {
   el: Element
   tag: string

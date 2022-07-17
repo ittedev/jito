@@ -1,7 +1,7 @@
 // Interfaces
 export type {
   // Component
-  Component,
+  Component, // @alpha
 
   // Initialize function
   Main,
@@ -25,3 +25,4 @@ export { elementize } from './elementize.ts'
 export { compact } from './compact.ts'
 export { define } from './define.ts'
 export { mount } from './mount.ts'
+export { seal } from './seal.ts' // @alpha

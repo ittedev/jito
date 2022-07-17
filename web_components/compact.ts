@@ -9,25 +9,25 @@ evaluate.plugin(componentPlugin)
 evaluate.plugin(specialTagPlugin)
 
 export function compact(html: string): Component
-export function compact(html: string, data: StateStack): Component
-export function compact(html: string, data: Record<string, unknown>): Component
+export function compact(html: string, stack: StateStack): Component
+export function compact(html: string, state: Record<string, unknown>): Component
 export function compact(html: string, main: Main): Component
 export function compact(template: TreeTemplate): Component
-export function compact(template: TreeTemplate, data: StateStack): Component
-export function compact(template: TreeTemplate, data: Record<string, unknown>): Component
+export function compact(template: TreeTemplate, stack: StateStack): Component
+export function compact(template: TreeTemplate, state: Record<string, unknown>): Component
 export function compact(template: TreeTemplate, main: Main): Component
 export function compact(patcher: Patcher): Component
-export function compact(patcher: Patcher, data: StateStack): Component
-export function compact(patcher: Patcher, data: Record<string, unknown>): Component
+export function compact(patcher: Patcher, stack: StateStack): Component
+export function compact(patcher: Patcher, state: Record<string, unknown>): Component
 export function compact(patcher: Patcher, main: Main): Component
-export function compact(template: string | TreeTemplate | Patcher, data: StateStack | Record<string, unknown> | Main): Component
+export function compact(template: string | TreeTemplate | Patcher, main: StateStack | Record<string, unknown> | Main): Component
 export function compact(
   template: string | TreeTemplate | Patcher,
-  data: StateStack | Record<string, unknown> | Main = []
+  main: StateStack | Record<string, unknown> | Main = []
 ): Component
 {
   const component: Component = {
-    data: (typeof data === 'function' || Array.isArray(data)) ? data : [data],
+    main: (typeof main === 'function' || Array.isArray(main)) ? main : [main],
     options: { mode: 'open' }
   }
 

@@ -58,26 +58,26 @@ export class Entity
       unreach(this._stack, this.patch)
     })
 
-    const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
+    const main = typeof this._component.main === 'function' ? this._component.main(this) : this._component.main;
     this._ready = (async () => {
-      const result = await data
+      const result = await main
       const stack = result ? Array.isArray(result) ? result : [result] : []
       this._stack = [builtin, { host, root }, watch(this._attrs), ...stack]
       reach(this._stack, this.patch)
       this.patch()
-      stack.forEach(data => {
-        if (typeof data === 'object' && data !== null) {
-          for (const name in data) {
+      stack.forEach(state => {
+        if (typeof state === 'object' && state !== null) {
+          for (const name in state) {
             if (
-              (typeof data[name] === 'function' || data[name] instanceof Element) && // The value is function or Element
+              (typeof state[name] === 'function' || state[name] instanceof Element) && // The value is function or Element
               isNaN(name as unknown as number) && // The name is not number
               !(name in this._host) // Do not override same property name
             ) {
               const datum =
-                typeof data[name] === 'function' ?
+                typeof state[name] === 'function' ?
                   // deno-lint-ignore ban-types
-                  (data[name] as Function).bind(this) :
-                  data[name]
+                  (state[name] as Function).bind(this) :
+                  state[name]
               Object.defineProperty(this._host, name, {
                 get () { return datum }
               })

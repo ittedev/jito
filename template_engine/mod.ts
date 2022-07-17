@@ -22,8 +22,8 @@ export type {
   IfTemplate,
   ForTemplate,
   TreeTemplate,
-  ElementTemplate,
-  CustomElementTemplate,
+  ElementTemplate, // @alpha
+  CustomElementTemplate, // @alpha
   GroupTemplate,
   EvaluationTemplate,
   HandlerTemplate,

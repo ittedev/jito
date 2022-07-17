@@ -25,10 +25,13 @@ export interface ComponentOptions {
   localeOnly?: boolean
 }
 
+/**
+ * @alpha
+ */
 export interface Component {
   patcher?: Patcher
   template?: TreeTemplate
-  data: Main | StateStack
+  main: Main | StateStack
   options: {
     mode: ShadowRootMode
     delegatesFocus?: boolean
@@ -40,7 +43,7 @@ export function instanceOfComponent(object: any): object is Component {
   return typeof object === 'object' &&
     object !== null &&
     (object.template || object.patcher) &&
-    object.data &&
+    object.main &&
     object.options
 }
 

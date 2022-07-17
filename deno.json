@@ -3,7 +3,6 @@
     "lib": ["deno.unstable", "deno.ns", "ES2021", "DOM", "DOM.Iterable"]
   },
   "tasks": {
-    "build": "beako build mod.ts -o beako.js",
-    "dev": "beako build mod.ts -o beako.js --no-minify"
+    "build": "beako build mod.ts -o beako.js"
   }
 }

@@ -1,5 +1,6 @@
 import { ComponentOptions, Component } from './types.ts'
-/*
+
+/**
  * @alpha
  */
 export function seal(

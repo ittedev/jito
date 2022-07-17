@@ -10,22 +10,25 @@ import { Entity } from './entity.ts'
 
 export function define(name: string, component: Component): void
 export function define(name: string, html: string): void
-export function define(name: string, html: string, data: StateStack): void
+export function define(name: string, html: string, stack: StateStack): void
+export function define(name: string, html: string, state: Record<string, unknown>): void
 export function define(name: string, html: string, main: Main): void
 export function define(name: string, template: TreeTemplate): void
-export function define(name: string, template: TreeTemplate, data: StateStack): void
+export function define(name: string, template: TreeTemplate, stack: StateStack): void
+export function define(name: string, template: TreeTemplate, state: Record<string, unknown>): void
 export function define(name: string, template: TreeTemplate, main: Main): void
 export function define(name: string, patcher: Patcher): void
-export function define(name: string, patcher: Patcher, data: StateStack): void
+export function define(name: string, patcher: Patcher, stack: StateStack): void
+export function define(name: string, patcher: Patcher, state: Record<string, unknown>): void
 export function define(name: string, patcher: Patcher, main: Main): void
-export function define(name: string, template: string | TreeTemplate | Patcher | Component, data: StateStack | Record<string, unknown> | Main): void
+export function define(name: string, template: string | TreeTemplate | Patcher | Component, main: StateStack | Record<string, unknown> | Main): void
 export function define(
   name: string,
   template: string | TreeTemplate | Patcher | Component,
-  data: StateStack | Record<string, unknown> | Main = []
+  main: StateStack | Record<string, unknown> | Main = []
 ): void
 {
-  const component = instanceOfComponent(template) ? template : compact(template, data)
+  const component = instanceOfComponent(template) ? template : compact(template, main)
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')
   }

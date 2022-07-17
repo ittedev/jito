@@ -142,6 +142,9 @@ export interface TreeTemplate {
   children?: Array<Template | string>
 }
 
+/**
+ * @alpha
+ */
 export interface ElementTemplate {
   type: 'element'
   tag: string
@@ -155,6 +158,9 @@ export interface ElementTemplate {
   children?: Array<Template | string>
 }
 
+/**
+ * @alpha
+ */
 export interface CustomElementTemplate {
   type: 'custom'
   tag: string
