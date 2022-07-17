@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-export const dictionary = Symbol.for('Beako Dictionary')
+export const dictionary = Symbol.for('Beako Object')
 export const reactiveKey = Symbol.for('Beako Reactive')
 export const arrayKey = Symbol.for('Beako Array')
 export const isLocked = Symbol.for('Beako Lock')
