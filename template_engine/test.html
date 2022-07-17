@@ -592,7 +592,41 @@ describe('Template Engine', function() {
       })
     })
 
-    // TODO: test parse is
+    describe(': is', function() {
+      it('parse: is', () => {
+        const template = parse('<p is="word-count"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "custom",
+              is: "word-count"
+            }
+          ]
+        })
+      })
+      it('parse: assign is', () => {
+        const template = parse('<p is:="is"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "custom",
+              is: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "is"
+                }
+              }
+            }
+          ]
+        })
+      })
+    })
+
     describe(': class', function() {
       it('parse: class', () => {
         const template = parse('<p class="class-a"></p>')
@@ -1877,7 +1911,31 @@ describe('Template Engine', function() {
       })
     })
 
-    // TODO: test evaluate is
+    describe(': is', function() {
+      it('parse: is', () => {
+        const tree = evaluate(parse('<p is="word-count"></p>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              is: "word-count"
+            }
+          ]
+        })
+      })
+      it('parse: assign is', () => {
+        const tree = evaluate(parse('<p is:="is"></p>'), [{ is: 'word-count' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              is: "word-count"
+            }
+          ]
+        })
+      })
+    })
+
     describe(': class', function() {
       it('evaluate: class', () => {
         const tree = evaluate(parse('<p class="class-a"></p>'))
@@ -2180,6 +2238,16 @@ describe('Template Engine', function() {
 
       it('evaluate: ref attrs', () => {
         const tree = evaluate(parse(`<p id*="x"></p>`), { x: 1 })
+        console.log('tree:', tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                id: undefined
+              }
+            }
+          ]
+        })
         equal(tree, {
           children: [
             {
