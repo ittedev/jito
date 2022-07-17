@@ -34,10 +34,10 @@ export class ComponentElement extends HTMLElement
     }
   }
 
-  whenRunning(): Promise<void>
+  ready(): Promise<void>
   {
     if (this._entity) {
-      return this._entity.whenRunning()
+      return this._entity.ready()
     } else {
       return new Promise<void>(resolve => {
         this._run = resolve
@@ -49,7 +49,7 @@ export class ComponentElement extends HTMLElement
   {
     this._entity = entity
     if (this._run) {
-      this._entity.whenRunning().then(this._run)
+      this._entity.ready().then(this._run)
     }
   }
 
@@ -58,7 +58,8 @@ export class ComponentElement extends HTMLElement
     return this._entity
   }
 
-  // overwraps
+  // overrides
+
   get attributes(): NamedNodeMap
   {
     return proxyNamedNodeMap(super.attributes, this.setAttr)

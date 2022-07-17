@@ -43,10 +43,10 @@ export async function elementize(component: Component | Promise<Component> | Mod
   if (typeof component === 'string') {
     const El = customElements.get(component)
     if (El !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, El)) {
-      await el.whenRunning()
+      await el.ready()
     }
   } else {
-    await el.whenRunning()
+    await el.ready()
   }
 
   return el

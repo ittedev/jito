@@ -33,7 +33,7 @@ export class Entity
   private _tree: LinkedVirtualTree
   private _attrs: Record<string, unknown> = {}
   private _refs: Record<string, [Ref, TargetCallback, TargetCallback]> = {}
-  private _running: Promise<void>
+  private _ready: Promise<void>
   private _requirePatch = false
   private _updater: SafeUpdater
 
@@ -59,7 +59,7 @@ export class Entity
     })
 
     const data = typeof this._component.data === 'function' ? this._component.data(this) : this._component.data;
-    this._running = (async () => {
+    this._ready = (async () => {
       const result = await data
       const stack = result ? Array.isArray(result) ? result : [result] : []
       this._stack = [builtin, { host, root }, watch(this._attrs), ...stack]
@@ -135,9 +135,9 @@ export class Entity
   public get root(): ShadowRoot { return this._tree.el as ShadowRoot }
   public get attrs(): Record<string, unknown> { return this._attrs }
 
-  public get whenRunning()
+  public get ready()
   {
-    return (): Promise<void> => this._running
+    return (): Promise<void> => this._ready
   }
 
   public patch(template?: string | TreeTemplate | Patcher): void
