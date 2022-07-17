@@ -28,14 +28,14 @@ export function define(
   main: StateStack | Record<string, unknown> | Main = []
 ): void
 {
-  const component = instanceOfComponent(template) ? template : compact(template, main)
+  let component = instanceOfComponent(template) ? template : compact(template, main)
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')
   }
   customElements.define(name, class extends ComponentElement {
     constructor() {
       super()
-      const tree = load(this.attachShadow(component.options))
+      let tree = load(this.attachShadow(component.options))
       this._setEntity(new Entity(component, this, tree))
 
       if(this.innerHTML) {

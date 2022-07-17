@@ -9,9 +9,9 @@ export async function receive(data: unknown, ...keys: string[] | string[][]): Pr
     data !== null &&
     !(data as BeakoObject)[isLocked]
   ) {
-    const obj = data as BeakoObject
-    const keys2 = Array.isArray(keys[0]) ? (keys as string[][]).flatMap(k => k) : keys as string[]
-    const values = await Promise.all(keys2.map(key => {
+    let obj = data as BeakoObject
+    let keys2 = Array.isArray(keys[0]) ? (keys as string[][]).flatMap(k => k) : keys as string[]
+    let values = await Promise.all(keys2.map(key => {
       if (obj[key] === undefined) {
         return new Promise(resolve => {
           pollute(obj, key, ['bom', resolve])

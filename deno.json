@@ -4,5 +4,10 @@
   },
   "tasks": {
     "build": "beako build mod.ts -o beako.js"
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["prefer-const"]
+    }
   }
 }

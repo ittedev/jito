@@ -29,17 +29,17 @@ export function watch<T>(
     data !== null &&
     (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))
   ) {
-    const obj = data as unknown as BeakoObject
+    let obj = data as unknown as BeakoObject
     if (!obj[isLocked]) {
       if (callback === undefined) { // bio
         pollute(obj)
-        const callbacks = (obj[dictionary][reactiveKey] as RecursiveTuple)[1]
+        let callbacks = (obj[dictionary][reactiveKey] as RecursiveTuple)[1]
         if (typeof keyOrCallback === 'function') {
           callbacks.add(keyOrCallback)
         }
         // parent bio to all child object
-        for (const key in obj) {
-          const value = obj[key]
+        for (let key in obj) {
+          let value = obj[key]
           if (typeof value === 'object' && value !== null) {
             if (callbacks.size) {
               callbacks.forEach(callback => {
@@ -55,7 +55,7 @@ export function watch<T>(
           }
         }
       } else { // spy
-        const spy = typeof callback === 'function' ? ['spy', callback] as SpyTuple : callback as SpyTuple
+        let spy = typeof callback === 'function' ? ['spy', callback] as SpyTuple : callback as SpyTuple
         pollute(obj, keyOrCallback as string, spy)
       }
     }
@@ -67,21 +67,21 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple)
 {
   if (!obj[isLocked]) {
     if (!(dictionary in obj)) {
-      const recursiveCallback: RecursiveCallback = () => {
+      let recursiveCallback: RecursiveCallback = () => {
         (obj[dictionary][reactiveKey] as RecursiveTuple)[1].forEach(callback => callback())
       }
-      const bio = ['bio', recursiveCallback] as BioTuple
+      let bio = ['bio', recursiveCallback] as BioTuple
       obj[dictionary] = {
         [reactiveKey]: [bio, new Set<RecursiveCallback>()] as RecursiveTuple
       }
       if (Array.isArray(obj)) {
-        const array = obj[dictionary][arrayKey] = obj.slice() as Array<unknown>
-        const reactive = <T>(value: T): T => {
+        let array = obj[dictionary][arrayKey] = obj.slice() as Array<unknown>
+        let reactive = <T>(value: T): T => {
           recursiveCallback()
           return value
         }
-        const relength = <T>(value: T): T => {
-          const len = (obj[dictionary][arrayKey] as Array<unknown>).length
+        let relength = <T>(value: T): T => {
+          let len = (obj[dictionary][arrayKey] as Array<unknown>).length
           if (obj.length < len) {
             for (let index = obj.length; index < len; index++) {
               pollute(obj, index)
@@ -146,7 +146,7 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple)
           }
         })
       }
-      for (const key in obj) {
+      for (let key in obj) {
         pollute(obj, key, bio)
       }
     }
@@ -164,20 +164,20 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple)
           })
         }
         if (arm) {
-          for (const item of obj[dictionary][key][1]) {
+          for (let item of obj[dictionary][key][1]) {
             if (item[1] === arm[1]) return
           }
           obj[dictionary][key][1].add(arm)
         }
       } else {
-        const descriptor = Object.getOwnPropertyDescriptor(obj, key)
+        let descriptor = Object.getOwnPropertyDescriptor(obj, key)
         if (!descriptor || 'value' in descriptor) {
           if (key in (obj[dictionary][arrayKey] as Array<unknown>)) {
             Object.defineProperty(obj, key, {
               get() { return this[dictionary][arrayKey][key] },
               set(value) {
                 infect(obj, value)
-                const old = this[dictionary][arrayKey][key]
+                let old = this[dictionary][arrayKey][key]
                 this[dictionary][arrayKey][key] = value
                 if (old !== value) {
                   obj[dictionary][reactiveKey][0][1]()
@@ -204,7 +204,7 @@ function infect(obj: BeakoObject, data: unknown)
 
 function launch(page: PageTuple, value: unknown)
 {
-  const old = page[0]
+  let old = page[0]
   page[0] = value
 
   if (old !== value) {

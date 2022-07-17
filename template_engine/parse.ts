@@ -25,8 +25,8 @@ import { isPrimitive } from './is_primitive.ts'
 
 export function parse(html: string): TreeTemplate
 {
-  const node = dom(html)
-  const children = node ? parseTree(node) : []
+  let node = dom(html)
+  let children = node ? parseTree(node) : []
   return children.length ? { type: 'tree', children } : { type: 'tree' }
 }
 
@@ -63,7 +63,7 @@ class DomLexer
 
   pop(): TemporaryNode | undefined
   {
-    const node = this.node
+    let node = this.node
     this.node = this.node?.next
     return node
   }
@@ -71,10 +71,10 @@ class DomLexer
 
 function parseTree(node: TemporaryNode): Array<Template | string>
 {
-  const lexer = new DomLexer(node)
-  const children = [] as Array<Template | string>
+  let lexer = new DomLexer(node)
+  let children = [] as Array<Template | string>
   while (lexer.node) {
-    const result = parseNode(lexer)
+    let result = parseNode(lexer)
     if (result !== undefined) {
       children.push(result)
     }
@@ -100,10 +100,10 @@ function parseChild(lexer: DomLexer): Template
 
 function parseFor(lexer: DomLexer): Template
 {
-  const el = lexer.node as TemporaryElement
+  let el = lexer.node as TemporaryElement
   if (hasAttr(el, '@for')) {
-    const each = getAttr(el, '@each') || undefined
-    const array = expression(getAttr(el, '@for'))
+    let each = getAttr(el, '@each') || undefined
+    let array = expression(getAttr(el, '@for'))
     return { type: 'for', each, array, value: parseIf(lexer) } as ForTemplate
   } else {
     return parseIf(lexer)
@@ -112,12 +112,12 @@ function parseFor(lexer: DomLexer): Template
 
 function parseIf(lexer: DomLexer): Template
 {
-  const el = lexer.node as TemporaryElement
+  let el = lexer.node as TemporaryElement
   if (hasAttr(el, '@if')) {
-    const condition = expression(getAttr(el, '@if'))
-    const truthy = parseGroup(el)
+    let condition = expression(getAttr(el, '@if'))
+    let truthy = parseGroup(el)
     lexer.pop()
-    const template = { type: 'if', condition, truthy } as IfTemplate
+    let template = { type: 'if', condition, truthy } as IfTemplate
     if (lexer.isSkippable('@else')) {
       template.falsy = parseChild(lexer.skip())
     }
@@ -130,7 +130,7 @@ function parseIf(lexer: DomLexer): Template
 function parseGroup(el: TemporaryElement): Template
 {
   if (el.tag === 'group') {
-    const template = {
+    let template = {
       type: 'group',
     } as GroupTemplate
     el.attrs?.forEach(([name,, value]) => {
@@ -144,7 +144,7 @@ function parseGroup(el: TemporaryElement): Template
       }
     })
     if (el.child) {
-      const children = parseTree(el.child)
+      let children = parseTree(el.child)
       if (children.length) {
         template.children = children
       }
@@ -157,13 +157,13 @@ function parseGroup(el: TemporaryElement): Template
 
 function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemplate
 {
-  const template = {
+  let template = {
     type: 'element',
     tag: el.tag,
   } as ElementTemplate | CustomElementTemplate
 
   {
-    const style = [] as Array<string | Template>
+    let style = [] as Array<string | Template>
     el.attrs?.forEach(([name, assign, value]) => {
       switch (assign) {
         case '=': { // string attribute
@@ -213,8 +213,8 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
         }
 
         case 'on': { // on attribute
-          const type = name.slice(2)
-          const handler = { type: 'handler', value: expression(value) } as HandlerTemplate
+          let type = name.slice(2)
+          let handler = { type: 'handler', value: expression(value) } as HandlerTemplate
           return ((template.on ??= {})[type] ??= []).push(handler)
         }
       }
@@ -243,7 +243,7 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
   }
 
   if (el.child) {
-    const children = parseTree(el.child)
+    let children = parseTree(el.child)
     if (children.length) {
       template.children = children
     }
@@ -264,13 +264,13 @@ function hasAttr(el: TemporaryElement, attr: string): boolean
 
 function getAttr(el: TemporaryElement, attr: string): string
 {
-  const a = el.attrs?.find(a => a[0] === attr)
+  let a = el.attrs?.find(a => a[0] === attr)
   return a ? a[2] : ''
 }
 
 function parseText(lexer: Lexer): Template | string
 {
-  const values = [] as Array<string | Template>
+  let values = [] as Array<string | Template>
   values.push(lexer.skip())
   while (lexer.nextIs()) {
     if (lexer.nextIs('{{')) {

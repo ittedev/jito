@@ -28,15 +28,15 @@ import { Loop } from './loop.ts'
 import { pickup, pickupIndex } from './pickup.ts'
 import { isPrimitive } from './is_primitive.ts'
 
-const plugins = new Array<EvaluatePlugin>()
+let plugins = new Array<EvaluatePlugin>()
 
-export const evaluate = function (
+export let evaluate = function (
   template: Template | CustomTemplate,
   stack: StateStack = [],
   cache: Cache = {}
 ): unknown
 {
-  const temp = template as Template
+  let temp = template as Template
   switch (temp.type) {
     case 'literal':
       return temp.value
@@ -50,7 +50,7 @@ export const evaluate = function (
       )
 
     case 'variable': {
-      const [, index] = pickupIndex(stack, (temp as VariableTemplate).name)
+      let [, index] = pickupIndex(stack, (temp as VariableTemplate).name)
       if (index >= 0) {
         return { record: stack[index], key: (temp as VariableTemplate).name, [isRef]: true } as Ref
       }
@@ -61,7 +61,7 @@ export const evaluate = function (
       return operateUnary(temp.operator, evaluate(temp.operand, stack, cache))
 
     case 'binary': {
-      const left = evaluate(temp.left, stack, cache)
+      let left = evaluate(temp.left, stack, cache)
         if (continueEvaluation(temp.operator, left)) {
         return operateBinary(temp.operator, left, evaluate(temp.right, stack, cache))
       } else {
@@ -70,17 +70,17 @@ export const evaluate = function (
     }
 
     case 'assign': {
-      const value = evaluate(temp.left, stack, cache) as Ref
+      let value = evaluate(temp.left, stack, cache) as Ref
       if (!value) {
         throw Error(temp.left ? (temp.left as VariableTemplate).name : 'key' + ' is not defined')
       }
 
-      const { record, key } = value
-      const prevalue = record[key]
+      let { record, key } = value
+      let prevalue = record[key]
 
-      const right = evaluate(temp.right, stack, cache)
+      let right = evaluate(temp.right, stack, cache)
       if (temp.operator.length > 1) {
-        const operator = temp.operator.slice(0, -1)
+        let operator = temp.operator.slice(0, -1)
         if (continueEvaluation(operator, prevalue)) {
           record[key] = operateBinary(operator, prevalue, right)
         }
@@ -93,17 +93,17 @@ export const evaluate = function (
     case 'function': {
       if (temp.name.type === 'get' && (temp.name as GetTemplate).value.type === 'hash') {
         // method
-        const value = evaluate((temp.name as GetTemplate).value, stack, cache) as Ref
+        let value = evaluate((temp.name as GetTemplate).value, stack, cache) as Ref
         if (!value) {
           throw Error(evaluate(((temp.name as GetTemplate).value as HashTemplate).key, stack, cache) as string + ' is not defined')
         }
-        const f = value.record[value.key]
+        let f = value.record[value.key]
         if (typeof f === 'function') {
           return f.apply(value.record, temp.params.map(param => evaluate(param, stack, cache)))
         }
       } else {
         // other
-        const f = evaluate(temp.name, stack, cache)
+        let f = evaluate(temp.name, stack, cache)
         if (typeof f === 'function') {
           return f(...temp.params.map(param => evaluate(param, stack, cache)))
         }
@@ -119,12 +119,12 @@ export const evaluate = function (
       } as Ref
 
     case 'get': {
-      const value = evaluate(temp.value, stack, cache) as Ref
+      let value = evaluate(temp.value, stack, cache) as Ref
       return value ? value.record[value.key] : value
     }
 
     case 'flat': {
-      const values = temp.values.flatMap(
+      let values = temp.values.flatMap(
           (value: Template | string) =>
             typeof value === 'string' ?
               [value] :
@@ -132,7 +132,7 @@ export const evaluate = function (
         )
         .filter(value => value !== '')
         .reduce<Array<string | VirtualElement | RealTarget | number>>((result, child) => {
-          const len = result.length
+          let len = result.length
           if (len && typeof child === 'string' && typeof result[len - 1] === 'string') {
             result[len - 1] += child
           } else {
@@ -149,9 +149,9 @@ export const evaluate = function (
     }
 
     case 'draw': {
-      const value = evaluate(temp.value, stack, cache)
+      let value = evaluate(temp.value, stack, cache)
       // if (value instanceof EventTarget) { // real element
-      //   const el = {
+      //   let el = {
       //     el: value
       //   } as RealElement
       //   return el
@@ -160,7 +160,7 @@ export const evaluate = function (
         if (instanceOfTemplate(value)) { // expand
           if (value.type === 'tree') {
             (value as HasChildrenTemplate).type = 'group'
-            const result = evaluate(value, stack, cache)
+            let result = evaluate(value, stack, cache)
             value.type = 'tree'
             return result
           } else {
@@ -177,7 +177,7 @@ export const evaluate = function (
     case 'join':
       return temp.values.reduce<string>((result: string, value: unknown | Template, index: number) => {
         if (instanceOfTemplate(value)) {
-          const text = evaluate(value, stack, cache)
+          let text = evaluate(value, stack, cache)
           return result + (index ? (temp as JoinTemplate).separator : '') + (typeof text === 'object' ? '' : text as string)
         } else {
           return result + (index ? (temp as JoinTemplate).separator : '') + value
@@ -185,7 +185,7 @@ export const evaluate = function (
       }, '')
 
     case 'flags': {
-      const value = evaluate(temp.value, stack, cache)
+      let value = evaluate(temp.value, stack, cache)
 
       if (typeof value === 'string') {
         return value.split(/\s+/)
@@ -207,7 +207,7 @@ export const evaluate = function (
           null
 
     case 'for': {
-      const array = evaluate(temp.array, stack, cache)
+      let array = evaluate(temp.array, stack, cache)
       let entries: Array<[unknown, unknown]>
       if (typeof array === 'object' && array !== null) {
         if (Symbol.iterator in array) {
@@ -216,7 +216,7 @@ export const evaluate = function (
           } else {
             let i = 0
             entries = []
-            for (const value of array as Iterable<unknown>){
+            for (let value of array as Iterable<unknown>){
               entries.push([i++, value])
             }
           }
@@ -227,8 +227,8 @@ export const evaluate = function (
         entries = [[0, array]] // or errer?
       }
       return entries.flatMap(([key, value], index) => {
-        const loop = new Loop(key, value, index, entries, stack)
-        const result =
+        let loop = new Loop(key, value, index, entries, stack)
+        let result =
           (flatwrap(
             evaluate(
               (temp as ForTemplate).value,
@@ -247,22 +247,22 @@ export const evaluate = function (
     }
 
     case 'tree': {
-      const children = evaluateChildren(temp, stack, cache)
+      let children = evaluateChildren(temp, stack, cache)
       return children.length ? { children } : {}
     }
 
     // deno-lint-ignore no-fallthrough
     case 'custom': {
-      const el = plugins.find(plugin => plugin.match(temp, stack, cache))?.exec(temp, stack, cache)
+      let el = plugins.find(plugin => plugin.match(temp, stack, cache))?.exec(temp, stack, cache)
       if (el) {
         return el
       }
     }
 
     case 'element': {
-      const children = evaluateChildren(temp, stack, cache)
-      const tree: VirtualTree = children.length ? { children } : {}
-      const el = (tree as VirtualElement)
+      let children = evaluateChildren(temp, stack, cache)
+      let tree: VirtualTree = children.length ? { children } : {}
+      let el = (tree as VirtualElement)
 
       el.tag = temp.tag
 
@@ -284,13 +284,13 @@ export const evaluate = function (
       if (!cache.handler.has(temp)) {
         cache.handler.set(temp, [])
       }
-      const thisHandlerCache = cache.handler.get(temp) as Array<[StateStack, EventListener]>
-      for (const cache of thisHandlerCache) {
+      let thisHandlerCache = cache.handler.get(temp) as Array<[StateStack, EventListener]>
+      for (let cache of thisHandlerCache) {
         if (compareCache(cache[0], stack)) {
           return cache[1]
         }
       }
-      const handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...stack, { event }], cache) as void
+      let handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...stack, { event }], cache) as void
       thisHandlerCache.push([stack, handler])
       return handler
     }
@@ -310,7 +310,7 @@ evaluate.plugin = (plugin: EvaluatePlugin) => {
   plugins.unshift(plugin)
 }
 
-const realElementPlugin = {
+let realElementPlugin = {
   match (
     template: CustomElementTemplate | CustomTemplate,
     stack: StateStack,
@@ -318,7 +318,7 @@ const realElementPlugin = {
   ): boolean
   {
     if (template.type === 'custom') {
-      const temp = template as CustomElementTemplate
+      let temp = template as CustomElementTemplate
       if (!isPrimitive(temp.tag)) {
         return temp.tag === 'window' || pickup(stack, temp.tag) instanceof EventTarget
       }
@@ -331,9 +331,9 @@ const realElementPlugin = {
     cache: Cache
   ): RealTarget
   {
-    const temp = template as CustomElementTemplate
+    let temp = template as CustomElementTemplate
     if (template.tag === 'window') {
-      const re = {
+      let re = {
         el: window,
         override: true,
         invalid: {
@@ -344,8 +344,8 @@ const realElementPlugin = {
       evaluateAttrs(temp, stack, cache, re)
       return re
     }
-    const el = pickup(stack, temp.tag) as Element | DocumentFragment | ShadowRoot | EventTarget
-    const re = { el } as RealTarget
+    let el = pickup(stack, temp.tag) as Element | DocumentFragment | ShadowRoot | EventTarget
+    let re = { el } as RealTarget
     evaluateAttrs(temp, stack, cache, re)
     if (el instanceof Element && temp.attrs) {
       if ('@override' in temp.attrs) {
@@ -379,7 +379,7 @@ export function evaluateChildren(
   cache: Cache
 ): Array<string | VirtualElement | RealTarget | number>
 {
-  const children = (template.children || []) as Array<Template | string>
+  let children = (template.children || []) as Array<Template | string>
 
   // Cache number
   let i = 0
@@ -392,10 +392,10 @@ export function evaluateChildren(
     }
   }
 
-  const result = children
+  let result = children
     .flatMap((child, index) => {
       if (instanceOfTemplate(child)) {
-        const result = (flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | RealTarget | number>)
+        let result = (flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | RealTarget | number>)
         switch ((child as Template).type) {
           case 'if': case 'for': case 'group':
             result.push(i - index)
@@ -423,10 +423,10 @@ export function evaluateAttrs(
   }
 
   if (template.bools) {
-    for (const key in template.bools) {
+    for (let key in template.bools) {
       if (!key.startsWith('@')) { // Remove syntax attributes
-        const value = template.bools[key]
-        const result = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
+        let value = template.bools[key]
+        let result = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
         if (result) {
           (ve.attrs ?? (ve.attrs = {}))[key] = result
         }
@@ -435,9 +435,9 @@ export function evaluateAttrs(
   }
 
   if (template.attrs) {
-    for (const key in template.attrs) {
+    for (let key in template.attrs) {
       if (!key.startsWith('@')) { // Remove syntax attributes
-        const value = template.attrs[key];
+        let value = template.attrs[key];
         (ve.attrs ?? (ve.attrs = {}))[key] = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
       }
     }
@@ -459,7 +459,7 @@ export function evaluateAttrs(
     if (!ve.on) {
       ve.on = {}
     }
-    for (const type in template.on) {
+    for (let type in template.on) {
       ve.on[type] = template.on[type].map(listener => evaluate(listener, stack, cache) as EventListener)
     }
   }
@@ -472,8 +472,8 @@ function compareCache(
   stackIndex: number = stack.length - 1
 ): boolean
 {
-  const [cacheLoop, newCacheIndex] = pickupIndex(cache, 'loop', cacheIndex) as [Loop | undefined, number]
-  const [stackLoop, newStackIndex] = pickupIndex(stack, 'loop', stackIndex) as [Loop | undefined, number]
+  let [cacheLoop, newCacheIndex] = pickupIndex(cache, 'loop', cacheIndex) as [Loop | undefined, number]
+  let [stackLoop, newStackIndex] = pickupIndex(stack, 'loop', stackIndex) as [Loop | undefined, number]
 
   if (!cacheLoop && !stackLoop) return true
   if (!cacheLoop || !stackLoop) return false

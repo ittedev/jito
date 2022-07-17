@@ -112,8 +112,8 @@ export function patchClass(
   , newVe: HasAttrs
 ): void
 {
-  const currentClass = (ve.class || []).join(' ')
-  const newClass = (newVe.class || []).join(' ')
+  let currentClass = (ve.class || []).join(' ')
+  let newClass = (newVe.class || []).join(' ')
 
   if (currentClass !== newClass) {
     ve.el.className = newClass
@@ -134,15 +134,15 @@ export function patchPart(
   , newVe: HasAttrs
 ): void
 {
-  const currentPart = ve.part || []
-  const newPart = newVe.part || []
+  let currentPart = ve.part || []
+  let newPart = newVe.part || []
 
-  const shortage = newPart.filter(part => !currentPart.includes(part))
+  let shortage = newPart.filter(part => !currentPart.includes(part))
   if (shortage.length) {
     ve.el.part.add(...shortage)
   }
 
-  const surplus = currentPart.filter(part => !newPart.includes(part))
+  let surplus = currentPart.filter(part => !newPart.includes(part))
   if (surplus.length) {
     ve.el.part.remove(...surplus)
   }
@@ -163,8 +163,8 @@ export function patchStyle(
 ): void
 {
   if (ve.el instanceof HTMLElement) {
-    const style = ve.style || ''
-    const newStyle = newVe.style || ''
+    let style = ve.style || ''
+    let newStyle = newVe.style || ''
 
     if (style != newStyle) {
       ve.el.style.cssText = newStyle
@@ -186,10 +186,10 @@ export function patchAttrs(
   newVe: HasAttrs
 ): void
 {
-  const currentAttrs = ve.attrs || {}
-  const newAttrs = newVe.attrs || {}
-  const currentAttrsKeys = Object.keys(currentAttrs)
-  const newAttrsKeys = Object.keys(newAttrs)
+  let currentAttrs = ve.attrs || {}
+  let newAttrs = newVe.attrs || {}
+  let currentAttrsKeys = Object.keys(currentAttrs)
+  let newAttrsKeys = Object.keys(newAttrs)
 
   // shortageOrUpdated
   newAttrsKeys
@@ -216,10 +216,10 @@ export function patchOn(
   newVe: HasAttrs
 ): void
 {
-  const currentOn = ve.on || {}
-  const newOn = newVe.on || {}
-  const currentOnKeys = Object.keys(currentOn)
-  const newOnKeys = Object.keys(newOn)
+  let currentOn = ve.on || {}
+  let newOn = newVe.on || {}
+  let currentOnKeys = Object.keys(currentOn)
+  let newOnKeys = Object.keys(newOn)
 
   // shortage
   newOnKeys
@@ -243,8 +243,8 @@ export function patchOn(
   newOnKeys
     .filter(type => currentOnKeys.includes(type))
     .forEach(type => {
-      const news = newOn[type]
-      const currents = currentOn[type]
+      let news = newOn[type]
+      let currents = currentOn[type]
 
       // shortage
       news
@@ -277,7 +277,7 @@ export function patchForm(
 {
   // <input>
   if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.el)) {
-    const input = ve.el as HTMLInputElement
+    let input = ve.el as HTMLInputElement
     // value
     if (input.value !== newVe.attrs?.value) {
       if (newVe.attrs && 'value' in newVe.attrs) {
@@ -301,7 +301,7 @@ export function patchForm(
 
   // <option>
   if (Object.prototype.isPrototypeOf.call(HTMLOptionElement.prototype, ve.el)) {
-    const option = ve.el as HTMLOptionElement
+    let option = ve.el as HTMLOptionElement
     // selected
     if (!option.selected && newVe.attrs && 'selected' in newVe.attrs) {
       option.selected = true
@@ -342,8 +342,8 @@ class Stock {
  */
 export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): void
 {
-  const oldChildren = tree.children || []
-  const newChildren = newTree.children || []
+  let oldChildren = tree.children || []
+  let newChildren = newTree.children || []
   if (oldChildren.length === 0 && newChildren.length === 0) {
     return
   }
@@ -354,15 +354,15 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
   }
 
   // If added for the first time, then use DocumentFragment
-  const parent =
+  let parent =
     (oldChildren.length === 0 && newChildren.length > 1) ?
       new DocumentFragment() :
       tree.el
 
-  const stock = new Stock()
+  let stock = new Stock()
   let index = 0
   let currentNode = parent.firstChild as undefined | null | Node
-  const numbers =
+  let numbers =
     newChildren
       .filter(newVNode => typeof newVNode === 'number')
       .reverse() as Array<number>
@@ -370,15 +370,15 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
 
 
   // add object
-  const add = (newVNode: VirtualElement) => {
-    const tmp = patchElement(null, newVNode) as LinkedVirtualElement
+  let add = (newVNode: VirtualElement) => {
+    let tmp = patchElement(null, newVNode) as LinkedVirtualElement
     parent.insertBefore(tmp.el, currentNode || null)
     return tmp
   }
 
   // replace object
-  const replace = (newVNode: VirtualElement) => {
-    const tmp = patchElement(oldChildren[index] as LinkedVirtualElement, newVNode) as LinkedVirtualElement
+  let replace = (newVNode: VirtualElement) => {
+    let tmp = patchElement(oldChildren[index] as LinkedVirtualElement, newVNode) as LinkedVirtualElement
     if (tmp !== oldChildren[index]) {
       destroy(oldChildren[index] as LinkedVirtualElement)
       parent.replaceChild(tmp.el, (oldChildren[index] as LinkedVirtualElement).el)
@@ -389,7 +389,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
   }
 
   // remove node
-  const remove = (useStore = false) => {
+  let remove = (useStore = false) => {
     if (typeof oldChildren[index] !== 'number') {
       if (typeof oldChildren[index] === 'object') {
         if (currentNode !== (oldChildren[index] as LinkedRealTarget).el) {
@@ -402,14 +402,14 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
           destroy(oldChildren[index] as LinkedVirtualElement)
         }
       }
-      const old = currentNode as Node
+      let old = currentNode as Node
       currentNode = old.nextSibling
       parent.removeChild(old)
     }
     index++
   }
 
-  const tmp = newChildren.map(newVNode => {
+  let tmp = newChildren.map(newVNode => {
     switch (typeof newVNode) {
       case 'string': {
         if (typeof oldChildren[index] === 'string') {
@@ -434,7 +434,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
             newVNode.el === (oldChildren[index] as LinkedRealTarget).el
           ) {
             // patch real node
-            const tmp = patchRealElement((oldChildren[index] as LinkedRealTarget), newVNode)
+            let tmp = patchRealElement((oldChildren[index] as LinkedRealTarget), newVNode)
             if (
               !tmp.override &&
               tmp.el === currentNode &&
@@ -447,7 +447,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
             return tmp
           } else {
             // add real node
-            const tmp = patchRealElement(null, newVNode)
+            let tmp = patchRealElement(null, newVNode)
             if (
               !tmp.override &&
               tmp.el instanceof Element && // el instanceof Element
@@ -462,7 +462,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
         // virtual element
         if ('key' in newVNode) {
           if (stock.has(newVNode.key)) {
-            const tmp = patchElement(stock.shift(newVNode.key), newVNode)
+            let tmp = patchElement(stock.shift(newVNode.key), newVNode)
             parent.insertBefore(tmp.el, currentNode || null)
             return tmp
           } else {

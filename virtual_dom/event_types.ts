@@ -20,4 +20,4 @@ if (!(symbol in window)) {
   })
 }
 
-export const eventTypes = window[symbol]
+export let eventTypes = window[symbol]

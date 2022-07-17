@@ -26,7 +26,7 @@ export function compact(
   main: StateStack | Record<string, unknown> | Main = []
 ): Component
 {
-  const component: Component = {
+  let component: Component = {
     main: (typeof main === 'function' || Array.isArray(main)) ? main : [main],
     options: { mode: 'open' }
   }

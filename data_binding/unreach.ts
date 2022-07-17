@@ -21,7 +21,7 @@ export function _unreach(data: unknown, blocker: unknown[], isClean: boolean, ca
     (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data)) &&
     !blocker.includes(data)
   ) {
-    const obj = data as BeakoObject
+    let obj = data as BeakoObject
     if (!obj[isLocked]) {
       blocker.push(data)
       if (obj[dictionary]) {
@@ -32,12 +32,12 @@ export function _unreach(data: unknown, blocker: unknown[], isClean: boolean, ca
           // Remove bio from all properties
           obj[dictionary][reactiveKey][1].clear()
           // Remove arm from all properties
-          for (const key in obj) {
+          for (let key in obj) {
             obj[dictionary][key][1].clear()
           }
         }
       }
-      for (const key in obj) {
+      for (let key in obj) {
         _unreach(obj[key], blocker, isClean, callback)
       }
       if (isClean) {

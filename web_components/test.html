@@ -75,7 +75,7 @@ customElements.define('y-y', YY, { extends: "div" })
 describe('Web Components', function() {
   describe('extend()', function() {
     it('evaluate: evaluation', () => {
-      const template = {
+      let template = {
         type: 'evaluation',
         stack: [{ name: 'Hello' }],
         template: {
@@ -86,13 +86,13 @@ describe('Web Components', function() {
           }
         }
       }
-      const tree = evaluate(parse('{{ template }}'), [{ template }])
+      let tree = evaluate(parse('{{ template }}'), [{ template }])
       equal(tree, {
         children: ["Hello"]
       })
     })
     it('evaluate: evaluation override', () => {
-      const template = {
+      let template = {
         type: 'evaluation',
         stack: [{ name: 'Hello' }],
         template: {
@@ -103,13 +103,13 @@ describe('Web Components', function() {
           }
         }
       }
-      const tree = evaluate(parse('{{ template }}'), [{ template, name: 'Beako' }])
+      let tree = evaluate(parse('{{ template }}'), [{ template, name: 'Beako' }])
       equal(tree, {
         children: ["Beako"]
       })
     })
     it('evaluate: evaluation <group>', () => {
-      const template = {
+      let template = {
         type: 'evaluation',
         stack: [{ name: 'Hello' }],
         template: {
@@ -126,7 +126,7 @@ describe('Web Components', function() {
           ]
         }
       }
-      const tree = evaluate(parse('{{ template }}'), [{ template }])
+      let tree = evaluate(parse('{{ template }}'), [{ template }])
       equal(tree, {
         children: ["Hello!"]
       })
@@ -138,7 +138,7 @@ describe('Web Components', function() {
       define('define-1', `Hello beako!`)
       document.getElementById('define_target1').innerHTML = '<define-1>Hello world!</define-1>'
       await sleep()
-      const el = document.querySelector('define-1')
+      let el = document.querySelector('define-1')
       equal(el.tagName, 'DEFINE-1')
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
@@ -146,7 +146,7 @@ describe('Web Components', function() {
       define('define-2', parse(`Hello beako!`))
       document.getElementById('define_target2').innerHTML = '<define-2>Hello world!</define-2>'
       await sleep()
-      const el = document.querySelector('define-2')
+      let el = document.querySelector('define-2')
       equal(el.tagName, 'DEFINE-2')
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
@@ -154,7 +154,7 @@ describe('Web Components', function() {
       define('define-3', `Hello {{ name }}!`, { name: 'beako' })
       document.getElementById('define_target3').innerHTML = '<define-3>Hello world!</define-3>'
       await sleep()
-      const el = document.querySelector('define-3')
+      let el = document.querySelector('define-3')
       equal(el.tagName, 'DEFINE-3')
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
@@ -162,7 +162,7 @@ describe('Web Components', function() {
       define('define-4', compact(`Hello beako!`))
       document.getElementById('define_target4').innerHTML = '<define-4>Hello world!</define-4>'
       await sleep()
-      const el = document.querySelector('define-4')
+      let el = document.querySelector('define-4')
       equal(el.tagName, 'DEFINE-4')
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
@@ -170,31 +170,31 @@ describe('Web Components', function() {
 
   describe('mount()', function() {
     it('mount string', async () => {
-      const el = document.querySelector('#mount_target1')
+      let el = document.querySelector('#mount_target1')
       mount(el, `Hello beako!`)
       await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
     it('mount template', async () => {
-      const el = document.querySelector('#mount_target2')
+      let el = document.querySelector('#mount_target2')
       mount(el, parse(`Hello beako!`))
       await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
     it('mount string and data', async () => {
-      const el = document.querySelector('#mount_target3')
+      let el = document.querySelector('#mount_target3')
       mount(el, `Hello {{ name }}!`, { name: 'beako' })
       await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
     it('mount component', async () => {
-      const el = document.querySelector('#mount_target4')
+      let el = document.querySelector('#mount_target4')
       mount(el, compact(`Hello beako!`))
       await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
     it('mount query string', async () => {
-      const el = document.querySelector('#mount_target5')
+      let el = document.querySelector('#mount_target5')
       mount('#mount_target5', compact(`Hello beako!`))
       await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
@@ -203,8 +203,8 @@ describe('Web Components', function() {
 
   describe('compact()', function() {
     it('compact slot', async () => {
-      const el = document.querySelector('#compact_target1')
-      const component = compact(`<slot name="my-text">Hello world!</slot>`)
+      let el = document.querySelector('#compact_target1')
+      let component = compact(`<slot name="my-text">Hello world!</slot>`)
       mount(el, component)
       await sleep()
       el.innerHTML = `<span slot="my-text">Hello beako!</span>`
@@ -214,8 +214,8 @@ describe('Web Components', function() {
     })
 
     it('compact use constructer', async () => {
-      const el = document.querySelector('#compact_target2')
-      const component = compact(`Hello {{ name }}!`, () => {
+      let el = document.querySelector('#compact_target2')
+      let component = compact(`Hello {{ name }}!`, () => {
         return [{ name: 'beako' }]
       })
       mount(el, component)
@@ -224,36 +224,36 @@ describe('Web Components', function() {
     })
 
     it('compact use constructer with receive from HTML', async () => {
-      const el = document.querySelector('#compact_target3')
-      const component = compact(`Hello {{ name }}!`, async ({ attrs }) => {
-        const { name } = await receive(attrs, ['name'])
+      let el = document.querySelector('#compact_target3')
+      let component = compact(`Hello {{ name }}!`, async ({ attrs }) => {
+        let { name } = await receive(attrs, ['name'])
         return [{ name }]
       })
       define('compact-3', component)
       el.innerHTML = '<compact-3 name="beako"></compact-5>'
       await sleep()
-      const root = document.querySelector('compact-3')
+      let root = document.querySelector('compact-3')
       equal(root.shadowRoot.innerHTML, 'Hello beako!')
     })
 
     it('compact use constructer with receive from setAttribute', async () => {
-      const el = document.querySelector('#compact_target4')
-      const component = compact(`Hello {{ name }}!`, async ({ attrs }) => {
-        const { name } = await receive(attrs, ['name'])
+      let el = document.querySelector('#compact_target4')
+      let component = compact(`Hello {{ name }}!`, async ({ attrs }) => {
+        let { name } = await receive(attrs, ['name'])
         return [{ name }]
       })
       define('compact-4', component)
       el.innerHTML = '<compact-4 name="beako"></compact-4>'
-      const root = document.querySelector('compact-4')
+      let root = document.querySelector('compact-4')
       root.setAttribute('name', 'beako')
       await sleep()
       equal(root.shadowRoot.innerHTML, 'Hello beako!')
     })
 
     it('compact local component', async () => {
-      const el = document.querySelector('#compact_target5')
-      const local = compact('<p>Hello {{ name }}!</p>', { name: 'beako' })
-      const component = compact('<hello></hello>', { hello: local })
+      let el = document.querySelector('#compact_target5')
+      let local = compact('<p>Hello {{ name }}!</p>', { name: 'beako' })
+      let component = compact('<hello></hello>', { hello: local })
       mount(el, component)
       await sleep()
       await sleep()
@@ -263,38 +263,38 @@ describe('Web Components', function() {
 
   describe('elementize', function() {
     it('no component attr', async () => {
-      const el = document.querySelector('#element_target1')
-      const component = compact('<beako-element></beako-element>')
+      let el = document.querySelector('#element_target1')
+      let component = compact('<beako-element></beako-element>')
       mount(el, component)
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
     })
     it('component is null', async () => {
-      const el = document.querySelector('#element_target2')
-      const component = compact('<beako-element component:="component"></beako-element>', { component: null })
+      let el = document.querySelector('#element_target2')
+      let component = compact('<beako-element component:="component"></beako-element>', { component: null })
       mount(el, component)
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
     })
     it('component is undefined', async () => {
-      const el = document.querySelector('#element_target3')
-      const component = compact('<beako-element component:="component"></beako-element>', { component: undefined })
+      let el = document.querySelector('#element_target3')
+      let component = compact('<beako-element component:="component"></beako-element>', { component: undefined })
       mount(el, component)
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
     })
     it('component is a defined component', async () => {
       define('element-3', compact(`Hello beako!`))
-      const el = document.querySelector('#element_target4')
-      const component = compact('<beako-element component="element-3"></beako-element>')
+      let el = document.querySelector('#element_target4')
+      let component = compact('<beako-element component="element-3"></beako-element>')
       mount(el, component)
       await sleep()
       await sleep()
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('component is a local component', async () => {
-      const el = document.querySelector('#element_target5')
-      const component = compact(
+      let el = document.querySelector('#element_target5')
+      let component = compact(
         '<beako-element component:="component"></beako-element>',
         { component: compact(`Hello beako!`)
       })
@@ -304,9 +304,9 @@ describe('Web Components', function() {
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
     })
     it('component is a changed component', async () => {
-      const el = document.querySelector('#element_target6')
-      const state = watch({ component: compact(`Hello beako!`) })
-      const component = compact('<beako-element component:="component"></beako-element>', state)
+      let el = document.querySelector('#element_target6')
+      let state = watch({ component: compact(`Hello beako!`) })
+      let component = compact('<beako-element component:="component"></beako-element>', state)
       mount(el, component)
       await sleep()
       state.component = compact(`Hello world!`)
@@ -315,11 +315,11 @@ describe('Web Components', function() {
       equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello world!')
     })
     it('elementize tag', async () => {
-      const el = await elementize('a')
+      let el = await elementize('a')
       equal(el.tagName, 'A')
     })
     it('elementize component', async () => {
-      const el = await elementize(compact(`Hello beako!`))
+      let el = await elementize(compact(`Hello beako!`))
       await sleep()
       equal(el.shadowRoot.innerHTML, 'Hello beako!')
     })
@@ -328,13 +328,13 @@ describe('Web Components', function() {
   describe('sync data', function() {
 
     it('compact share data on brothers', async () => {
-      const el1 = document.querySelector('#sync_target1_1')
-      const el2 = document.querySelector('#sync_target1_2')
-      const data = {
+      let el1 = document.querySelector('#sync_target1_1')
+      let el2 = document.querySelector('#sync_target1_2')
+      let data = {
         name: 'beako'
       }
-      const component1 = compact('<p>Hello {{ name }}!</p>', data)
-      const component2 = compact('<p>Welcome {{ name }}!</p>', data)
+      let component1 = compact('<p>Hello {{ name }}!</p>', data)
+      let component2 = compact('<p>Welcome {{ name }}!</p>', data)
       mount(el1, component1)
       mount(el2, component2)
       await sleep()
@@ -343,18 +343,18 @@ describe('Web Components', function() {
     })
 
     it('compact share data on childe scope', async () => {
-      const el = document.querySelector('#sync_target2')
-      const component = compact(
+      let el = document.querySelector('#sync_target2')
+      let component = compact(
         `
           <p>Hello {{ name }}!</p>
           <child></child>
         `,
         () => {
-          const data = watch({
+          let data = watch({
             name: 'world'
           })
 
-          const child = compact('', () => {
+          let child = compact('', () => {
             data.name = 'beako'
           })
 
@@ -368,9 +368,9 @@ describe('Web Components', function() {
     })
 
     it('compact receive attrs', async () => {
-      const el = document.querySelector('#sync_target3')
-      const local = compact('<p>Hello {{ name }}!</p>')
-      const component = compact('<hello name:="name"></hello>', { hello: local, name: 'beako' })
+      let el = document.querySelector('#sync_target3')
+      let local = compact('<p>Hello {{ name }}!</p>')
+      let component = compact('<hello name:="name"></hello>', { hello: local, name: 'beako' })
       mount(el, component)
       await sleep()
       await sleep()
@@ -378,9 +378,9 @@ describe('Web Components', function() {
     })
 
     it('expand content', async () => {
-      const el = document.querySelector('#sync_target4')
-      const local = compact(`<group @for="[1, 2, 3]" @if="content">{{ content }}</group><p @else>{{ loop.value }}</p>`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target4')
+      let local = compact(`<group @for="[1, 2, 3]" @if="content">{{ content }}</group><p @else>{{ loop.value }}</p>`)
+      let component = compact(`
         <local></local>
         <local><span>{{ loop.value + add }}</span></local>
       `, { local, add: 2 })
@@ -396,9 +396,9 @@ describe('Web Components', function() {
     })
 
     it('expand @as', async () => {
-      const el = document.querySelector('#sync_target5')
-      const local = compact(`<group @for="[1, 2, 3]" @if="num">{{ num }}</group><p @else>{{ loop.value }}</p>`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target5')
+      let local = compact(`<group @for="[1, 2, 3]" @if="num">{{ num }}</group><p @else>{{ loop.value }}</p>`)
+      let component = compact(`
         <local></local>
         <local><span @as="num">{{ loop.value + add }}</span></local>
       `, { local, add: 2 })
@@ -414,9 +414,9 @@ describe('Web Components', function() {
     })
 
     it('expand @as and <group>', async () => {
-      const el = document.querySelector('#sync_target6')
-      const local = compact(`{{ header }}`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target6')
+      let local = compact(`{{ header }}`)
+      let component = compact(`
         <local>
           <group @as="header">
             <h2>Beako.js</h2>
@@ -432,13 +432,13 @@ describe('Web Components', function() {
     })
 
     it('expand content, @as and slot', async () => {
-      const el = document.querySelector('#sync_target7')
-      const local = compact(`
+      let el = document.querySelector('#sync_target7')
+      let local = compact(`
         {{ header }}
         {{ content }}
         <slot name="footer"></slot>
       `)
-      const component = compact(`
+      let component = compact(`
         <local>
           <h2 @as="header">Welcome!</h2>
           <button>Click me</button>
@@ -454,9 +454,9 @@ describe('Web Components', function() {
     })
 
     it('expand no content', async () => {
-      const el = document.querySelector('#sync_target8')
-      const local = compact(`<group @for="[1, 2, 3]" @if="content">{{ content }}</group><p @else>{{ loop.value }}</p>`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target8')
+      let local = compact(`<group @for="[1, 2, 3]" @if="content">{{ content }}</group><p @else>{{ loop.value }}</p>`)
+      let component = compact(`
         <local></local>
         <local><span @as="num">{{ loop.value + add }}</span><span slot="header">Hello</span></local>
       `, { local, add: 2 })
@@ -472,9 +472,9 @@ describe('Web Components', function() {
     })
 
     it('expand chain', async () => {
-      const el = document.querySelector('#sync_target9')
-      const local = compact(`{{ content }}`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target9')
+      let local = compact(`{{ content }}`)
+      let component = compact(`
         <local>
           <span @as="num">{{ add }}</span>
           {{ num }}
@@ -487,9 +487,9 @@ describe('Web Components', function() {
     })
 
     it('attrs', async () => {
-      const el = document.querySelector('#sync_target10')
-      const local = compact(`{{ x }}`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target10')
+      let local = compact(`{{ x }}`)
+      let component = compact(`
         <local x="9" />
       `, { local })
       mount(el, component)
@@ -499,9 +499,9 @@ describe('Web Components', function() {
     })
 
     it('assign attrs', async () => {
-      const el = document.querySelector('#sync_target11')
-      const local = compact(`{{ x }}`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target11')
+      let local = compact(`{{ x }}`)
+      let component = compact(`
         <local x:="9 + 4" />
       `, { local })
       mount(el, component)
@@ -511,9 +511,9 @@ describe('Web Components', function() {
     })
 
     it('boolean attrs truthy', async () => {
-      const el = document.querySelector('#sync_target12')
-      const local = compact(`{{ x }}`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target12')
+      let local = compact(`{{ x }}`)
+      let component = compact(`
         <local x&="9 + 9" />
       `, { local })
       mount(el, component)
@@ -523,9 +523,9 @@ describe('Web Components', function() {
     })
 
     it('boolean attrs falsy', async () => {
-      const el = document.querySelector('#sync_target13')
-      const local = compact(`{{ x }}`)
-      const component = compact(`
+      let el = document.querySelector('#sync_target13')
+      let local = compact(`{{ x }}`)
+      let component = compact(`
         <local x&="9 - 9" />
       `, { local })
       mount(el, component)
@@ -535,12 +535,12 @@ describe('Web Components', function() {
     })
 
     it('ref attrs', async () => {
-      const el = document.querySelector('#sync_target14')
-      const local = compact(`{{ x = 2 }}`)
-      const state = {
+      let el = document.querySelector('#sync_target14')
+      let local = compact(`{{ x = 2 }}`)
+      let state = {
         y: 1
       }
-      const component = compact(`
+      let component = compact(`
         <local x*="y" />
       `, [{ local }, state])
       mount(el, component)
@@ -556,17 +556,17 @@ describe('Web Components', function() {
 
   describe('patcher', function() {
     it('patcher', async () => {
-      const el = document.querySelector('#patcher_target1')
-      const component = compact(() => { return { children: ['x'] } })
+      let el = document.querySelector('#patcher_target1')
+      let component = compact(() => { return { children: ['x'] } })
       mount(el, component)
       await sleep()
       equal(el.shadowRoot.innerHTML, 'x')
     })
 
     it('patcher use stack', async () => {
-      const el = document.querySelector('#patcher_target2')
-      const state = { x: 6 }
-      const component = compact(stack => {
+      let el = document.querySelector('#patcher_target2')
+      let state = { x: 6 }
+      let component = compact(stack => {
         return { children: [pickup(stack, 'x') + ''] }
       }, [state])
       mount(el, component)

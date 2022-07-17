@@ -33,7 +33,7 @@ customElements.define('y-y', YY, { extends: "div" })
 
 describe('Template Engine', function() {
   describe('Script parser', function() {
-    const stack = {
+    let stack = {
       x: 1,
       y: 10,
       s: 'o',
@@ -289,7 +289,7 @@ describe('Template Engine', function() {
     })
 
     it('expression: assign =', () => {
-      const data = { a: 0, b: 0 }
+      let data = { a: 0, b: 0 }
       evaluate(expression('a = 1'), [stack, data])
       evaluate(expression('b = x'), [stack, data])
       equal(data.a, 1)
@@ -297,79 +297,79 @@ describe('Template Engine', function() {
     })
 
     it('expression: assign +=', () => {
-      const data = { a: 1 }
+      let data = { a: 1 }
       evaluate(expression('a += 4'), [stack, data])
       equal(data.a, 5)
     })
 
     it('expression: assign -=', () => {
-      const data = { a: 1 }
+      let data = { a: 1 }
       evaluate(expression('a -= 4'), [stack, data])
       equal(data.a, -3)
     })
 
     it('expression: assign *=', () => {
-      const data = { a: 2 }
+      let data = { a: 2 }
       evaluate(expression('a *= 4'), [stack, data])
       equal(data.a, 8)
     })
 
     it('expression: assign **=', () => {
-      const data = { a: 2 }
+      let data = { a: 2 }
       evaluate(expression('a **= 4'), [stack, data])
       equal(data.a, 16)
     })
 
     it('expression: assign /=', () => {
-      const data = { a: 10 }
+      let data = { a: 10 }
       evaluate(expression('a /= 4'), [stack, data])
       equal(data.a, 2.5)
     })
 
     it('expression: assign %=', () => {
-      const data = { a: 10 }
+      let data = { a: 10 }
       evaluate(expression('a %= 4'), [stack, data])
       equal(data.a, 2)
     })
 
     it('expression: assign <<=', () => {
-      const data = { a: 2 }
+      let data = { a: 2 }
       evaluate(expression('a <<= 4'), [stack, data])
       equal(data.a, 32)
     })
 
     it('expression: assign >>=', () => {
-      const data = { a: -5 }
+      let data = { a: -5 }
       evaluate(expression('a >>= 2'), [stack, data])
       equal(data.a, -2)
     })
 
     it('expression: assign >>>=', () => {
-      const data = { a: -5 }
+      let data = { a: -5 }
       evaluate(expression('a >>>= 2'), [stack, data])
       equal(data.a, 1073741822)
     })
 
     it('expression: assign &=', () => {
-      const data = { a: 5 }
+      let data = { a: 5 }
       evaluate(expression('a &= 6'), [stack, data])
       equal(data.a, 4)
     })
 
     it('expression: assign ^=', () => {
-      const data = { a: 5 }
+      let data = { a: 5 }
       evaluate(expression('a ^= 6'), [stack, data])
       equal(data.a, 3)
     })
 
     it('expression: assign |=', () => {
-      const data = { a: 5 }
+      let data = { a: 5 }
       evaluate(expression('a |= 6'), [stack, data])
       equal(data.a, 7)
     })
 
     it('expression: assign &&=', () => {
-      const data = { a: 10, b: 0 }
+      let data = { a: 10, b: 0 }
       evaluate(expression('a &&= 4'), [stack, data])
       evaluate(expression('b &&= 4'), [stack, data])
       equal(data.a, 4)
@@ -377,7 +377,7 @@ describe('Template Engine', function() {
     })
 
     it('expression: assign ||=', () => {
-      const data = { a: 10, b: 0 }
+      let data = { a: 10, b: 0 }
       evaluate(expression('a ||= 4'), [stack, data])
       evaluate(expression('b ||= 4'), [stack, data])
       equal(data.a, 10)
@@ -385,7 +385,7 @@ describe('Template Engine', function() {
     })
 
     it('expression: assign ??=', () => {
-      const data = { a: 10, b: 0, c: undefined, d: null }
+      let data = { a: 10, b: 0, c: undefined, d: null }
       evaluate(expression('a ??= 4'), [stack, data])
       evaluate(expression('b ??= 4'), [stack, data])
       evaluate(expression('c ??= 4'), [stack, data])
@@ -397,35 +397,35 @@ describe('Template Engine', function() {
     })
 
     it('expression: assign postfix ++', () => {
-      const data = { a: 1, b: 100 }
+      let data = { a: 1, b: 100 }
       evaluate(expression('b = a++'), [stack, data])
       equal(data.a, 2)
       equal(data.b, 1)
     })
 
     it('expression: assign postfix --', () => {
-      const data = { a: 1, b: 100 }
+      let data = { a: 1, b: 100 }
       evaluate(expression('b = a--'), [stack, data])
       equal(data.a, 0)
       equal(data.b, 1)
     })
 
     it('expression: assign prefix ++', () => {
-      const data = { a: 1, b: 100 }
+      let data = { a: 1, b: 100 }
       evaluate(expression('b = ++a'), [stack, data])
       equal(data.a, 2)
       equal(data.b, 2)
     })
 
     it('expression: assign prefix --', () => {
-      const data = { a: 1, b: 100 }
+      let data = { a: 1, b: 100 }
       evaluate(expression('b = --a'), [stack, data])
       equal(data.a, 0)
       equal(data.b, 0)
     })
 
     it('expression: stop evalution ||', () => {
-      const data = { a: 1, b: 100 }
+      let data = { a: 1, b: 100 }
       evaluate(expression('b = true || a++'), [stack, data])
       equal(data.a, 1)
       equal(data.b, true)
@@ -435,7 +435,7 @@ describe('Template Engine', function() {
     })
 
     it('expression: stop evalution &&', () => {
-      const data = { a: 1, b: 100 }
+      let data = { a: 1, b: 100 }
       evaluate(expression('b = false && a++'), [stack, data])
       equal(data.a, 1)
       equal(data.b, false)
@@ -445,7 +445,7 @@ describe('Template Engine', function() {
     })
 
     it('expression: stop evalution ??', () => {
-      const data = { a: 1, b: 100 }
+      let data = { a: 1, b: 100 }
       evaluate(expression('b = false ?? a++'), [stack, data])
       equal(data.a, 1)
       equal(data.b, false)
@@ -461,7 +461,7 @@ describe('Template Engine', function() {
   describe('parse()', function() {
     describe(': overload', function() {
       it('parse string', () => {
-        const template = parse('<style></style><p></p>')
+        let template = parse('<style></style><p></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -480,7 +480,7 @@ describe('Template Engine', function() {
 
     describe(': text', function() {
       it('parse Text Node', () => {
-        const template = parse('Hello beako!')
+        let template = parse('Hello beako!')
         equal(template, {
           type: 'tree',
           children: [
@@ -490,7 +490,7 @@ describe('Template Engine', function() {
       })
 
       it('parse unicode', () => {
-        const template = parse('مرحبا ベア子😆')
+        let template = parse('مرحبا ベア子😆')
         equal(template, {
           type: 'tree',
           children: [
@@ -500,7 +500,7 @@ describe('Template Engine', function() {
       })
 
       it('parse a variable in Text Node', () => {
-        const template = parse('Hello {{ name }}!')
+        let template = parse('Hello {{ name }}!')
         equal(template, {
           type: 'tree',
           children: [
@@ -525,7 +525,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse Text Node in element', () => {
-        const template = parse('<p>Hello beako!</p>')
+        let template = parse('<p>Hello beako!</p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -542,7 +542,7 @@ describe('Template Engine', function() {
 
       it('parse "/" and ">" in element', () => {
         {
-          const template = parse('<p>/</p>')
+          let template = parse('<p>/</p>')
           equal(template, {
             type: 'tree',
             children: [
@@ -557,7 +557,7 @@ describe('Template Engine', function() {
           })
         }
         {
-          const template = parse('<p>></p>')
+          let template = parse('<p>></p>')
           equal(template, {
             type: 'tree',
             children: [
@@ -574,7 +574,7 @@ describe('Template Engine', function() {
       })
 
       it('parse a element in Text Node', () => {
-        const template = parse('Hello <span>beako</span>!')
+        let template = parse('Hello <span>beako</span>!')
         equal(template, {
           type: 'tree',
           children: [
@@ -594,7 +594,7 @@ describe('Template Engine', function() {
 
     describe(': is', function() {
       it('parse: is', () => {
-        const template = parse('<p is="word-count"></p>')
+        let template = parse('<p is="word-count"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -607,7 +607,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: assign is', () => {
-        const template = parse('<p is:="is"></p>')
+        let template = parse('<p is:="is"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -629,7 +629,7 @@ describe('Template Engine', function() {
 
     describe(': class', function() {
       it('parse: class', () => {
-        const template = parse('<p class="class-a"></p>')
+        let template = parse('<p class="class-a"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -643,7 +643,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: multi classes', () => {
-        const template = parse('<p class="class-a" class="class-b class-c"></p>')
+        let template = parse('<p class="class-a" class="class-b class-c"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -657,7 +657,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign class only', () => {
-        const template = parse(`<p class:="'class-a'"></p>`)
+        let template = parse(`<p class:="'class-a'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -677,7 +677,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign array class only', () => {
-        const template = parse(`<p class:="['class-a']"></p>`)
+        let template = parse(`<p class:="['class-a']"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -700,7 +700,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign object class only', () => {
-        const template = parse(`<p class:="{ 'class-a': true, classb: false }"></p>`)
+        let template = parse(`<p class:="{ 'class-a': true, classb: false }"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -741,7 +741,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: multi assign classes', () => {
-        const template = parse(`<p class:="'class-a'" class:="'class-b'"></p>`)
+        let template = parse(`<p class:="'class-a'" class:="'class-b'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -770,7 +770,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: class and multi assign classes', () => {
-        const template = parse(`<p class="class-a" class:="'class-b'" class:="'class-c'"></p>`)
+        let template = parse(`<p class="class-a" class:="'class-b'" class:="'class-c'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -802,7 +802,7 @@ describe('Template Engine', function() {
 
     describe(': part', function() {
       it('parse: part', () => {
-        const template = parse('<p part="part-a"></p>')
+        let template = parse('<p part="part-a"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -816,7 +816,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: multi parts', () => {
-        const template = parse('<p part="part-a" part="part-b part-c"></p>')
+        let template = parse('<p part="part-a" part="part-b part-c"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -830,7 +830,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign part only', () => {
-        const template = parse(`<p part:="'part-a'"></p>`)
+        let template = parse(`<p part:="'part-a'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -850,7 +850,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign array part only', () => {
-        const template = parse(`<p part:="['part-a']"></p>`)
+        let template = parse(`<p part:="['part-a']"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -873,7 +873,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign object part only', () => {
-        const template = parse(`<p part:="{ 'part-a': true, partb: false }"></p>`)
+        let template = parse(`<p part:="{ 'part-a': true, partb: false }"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -914,7 +914,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: multi assign parts', () => {
-        const template = parse(`<p part:="'part-a'" part:="'part-b'"></p>`)
+        let template = parse(`<p part:="'part-a'" part:="'part-b'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -943,7 +943,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: part and multi assign parts', () => {
-        const template = parse(`<p part="part-a" part:="'part-b'" part:="'part-c'"></p>`)
+        let template = parse(`<p part="part-a" part:="'part-b'" part:="'part-c'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -975,7 +975,7 @@ describe('Template Engine', function() {
 
     describe(': style', function() {
       it('parse: style', () => {
-        const template = parse('<p style="color: red"></p>')
+        let template = parse('<p style="color: red"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -989,7 +989,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: multi styles', () => {
-        const template = parse('<p style="color: red" style="font-size: 16px"></p>')
+        let template = parse('<p style="color: red" style="font-size: 16px"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1010,7 +1010,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign style only', () => {
-        const template = parse(`<p style:="'color: red'"></p>`)
+        let template = parse(`<p style:="'color: red'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1033,7 +1033,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: multi assign styles', () => {
-        const template = parse(`<p style="color: red" style:="'margin-top: 5px'" style:="'margin: 0 auto'"></p>`)
+        let template = parse(`<p style="color: red" style:="'margin-top: 5px'" style:="'margin: 0 auto'"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1061,7 +1061,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: style and assign style', () => {
-        const template = parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`)
+        let template = parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1098,7 +1098,7 @@ describe('Template Engine', function() {
 
     describe(': attrs', function() {
       it('parse: attrs', () => {
-        const template = parse('<p id="beako"></p>')
+        let template = parse('<p id="beako"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1114,7 +1114,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign attrs variable', () => {
-        const template = parse(`<p id:="id"></p>`)
+        let template = parse(`<p id:="id"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1136,7 +1136,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: boolean attrs variable', () => {
-        const template = parse(`<p id&="id"></p>`)
+        let template = parse(`<p id&="id"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1158,7 +1158,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: ref attrs variable', () => {
-        const template = parse(`<p id*="id"></p>`)
+        let template = parse(`<p id*="id"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1177,7 +1177,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: assign attrs already variable', () => {
-        const template = parse(`<p id="id" id:="id"></p>`)
+        let template = parse(`<p id="id" id:="id"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1199,7 +1199,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: boolean attrs override attrs', () => {
-        const template = parse(`<p id="id" id&="id"></p>`)
+        let template = parse(`<p id="id" id&="id"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1221,7 +1221,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: boolean attrs override assign attrs', () => {
-        const template = parse(`<p id:="id" id&="id"></p>`)
+        let template = parse(`<p id:="id" id&="id"></p>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1243,7 +1243,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: multi attrs', () => {
-        const template = parse('<p id:="id" slot="my-slot"></p>')
+        let template = parse('<p id:="id" slot="my-slot"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1268,7 +1268,7 @@ describe('Template Engine', function() {
 
     describe(': on', function() {
       it('parse: on', () => {
-        const template = parse('<p onclick="value"></p>')
+        let template = parse('<p onclick="value"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1294,7 +1294,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: add ons', () => {
-        const template = parse('<p onclick="value" onclick="value2"></p>')
+        let template = parse('<p onclick="value" onclick="value2"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1330,7 +1330,7 @@ describe('Template Engine', function() {
         })
       })
       // it('parse: add reverse ons', () => {
-      //   const template = parse('<p onclick+="value2" onclick="value" onclick+1="value3"></p>')
+      //   let template = parse('<p onclick+="value2" onclick="value" onclick+1="value3"></p>')
       //   equal(template, {
       //     type: 'tree',
       //     children: [
@@ -1379,7 +1379,7 @@ describe('Template Engine', function() {
 
     describe(': @if', function() {
       it('parse: @if', () => {
-        const template = parse('<p @if="isActive"></p>')
+        let template = parse('<p @if="isActive"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1401,7 +1401,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @if @else', () => {
-        const template = parse('<p @if="isActive"></p><div @else></div>')
+        let template = parse('<p @if="isActive"></p><div @else></div>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1428,7 +1428,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: @if @else has space', () => {
-        const template = parse(`<p @if="isActive"></p>
+        let template = parse(`<p @if="isActive"></p>
           <div @else></div>`)
         equal(template, {
           type: 'tree',
@@ -1456,7 +1456,7 @@ describe('Template Engine', function() {
       })
       
       it('parse: @if @else has not space', () => {
-        const template = parse(`<p @if="isActive"></p>.<div @else></div>`)
+        let template = parse(`<p @if="isActive"></p>.<div @else></div>`)
         equal(template, {
           type: 'tree',
           children: [
@@ -1484,7 +1484,7 @@ describe('Template Engine', function() {
       })
 
       it('parse: @if @else chain', () => {
-        const template = parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>')
+        let template = parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1527,7 +1527,7 @@ describe('Template Engine', function() {
 
     describe(': @for', function() {
       it('parse: @for', () => {
-        const template = parse('<p @for="array"></p>')
+        let template = parse('<p @for="array"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1549,7 +1549,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @for @each', () => {
-        const template = parse('<p @for="array" @each="value"></p>')
+        let template = parse('<p @for="array" @each="value"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1575,7 +1575,7 @@ describe('Template Engine', function() {
 
     describe(': <group>', function() {
       it('parse: group', () => {
-        const template = parse('<group>Hello <span>beako</span></group>')
+        let template = parse('<group>Hello <span>beako</span></group>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1594,7 +1594,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: group has attrs', () => {
-        const template = parse('<group title="name" @as="header">Hello</group>')
+        let template = parse('<group title="name" @as="header">Hello</group>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1612,7 +1612,7 @@ describe('Template Engine', function() {
 
     describe(': combinate', function() {
       it('parse: @if and @for', () => {
-        const template = parse('<p @for="array" @if="isActive"></p>')
+        let template = parse('<p @for="array" @if="isActive"></p>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1644,7 +1644,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @if, @else and @for', () => {
-        const template = parse('<p @for="array" @if="isActive"></p><div @else></div>')
+        let template = parse('<p @for="array" @if="isActive"></p><div @else></div>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1680,7 +1680,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @if and <group>', () => {
-        const template = parse('<group @if="isActive">Hello</group>')
+        let template = parse('<group @if="isActive">Hello</group>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1702,7 +1702,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @if, @else and <group>', () => {
-        const template = parse('<p @if="isActive"></p><group @else>Hello</group>')
+        let template = parse('<p @if="isActive"></p><group @else>Hello</group>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1728,7 +1728,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @for and <group>', () => {
-        const template = parse('<group @for="array">Hello</group>')
+        let template = parse('<group @for="array">Hello</group>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1750,7 +1750,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @if, @for and <group>', () => {
-        const template = parse('<group @for="array" @if="isActive">Hello</group>')
+        let template = parse('<group @for="array" @if="isActive">Hello</group>')
         equal(template, {
           type: 'tree',
           children: [
@@ -1787,7 +1787,7 @@ describe('Template Engine', function() {
   describe('evaluate()', function() {
     describe(': text', function() {
       it('evaluate Text Node', () => {
-        const tree = evaluate(parse('Hello beako!'), [])
+        let tree = evaluate(parse('Hello beako!'), [])
         equal(tree, {
           children: [
             "Hello beako!"
@@ -1796,7 +1796,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate unicode', () => {
-        const tree = evaluate(parse('مرحبا ベア子😆'), [])
+        let tree = evaluate(parse('مرحبا ベア子😆'), [])
         equal(tree, {
           children: [
             "مرحبا ベア子😆"
@@ -1805,7 +1805,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate a variable in Text Node', () => {
-        const tree = evaluate(parse('Hello {{ name }}!'), [{ name: 'beako' }])
+        let tree = evaluate(parse('Hello {{ name }}!'), [{ name: 'beako' }])
         equal(tree, {
           children: [
             "Hello beako!"
@@ -1814,7 +1814,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate Text Node in element', () => {
-        const tree = evaluate(parse('<p>Hello beako!</p>'))
+        let tree = evaluate(parse('<p>Hello beako!</p>'))
         equal(tree, {
           children: [
             {
@@ -1828,7 +1828,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate a element in Text Node', () => {
-        const tree = evaluate(parse('Hello <span>beako</span>!'))
+        let tree = evaluate(parse('Hello <span>beako</span>!'))
         equal(tree, {
           children: [
             "Hello ",
@@ -1846,7 +1846,7 @@ describe('Template Engine', function() {
 
     describe(': tag', function() {
       it('evaluate omitted tag', () => {
-        const tree = evaluate(parse('<br><test />'))
+        let tree = evaluate(parse('<br><test />'))
         equal(tree, {
           children: [
             { tag: "br" },
@@ -1856,19 +1856,19 @@ describe('Template Engine', function() {
       })
 
       it('evaluate window tag', () => {
-        const tree = evaluate(parse('<window />'))
+        let tree = evaluate(parse('<window />'))
         equal(tree.children[0].el === window, true)
       })
 
       it('evaluate real element', () => {
-        const test = document.createElement('div')
-        const tree = evaluate(parse('<test />'), [{ test }])
+        let test = document.createElement('div')
+        let tree = evaluate(parse('<test />'), [{ test }])
         equal(tree.children[0].el === test, true)
       })
 
       it('evaluate real element has children', () => {
-        const test = document.createElement('div')
-        const tree = evaluate(parse('<test>beako</test>'), [{ test }])
+        let test = document.createElement('div')
+        let tree = evaluate(parse('<test>beako</test>'), [{ test }])
         equal(tree, {
           children: [
             {
@@ -1881,8 +1881,8 @@ describe('Template Engine', function() {
       })
 
       it('evaluate real element @override', () => {
-        const test = document.createElement('div')
-        const tree = evaluate(parse('<test @override />'), [{ test }])
+        let test = document.createElement('div')
+        let tree = evaluate(parse('<test @override />'), [{ test }])
         equal(tree, {
           children: [
             {
@@ -1897,8 +1897,8 @@ describe('Template Engine', function() {
       })
 
       it('evaluate real element has children @override', () => {
-        const test = document.createElement('div')
-        const tree = evaluate(parse('<test @override>beako</test>'), [{ test }])
+        let test = document.createElement('div')
+        let tree = evaluate(parse('<test @override>beako</test>'), [{ test }])
         equal(tree, {
           children: [
             {
@@ -1913,7 +1913,7 @@ describe('Template Engine', function() {
 
     describe(': is', function() {
       it('parse: is', () => {
-        const tree = evaluate(parse('<p is="word-count"></p>'))
+        let tree = evaluate(parse('<p is="word-count"></p>'))
         equal(tree, {
           children: [
             {
@@ -1924,7 +1924,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: assign is', () => {
-        const tree = evaluate(parse('<p is:="is"></p>'), [{ is: 'word-count' }])
+        let tree = evaluate(parse('<p is:="is"></p>'), [{ is: 'word-count' }])
         equal(tree, {
           children: [
             {
@@ -1938,7 +1938,7 @@ describe('Template Engine', function() {
 
     describe(': class', function() {
       it('evaluate: class', () => {
-        const tree = evaluate(parse('<p class="class-a"></p>'))
+        let tree = evaluate(parse('<p class="class-a"></p>'))
         equal(tree, {
           children: [
             {
@@ -1950,7 +1950,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: multi classes', () => {
-        const tree = evaluate(parse('<p class="class-a" class="class-b class-c"></p>'))
+        let tree = evaluate(parse('<p class="class-a" class="class-b class-c"></p>'))
         equal(tree, {
           children: [
             {
@@ -1962,7 +1962,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: assign class only', () => {
-        const tree = evaluate(parse(`<p class:="'class-a'"></p>`))
+        let tree = evaluate(parse(`<p class:="'class-a'"></p>`))
         equal(tree, {
           children: [
             {
@@ -1974,7 +1974,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: assign array class only', () => {
-        const tree = evaluate(parse(`<p class:="['class-a']"></p>`))
+        let tree = evaluate(parse(`<p class:="['class-a']"></p>`))
         equal(tree, {
           children: [
             {
@@ -1986,7 +1986,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: assign object class only', () => {
-        const tree = evaluate(parse(`<p class:="{ 'class-a': true, classb: false }"></p>`))
+        let tree = evaluate(parse(`<p class:="{ 'class-a': true, classb: false }"></p>`))
         equal(tree, {
           children: [
             {
@@ -1997,7 +1997,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: multi assign classes', () => {
-        const tree = evaluate(parse(`<p class:="'class-a'" class:="'class-b'"></p>`))
+        let tree = evaluate(parse(`<p class:="'class-a'" class:="'class-b'"></p>`))
         equal(tree, {
           children: [
             {
@@ -2009,7 +2009,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: class and multi assign classes', () => {
-        const tree = evaluate(parse(`<p class="class-a" class:="'class-b'" class:="'class-c'"></p>`))
+        let tree = evaluate(parse(`<p class="class-a" class:="'class-b'" class:="'class-c'"></p>`))
         equal(tree, {
           children: [
             {
@@ -2023,7 +2023,7 @@ describe('Template Engine', function() {
 
     describe(': part', function() {
       it('evaluate: part', () => {
-        const tree = evaluate(parse('<p part="part-a"></p>'))
+        let tree = evaluate(parse('<p part="part-a"></p>'))
         equal(tree, {
           children: [
             {
@@ -2035,7 +2035,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: multi parts', () => {
-        const tree = evaluate(parse('<p part="part-a" part="part-b part-c"></p>'))
+        let tree = evaluate(parse('<p part="part-a" part="part-b part-c"></p>'))
         equal(tree, {
           children: [
             {
@@ -2047,7 +2047,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: assign part only', () => {
-        const tree = evaluate(parse(`<p part:="'part-a'"></p>`))
+        let tree = evaluate(parse(`<p part:="'part-a'"></p>`))
         equal(tree, {
           children: [
             {
@@ -2059,7 +2059,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: assign array part only', () => {
-        const tree = evaluate(parse(`<p part:="['part-a']"></p>`))
+        let tree = evaluate(parse(`<p part:="['part-a']"></p>`))
         equal(tree, {
           children: [
             {
@@ -2071,7 +2071,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: assign object part only', () => {
-        const tree = evaluate(parse(`<p part:="{ 'part-a': true, partb: false }"></p>`))
+        let tree = evaluate(parse(`<p part:="{ 'part-a': true, partb: false }"></p>`))
         equal(tree, {
           children: [
             {
@@ -2082,7 +2082,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: multi assign parts', () => {
-        const tree = evaluate(parse(`<p part:="'part-a'" part:="'part-b'"></p>`))
+        let tree = evaluate(parse(`<p part:="'part-a'" part:="'part-b'"></p>`))
         equal(tree, {
           children: [
             {
@@ -2094,7 +2094,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: part and multi assign parts', () => {
-        const tree = evaluate(parse(`<p part="part-a" part:="'part-b'" part:="'part-c'"></p>`))
+        let tree = evaluate(parse(`<p part="part-a" part:="'part-b'" part:="'part-c'"></p>`))
         equal(tree, {
           children: [
             {
@@ -2108,7 +2108,7 @@ describe('Template Engine', function() {
 
     describe(': style', function() {
       it('evaluate: style', () => {
-        const tree = evaluate(parse('<p style="color: red"></p>'))
+        let tree = evaluate(parse('<p style="color: red"></p>'))
         equal(tree, {
           children: [
             {
@@ -2120,7 +2120,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: multi styles', () => {
-        const tree = evaluate(parse(`<p style="color: red" style="margin-top: 5px"></p>`))
+        let tree = evaluate(parse(`<p style="color: red" style="margin-top: 5px"></p>`))
         equal(tree, {
           children: [
             {
@@ -2132,7 +2132,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: add style only', () => {
-        const tree = evaluate(parse(`<p style:="'color: red'"></p>`))
+        let tree = evaluate(parse(`<p style:="'color: red'"></p>`))
         equal(tree, {
           children: [
             {
@@ -2144,7 +2144,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: multi assign styles', () => {
-        const tree = evaluate(parse(`<p style="color: red" style:="'margin-top: 5px'" style:="'margin: 0 auto'"></p>`))
+        let tree = evaluate(parse(`<p style="color: red" style:="'margin-top: 5px'" style:="'margin: 0 auto'"></p>`))
         equal(tree, {
           children: [
             {
@@ -2156,7 +2156,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: assign style', () => {
-        const tree = evaluate(parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
+        let tree = evaluate(parse(`<p style="color: red" style:="\`margin-top: \${x}px\`"></p>`), [{ x: 10 }])
         equal(tree, {
           children: [
             {
@@ -2170,7 +2170,7 @@ describe('Template Engine', function() {
 
     describe(': attrs', function() {
       it('evaluate: attrs', () => {
-        const tree = evaluate(parse('<p id="beako"></p>'))
+        let tree = evaluate(parse('<p id="beako"></p>'))
         equal(tree, {
           children: [
             {
@@ -2184,7 +2184,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: add attrs variable', () => {
-        const tree = evaluate(parse(`<p id:="id"></p>`), [{ id: 'beako' }])
+        let tree = evaluate(parse(`<p id:="id"></p>`), [{ id: 'beako' }])
         equal(tree, {
           children: [
             {
@@ -2198,7 +2198,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: multi attrs is not string', () => {
-        const tree = evaluate(parse('<p value:="value"></p>'), [{ value: 10 }])
+        let tree = evaluate(parse('<p value:="value"></p>'), [{ value: 10 }])
         equal(tree, {
           children: [
             {
@@ -2212,7 +2212,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: boolean attrs truthy', () => {
-        const tree = evaluate(parse(`<p id&="1"></p>`))
+        let tree = evaluate(parse(`<p id&="1"></p>`))
         equal(tree, {
           children: [
             {
@@ -2226,7 +2226,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: boolean attrs falsy', () => {
-        const tree = evaluate(parse(`<p id&="0"></p>`))
+        let tree = evaluate(parse(`<p id&="0"></p>`))
         equal(tree, {
           children: [
             {
@@ -2237,7 +2237,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: ref attrs', () => {
-        const tree = evaluate(parse(`<p id*="x"></p>`), { x: 1 })
+        let tree = evaluate(parse(`<p id*="x"></p>`), { x: 1 })
         console.log('tree:', tree, {
           children: [
             {
@@ -2261,7 +2261,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: multi attrs', () => {
-        const tree = evaluate(parse('<p id:="id" slot="my-slot" value:="value"></p>'), [{ id: 'beako', value: 10 }])
+        let tree = evaluate(parse('<p id:="id" slot="my-slot" value:="value"></p>'), [{ id: 'beako', value: 10 }])
         equal(tree, {
           children: [
             {
@@ -2279,65 +2279,65 @@ describe('Template Engine', function() {
 
     describe(': @if', function() {
       it('evaluate: @if is true', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p>'), [{ isActive: true }])
+        let tree = evaluate(parse('<p @if="isActive"></p>'), [{ isActive: true }])
         equal(tree, {
           children: [{ tag: "p" }]
         })
       })
       it('evaluate: @if is false', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p>'), [{ isActive: false }])
+        let tree = evaluate(parse('<p @if="isActive"></p>'), [{ isActive: false }])
         equal(tree, {})
       })
       it('evaluate: @if is true @else', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p><div @else></div>'), [{ isActive: true }])
+        let tree = evaluate(parse('<p @if="isActive"></p><div @else></div>'), [{ isActive: true }])
         equal(tree, {
           children: [{ tag: "p" }]
         })
       })
       it('evaluate: @if is false @else', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p><div @else></div>'), [{ isActive: false }])
+        let tree = evaluate(parse('<p @if="isActive"></p><div @else></div>'), [{ isActive: false }])
         equal(tree, {
           children: [{ tag: "div" }]
         })
       })
       it('evaluate: @if @else chain / true true', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: true, isNext: true }])
+        let tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: true, isNext: true }])
         equal(tree, {
           children: [{ tag: "p" }]
         })
       })
       it('evaluate: @if @else chain / false true', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: false, isNext: true }])
+        let tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: false, isNext: true }])
         equal(tree, {
           children: [{ tag: "div" }]
         })
       })
       it('evaluate: @if @else chain / false false', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: false, isNext: false }])
+        let tree = evaluate(parse('<p @if="isActive"></p><div @else @if="isNext"></div><h2 @else></h2>'), [{ isActive: false, isNext: false }])
         equal(tree, {
           children: [{ tag: "h2" }]
         })
       })
       it('evaluate: @if with text is false', () => {
-        const tree = evaluate(parse('text<span @if="isActive"></span> text'), [{ isActive: false }])
+        let tree = evaluate(parse('text<span @if="isActive"></span> text'), [{ isActive: false }])
         equal(tree, {
           children: ['text', 2, ' text']
         })
       })
       it('evaluate: @if with text is true', () => {
-        const tree = evaluate(parse('text<span @if="isActive"></span> text'), [{ isActive: true }])
+        let tree = evaluate(parse('text<span @if="isActive"></span> text'), [{ isActive: true }])
         equal(tree, {
           children: ['text', { tag: "span" }, 2, ' text']
         })
       })
       it('evaluate: @if @else with text is false', () => {
-        const tree = evaluate(parse('text<span @if="isActive"></span> <b @else></b> text'), [{ isActive: false }])
+        let tree = evaluate(parse('text<span @if="isActive"></span> <b @else></b> text'), [{ isActive: false }])
         equal(tree, {
           children: ['text', { tag: "b" }, 2, ' text']
         })
       })
       it('evaluate: @if @else with text is true', () => {
-        const tree = evaluate(parse('text<span @if="isActive"></span> <b @else></b> text'), [{ isActive: true }])
+        let tree = evaluate(parse('text<span @if="isActive"></span> <b @else></b> text'), [{ isActive: true }])
         equal(tree, {
           children: ['text', { tag: "span" }, 2, ' text']
         })
@@ -2346,7 +2346,7 @@ describe('Template Engine', function() {
 
     describe(': @for', function() {
       it('evaluate: @for array', () => {
-        const tree = evaluate(parse('<p @for="array"></p>'), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse('<p @for="array"></p>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             { tag: "p" },
@@ -2356,11 +2356,11 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for array empty', () => {
-        const tree = evaluate(parse('<p @for="array"></p>'), [{ array: [] }])
+        let tree = evaluate(parse('<p @for="array"></p>'), [{ array: [] }])
         equal(tree, {})
       })
       it('evaluate: @for array: @each', () => {
-        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -2379,7 +2379,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for array: loop', () => {
-        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -2398,7 +2398,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for object: @each', () => {
-        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
         equal(tree, {
           children: [
             {
@@ -2417,7 +2417,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for object: loop', () => {
-        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
+        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
         equal(tree, {
           children: [
             {
@@ -2436,7 +2436,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for Set: @each', () => {
-        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
         equal(tree, {
           children: [
             {
@@ -2455,7 +2455,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for Set: loop', () => {
-        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
+        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
         equal(tree, {
           children: [
             {
@@ -2474,7 +2474,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for Map: @each', () => {
-        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
         equal(tree, {
           children: [
             {
@@ -2493,7 +2493,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for Map: loop', () => {
-        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
+        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
         equal(tree, {
           children: [
             {
@@ -2517,7 +2517,7 @@ describe('Template Engine', function() {
             yield 'y'
             yield 'z'
         }
-        const tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: generate() }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: generate() }])
         equal(tree, {
           children: [
             {
@@ -2541,7 +2541,7 @@ describe('Template Engine', function() {
             yield 'y'
             yield 'z'
         }
-        const tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: generate() }])
+        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: generate() }])
         equal(tree, {
           children: [
             {
@@ -2560,7 +2560,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for with text', () => {
-        const tree = evaluate(parse('a<p @for="array"></p> b'), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse('a<p @for="array"></p> b'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             'a',
@@ -2573,7 +2573,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for empty with text', () => {
-        const tree = evaluate(parse('a<p @for="array"></p> b'), [{ array: [] }])
+        let tree = evaluate(parse('a<p @for="array"></p> b'), [{ array: [] }])
         equal(tree, {
           children: [
             'a',
@@ -2583,7 +2583,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for nested', () => {
-        const tree = evaluate(parse('<p @for="array1"><span @for="array2">{{ loop.value }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        let tree = evaluate(parse('<p @for="array1"><span @for="array2">{{ loop.value }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
         equal(tree, {
           children: [
             {
@@ -2604,7 +2604,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for nested @each', () => {
-        const tree = evaluate(parse('<p @for="array1" @each="x"><span @for="array2" @each="y">{{ x * y }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        let tree = evaluate(parse('<p @for="array1" @each="x"><span @for="array2" @each="y">{{ x * y }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
         equal(tree, {
           children: [
             {
@@ -2625,7 +2625,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for nested loop', () => {
-        const tree = evaluate(parse('<p @for="array1"><span @for="array2">{{ loop.parent.value * loop.value }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        let tree = evaluate(parse('<p @for="array1"><span @for="array2">{{ loop.parent.value * loop.value }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
         equal(tree, {
           children: [
             {
@@ -2649,11 +2649,11 @@ describe('Template Engine', function() {
 
     describe(': <group>', function() {
       it('evaluate: group only', () => {
-        const tree = evaluate(parse('<group></group>'))
+        let tree = evaluate(parse('<group></group>'))
         equal(tree, {})
       })
       it('evaluate: group', () => {
-        const tree = evaluate(parse('<group>Hello <span>beako</span></group>'))
+        let tree = evaluate(parse('<group>Hello <span>beako</span></group>'))
         equal(tree, {
           children: [
             "Hello ",
@@ -2665,7 +2665,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: group chain', () => {
-        const tree = evaluate(parse('<group>Hello <group>beako</group>!</group>'))
+        let tree = evaluate(parse('<group>Hello <group>beako</group>!</group>'))
         equal(tree, {
           children: [ "Hello ", "beako", 3, '!' ]
         })
@@ -2674,14 +2674,14 @@ describe('Template Engine', function() {
 
     describe(': expand', function() {
       it('evaluate: expand no template', () => {
-        const tree = evaluate(parse('<p>{{ template }}</p>'))
+        let tree = evaluate(parse('<p>{{ template }}</p>'))
         equal(tree, {
           children: [{ tag: "p" }]
         })
       })
       it('evaluate: expand template', () => {
-        const template = parse('<div></div>')
-        const tree = evaluate(parse('<p>{{ template }}</p>'), [{ template }])
+        let template = parse('<div></div>')
+        let tree = evaluate(parse('<p>{{ template }}</p>'), [{ template }])
         equal(tree, {
           children: [{
             tag: "p",
@@ -2690,15 +2690,15 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: expand template in group', () => {
-        const template = parse('<div></div>')
-        const tree = evaluate(parse('<group>{{ template }}</group>'), [{ template }])
+        let template = parse('<div></div>')
+        let tree = evaluate(parse('<group>{{ template }}</group>'), [{ template }])
         equal(tree, {
           children: [{ tag: "div" }]
         })
       })
       it('evaluate: expand template assign data', () => {
-        const template = parse('<div>{{ name }}</div>')
-        const tree = evaluate(parse('<p>{{ template }}</p>'), [{ template, name: 'beako' }])
+        let template = parse('<div>{{ name }}</div>')
+        let tree = evaluate(parse('<p>{{ template }}</p>'), [{ template, name: 'beako' }])
         equal(tree, {
           children: [{
             tag: "p",
@@ -2710,9 +2710,9 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: expand template chain', () => {
-        const template1 = parse('<div>{{ template2 }}</div>')
-        const template2 = parse('<h2></h2>')
-        const tree = evaluate(parse('<p>{{ template1 }}</p>'), [{ template1, template2 }])
+        let template1 = parse('<div>{{ template2 }}</div>')
+        let template2 = parse('<h2></h2>')
+        let tree = evaluate(parse('<p>{{ template1 }}</p>'), [{ template1, template2 }])
         equal(tree, {
           children: [{
             tag: "p",
@@ -2724,14 +2724,14 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: expand no template with text', () => {
-        const tree = evaluate(parse('<p>{{ template1 }}</p> b'))
+        let tree = evaluate(parse('<p>{{ template1 }}</p> b'))
         equal(tree, {
           children: [{ tag: "p" }, ' b']
         })
       })
       it('evaluate: @if true and expand template', () => {
-        const template = parse('<div></div>')
-        const tree = evaluate(parse('<p @if="isActive">{{ template }}</p>'), [{ template, isActive: true }])
+        let template = parse('<div></div>')
+        let tree = evaluate(parse('<p @if="isActive">{{ template }}</p>'), [{ template, isActive: true }])
         equal(tree, {
           children: [{
             tag: "p",
@@ -2743,7 +2743,7 @@ describe('Template Engine', function() {
 
     describe(': combinate', function() {
       it('evaluate: @if and @for', () => {
-        const tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p>`), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -2758,7 +2758,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @if, @else and @for', () => {
-        const tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p><div @else>{{ loop.value }}</div>`), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p><div @else>{{ loop.value }}</div>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -2777,41 +2777,41 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @if true and <group>', () => {
-        const tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: true }])
+        let tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: true }])
         equal(tree, {
           children: ["Hello"]
         })
       })
       it('evaluate: @if false and <group>', () => {
-        const tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: false }])
+        let tree = evaluate(parse('<group @if="isActive">Hello</group>'), [{ isActive: false }])
         equal(tree, {})
       })
       it('evaluate: @if true, @else and <group>', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: true }])
+        let tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: true }])
         equal(tree, {
           children: [{ tag: "p", }]
         })
       })
       it('evaluate: @if false, @else and <group>', () => {
-        const tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: false }])
+        let tree = evaluate(parse('<p @if="isActive"></p><group @else>Hello</group>'), [{ isActive: false }])
         equal(tree, {
           children: ["Hello"]
         })
       })
       it('evaluate: @for and <group>', () => {
-        const tree = evaluate(parse('<group @for="array">{{ loop.value }}</group>'), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse('<group @for="array">{{ loop.value }}</group>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: ["x", "y", "z"]
         })
       })
       it('evaluate: @if, @for and <group>', () => {
-        const tree = evaluate(parse(`<group @for="array" @if="loop.value !== 'y'">{{ loop.value }}</group>`), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse(`<group @for="array" @if="loop.value !== 'y'">{{ loop.value }}</group>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: ["x", "z"]
         })
       })
       it('evaluate: @if with text in @for and <group>', () => {
-        const tree = evaluate(parse(`<group @for="array"><p @if="loop.value !== 'y'">{{ loop.value }}</p> b</group>`), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse(`<group @for="array"><p @if="loop.value !== 'y'">{{ loop.value }}</p> b</group>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -2831,12 +2831,12 @@ describe('Template Engine', function() {
 
     })
     describe(': @for', function() {
-      const xx = { name: 'xx' }
-      const yy = { name: 'yy' }
-      const zz = { name: 'zz' }
-      const collection = [xx, yy, zz]
+      let xx = { name: 'xx' }
+      let yy = { name: 'yy' }
+      let zz = { name: 'zz' }
+      let collection = [xx, yy, zz]
       it('evaluate: collection: @for array', () => {
-        const tree = evaluate(parse('<p @for="collection" @each="user">{{ user.name }}</p>'), [{ collection }])
+        let tree = evaluate(parse('<p @for="collection" @each="user">{{ user.name }}</p>'), [{ collection }])
         equal(tree, {
           children: [
             { tag: "p", key: xx, children: ['xx'] },
@@ -2846,7 +2846,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: collection: @for array loop', () => {
-        const tree = evaluate(parse('<p @for="collection">{{ loop.value.name }}</p>'), [{ collection }])
+        let tree = evaluate(parse('<p @for="collection">{{ loop.value.name }}</p>'), [{ collection }])
         equal(tree, {
           children: [
             { tag: "p", key: xx, children: ['xx'] },
@@ -2856,7 +2856,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: collection: @for and <group> elements', () => {
-        const tree = evaluate(parse('<group @for="collection"><span>{{ loop.key }}</span><span>{{ loop.value.name }}</span></group>'), [{ collection }])
+        let tree = evaluate(parse('<group @for="collection"><span>{{ loop.key }}</span><span>{{ loop.value.name }}</span></group>'), [{ collection }])
         equal(tree, {
           children: [
             { tag: "span", children: ["0"], key: xx },
@@ -2871,7 +2871,7 @@ describe('Template Engine', function() {
     })
     describe(': comment', function() {
       it('evaluate: html comment', () => {
-        const tree = evaluate(parse('<!-- <p></p> --><span></span>'))
+        let tree = evaluate(parse('<!-- <p></p> --><span></span>'))
         equal(tree, {
           children: [
             { tag: "span" },
@@ -2879,7 +2879,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: html comment multi line', () => {
-        const tree = evaluate(parse(`<!-- <p>
+        let tree = evaluate(parse(`<!-- <p>
           </p> --><span></span>`))
         equal(tree, {
           children: [
@@ -2890,7 +2890,7 @@ describe('Template Engine', function() {
     })
   })
   describe('Future support', function() {
-    const stack = {
+    let stack = {
       x: 1,
       y: 10,
       s: 'o',
@@ -2900,10 +2900,10 @@ describe('Template Engine', function() {
       f: () => 5,
       add: (a, b) => a + b
     }
-    const xx = { name: 'xx' }
-    const yy = { name: 'yy' }
-    const zz = { name: 'zz' }
-    const collection = [xx, yy, zz]
+    let xx = { name: 'xx' }
+    let yy = { name: 'yy' }
+    let zz = { name: 'zz' }
+    let collection = [xx, yy, zz]
 
     it('expression: number: integer hexadecimal', () => {
       equal(evaluate(expression('0x000'), [stack]), 0x000)
@@ -2935,7 +2935,7 @@ describe('Template Engine', function() {
     })
 
     it('expression: destructuring assignment', () => {
-      const local = {
+      let local = {
         obj: { x: 0, y: 0 }
       }
       evaluate(expression('{ x, y: z } = h'), [local])
@@ -2948,7 +2948,7 @@ describe('Template Engine', function() {
     })
 
     it('expression: destructuring assignment', () => {
-      const local = {
+      let local = {
         obj: { x: 0 }
       }
       evaluate(expression('delete obj.x'), [local])
@@ -2960,7 +2960,7 @@ describe('Template Engine', function() {
     })
 
     it('evaluate: collection: @for @each destructuring assignment', () => {
-      const tree = evaluate(parse('<p @for="collection" @each="{ name }">{{ name }}</p>'), [{ collection }])
+      let tree = evaluate(parse('<p @for="collection" @each="{ name }">{{ name }}</p>'), [{ collection }])
       equal(tree, {
         children: [
           { tag: "p", key: xx, children: ['xx'] },
@@ -2979,7 +2979,7 @@ describe('Template Engine', function() {
     })
   })
   describe('Not support', function() {
-    const stack = {
+    let stack = {
       x: 1,
       y: 10,
       s: 'o',

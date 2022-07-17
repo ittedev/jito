@@ -1,6 +1,6 @@
 import { lock } from '../data_binding/lock.ts'
 
-export const builtin = lock({
+export let builtin = lock({
   alert,
   console,
   Object,

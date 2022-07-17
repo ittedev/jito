@@ -25,7 +25,7 @@ Beako.js use ES Modules from jsDelivr.
 <script type="module">
   import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@0.16.0/beako.js'
 
-  const state = watch({
+  let state = watch({
     count: 1
   })
 
@@ -40,7 +40,7 @@ Beako.js use ES Modules from jsDelivr.
 ```ts
 import { watch, mount } from 'https://deno.land/x/beako@0.16.0/mod.ts'
 
-const state = watch({
+let state = watch({
   count: 1
 })
 

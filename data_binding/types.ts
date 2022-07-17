@@ -27,5 +27,5 @@ export type Callback = RecursiveCallback | TargetCallback
 export interface BeakoObject {
   [key: string]: unknown
   [dictionary]: Dictionary
-  [isLocked]: unknown
+  [isLocked: symbol]: unknown
 }

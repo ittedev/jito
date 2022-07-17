@@ -37,32 +37,32 @@ customElements.define('y-y', YY, { extends: "div" })
 describe('Virtual Dom', function() {
   describe('load()', function() {
     it('load body', () => {
-      const doc = new DOMParser().parseFromString(`<body></body>`, 'text/html')
-      const vtree = load(doc.body)
+      let doc = new DOMParser().parseFromString(`<body></body>`, 'text/html')
+      let vtree = load(doc.body)
       equal(vtree, {
         el: {}
       })
     })
 
     it('load body class', () => {
-      const doc = new DOMParser().parseFromString(`<body class="class-a class-b"></body>`, 'text/html')
-      const vtree = load(doc.body)
+      let doc = new DOMParser().parseFromString(`<body class="class-a class-b"></body>`, 'text/html')
+      let vtree = load(doc.body)
       equal(vtree, {
         el: {}
       })
     })
 
     it('load body part', () => {
-      const doc = new DOMParser().parseFromString(`<body part="part-a part-b"></body>`, 'text/html')
-      const vtree = load(doc.body)
+      let doc = new DOMParser().parseFromString(`<body part="part-a part-b"></body>`, 'text/html')
+      let vtree = load(doc.body)
       equal(vtree, {
         el: {}
       })
     })
 
     it('load single element', () => {
-      const doc = new DOMParser().parseFromString(`<p></p>`, 'text/html')
-      const vtree = load(doc.body)
+      let doc = new DOMParser().parseFromString(`<p></p>`, 'text/html')
+      let vtree = load(doc.body)
       equal(vtree, {
         children: [
           {
@@ -75,18 +75,18 @@ describe('Virtual Dom', function() {
     })
 
     it('load multi element', () => {
-      const doc = new DOMParser().parseFromString(`<p></p><p></p>`, 'text/html')
-      const vtree = load(doc.body)
+      let doc = new DOMParser().parseFromString(`<p></p><p></p>`, 'text/html')
+      let vtree = load(doc.body)
     })
 
     it('load style element', () => {
-      const doc = new DOMParser().parseFromString(`<style>a { color: red; }</style>`, 'text/html')
-      const vtree = load(doc.body)
+      let doc = new DOMParser().parseFromString(`<style>a { color: red; }</style>`, 'text/html')
+      let vtree = load(doc.body)
     })
 
     it('load script element', () => {
-      const doc = new DOMParser().parseFromString(`<script>alert('hello');<\/script>`, 'text/html')
-      const vtree = load(doc.body)
+      let doc = new DOMParser().parseFromString(`<script>alert('hello');<\/script>`, 'text/html')
+      let vtree = load(doc.body)
       equal(vtree, {
         el: {}
       })
@@ -98,10 +98,10 @@ describe('Virtual Dom', function() {
   describe('patch()', function() {
     describe(': element', function() {
       it('patch add tag', () => {
-        const parent = document.createElement('div')
-        const tree = { el: parent }
-        const newTree = { children: [{ tag: 'p' }] }
-        const patchedTree = patch(tree, newTree)
+        let parent = document.createElement('div')
+        let tree = { el: parent }
+        let newTree = { children: [{ tag: 'p' }] }
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             tag: 'p',
@@ -113,12 +113,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove tag', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ tag: 'div', el }] }
-        const newTree = {}
-        const patchedTree = patch(tree, newTree)
+        let tree = { el: parent, children: [{ tag: 'div', el }] }
+        let newTree = {}
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           el: {}
         })
@@ -126,12 +126,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch change tag', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ tag: 'div', el }] }
-        const newTree = { children: [{ tag: 'p' }] }
-        const patchedTree = patch(tree, newTree)
+        let tree = { el: parent, children: [{ tag: 'div', el }] }
+        let newTree = { children: [{ tag: 'p' }] }
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             tag: 'p',
@@ -145,12 +145,12 @@ describe('Virtual Dom', function() {
 
     describe(': is', function() {
       it('patch new is', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ tag: 'div', el }] }
-        const newTree = { children: [{ tag: 'div', is: 'x-x' }] }
-        const patchedTree = patch(tree, newTree)
+        let tree = { el: parent, children: [{ tag: 'div', el }] }
+        let newTree = { children: [{ tag: 'div', is: 'x-x' }] }
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             tag: 'div',
@@ -164,12 +164,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch change is', () => {
-        const parent = document.createElement('div', { is : 'x-x' })
-        const el = document.createElement('div')
+        let parent = document.createElement('div', { is : 'x-x' })
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ tag: 'div', is: 'x-x', el }] }
-        const newTree = { children: [{ tag: 'div', is: 'y-y' }] }
-        const patchedTree = patch(tree, newTree)
+        let tree = { el: parent, children: [{ tag: 'div', is: 'x-x', el }] }
+        let newTree = { children: [{ tag: 'div', is: 'y-y' }] }
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             tag: 'div',
@@ -183,12 +183,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove is', () => {
-        const parent = document.createElement('div', { is : 'x-x' })
-        const el = document.createElement('div')
+        let parent = document.createElement('div', { is : 'x-x' })
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ tag: 'div', is: 'x-x', el }] }
-        const newTree = { children: [{ tag: 'div' }] }
-        const patchedTree = patch(tree, newTree)
+        let tree = { el: parent, children: [{ tag: 'div', is: 'x-x', el }] }
+        let newTree = { children: [{ tag: 'div' }] }
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             tag: 'div',
@@ -203,11 +203,11 @@ describe('Virtual Dom', function() {
 
     describe(': class', function() {
       it('patch new class', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ tag: 'div', el }] }
-        const newTree = { children: [{ tag: 'div', class: ['class-a'] }] }
+        let tree = { el: parent, children: [{ tag: 'div', el }] }
+        let newTree = { children: [{ tag: 'div', class: ['class-a'] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -221,12 +221,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add class', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.classList.add('class-a')
-        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a'], el }] }
-        const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'] }] }
+        let tree = { el: parent, children: [{ tag: 'div', class: ['class-a'], el }] }
+        let newTree = { children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -240,12 +240,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove class', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.classList.add('class-a', 'class-b', 'class-c')
-        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
-        const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-c'] }] }
+        let tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
+        let newTree = { children: [{ tag: 'div', class: ['class-a', 'class-c'] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -259,12 +259,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove all class', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.classList.add('class-a', 'class-b', 'class-c')
-        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
-          const newTree = { children: [{ tag: 'div' }] }
+        let tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
+          let newTree = { children: [{ tag: 'div' }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -277,12 +277,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch set empty class', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.classList.add('class-a', 'class-b', 'class-c')
-        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
-        const newTree = { children: [{ tag: 'div', class: [] }] }
+        let tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b', 'class-c'], el }] }
+        let newTree = { children: [{ tag: 'div', class: [] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -295,12 +295,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch no change class', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.classList.add('class-a', 'class-b')
-        const tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b'], el }] }
-        const newTree = { children: [{ tag: 'div', class: ['class-a', 'class-b'] }] }
+        let tree = { el: parent, children: [{ tag: 'div', class: ['class-a', 'class-b'], el }] }
+        let newTree = { children: [{ tag: 'div', class: ['class-a', 'class-b'] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -316,11 +316,11 @@ describe('Virtual Dom', function() {
 
     describe(': part', function() {
       it('patch new part', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ tag: 'div', el }] }
-        const newTree = { children: [{ tag: 'div', part: ['part-a'] }] }
+        let tree = { el: parent, children: [{ tag: 'div', el }] }
+        let newTree = { children: [{ tag: 'div', part: ['part-a'] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -334,12 +334,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add part', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.part.add('part-a')
-        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a'], el }] }
-        const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'] }] }
+        let tree = { el: parent, children: [{ tag: 'div', part: ['part-a'], el }] }
+        let newTree = { children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -353,12 +353,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove part', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.part.add('part-a', 'part-b', 'part-c')
-        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
-        const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-c'] }] }
+        let tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
+        let newTree = { children: [{ tag: 'div', part: ['part-a', 'part-c'] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -372,12 +372,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove all part', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.part.add('part-a', 'part-b', 'part-c')
-        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
-          const newTree = { children: [{ tag: 'div' }] }
+        let tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
+          let newTree = { children: [{ tag: 'div' }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -390,12 +390,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch set empty part', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.part.add('part-a', 'part-b', 'part-c')
-        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
-        const newTree = { children: [{ tag: 'div', part: [] }] }
+        let tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b', 'part-c'], el }] }
+        let newTree = { children: [{ tag: 'div', part: [] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -408,12 +408,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch no change part', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.part.add('part-a', 'part-b')
-        const tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b'], el }] }
-        const newTree = { children: [{ tag: 'div', part: ['part-a', 'part-b'] }] }
+        let tree = { el: parent, children: [{ tag: 'div', part: ['part-a', 'part-b'], el }] }
+        let newTree = { children: [{ tag: 'div', part: ['part-a', 'part-b'] }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -429,11 +429,11 @@ describe('Virtual Dom', function() {
 
     describe(': style', function() {
       it('patch new style', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ tag: 'div', el }] }
-        const newTree = { children: [{ tag: 'div', style: 'color: red;' }] }
+        let tree = { el: parent, children: [{ tag: 'div', el }] }
+        let newTree = { children: [{ tag: 'div', style: 'color: red;' }] }
         patch(tree, newTree)
         equal(tree, {
           children: [{
@@ -447,16 +447,16 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add style', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.style.cssText = 'color: red;'
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           style: 'color: red;',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           style: 'font-size: 1px; margin: auto; color: red;'
         }] }
@@ -473,16 +473,16 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove style', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           style: 'font-size: 1px; margin: auto; color: red;',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           style: 'font-size: 1px; color: red;'
         }] }
@@ -499,16 +499,16 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove All style', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           style: 'font-size: 1px; margin: auto; color: red;',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div'
         }] }
         patch(tree, newTree)
@@ -523,16 +523,16 @@ describe('Virtual Dom', function() {
       })
 
       it('patch set empty style', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.style.cssText = 'font-size: 1px; margin: auto; color: red;'
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           style: 'font-size: 1px; margin: auto; color: red;',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           style: ''
         }] }
@@ -548,16 +548,16 @@ describe('Virtual Dom', function() {
       })
 
       it('patch no change style', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.style.cssText = 'font-size: 1px; margin: auto;'
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           style: 'font-size: 1px; margin: auto;',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           style: 'font-size: 1px; margin: auto;'
         }] }
@@ -576,14 +576,14 @@ describe('Virtual Dom', function() {
 
     describe(': attrs', function() {
       it('patch new attrs', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1'
@@ -601,25 +601,25 @@ describe('Virtual Dom', function() {
           el: {}
         })
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, 'attrs-a: value 1;')
       })
 
       it('patch add attrs', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.setAttribute('attrs-a', 'value 1')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1'
           },
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1',
@@ -641,20 +641,20 @@ describe('Virtual Dom', function() {
           el: {}
         })
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, 'attrs-a: value 1;attrs-b: value 2;attrs-c: value 3;')
       })
 
       it('patch remove attrs', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.setAttribute('attrs-a', 'value 1')
         el.setAttribute('attrs-b', 'value 2')
         el.setAttribute('attrs-c', 'value 3')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1',
@@ -663,7 +663,7 @@ describe('Virtual Dom', function() {
           },
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1',
@@ -683,20 +683,20 @@ describe('Virtual Dom', function() {
           el: {}
         })
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, 'attrs-a: value 1;attrs-c: value 3;')
       })
 
       it('patch remove all attrs', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.setAttribute('attrs-a', 'value 1')
         el.setAttribute('attrs-b', 'value 2')
         el.setAttribute('attrs-c', 'value 3')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1',
@@ -705,7 +705,7 @@ describe('Virtual Dom', function() {
           },
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div'
         }] }
         patch(tree, newTree)
@@ -717,20 +717,20 @@ describe('Virtual Dom', function() {
           el: {}
         })
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, '')
       })
 
       it('patch set empty attrs', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.setAttribute('attrs-a', 'value 1')
         el.setAttribute('attrs-b', 'value 2')
         el.setAttribute('attrs-c', 'value 3')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1',
@@ -739,7 +739,7 @@ describe('Virtual Dom', function() {
           },
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           attrs: {}
         }] }
@@ -752,19 +752,19 @@ describe('Virtual Dom', function() {
           el: {}
         })
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, '')
       })
 
       it('patch no change attrs', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.setAttribute('attrs-a', 'value 1')
         el.setAttribute('attrs-b', 'value 2')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1',
@@ -772,7 +772,7 @@ describe('Virtual Dom', function() {
           },
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1',
@@ -792,25 +792,25 @@ describe('Virtual Dom', function() {
           el: {}
         })
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, 'attrs-a: value 1;attrs-b: value 2;')
       })
 
       it('patch update attrs', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.setAttribute('attrs-a', 'value 1')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 1'
           },
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           attrs: {
             'attrs-a': 'value 2'
@@ -828,7 +828,7 @@ describe('Virtual Dom', function() {
           el: {}
         })
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, 'attrs-a: value 2;')
@@ -837,16 +837,16 @@ describe('Virtual Dom', function() {
 
     describe(': on', function() {
       it('patch new on', () => {
-        const f1 = () => {}
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let f1 = () => {}
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.setAttribute('attrs-a', 'value 1')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           on: {
             click: [f1]
@@ -869,14 +869,14 @@ describe('Virtual Dom', function() {
 
     describe(': children', function() {
       it('patch new text', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: ['Hello']
         }] }
@@ -893,14 +893,14 @@ describe('Virtual Dom', function() {
       })
 
       it('patch new multi texts', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: ['Hello', 'world', '!']
         }] }
@@ -918,16 +918,16 @@ describe('Virtual Dom', function() {
 
 
       it('test: patch update text', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.innerHTML = 'Hello'
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: ['Hello'],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: ['World'],
           el
@@ -946,14 +946,14 @@ describe('Virtual Dom', function() {
 
 
       it('patch new Element', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'p' }
@@ -977,14 +977,14 @@ describe('Virtual Dom', function() {
       })
 
       it('patch new multi Elements', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'h1' },
@@ -1020,19 +1020,19 @@ describe('Virtual Dom', function() {
       })
 
       it('patch update Element', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const p = document.createElement('p')
+        let p = document.createElement('p')
         el.insertAdjacentElement('beforeend', p)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'p', el: p }
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'p', class: ['class-a'] }
@@ -1059,19 +1059,19 @@ describe('Virtual Dom', function() {
       })
 
       it('patch change Element', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const p = document.createElement('p')
+        let p = document.createElement('p')
         el.insertAdjacentElement('beforeend', p)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'p', el: p }
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'h1' }
@@ -1096,14 +1096,14 @@ describe('Virtual Dom', function() {
       })
 
       it('patch new Number', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             0
@@ -1124,14 +1124,14 @@ describe('Virtual Dom', function() {
       })
 
       it('patch new multi Numbers', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             100, 1, 0
@@ -1152,14 +1152,14 @@ describe('Virtual Dom', function() {
       })
 
       it('patch new cross Nodes', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             'Hello',
@@ -1204,18 +1204,18 @@ describe('Virtual Dom', function() {
       })
 
       it('patch change text to Element', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.insertAdjacentText('beforeend', 'Hello')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             'Hello'
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'p' }
@@ -1240,19 +1240,19 @@ describe('Virtual Dom', function() {
       })
 
       it('patch change Element to text', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const p = document.createElement('p')
+        let p = document.createElement('p')
         el.insertAdjacentElement('beforeend', p)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'p', el: p }
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             'Hello'
@@ -1274,12 +1274,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add text to texts', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.insertAdjacentText('beforeend', 'Hello')
         el.insertAdjacentText('beforeend', '!')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             'Hello',
@@ -1287,7 +1287,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             'Hello',
@@ -1313,14 +1313,14 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add text to Elements', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const h1 = document.createElement('h1')
+        let h1 = document.createElement('h1')
         el.insertAdjacentElement('beforeend', h1)
-        const h2 = document.createElement('h2')
+        let h2 = document.createElement('h2')
         el.insertAdjacentElement('beforeend', h2)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'h1', el: h1 },
@@ -1328,7 +1328,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'h1' },
@@ -1362,12 +1362,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add Element to texts', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.insertAdjacentText('beforeend', 'Hello')
         el.insertAdjacentText('beforeend', '!')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             'Hello',
@@ -1375,7 +1375,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             'Hello',
@@ -1405,14 +1405,14 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add Element to Elements', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const h1 = document.createElement('h1')
+        let h1 = document.createElement('h1')
         el.insertAdjacentElement('beforeend', h1)
-        const h2 = document.createElement('h2')
+        let h2 = document.createElement('h2')
         el.insertAdjacentElement('beforeend', h2)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'h1', el: h1 },
@@ -1420,7 +1420,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'h1' },
@@ -1456,14 +1456,14 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add Elements to Elements', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const h1 = document.createElement('h1')
+        let h1 = document.createElement('h1')
         el.insertAdjacentElement('beforeend', h1)
-        const h2 = document.createElement('h2')
+        let h2 = document.createElement('h2')
         el.insertAdjacentElement('beforeend', h2)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'h1', el: h1 },
@@ -1471,7 +1471,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'h3' },
@@ -1501,13 +1501,13 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove text', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
         el.insertAdjacentText('beforeend', 'Hello')
         el.insertAdjacentText('beforeend', 'World')
         el.insertAdjacentText('beforeend', '!')
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             'Hello',
@@ -1516,7 +1516,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             'Hello',
@@ -1540,16 +1540,16 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove Element', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const h1 = document.createElement('h1')
+        let h1 = document.createElement('h1')
         el.insertAdjacentElement('beforeend', h1)
-        const p = document.createElement('p')
+        let p = document.createElement('p')
         el.insertAdjacentElement('beforeend', p)
-        const h2 = document.createElement('h2')
+        let h2 = document.createElement('h2')
         el.insertAdjacentElement('beforeend', h2)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'h1', el: h1 },
@@ -1558,7 +1558,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'h1' },
@@ -1582,16 +1582,16 @@ describe('Virtual Dom', function() {
       })
 
       it('patch use key', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const h1 = document.createElement('h1')
+        let h1 = document.createElement('h1')
         el.insertAdjacentElement('beforeend', h1)
-        const h2 = document.createElement('h2')
+        let h2 = document.createElement('h2')
         el.insertAdjacentElement('beforeend', h2)
-        const h1key = {}
-        const h2key = {}
-        const tree = { el: parent, children: [{
+        let h1key = {}
+        let h2key = {}
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'h1', el: h1, key: h1key },
@@ -1599,7 +1599,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             { tag: 'h2', key: h2key },
@@ -1626,18 +1626,18 @@ describe('Virtual Dom', function() {
       })
 
       it('patch use key and number', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('div')
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
         parent.appendChild(el)
-        const p = document.createElement('p')
+        let p = document.createElement('p')
         el.insertAdjacentElement('beforeend', p)
-        const h1 = document.createElement('h1')
+        let h1 = document.createElement('h1')
         el.insertAdjacentElement('beforeend', h1)
-        const h2 = document.createElement('h2')
+        let h2 = document.createElement('h2')
         el.insertAdjacentElement('beforeend', h2)
-        const h1key = {}
-        const h2key = {}
-        const tree = { el: parent, children: [{
+        let h1key = {}
+        let h2key = {}
+        let tree = { el: parent, children: [{
           tag: 'div',
           children: [
             { tag: 'p', el: p },
@@ -1648,7 +1648,7 @@ describe('Virtual Dom', function() {
           ],
           el
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           tag: 'div',
           children: [
             'Hello',
@@ -1681,11 +1681,11 @@ describe('Virtual Dom', function() {
 
     describe(': real element', function() {
       it('patch add element', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('p')
-        const tree = { el: parent }
-        const newTree = { children: [{ el }] }
-        const patchedTree = patch(tree, newTree)
+        let parent = document.createElement('div')
+        let el = document.createElement('p')
+        let tree = { el: parent }
+        let newTree = { children: [{ el }] }
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             el: {}
@@ -1696,12 +1696,12 @@ describe('Virtual Dom', function() {
       })
 
       it('patch remove element', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('p')
+        let parent = document.createElement('div')
+        let el = document.createElement('p')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ el }] }
-        const newTree = {}
-        const patchedTree = patch(tree, newTree)
+        let tree = { el: parent, children: [{ el }] }
+        let newTree = {}
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           el: {}
         })
@@ -1709,13 +1709,13 @@ describe('Virtual Dom', function() {
       })
 
       it('patch change element', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('p')
+        let parent = document.createElement('div')
+        let el = document.createElement('p')
         parent.appendChild(el)
-        const el2 = document.createElement('span')
-        const tree = { el: parent, children: [{ el }] }
-        const newTree = { children: [{ el: el2 }] }
-        const patchedTree = patch(tree, newTree)
+        let el2 = document.createElement('span')
+        let tree = { el: parent, children: [{ el }] }
+        let newTree = { children: [{ el: el2 }] }
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             el: {}
@@ -1726,17 +1726,17 @@ describe('Virtual Dom', function() {
       })
 
       it('patch add atters', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('p')
+        let parent = document.createElement('div')
+        let el = document.createElement('p')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ el }] }
-        const newTree = { children: [{
+        let tree = { el: parent, children: [{ el }] }
+        let newTree = { children: [{
           el,
           attrs: {
             'attrs-a': 'value 1'
           }
         }] }
-        const patchedTree = patch(tree, newTree)
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             el: {},
@@ -1748,28 +1748,28 @@ describe('Virtual Dom', function() {
         })
         equal(parent.firstChild === el, true)
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, 'attrs-a: value 1;')
       })
 
       it('invalid attrs', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('p')
+        let parent = document.createElement('div')
+        let el = document.createElement('p')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{
+        let tree = { el: parent, children: [{
           el,
           invalid: { attrs: true }
         }] }
-        const newTree = { children: [{
+        let newTree = { children: [{
           el,
           attrs: {
             'attrs-a': 'value 1'
           },
           invalid: { attrs: true }
         }] }
-        const patchedTree = patch(tree, newTree)
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [{
             el: {},
@@ -1779,19 +1779,19 @@ describe('Virtual Dom', function() {
         })
         equal(parent.firstChild === el, true)
         let output = ''
-        for(const attrs of parent.firstChild.attributes) {
+        for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
         equal(output, '')
       })
 
       it('patch element @override', () => {
-        const parent = document.createElement('div')
-        const el = document.createElement('p')
+        let parent = document.createElement('div')
+        let el = document.createElement('p')
         parent.appendChild(el)
-        const tree = { el: parent, children: [{ el }] }
-        const newTree = { children: [{ el }, { el, override: true, children: [{ tag: 'p' }] }] }
-        const patchedTree = patch(tree, newTree)
+        let tree = { el: parent, children: [{ el }] }
+        let newTree = { children: [{ el }, { el, override: true, children: [{ tag: 'p' }] }] }
+        let patchedTree = patch(tree, newTree)
         equal(patchedTree, {
           children: [
             { el: {} },
@@ -1802,8 +1802,8 @@ describe('Virtual Dom', function() {
         equal(parent.childNodes.length, 1)
         equal(parent.firstChild === el, true)
         equal(parent.firstChild.childNodes[0].tagName, 'P')
-        const newTree2 = { children: [{ el }, { el, override: true, children: [{ tag: 'span' }] }] }
-        const patchedTree2 = patch(tree, newTree2)
+        let newTree2 = { children: [{ el }, { el, override: true, children: [{ tag: 'span' }] }] }
+        let patchedTree2 = patch(tree, newTree2)
         equal(patchedTree2, {
           children: [
             { el: {} },

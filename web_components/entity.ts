@@ -39,7 +39,7 @@ export class Entity
 
   public constructor(component: Component, host: Element, tree: LinkedVirtualTree)
   {
-    const root = tree.el as ShadowRoot
+    let root = tree.el as ShadowRoot
     this._component = component
     this._template = component.template
     this._patcher = component.patcher
@@ -58,22 +58,22 @@ export class Entity
       unreach(this._stack, this.patch)
     })
 
-    const main = typeof this._component.main === 'function' ? this._component.main(this) : this._component.main;
+    let main = typeof this._component.main === 'function' ? this._component.main(this) : this._component.main;
     this._ready = (async () => {
-      const result = await main
-      const stack = result ? Array.isArray(result) ? result : [result] : []
+      let result = await main
+      let stack = result ? Array.isArray(result) ? result : [result] : []
       this._stack = [builtin, { host, root }, watch(this._attrs), ...stack]
       reach(this._stack, this.patch)
       this.patch()
       stack.forEach(state => {
         if (typeof state === 'object' && state !== null) {
-          for (const name in state) {
+          for (let name in state) {
             if (
               (typeof state[name] === 'function' || state[name] instanceof Element) && // The value is function or Element
               isNaN(name as unknown as number) && // The name is not number
               !(name in this._host) // Do not override same property name
             ) {
-              const datum =
+              let datum =
                 typeof state[name] === 'function' ?
                   // deno-lint-ignore ban-types
                   (state[name] as Function).bind(this) :
@@ -93,10 +93,10 @@ export class Entity
     switch (name) {
       case 'is': case 'class': case 'part': case 'style': return
       default: {
-        const old = this._attrs[name]
+        let old = this._attrs[name]
         if (old !== value) {
           if (name in this._refs) {
-            const ref = this._refs[name][0]
+            let ref = this._refs[name][0]
             if (instanceOfRef(value) && value.record === ref.record) {
               return
             } else {
@@ -107,10 +107,10 @@ export class Entity
           }
           unwatch(old, this.patch)
           if (instanceOfRef(value)) { // ref attr
-            const childCallback = (newValue: unknown) => {
+            let childCallback = (newValue: unknown) => {
               value.record[value.key] = newValue
             }
-            const parentCallback = (newValue: unknown) => {
+            let parentCallback = (newValue: unknown) => {
               this._attrs[name] = newValue
             }
             this._refs[name] = [value, childCallback, parentCallback]
@@ -156,7 +156,7 @@ export class Entity
       setTimeout(() => {
         this._requirePatch = false
         if (this._stack) {
-          const tree =
+          let tree =
             this._patcher ? this._patcher(this._stack) :
             this._template ? evaluate(this._template, this._stack, this._cache) as VirtualTree :
             this._tree && this._component.template ?
@@ -216,15 +216,15 @@ class SafeUpdater
 
   public patch(tree: VirtualTree) {
     // hoisting link[rel="stylesheet"] element
-    const header = hoist(tree, isHoistingTarget)
-    const body = tree
+    let header = hoist(tree, isHoistingTarget)
+    let body = tree
 
     // pre patch
-    const oldLinks = (this.header?.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
-    const newLinks = (header.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
-    const addedLinks = newLinks
+    let oldLinks = (this.header?.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
+    let newLinks = (header.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
+    let addedLinks = newLinks
       .filter(link => oldLinks.every(el => el.attrs?.href !== link.attrs?.href))
-    const removedLinks = oldLinks
+    let removedLinks = oldLinks
       .filter(link => newLinks.every(el => el.attrs?.href !== link.attrs?.href))
 
     // set a load event listener

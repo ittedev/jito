@@ -21,7 +21,7 @@ export function destroy(tree: LinkedVirtualRoot)
       typeof child === 'object' &&
       destroy(child as LinkedVirtualRoot)
     )
-    const el = tree.el as Node
+    let el = tree.el as Node
     while (el.firstChild) {
       el.removeChild(el.firstChild)
     }

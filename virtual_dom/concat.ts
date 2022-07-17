@@ -5,7 +5,7 @@ import {
 
 export function concat(...trees: Array<VirtualTree | undefined>): VirtualTree
 {
-  const result = { children: [] as Array<VirtualNode> }
+  let result = { children: [] as Array<VirtualNode> }
   trees.forEach(tree => {
     if (tree && tree.children) {
       result.children = result.children.concat(tree.children)

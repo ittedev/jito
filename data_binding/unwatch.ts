@@ -56,13 +56,13 @@ export function clean(obj: BeakoObject, key?: string, callback?: Callback)
   }
   if (dictionary in obj && obj[dictionary][reactiveKey][1].size) {
     let hasTarget = false
-    for (const key in obj) {
+    for (let key in obj) {
       if (obj[dictionary][key][1].size > 1) {
         hasTarget = true
       }
     }
     if (!hasTarget) {
-      for (const key in obj[dictionary]) {
+      for (let key in obj[dictionary]) {
         Object.defineProperty(obj, key, {
           enumerable: true,
           configurable: true,

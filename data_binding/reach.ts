@@ -19,13 +19,13 @@ export function _reach(data: unknown, callback: RecursiveCallback, blocker: unkn
     data !== null &&
     (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))
   ) {
-    const obj = data as BeakoObject
+    let obj = data as BeakoObject
     if (!obj[isLocked]) {
       blocker.push(data)
       if (dictionary in obj) {
         obj[dictionary][reactiveKey][1].add(callback)
       }
-      for (const key in obj) {
+      for (let key in obj) {
         _reach(obj[key], callback, blocker)
       }
       blocker.pop()

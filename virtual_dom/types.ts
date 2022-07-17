@@ -1,4 +1,4 @@
-export const eventTypes = Symbol.for('Beako Event Types')
+export let eventTypes = Symbol.for('Beako Event Types')
 
 export interface HasAttrs {
   class?: Array<string>

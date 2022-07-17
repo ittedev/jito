@@ -14,8 +14,8 @@ export function dom(html: string): TemporaryNode | undefined
 export function dom(lexer: Lexer): TemporaryNode | undefined
 export function dom(html: Lexer | string): TemporaryNode | undefined
 {
-  const lexer = typeof html === 'string' ? new Lexer(html, 'html') : html
-  const text = { text: lexer.skip(['>', '/']) } as TemporaryText
+  let lexer = typeof html === 'string' ? new Lexer(html, 'html') : html
+  let text = { text: lexer.skip(['>', '/']) } as TemporaryText
 
   // remove comment
   while (lexer.nextIs('<!--')) {
@@ -26,7 +26,7 @@ export function dom(html: Lexer | string): TemporaryNode | undefined
   }
 
   if (lexer.nextIs('start')) {
-    const next = el(lexer)
+    let next = el(lexer)
     if (next) {
       if (instanceOfTemporaryElement(next)) {
         text.next = next
@@ -43,12 +43,12 @@ export function dom(html: Lexer | string): TemporaryNode | undefined
 
 function el(lexer: Lexer): TemporaryNode | undefined
 {
-  const el = {
+  let el = {
     tag: (lexer.pop() as Token)[1].slice(1).toLocaleLowerCase() // start = <.*
   } as TemporaryElement
 
   // get attributes
-  const attrs = attr(lexer)
+  let attrs = attr(lexer)
   if (attrs.length) {
     el.attrs = attrs
   }
@@ -60,7 +60,7 @@ function el(lexer: Lexer): TemporaryNode | undefined
     lexer.must('>')
   } else {
     lexer.must('>')
-    const child = dom(lexer)
+    let child = dom(lexer)
     if (child) {
       el.child = child
     }
@@ -70,7 +70,7 @@ function el(lexer: Lexer): TemporaryNode | undefined
     }
     lexer.must('>')
   }
-  const next = dom(lexer)
+  let next = dom(lexer)
   if (next) {
     el.next = next
   }
@@ -83,14 +83,14 @@ function el(lexer: Lexer): TemporaryNode | undefined
 
 function attr(lexer: Lexer): Array<[string, string, string]>
 {
-  const attrs = [] as Array<[string, string, string]>
+  let attrs = [] as Array<[string, string, string]>
   lexer.expand('attr', () => {
     lexer.skip()
     while (lexer.nextIs()) {
       if (lexer.nextIs('>')) {
         break
       } else {
-        const attr = new Array(3) as [string, string, string]
+        let attr = new Array(3) as [string, string, string]
         if (lexer.nextIs('name')) {
           attr[0] = (lexer.pop() as Token)[1]
           if (lexer.nextIs('assign')) {
@@ -114,7 +114,7 @@ function attr(lexer: Lexer): Array<[string, string, string]>
           if (attr[0] === '@else') {
             attr[2] = attr[0]
           } else {
-            const token = (lexer.must('assign') as Token)
+            let token = (lexer.must('assign') as Token)
             if (token[1] !== '=') {
               throw Error('= is required.')
             }
@@ -141,7 +141,7 @@ function string(lexer: Lexer, field: TokenField, type: TokenType): string
   lexer.expand(field, () => {
     loop: while (true) {
       text += lexer.skip()
-      const token = lexer.pop() as Token
+      let token = lexer.pop() as Token
       switch (token[0]) {
         case type: break loop
         case 'return': throw Error('Newline cannot be used')

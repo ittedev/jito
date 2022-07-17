@@ -40,16 +40,16 @@ export function mount(
   main: StateStack | Record<string, unknown> | Main = []
 ): void
 {
-  const host: Element =
+  let host: Element =
     typeof target === 'string' ?
       document.querySelector(target) as Element :
       target as Element
-  const component = instanceOfComponent(template) ? template : compact(template, main)
+  let component = instanceOfComponent(template) ? template : compact(template, main)
   if (component.options.localeOnly) {
     throw Error('This componet is local only.')
   }
-  const tree = load(host.attachShadow(component.options))
-  const entity = new Entity(component, host, tree)
+  let tree = load(host.attachShadow(component.options))
+  let entity = new Entity(component, host, tree)
 
   if (host.innerHTML) {
     entity.setAttr('content', host.innerHTML)

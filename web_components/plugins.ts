@@ -23,7 +23,7 @@ import { evaluate, evaluateAttrs } from '../template_engine/evaluate.ts'
 import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'
 
-export const componentPlugin = {
+export let componentPlugin = {
   match (
     template: CustomElementTemplate | CustomTemplate,
     stack: StateStack,
@@ -35,8 +35,8 @@ export const componentPlugin = {
         // local entity
         return true
       }
-      const temp = template as CustomElementTemplate
-      const element = pickup(stack, temp.tag)
+      let temp = template as CustomElementTemplate
+      let element = pickup(stack, temp.tag)
       if (
         typeof element === 'object' &&
         element !== null &&
@@ -50,7 +50,7 @@ export const componentPlugin = {
         return true
       } else {
         // global component
-        const El = customElements.get(temp.tag)
+        let El = customElements.get(temp.tag)
         return El !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, El)
       }
     }
@@ -63,8 +63,8 @@ export const componentPlugin = {
     cache: Cache
   ): VirtualElement
   {
-    const temp = template as ComponentTemplate
-    const ve: VirtualElement = {
+    let temp = template as ComponentTemplate
+    let ve: VirtualElement = {
       tag: componentElementTag // 'beako-element'
     }
 
@@ -85,11 +85,11 @@ export const componentPlugin = {
     }
 
     // Resolve properties
-    const values = [] as Array<Template | string>
-    const contents = [] as Array<[string, Template]>
-    const children = (temp.children || [])?.flatMap(child => {
+    let values = [] as Array<Template | string>
+    let contents = [] as Array<[string, Template]>
+    let children = (temp.children || [])?.flatMap(child => {
       if (!(typeof child === 'string')) {
-        const temp = child as HasAttrTemplate
+        let temp = child as HasAttrTemplate
         if (temp.attrs) {
           if (temp.attrs['@as']) {
             contents.push([temp.attrs['@as'] as string, temp])
@@ -150,7 +150,7 @@ export const componentPlugin = {
   }
 } as EvaluatePlugin
 
-export const specialTagPlugin = {
+export let specialTagPlugin = {
   match (
     template: CustomElementTemplate,
     stack: StateStack,
@@ -159,7 +159,7 @@ export const specialTagPlugin = {
   {
     if (template.type === 'custom') {
       if (special in cache && !isPrimitive(template.tag)) {
-        const el = pickup(stack, template.tag)
+        let el = pickup(stack, template.tag)
         return cache[special].some(tag => tag === el)
       }
     }
@@ -172,8 +172,8 @@ export const specialTagPlugin = {
     cache: Cache
   ): RealTarget
   {
-    const el = pickup(stack, template.tag) as Element || ShadowRoot
-    const re = {
+    let el = pickup(stack, template.tag) as Element || ShadowRoot
+    let re = {
       el,
       override: true,
       invalid: {

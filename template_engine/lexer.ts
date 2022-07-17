@@ -11,9 +11,9 @@ export class Lexer
 
   private _next(start: number): Token | null
   {
-    const token = ['', '']
+    let token = ['', '']
     for (this.index = start; this.index < this.text.length; this.index++) {
-      const nextType = distinguish(this.field, token[1] + this.text[this.index])
+      let nextType = distinguish(this.field, token[1] + this.text[this.index])
       if (nextType === 'other') {
         return token as Token
       } else {
@@ -61,14 +61,14 @@ export class Lexer
   pop(): Token | null
   {
     this.skip()
-    const token = this.token
+    let token = this.token
     this.token = null
     return token ? token : null
   }
 
   expand(field: TokenField, func: () => void): void
   {
-    const parent = this.field
+    let parent = this.field
     this.field = field
     func()
     if (this.token) {
@@ -80,7 +80,7 @@ export class Lexer
 
   must(type: TokenType): Token
   {
-    const token = this.pop()
+    let token = this.pop()
     if (!token || token[0] !== type) throw Error(type + ' is required.')
     return token
   }

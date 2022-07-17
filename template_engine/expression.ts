@@ -27,7 +27,7 @@ export function expression(script: string): Template
 export function expression(lexer: Lexer): Template
 export function expression(script: Lexer | string): Template
 {
-  const lexer = typeof script === 'string' ? new Lexer(script, 'script') : script
+  let lexer = typeof script === 'string' ? new Lexer(script, 'script') : script
   return assignment(lexer)
 }
 
@@ -38,13 +38,13 @@ export function expression(script: Lexer | string): Template
  */
 function assignment(lexer: Lexer): Template
 {
-  const left = conditional(lexer)
+  let left = conditional(lexer)
   if (lexer.nextIs('assign')) {
     if (left.type !== 'get') {
       throw Error('The left operand is not variable')
     }
-    const operator = (lexer.pop() as Token)[1]
-    const right = expression(lexer)
+    let operator = (lexer.pop() as Token)[1]
+    let right = expression(lexer)
     return {
       type: 'assign',
       operator,
@@ -65,9 +65,9 @@ function conditional(lexer: Lexer): Template
   let condition = arithmetic(lexer)
   while (lexer.nextIs('?')) {
     lexer.pop()
-    const truthy = expression(lexer)
+    let truthy = expression(lexer)
     lexer.must(':')
-    const falsy = arithmetic(lexer)
+    let falsy = arithmetic(lexer)
     condition = { type: 'if', condition, truthy, falsy } as IfTemplate
   }
   return condition
@@ -79,7 +79,7 @@ function conditional(lexer: Lexer): Template
  */
 function arithmetic(lexer: Lexer): Template
 {
-  const list = new Array<Template | string>()
+  let list = new Array<Template | string>()
   list.push(unary(lexer))
   while(lexer.nextIs('multi') || lexer.nextIs('binary')) {
     list.push((lexer.pop() as Token)[1])
@@ -93,7 +93,7 @@ function arithmetic(lexer: Lexer): Template
         index + 3 >= list.length ||
         precedence(list[index + 1] as string) > precedence(list[index + 3] as string)
       ) {
-        const node = {
+        let node = {
           type: 'binary',
           operator: list[index + 1] as string,
           left: list[index] as Template,
@@ -159,7 +159,7 @@ function unary(lexer: Lexer): Template
  */
 function postfix(lexer: Lexer): Template
 {
-  const template = func(lexer)
+  let template = func(lexer)
   if(lexer.nextIs('crement')) {
     return {
       type: 'assign',
@@ -184,7 +184,7 @@ function func(lexer: Lexer): Template
     switch (lexer.nextIs()) {
       case '(': {
         lexer.pop()
-        const params = [] as Array<Template>
+        let params = [] as Array<Template>
         while (!lexer.nextIs(')')) {
           params.push(expression(lexer))
           if (lexer.nextIs(',')) lexer.pop()
@@ -196,13 +196,13 @@ function func(lexer: Lexer): Template
       }
       case '.': {
         lexer.pop()
-        const key = lexer.must('word')
+        let key = lexer.must('word')
         template = { type: 'get', value: { type: 'hash', object: template, key: { type: 'literal', value: key[1] } as LiteralTemplate } as HashTemplate } as GetTemplate
         continue
       }
       case '[': {
         lexer.pop()
-        const key = expression(lexer)
+        let key = expression(lexer)
         lexer.must(']')
         template = { type: 'get', value: { type: 'hash', object: template, key } as HashTemplate } as GetTemplate
         continue
@@ -219,7 +219,7 @@ function func(lexer: Lexer): Template
  */
 function term(lexer: Lexer): Template
 {
-  const token = lexer.pop() as Token
+  let token = lexer.pop() as Token
   switch (token[0]) {
     // w
     case 'word':
@@ -237,14 +237,14 @@ function term(lexer: Lexer): Template
 
     // (E)
     case '(': {
-      const node = expression(lexer)
+      let node = expression(lexer)
       lexer.must(')')
       return node
     }
 
     // a = [E, ...]
     case '[': {
-      const values = []
+      let values = []
       while(!lexer.nextIs(']')) {
         values.push(expression(lexer))
         if (lexer.nextIs(',')) {
@@ -261,10 +261,10 @@ function term(lexer: Lexer): Template
 
     // r = { w, w: E, [E]: E, ...}
     case '{': {
-      const entries = [] as Array<[Template, Template]>
+      let entries = [] as Array<[Template, Template]>
       while(!lexer.nextIs('}')) {
-        const entry = Array(2) as [Template, Template]
-        const token = lexer.pop() as Token
+        let entry = Array(2) as [Template, Template]
+        let token = lexer.pop() as Token
         if (token[0] === 'word') {
           entry[0] = { type: 'literal', value: token[1] } as LiteralTemplate
         } else if (token[0] === '"') {
@@ -307,12 +307,12 @@ export function stringLiteral(
   type: TokenType
 ): Template
 {
-  const texts = [''] as Array<string | Template>
+  let texts = [''] as Array<string | Template>
   let i = 0
   lexer.expand(field, () => {
     loop: while (true) {
       texts[i] += lexer.skip()
-      const token = lexer.pop() as Token
+      let token = lexer.pop() as Token
       switch (token[0]) {
         case type: break loop
         case 'return': throw Error('Newline cannot be used')

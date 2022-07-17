@@ -3,7 +3,7 @@ import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { Entity } from './entity.ts'
 
-export const componentElementTag = 'beako-element'
+export let componentElementTag = 'beako-element'
 
 export class ComponentElement extends HTMLElement
 {
@@ -73,7 +73,7 @@ export class ComponentElement extends HTMLElement
 
   getAttributeNode(name: string): Attr | null
   {
-    const attr = super.getAttributeNode(name)
+    let attr = super.getAttributeNode(name)
     return attr ? proxyAttr(attr, this.setAttr) : attr
   }
 
@@ -112,12 +112,12 @@ class GrobalComponentElement extends ComponentElement
     if (name === 'component') {
       switch (typeof value) {
         case 'string': {
-          const def = customElements.get(value)
+          let def = customElements.get(value)
           // deno-lint-ignore no-prototype-builtins
           if (def && ComponentElement.isPrototypeOf(def)) {
-            const component = (def as typeof ComponentElement).getComponent()
+            let component = (def as typeof ComponentElement).getComponent()
             if (component) {
-              const tree = load(this.attachShadow(component.options))
+              let tree = load(this.attachShadow(component.options))
               this._setEntity(new Entity(component, this, tree))
             }
           } else {
@@ -127,7 +127,7 @@ class GrobalComponentElement extends ComponentElement
         }
         case 'object':
           if (instanceOfComponent(value)) {
-            const tree = load(this.attachShadow(value.options))
+            let tree = load(this.attachShadow(value.options))
             this._setEntity(new Entity(value, this, tree))
           } else if (value !== null) {
             throw Error('The object is not a component.')

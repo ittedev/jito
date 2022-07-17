@@ -24,8 +24,8 @@ export async function elementize(component: Component | Promise<Component> | Mod
     el = document.createElement(component) as ComponentElement
   } else {
     el = document.createElement(componentElementTag) as ComponentElement
-    const result = await Promise.resolve(component)
-    const attr =
+    let result = await Promise.resolve(component)
+    let attr =
       instanceOfModule(result) && instanceOfComponent(result.default) ?
         result.default as unknown as string :
         result as unknown as string
@@ -34,14 +34,14 @@ export async function elementize(component: Component | Promise<Component> | Mod
 
   // Set attrs
   if (attrs) {
-    for (const key in attrs) {
+    for (let key in attrs) {
       el.setAttribute(key, attrs[key])
     }
   }
 
   // Wait runninng
   if (typeof component === 'string') {
-    const El = customElements.get(component)
+    let El = customElements.get(component)
     if (El !== undefined && Object.prototype.isPrototypeOf.call(ComponentElement, El)) {
       await el.ready()
     }
