@@ -390,21 +390,32 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
 
   // remove node
   let remove = (useStore = false) => {
-    if (typeof oldChildren[index] !== 'number') {
-      if (typeof oldChildren[index] === 'object') {
-        if (currentNode !== (oldChildren[index] as LinkedRealTarget).el) {
-          destroy(oldChildren[index++] as LinkedVirtualElement)
+    let oldChild = oldChildren[index]
+    if (typeof oldChild !== 'number') {
+      if (typeof oldChild === 'object') {
+        if (currentNode !== (oldChild as LinkedRealTarget).el) {
+          destroy(oldChild as LinkedVirtualElement)
+          index++
           return
         }
-        if (useStore && 'key' in (oldChildren[index] as LinkedVirtualElement)) {
-          stock.push((oldChildren[index] as LinkedVirtualElement).key, oldChildren[index] as LinkedVirtualElement)
+        if (useStore && 'key' in (oldChild as LinkedVirtualElement)) {
+          stock.push((oldChild as LinkedVirtualElement).key, oldChild as LinkedVirtualElement)
         } else {
-          destroy(oldChildren[index] as LinkedVirtualElement)
+          destroy(oldChild as LinkedVirtualElement)
         }
       }
-      let old = currentNode as Node
-      currentNode = old.nextSibling
-      parent.removeChild(old)
+      // remove node except remote node
+      if (
+        typeof oldChild === 'object' &&
+        !(
+          'el' in (oldChild as LinkedRealTarget) &&
+          (oldChild as LinkedRealTarget).override
+        )
+      ) {
+        let oldNode = currentNode as Node
+        currentNode = oldNode.nextSibling
+        parent.removeChild(oldNode)
+      }
     }
     index++
   }
