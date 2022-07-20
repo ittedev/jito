@@ -26,7 +26,7 @@ export function destroy(tree: LinkedVirtualRoot, useEvent = true)
       el.removeChild(el.firstChild)
     }
   }
-  if (useEvent && !(tree as LinkedRealTarget).override) {
+  if (useEvent && (tree as LinkedVirtualElement).tag) {
     tree.el.dispatchEvent(new CustomEvent(eventTypes.destroy, {
       bubbles: false
     }))
