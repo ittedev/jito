@@ -2878,6 +2878,46 @@ describe('Template Engine', function() {
         })
       })
     })
+    describe('evaluate: evaluation', function() {
+      it('evaluate: evaluation', () => {
+        let template = {
+          type: 'evaluation',
+          template: {
+            type: "get",
+            value: {
+              type: "variable",
+              name: "name"
+            }
+          }
+        }
+        let tree = evaluate(parse('{{ template }}'), [{ template, name: 'Hello' }])
+        equal(tree, {
+          children: ["Hello"]
+        })
+      })
+      it('evaluate: evaluation <group>', () => {
+        let template = {
+          type: 'evaluation',
+          template: {
+            type: "group",
+            children: [
+              {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "name"
+                }
+              },
+              '!'
+            ]
+          }
+        }
+        let tree = evaluate(parse('{{ template }}'), [{ template, name: 'Hello' }])
+        equal(tree, {
+          children: ["Hello!"]
+        })
+      })
+    })
   })
   describe('Future support', function() {
     let stack = {

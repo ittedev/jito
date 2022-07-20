@@ -41,14 +41,8 @@ export function define(
       if(this.innerHTML) {
         // if this is rendered from html
         (this.entity as Entity).setAttr('content', this.innerHTML)
-        if (this.hasAttributes()) {
-          this.getAttributeNames().forEach(name => {
-            (this.entity as Entity).setAttr(name, this.getAttribute(name))
-          })
-        }
-      } else {
-        this.loadAttrs()
       }
+      this.loadAttrs()
     }
     static getComponent(): Component | undefined {
       return component

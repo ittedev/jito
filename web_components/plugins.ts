@@ -19,7 +19,7 @@ import {
   EvaluatePlugin
 } from '../template_engine/types.ts'
 import { ComponentElement, componentElementTag } from './element.ts'
-import { evaluate, evaluateAttrs } from '../template_engine/evaluate.ts'
+import { evaluate, evaluateAttrs, evaluateChildren } from '../template_engine/evaluate.ts'
 import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'
 
@@ -85,37 +85,7 @@ export let componentPlugin = {
     }
 
     // Resolve properties
-    let values = [] as Array<Template | string>
-    let contents = [] as Array<[string, Template]>
-    let children = (temp.children || [])?.flatMap(child => {
-      if (!(typeof child === 'string')) {
-        let temp = child as HasAttrTemplate
-        if (temp.attrs) {
-          if (temp.attrs['@as']) {
-            contents.push([temp.attrs['@as'] as string, temp])
-            return []
-          } else if(temp.attrs.slot) {
-            return [evaluate(child, stack, cache) as string | VirtualElement | number]
-          }
-        }
-      }
-      values.push(child)
-      return []
-    })
-    if (values.length) {
-      contents.push(['content', { type: 'group', children: values } as GroupTemplate])
-    }
-    if (contents.length) {
-      if (!ve.attrs) {
-        ve.attrs = {}
-      }
-      contents.forEach(([name, template]) => {
-        (ve.attrs as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
-      })
-    }
-    if (children.length) {
-      ve.children = children
-    }
+    resolveProperties(temp, stack, cache, ve)
 
     evaluateAttrs(temp, stack, cache, ve)
 
@@ -147,6 +117,55 @@ export let componentPlugin = {
     temp.cache = component
 
     return ve
+  }
+} as EvaluatePlugin
+
+export let componentElementPlugin = {
+  match (
+    template: CustomElementTemplate,
+    stack: StateStack,
+    _cache: SpecialCache
+  ): boolean
+  {
+    if (template.type === 'custom') {
+      let element = pickup(stack, template.tag)
+      return (
+        typeof element === 'object' &&
+        element !== null &&
+        element instanceof ComponentElement
+      )
+    }
+    return false
+  },
+
+  exec (
+    template: CustomElementTemplate,
+    stack: StateStack,
+    cache: Cache
+  ): RealTarget
+  {
+    let temp = template as CustomElementTemplate
+    let el = pickup(stack, temp.tag) as Element | DocumentFragment | ShadowRoot | EventTarget
+    let re = { el } as RealTarget
+
+    // Resolve properties
+    resolveProperties(temp, stack, cache, re)
+
+    evaluateAttrs(temp, stack, cache, re)
+
+    if (el instanceof Element && temp.attrs) {
+      if ('@override' in temp.attrs) {
+        re.override = true
+      }
+    }
+    if (temp.children && temp.children.length) {
+      re.children = evaluateChildren(temp, stack, cache)
+    } else {
+      re.invalid = {
+        children: true
+      }
+    }
+    return re
   }
 } as EvaluatePlugin
 
@@ -185,3 +204,45 @@ export let specialTagPlugin = {
     return re
   }
 } as EvaluatePlugin
+
+
+    // Resolve properties
+function resolveProperties(
+  template: CustomElementTemplate | ComponentTemplate,
+  stack: StateStack,
+  cache: Cache,
+  ve: VirtualElement | RealTarget
+)
+{
+  let values = [] as Array<Template | string>
+  let contents = [] as Array<[string, Template]>
+  let children = (template.children || [])?.flatMap(child => {
+    if (!(typeof child === 'string')) {
+      let temp = child as HasAttrTemplate
+      if (temp.attrs) {
+        if (temp.attrs['@as']) {
+          contents.push([temp.attrs['@as'] as string, temp])
+          return []
+        } else if(temp.attrs.slot) {
+          return [evaluate(child, stack, cache) as string | VirtualElement | number]
+        }
+      }
+    }
+    values.push(child)
+    return []
+  })
+  if (values.length) {
+    contents.push(['content', { type: 'group', children: values } as GroupTemplate])
+  }
+  if (contents.length) {
+    if (!ve.attrs) {
+      ve.attrs = {}
+    }
+    contents.forEach(([name, template]) => {
+      (ve.attrs as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
+    })
+  }
+  if (children.length) {
+    ve.children = children
+  }
+}

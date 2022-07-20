@@ -91,7 +91,6 @@ export class Entity
 
   public setAttr(name: string, value: unknown)
   {
-
     switch (name) {
       case 'is': case 'class': case 'part': case 'style': return
       default: {
@@ -245,10 +244,10 @@ class SafeUpdater
     if (removedLinks.length) {
       // patch old header and new header
       // because href may have changed
-      patch(this.tree, concat(this.header, header, this.body))
+      patch(this.tree, concat(this.header, header, this.body), false)
     } else {
       // patch new header
-      patch(this.tree, concat(header, this.body))
+      patch(this.tree, concat(header, this.body), false)
     }
 
     // remove new flag

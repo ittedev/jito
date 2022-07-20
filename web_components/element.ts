@@ -71,14 +71,14 @@ export class ComponentElement extends HTMLElement
     super.setAttribute(name, value as string)
   }
 
-  getAttribute(name: string): unknown
-  {
-    if (this._entity) {
-      return this._entity.attrs[name]
-    } else {
-      return super.getAttribute(name)
-    }
-  }
+//   getAttribute(name: string): string | null  // Actually unknown
+//   {
+//     if (this._entity && name in this._entity.attrs) { // why true?
+//       return this._entity.attrs[name] as string
+//     } else {
+//       return super.getAttribute(name)
+//     }
+//   }
 
   getAttributeNode(name: string): Attr | null
   {

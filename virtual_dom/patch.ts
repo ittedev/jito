@@ -16,14 +16,17 @@ import { destroy } from './destroy.ts'
  */
 export function patch(
   tree: LinkedVirtualTree,
-  newTree: VirtualTree
+  newTree: VirtualTree,
+  useEvent = true
 ) : LinkedVirtualTree
 {
-  patchChildren(tree, newTree)
-  tree.el.dispatchEvent(new CustomEvent(eventTypes.patch, {
-    bubbles: true,
-    composed: true
-  }))
+  patchChildren(tree, newTree, useEvent)
+  if (useEvent) {
+    tree.el.dispatchEvent(new CustomEvent(eventTypes.patch, {
+      bubbles: true,
+      composed: true
+    }))
+  }
   return tree
 }
 
@@ -32,7 +35,8 @@ export function patch(
  */
 export function patchElement(
   ve: LinkedVirtualElement | null,
-  newVe: VirtualElement
+  newVe: VirtualElement,
+  useEvent: boolean
 ): LinkedVirtualElement
 {
   // create new element
@@ -58,7 +62,7 @@ export function patchElement(
   patchAttrs(ve, newVe)
   patchForm(ve, newVe)
   patchOn(ve, newVe)
-  patchChildren(ve, newVe)
+  patchChildren(ve, newVe, useEvent)
 
   if ('key' in newVe) {
     ve.key = newVe.key
@@ -74,7 +78,8 @@ export function patchElement(
  */
 export function patchRealElement(
   ve: LinkedRealTarget | null,
-  newVe: RealTarget
+  newVe: RealTarget,
+  useEvent: boolean
 ): LinkedRealTarget
 {
   if (!ve || ve.el !== newVe.el) {
@@ -98,7 +103,7 @@ export function patchRealElement(
     patchOn(ve, newVe)
   }
   if (!ve.invalid?.children && ve.el instanceof Node) {
-    patchChildren(ve as LinkedVirtualTree, newVe)
+    patchChildren(ve as LinkedVirtualTree, newVe, useEvent)
   }
 
   return ve
@@ -339,7 +344,11 @@ class Stock {
  *
  *  use boundary numbers algorithm
  */
-export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): void
+export function patchChildren(
+  tree: LinkedVirtualTree,
+  newTree: VirtualTree,
+  useEvent: boolean
+): void
 {
   let oldChildren = tree.children || []
   let newChildren = newTree.children || []
@@ -370,16 +379,16 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
 
   // add object
   let add = (newVNode: VirtualElement) => {
-    let tmp = patchElement(null, newVNode) as LinkedVirtualElement
+    let tmp = patchElement(null, newVNode, useEvent) as LinkedVirtualElement
     parent.insertBefore(tmp.el, currentNode || null)
     return tmp
   }
 
   // replace object
   let replace = (newVNode: VirtualElement) => {
-    let tmp = patchElement(oldChildren[index] as LinkedVirtualElement, newVNode) as LinkedVirtualElement
+    let tmp = patchElement(oldChildren[index] as LinkedVirtualElement, newVNode, useEvent) as LinkedVirtualElement
     if (tmp !== oldChildren[index]) {
-      destroy(oldChildren[index] as LinkedVirtualElement)
+      destroy(oldChildren[index] as LinkedVirtualElement, useEvent)
       parent.replaceChild(tmp.el, (oldChildren[index] as LinkedVirtualElement).el)
     }
     currentNode = tmp.el.nextSibling
@@ -393,23 +402,20 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
     if (typeof oldChild !== 'number') {
       if (typeof oldChild === 'object') {
         if (currentNode !== (oldChild as LinkedRealTarget).el) {
-          destroy(oldChild as LinkedVirtualElement)
+          destroy(oldChild as LinkedVirtualElement, useEvent)
           index++
           return
         }
         if (useStore && 'key' in (oldChild as LinkedVirtualElement)) {
           stock.push((oldChild as LinkedVirtualElement).key, oldChild as LinkedVirtualElement)
         } else {
-          destroy(oldChild as LinkedVirtualElement)
+          destroy(oldChild as LinkedVirtualElement, useEvent)
         }
       }
-      // remove node except remote node
       if (
-        typeof oldChild === 'object' &&
-        !(
-          'el' in (oldChild as LinkedRealTarget) &&
-          (oldChild as LinkedRealTarget).override
-        )
+        typeof oldChild === 'string' ||
+          typeof oldChild === 'object' &&
+          !(oldChild as LinkedRealTarget).override
       ) {
         let oldNode = currentNode as Node
         currentNode = oldNode.nextSibling
@@ -444,7 +450,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
             newVNode.el === (oldChildren[index] as LinkedRealTarget).el
           ) {
             // patch real node
-            let tmp = patchRealElement((oldChildren[index] as LinkedRealTarget), newVNode)
+            let tmp = patchRealElement((oldChildren[index] as LinkedRealTarget), newVNode, useEvent)
             if (
               !tmp.override &&
               tmp.el === currentNode &&
@@ -457,7 +463,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
             return tmp
           } else {
             // add real node
-            let tmp = patchRealElement(null, newVNode)
+            let tmp = patchRealElement(null, newVNode, useEvent)
             if (
               !tmp.override &&
               tmp.el instanceof Element && // el instanceof Element
@@ -472,7 +478,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
         // virtual element
         if ('key' in newVNode) {
           if (stock.has(newVNode.key)) {
-            let tmp = patchElement(stock.shift(newVNode.key), newVNode)
+            let tmp = patchElement(stock.shift(newVNode.key), newVNode, useEvent)
             parent.insertBefore(tmp.el, currentNode || null)
             return tmp
           } else {
@@ -510,7 +516,7 @@ export function patchChildren(tree: LinkedVirtualTree, newTree: VirtualTree): vo
         }
         index++
         currentNumber = numbers.pop()
-        stock.stock.forEach(queue => queue.forEach(ve => destroy(ve)))
+        stock.stock.forEach(queue => queue.forEach(ve => destroy(ve, useEvent)))
         stock.stock.clear()
         return newVNode
       }

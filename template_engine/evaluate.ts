@@ -253,7 +253,7 @@ export let evaluate = function (
 
     // deno-lint-ignore no-fallthrough
     case 'custom': {
-      let el = plugins.find(plugin => plugin.match(temp, stack, cache))?.exec(temp, stack, cache)
+      let el = plugins.find(plugin => plugin.match(temp as CustomElementTemplate | CustomTemplate, stack, cache))?.exec(temp, stack, cache)
       if (el) {
         return el
       }

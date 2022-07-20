@@ -188,7 +188,6 @@ export interface GroupTemplate {
 export interface EvaluationTemplate {
   type: 'evaluation'
   template: Template
-  stack?: StateStack
 }
 
 export interface HandlerTemplate {

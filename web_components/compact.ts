@@ -2,11 +2,12 @@ import { Main, Component, Patcher } from './types.ts'
 import { StateStack, TreeTemplate } from '../template_engine/types.ts'
 import { lock } from '../data_binding/lock.ts'
 import { parse } from '../template_engine/parse.ts'
-import { componentPlugin, specialTagPlugin } from './plugins.ts'
+import { componentPlugin, specialTagPlugin, componentElementPlugin } from './plugins.ts'
 import { evaluate } from '../template_engine/evaluate.ts'
 
 evaluate.plugin(componentPlugin)
 evaluate.plugin(specialTagPlugin)
+evaluate.plugin(componentElementPlugin)
 
 export function compact(html: string): Component
 export function compact(html: string, stack: StateStack): Component

@@ -14,21 +14,23 @@ import {
   patchOn
 } from './patch.ts'
 
-export function destroy(tree: LinkedVirtualRoot)
+export function destroy(tree: LinkedVirtualRoot, useEvent = true)
 {
   if (!(tree as LinkedRealTarget).invalid?.children && tree.el instanceof Node) {
     tree.children?.forEach(child =>
       typeof child === 'object' &&
-      destroy(child as LinkedVirtualRoot)
+      destroy(child as LinkedVirtualRoot, useEvent)
     )
     let el = tree.el as Node
     while (el.firstChild) {
       el.removeChild(el.firstChild)
     }
   }
-  tree.el.dispatchEvent(new CustomEvent(eventTypes.destroy, {
-    bubbles: false
-  }))
+  if (useEvent && !(tree as LinkedRealTarget).override) {
+    tree.el.dispatchEvent(new CustomEvent(eventTypes.destroy, {
+      bubbles: false
+    }))
+  }
   if (!(tree as LinkedRealTarget).invalid?.on) {
     patchOn(tree, {})
   }
