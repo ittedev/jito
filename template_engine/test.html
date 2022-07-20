@@ -2882,7 +2882,7 @@ describe('Template Engine', function() {
       it('evaluate: evaluation', () => {
         let template = {
           type: 'evaluation',
-          template: {
+          value: {
             type: "get",
             value: {
               type: "variable",
@@ -2898,7 +2898,7 @@ describe('Template Engine', function() {
       it('evaluate: evaluation <group>', () => {
         let template = {
           type: 'evaluation',
-          template: {
+          value: {
             type: "group",
             children: [
               {
