@@ -142,8 +142,6 @@ describe('Data Binding', function() {
         let y = 0
         watch(data, () => { y++ })
         data.y = newObj
-        console.log('newObj:', newObj)
-        console.log('oldObj:', oldObj)
         equal(data, { x: 1, y: { z: 3 } })
         equal(y, 1)
         oldObj.z = 4

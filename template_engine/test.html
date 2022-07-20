@@ -2238,16 +2238,6 @@ describe('Template Engine', function() {
 
       it('evaluate: ref attrs', () => {
         let tree = evaluate(parse(`<p id*="x"></p>`), { x: 1 })
-        console.log('tree:', tree, {
-          children: [
-            {
-              tag: "p",
-              attrs: {
-                id: undefined
-              }
-            }
-          ]
-        })
         equal(tree, {
           children: [
             {

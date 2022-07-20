@@ -158,7 +158,6 @@ export function addReactive(obj: ReactiveObject, key: string | number, reactive?
           get() { return this[isReactive][arrayKey][key] },
           set(value) {
             let old = this[isReactive][arrayKey][key]
-            console.log('change:', old, value)
             if (old !== value) {
               infect(this, value)
               purify(this, old)

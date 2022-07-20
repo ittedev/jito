@@ -39,7 +39,6 @@ export function _unreach(data: unknown, blocker: ReactivableObject[], isDeReacti
       deReactivate(data)
     }
     blocker.pop()
-    console.log('_unreach:', data)
   }
   return data
 }
