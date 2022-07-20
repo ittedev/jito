@@ -11,6 +11,7 @@ import type { TreeTemplate, StateStack, Ref } from '../template_engine/types.ts'
 import { special } from './types.ts'
 import { instanceOfRef } from '../template_engine/types.ts'
 import { watch } from '../data_binding/watch.ts'
+import { change } from '../data_binding/change.ts'
 import { reach } from '../data_binding/reach.ts'
 import { unreach } from '../data_binding/unreach.ts'
 import { unwatch } from '../data_binding/unwatch.ts'
@@ -90,6 +91,7 @@ export class Entity
 
   public setAttr(name: string, value: unknown)
   {
+
     switch (name) {
       case 'is': case 'class': case 'part': case 'style': return
       default: {
@@ -116,15 +118,10 @@ export class Entity
             this._refs[name] = [value, childCallback, parentCallback]
             watch(this._attrs, name, childCallback)
             watch(value.record, value.key as string, parentCallback)
-            this._attrs[name] = value.record[value.key]
+            change(this._attrs, name, value.record[value.key])
           } else {
-            this._attrs[name] = value
+            change(this._attrs, name, value)
           }
-          if (old === undefined) {
-            watch(this._attrs, name, this.patch)
-          }
-          reach(this._attrs, this.patch)
-          this.patch()
         }
       }
     }
@@ -246,7 +243,7 @@ class SafeUpdater
     // remove from wait list
     removedLinks.forEach(link => this.removeWaitUrl(link.attrs?.href as string))
 
-    if (removedLinks) {
+    if (removedLinks.length) {
       // patch old header and new header
       // because href may have changed
       patch(this.tree, concat(this.header, header, this.body))
@@ -263,6 +260,13 @@ class SafeUpdater
     // patch new body
     this.update = () => {
       patch(this.tree, concat(this.header, body))
+
+      // remove new
+      hoist(body, el => {
+        delete (el as VirtualElement).new
+        return false
+      })
+
       this.body = body
     }
   }

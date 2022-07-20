@@ -190,7 +190,6 @@ export function patchAttrs(
   let newAttrs = newVe.attrs || {}
   let currentAttrsKeys = Object.keys(currentAttrs)
   let newAttrsKeys = Object.keys(newAttrs)
-
   // shortageOrUpdated
   newAttrsKeys
     .filter(key => !currentAttrsKeys.includes(key) || currentAttrs[key] !== newAttrs[key])

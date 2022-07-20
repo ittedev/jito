@@ -71,6 +71,15 @@ export class ComponentElement extends HTMLElement
     super.setAttribute(name, value as string)
   }
 
+  getAttribute(name: string): unknown
+  {
+    if (this._entity) {
+      return this._entity.attrs[name]
+    } else {
+      return super.getAttribute(name)
+    }
+  }
+
   getAttributeNode(name: string): Attr | null
   {
     let attr = super.getAttributeNode(name)

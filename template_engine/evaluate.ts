@@ -296,11 +296,8 @@ export let evaluate = function (
     }
 
     case 'evaluation':
-      return evaluate(
-        temp.template,
-        temp.stack ? temp.stack.concat(stack) : stack,
-        cache
-      )
+      return evaluate(temp.template, stack, cache)
+
     default:
       return plugins.find(plugin => plugin.match(template as CustomTemplate, stack, cache))?.exec(template as CustomTemplate, stack, cache)
   }
