@@ -238,8 +238,8 @@ function resolveProperties(
     if (!ve.attrs) {
       ve.attrs = {}
     }
-    contents.forEach(([name, template]) => {
-      (ve.attrs as Record<string, unknown | Template>)[name] = { type: 'evaluation', template, stack } as EvaluationTemplate
+    contents.forEach(([name, value]) => {
+      (ve.attrs as Record<string, unknown | Template>)[name] = { type: 'evaluation', value, stack } as EvaluationTemplate
     })
   }
   if (children.length) {

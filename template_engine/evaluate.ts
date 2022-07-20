@@ -296,7 +296,7 @@ export let evaluate = function (
     }
 
     case 'evaluation':
-      return evaluate(temp.template, stack, cache)
+      return evaluate(temp.value, stack, cache)
 
     default:
       return plugins.find(plugin => plugin.match(template as CustomTemplate, stack, cache))?.exec(template as CustomTemplate, stack, cache)

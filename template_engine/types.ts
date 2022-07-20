@@ -187,7 +187,7 @@ export interface GroupTemplate {
 
 export interface EvaluationTemplate {
   type: 'evaluation'
-  template: Template
+  value: Template
 }
 
 export interface HandlerTemplate {
