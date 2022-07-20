@@ -31,7 +31,7 @@ From jsDelivr.
 
 ```js
 <script type="module">
-  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@1.0.0/beako.js'
+  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@1.0.1/beako.js'
   ...
 </script>
 ```
@@ -39,7 +39,7 @@ From jsDelivr.
 ### TypeScript for Deno
 
 ```ts
-import { ... } from 'https://deno.land/x/beako@1.0.0/mod.ts'
+import { ... } from 'https://deno.land/x/beako@1.0.1/mod.ts'
 ```
 
 ## First Example
@@ -57,6 +57,6 @@ import { ... } from 'https://deno.land/x/beako@1.0.0/mod.ts'
 
   setInterval(() => { state.count++ }, 1000)
 
-  mount(document.body, `Counter: {{ count }}`, state)
+  mount(document.body, `Counter: {{ count }}`, [state])
 </script>
 ```
