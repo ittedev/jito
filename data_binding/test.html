@@ -69,7 +69,7 @@ describe('Data Binding', function() {
         equal(y, 2)
       })
 
-      it('deeply watch object exec function', () => {
+      it('watch nested object exec function', () => {
         let data = {
           x: 1,
           y: {
@@ -121,9 +121,37 @@ describe('Data Binding', function() {
         let y = 0
         watch(data, () => { y = 2 })
         data.z = 3
-        watch(data)
         equal(data, { x: 1, z: 3 })
         equal(y, 0)
+        watch(data)
+        data.z = 4
+        equal(data, { x: 1, z: 4 })
+        equal(y, 2)
+      })
+      it('change old property', () => {
+        let oldObj = {
+          z: 2
+        }
+        let newObj = {
+          z: 3
+        }
+        let data = {
+          x: 1,
+          y: oldObj
+        }
+        let y = 0
+        watch(data, () => { y++ })
+        data.y = newObj
+        console.log('newObj:', newObj)
+        console.log('oldObj:', oldObj)
+        equal(data, { x: 1, y: { z: 3 } })
+        equal(y, 1)
+        oldObj.z = 4
+        equal(data, { x: 1, y: { z: 3 } })
+        equal(y, 1)
+        newObj.z = 5
+        equal(data, { x: 1, y: { z: 5 } })
+        equal(y, 2)
       })
     })
 
@@ -583,7 +611,6 @@ describe('Data Binding', function() {
     })
   })
 
-  // Test unwatch() function
   describe('change()', function() {
     it('add new property', () => {
       let data = {
@@ -594,6 +621,26 @@ describe('Data Binding', function() {
       change(data, 'z', 3)
       equal(data, { x: 1, z: 3 })
       equal(y, 2)
+    })
+    it('change property', () => {
+      let data = {
+        x: 1
+      }
+      let y = 0
+      watch(data, () => { y = 2 })
+      change(data, 'x', 3)
+      equal(data, { x: 3 })
+      equal(y, 2)
+    })
+    it('no change property', () => {
+      let data = {
+        x: 1
+      }
+      let y = 0
+      watch(data, () => { y = 2 })
+      change(data, 'x', 1)
+      equal(data, { x: 1 })
+      equal(y, 0)
     })
   })
 
