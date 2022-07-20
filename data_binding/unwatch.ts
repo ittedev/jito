@@ -1,87 +1,83 @@
 // deno-lint-ignore-file no-explicit-any
 import {
-  dictionary,
+  isReactive,
   Callback,
   TargetCallback,
   RecursiveCallback,
-  BeakoObject,
-  reactiveKey
+  ReactivableObject,
+  ReactiveObject,
+  recursiveKey,
+  instanceOfReactivableObject
 } from './types.ts'
 
 import { _unreach } from './unreach.ts'
 
-export function unwatch(
-  data: unknown
-): unknown
-
-export function unwatch(
-  data: unknown,
-  callback: RecursiveCallback
-): unknown
-
-export function unwatch(
-  data: unknown,
-  key: string,
-  callback: TargetCallback
-): unknown
-
-export function unwatch(
-  data: unknown,
+export function unwatch<T>(data: T): T
+export function unwatch<T>(data: T, callback: RecursiveCallback): T
+export function unwatch<T>(data: T, key: string, callback: TargetCallback): T
+export function unwatch<T>(
+  data: T,
   keyOrCallback?: RecursiveCallback | string,
   callback?: TargetCallback
-): unknown
+): T
 {
-  if (keyOrCallback === undefined) { // All clean
-    _unreach(data, [], true)
-  } else if (callback === undefined) { // RecursiveCallback
-    _unreach(data, [], true, keyOrCallback as RecursiveCallback)
-  } else { // TargetCallback
-    clean(data as BeakoObject, keyOrCallback as string, callback)
+  if (instanceOfReactivableObject(data)) {
+    if (keyOrCallback === undefined) { // All deReactivate
+      _unreach(data, [], true)
+    } else if (callback) { // TargetCallback
+      removeReactive(data as ReactiveObject, keyOrCallback as string, callback)
+      deReactivate(data)
+    } else { // RecursiveCallback
+      _unreach(data, [], true, keyOrCallback as RecursiveCallback)
+    }
   }
   return data
 }
 
-export function clean(obj: BeakoObject, key?: string, callback?: Callback)
+export function deReactivate(obj: ReactivableObject)
 {
-  if (key !== undefined) {
-    if (dictionary in obj) {
-      if (key in obj[dictionary]) {
-        obj[dictionary][key][1].forEach(arm => {
-          if (arm[1] === callback) {
-            obj[dictionary][key as string][1].delete(arm)
-          }
-        })
+  if (isReactive in obj) {
+    let robj = obj as ReactiveObject
+    if (!robj[isReactive][recursiveKey][1].size) {
+      let hasTarget = false
+      for (let key in robj) {
+        if (robj[isReactive][key][1].size > 1) {
+          hasTarget = true
+        }
+      }
+      if (!hasTarget) {
+        for (let key in robj[isReactive]) {
+          Object.defineProperty(robj, key, {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: robj[isReactive][key][0]
+          })
+          delete robj[isReactive][key]
+        }
+        if (Array.isArray(robj)) {
+          delete (robj as any).unshift
+          delete (robj as any).push
+          delete (robj as any).splice
+          delete (robj as any).pop
+          delete (robj as any).shift
+          delete (robj as any).sort
+          delete (robj as any).reverse
+          delete (robj as any).copyWithin
+        }
+        delete (robj as any)[isReactive]
       }
     }
   }
-  if (dictionary in obj && obj[dictionary][reactiveKey][1].size) {
-    let hasTarget = false
-    for (let key in obj) {
-      if (obj[dictionary][key][1].size > 1) {
-        hasTarget = true
+}
+
+export function removeReactive(obj: ReactiveObject, key: string | number, callback: Callback): void
+{
+  if (key in obj[isReactive]) {
+    obj[isReactive][key][1].forEach(reactive => {
+      if (reactive[1] === callback) {
+        obj[isReactive][key][1].delete(reactive)
       }
-    }
-    if (!hasTarget) {
-      for (let key in obj[dictionary]) {
-        Object.defineProperty(obj, key, {
-          enumerable: true,
-          configurable: true,
-          writable: true,
-          value: obj[dictionary][key][0]
-        })
-        delete obj[dictionary][key]
-      }
-      if (Array.isArray(obj)) {
-        delete (obj as any).unshift
-        delete (obj as any).push
-        delete (obj as any).splice
-        delete (obj as any).pop
-        delete (obj as any).shift
-        delete (obj as any).sort
-        delete (obj as any).reverse
-        delete (obj as any).copyWithin
-      }
-      delete (obj as any)[dictionary]
-    }
+    })
   }
 }

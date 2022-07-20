@@ -1,35 +1,34 @@
 import {
-  dictionary,
-  isLocked,
-  reactiveKey,
+  isReactive,
+  recursiveKey,
   RecursiveCallback,
-  BeakoObject
+  ReactivableObject,
+  ReactiveObject,
+  instanceOfReactivableObject
 } from './types.ts'
+
+import { reactivate } from './watch.ts'
 
 export function reach(data: unknown, callback: RecursiveCallback): unknown
 {
-  _reach(data, callback, [])
+  _reach(data, [], false, callback)
   return data
 }
 
-export function _reach(data: unknown, callback: RecursiveCallback, blocker: unknown[]): unknown
+export function _reach(data: unknown, blocker: ReactivableObject[], isReactivate: boolean, callback?: RecursiveCallback): unknown
 {
-  if (
-    typeof data === 'object' &&
-    data !== null &&
-    (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))
-  ) {
-    let obj = data as BeakoObject
-    if (!obj[isLocked]) {
-      blocker.push(data)
-      if (dictionary in obj) {
-        obj[dictionary][reactiveKey][1].add(callback)
-      }
-      for (let key in obj) {
-        _reach(obj[key], callback, blocker)
-      }
-      blocker.pop()
+  if (instanceOfReactivableObject(data) && !blocker.includes(data)) {
+    blocker.push(data)
+    if (isReactivate) {
+      reactivate(data)
     }
+    if (callback && isReactive in data) {
+      (data as ReactiveObject)[isReactive][recursiveKey][1].add(callback)
+    }
+    for (let key in data) {
+      _reach(data[key], blocker, isReactivate, callback)
+    }
+    blocker.pop()
   }
   return data
 }

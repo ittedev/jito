@@ -1,19 +1,19 @@
 import {
-  dictionary,
-  BeakoObject,
-  reactiveKey,
+  isReactive,
+  ReactiveObject,
+  recursiveKey,
   RecursiveTuple
 } from './types.ts'
 
-import { pollute } from './watch.ts'
+import { addReactive } from './watch.ts'
 
 export function change(data: unknown, key: string, value: unknown): unknown
 {
   if (typeof data === 'object' && data !== null) {
-    if (!(key in data) && dictionary in data) {
-      let obj = data as BeakoObject
+    if (!(key in data) && isReactive in data) {
+      let obj = data as ReactiveObject
       obj[key] = undefined
-      pollute(obj, key, (obj[dictionary][reactiveKey] as RecursiveTuple)[0])
+      addReactive(obj, key, obj[isReactive][recursiveKey][0])
     }
     (data as Record<string, unknown>)[key] = value
   }

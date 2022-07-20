@@ -107,7 +107,6 @@ export class Entity
               delete this._refs[name]
             }
           }
-          unwatch(old, this.patch)
           if (instanceOfRef(value)) { // ref attr
             let childCallback = (newValue: unknown) => {
               value.record[value.key] = newValue

@@ -1,50 +1,45 @@
 import {
-  dictionary,
-  reactiveKey,
-  isLocked,
+  isReactive,
+  recursiveKey,
+  ReactivableObject,
   RecursiveCallback,
-  BeakoObject
+  ReactiveObject,
+  instanceOfReactivableObject
 } from './types.ts'
 
-import { clean } from './unwatch.ts'
+import { deReactivate } from './unwatch.ts'
 
 export function unreach(data: unknown, callback: RecursiveCallback): unknown
 {
   return _unreach(data, [], false, callback)
 }
 
-export function _unreach(data: unknown, blocker: unknown[], isClean: boolean, callback?: RecursiveCallback): unknown
+export function _unreach(data: unknown, blocker: ReactivableObject[], isDeReactivate: boolean, callback?: RecursiveCallback): unknown
 {
-  if (
-    typeof data === 'object' &&
-    data !== null &&
-    (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data)) &&
-    !blocker.includes(data)
-  ) {
-    let obj = data as BeakoObject
-    if (!obj[isLocked]) {
-      blocker.push(data)
-      if (obj[dictionary]) {
-        if (callback !== undefined) {
-          // Remove bio from all properties
-          obj[dictionary][reactiveKey][1].delete(callback)
-        } else {
-          // Remove bio from all properties
-          obj[dictionary][reactiveKey][1].clear()
-          // Remove arm from all properties
-          for (let key in obj) {
-            obj[dictionary][key][1].clear()
-          }
+  if (instanceOfReactivableObject(data) && !blocker.includes(data)) {
+    blocker.push(data)
+    if (data[isReactive]) {
+      let obj = data as ReactiveObject
+      if (callback) {
+        // Remove bio from all properties
+        obj[isReactive][recursiveKey][1].delete(callback)
+      } else {
+        // Remove bio from all properties
+        obj[isReactive][recursiveKey][1].clear()
+        // Remove arm from all properties
+        for (let key in obj) {
+          obj[isReactive][key][1].clear()
         }
       }
-      for (let key in obj) {
-        _unreach(obj[key], blocker, isClean, callback)
-      }
-      if (isClean) {
-        clean(obj)
-      }
-      blocker.pop()
     }
+    for (let key in data) {
+      _unreach(data[key], blocker, isDeReactivate, callback)
+    }
+    if (isDeReactivate) {
+      deReactivate(data)
+    }
+    blocker.pop()
+    console.log('_unreach:', data)
   }
   return data
 }

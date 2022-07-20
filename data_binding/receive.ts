@@ -1,30 +1,26 @@
-import { isLocked, BeakoObject } from './types.ts'
-import { pollute } from './watch.ts'
+import {
+  ReactiveObject,
+  instanceOfReactivableObject,
+} from './types.ts'
+import { reactivate, addReactive } from './watch.ts'
 
 export async function receive(data: unknown, ...keys: string[]): Promise<Record<string, unknown>>
 export async function receive(data: unknown, keys: string[]): Promise<Record<string, unknown>>
 export async function receive(data: unknown, ...keys: string[] | string[][]): Promise<Record<string, unknown>>
 {
-  if (typeof data === 'object' &&
-    data !== null &&
-    !(data as BeakoObject)[isLocked]
-  ) {
-    let obj = data as BeakoObject
+  if (instanceOfReactivableObject(data)) {
+    reactivate(data)
     let keys2 = Array.isArray(keys[0]) ? (keys as string[][]).flatMap(k => k) : keys as string[]
     let values = await Promise.all(keys2.map(key => {
-      if (obj[key] === undefined) {
+      if ((data as ReactiveObject)[key] === undefined) {
         return new Promise(resolve => {
-          pollute(obj, key, ['bom', resolve])
+          addReactive(data as ReactiveObject, key, ['bom', resolve])
         })
       } else {
-        return obj[key]
+        return (data as ReactiveObject)[key]
       }
     }))
-    return keys2.reduce((obj, key, index) => {
-      obj[key] = values[index]
-      return obj
-    }, {} as Record<string, unknown>)
-    // return Object.fromEntries(keys.map((key, index) => [key, values[index]]))
+    return Object.fromEntries(keys2.map((key, index) => [key, values[index]]))
   }
   return {}
 }

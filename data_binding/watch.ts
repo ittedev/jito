@@ -1,193 +1,174 @@
 // deno-lint-ignore-file no-explicit-any
 import {
-  dictionary,
-  isLocked,
-  reactiveKey,
+  isReactive,
+  recursiveKey,
   arrayKey,
   RecursiveTuple,
   TargetCallback,
   RecursiveCallback,
-  PageTuple,
-  ArmTuple,
-  BeakoObject,
-  BioTuple,
-  SpyTuple
+  PropertyTuple,
+  Reactive,
+  ReactivableObject,
+  ReactiveObject,
+  RecursiveReactive,
+  instanceOfReactivableObject
 } from './types.ts'
+
+import { _reach } from './reach.ts'
+import { unreach } from './unreach.ts'
 
 export function watch<T>(data: T): T
 export function watch<T>(data: T, callback: RecursiveCallback): T
 export function watch<T>(data: T, key: string, callback: TargetCallback): T
-export function watch<T>(data: T, key: string, spy: SpyTuple): T
 export function watch<T>(
   data: T,
-  keyOrCallback?:  RecursiveCallback | BioTuple | string,
-  callback?: TargetCallback | SpyTuple
+  keyOrCallback?:  RecursiveCallback | string,
+  callback?: TargetCallback
 ): T
 {
-  if (
-    typeof data === 'object' &&
-    data !== null &&
-    (Object.getPrototypeOf(data) === Object.prototype || Array.isArray(data))
-  ) {
-    let obj = data as unknown as BeakoObject
-    if (!obj[isLocked]) {
-      if (callback === undefined) { // bio
-        pollute(obj)
-        let callbacks = (obj[dictionary][reactiveKey] as RecursiveTuple)[1]
-        if (typeof keyOrCallback === 'function') {
-          callbacks.add(keyOrCallback)
-        }
-        // parent bio to all child object
-        for (let key in obj) {
-          let value = obj[key]
-          if (typeof value === 'object' && value !== null) {
-            if (callbacks.size) {
-              callbacks.forEach(callback => {
-                if (!(dictionary in value) || !(value as BeakoObject)[dictionary][reactiveKey][1].has(callback)) { // Block recursion
-                  watch(value, callback)
-                }
-              })
-            } else {
-              if (!(dictionary in value)) { // Block recursion
-                watch(value)
-              }
-            }
-          }
-        }
-      } else { // spy
-        let spy = typeof callback === 'function' ? ['spy', callback] as SpyTuple : callback as SpyTuple
-        pollute(obj, keyOrCallback as string, spy)
-      }
+  if (instanceOfReactivableObject(data)) {
+    if (keyOrCallback === undefined) { // reactivate only
+      _reach(data, [], true)
+    } else if (callback) { // TargetCallback
+      _reach(data, [], true)
+      addReactive(data as ReactiveObject, keyOrCallback as string, ['spy', callback])
+    } else { // RecursiveCallback
+      _reach(data, [], true, keyOrCallback as RecursiveCallback)
     }
   }
   return data
 }
 
-export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple): void
+export function reactivate(obj: ReactivableObject): void
 {
-  if (!obj[isLocked]) {
-    if (!(dictionary in obj)) {
-      let recursiveCallback: RecursiveCallback = () => {
-        (obj[dictionary][reactiveKey] as RecursiveTuple)[1].forEach(callback => callback())
-      }
-      let bio = ['bio', recursiveCallback] as BioTuple
-      obj[dictionary] = {
-        [reactiveKey]: [bio, new Set<RecursiveCallback>()] as RecursiveTuple
-      }
-      if (Array.isArray(obj)) {
-        let array = obj[dictionary][arrayKey] = obj.slice() as Array<unknown>
-        let reactive = <T>(value: T): T => {
-          recursiveCallback()
-          return value
-        }
-        let relength = <T>(value: T): T => {
-          let len = (obj[dictionary][arrayKey] as Array<unknown>).length
-          if (obj.length < len) {
-            for (let index = obj.length; index < len; index++) {
-              pollute(obj, index)
-            }
-          }
-          obj.length = len
-          return reactive(value)
-        }
-        Object.defineProperties(obj, {
-          unshift: {
-            get() {
-              return (...items: any[]): number =>
-              relength(Array.prototype['unshift'].call(array, ...items.map(item => infect(obj, item))))
-            }
-          },
-          push: {
-            get() {
-              return (...items: any[]): number =>
-              relength(Array.prototype['push'].call(array, ...items.map(item => infect(obj, item))))
-            }
-          },
-          splice: {
-            get() {
-              return (start: number, deleteCount?: number | undefined, ...items: any[]) =>
-                relength(
-                  deleteCount === undefined ?
-                    Array.prototype['splice'].call(array, start, array.length - start) :
-                    Array.prototype['splice'].apply(array, [start, deleteCount, ...items.map(item => infect(obj, item))])
-                )
-              }
-          },
-          pop: {
-            get() { return () => relength(Array.prototype['pop'].call(array)) }
-          },
-          shift: {
-            get() { return () => relength(Array.prototype['shift'].call(array)) }
-          },
-          sort: {
-            get() {
-              return (compareFn?: ((a: any, b: any) => number) | undefined) =>
-                reactive(
-                  compareFn === undefined ?
-                    Array.prototype['sort'].call(array) :
-                    Array.prototype['sort'].call(array, compareFn)
-                )
-            }
-          },
-          reverse: {
-            get() { return () => reactive(Array.prototype['reverse'].call(array)) }
-          },
-          copyWithin: {
-            get() {
-              return (target: number, start: number, end?: number | undefined) =>
-                reactive(
-                  Array.prototype['copyWithin'].call(array,
-                    target,
-                    start !== undefined ? start : 0,
-                    end !== undefined ? end : array.length
-                  )
-                )
-            }
-          }
-        })
-      }
-      for (let key in obj) {
-        pollute(obj, key, bio)
-      }
+  if (!(isReactive in obj)) {
+    let recursiveCallbacks = new Set<RecursiveCallback>()
+    let recursiveCallback: RecursiveCallback = () => {
+      recursiveCallbacks.forEach(callback => callback())
     }
-
-    if (key !== undefined) {
-      if (!Array.isArray(obj) || typeof key !== 'number' && isNaN(key as unknown as number)) {
-        if (!(key in obj[dictionary])) {
-          obj[dictionary][key] = [obj[key], new Set<ArmTuple>()]
-          Object.defineProperty(obj, key, {
-            get() { return this[dictionary][key][0] },
-            set(value) {
-              infect(obj, value)
-              launch(this[dictionary][key] as PageTuple, value)
+    let recursiveReactive = ['bio', recursiveCallback] as RecursiveReactive
+    obj[isReactive] = {
+      [recursiveKey]: [recursiveReactive, recursiveCallbacks] as RecursiveTuple
+    }
+    if (Array.isArray(obj)) {
+      let array = (obj as ReactiveObject)[isReactive][arrayKey] = obj.slice() as Array<unknown>
+      let call = <T>(value: T): T => {
+        recursiveCallback()
+        return value
+      }
+      let relength = <T>(value: T): T => {
+        let len = ((obj as ReactiveObject)[isReactive][arrayKey] as Array<unknown>).length
+        if (obj.length < len) {
+          for (let index = obj.length; index < len; index++) {
+            addReactive(obj as ReactiveObject, index)
+          }
+        }
+        obj.length = len
+        return call(value)
+      }
+      Object.defineProperties(obj, {
+        unshift: {
+          get() {
+            return (...items: any[]): number =>
+            relength(Array.prototype['unshift'].call(array, ...items.map(item => infect(obj as ReactiveObject, item))))
+          }
+        },
+        push: {
+          get() {
+            return (...items: any[]): number =>
+            relength(Array.prototype['push'].call(array, ...items.map(item => infect(obj as ReactiveObject, item))))
+          }
+        },
+        splice: {
+          get() {
+            return (start: number, deleteCount?: number | undefined, ...items: any[]) =>
+              relength(
+                deleteCount === undefined ?
+                  Array.prototype['splice'].call(array, start, array.length - start) :
+                  Array.prototype['splice'].apply(array, [start, deleteCount, ...items.map(item => infect(obj as ReactiveObject, item))])
+              )
             }
-          })
-        }
-        if (arm) {
-          for (let item of obj[dictionary][key][1]) {
-            if (item[1] === arm[1]) return
+        },
+        pop: {
+          get() { return () => relength(Array.prototype['pop'].call(array)) }
+        },
+        shift: {
+          get() { return () => relength(Array.prototype['shift'].call(array)) }
+        },
+        sort: {
+          get() {
+            return (compareFn?: ((a: any, b: any) => number) | undefined) =>
+              call(
+                compareFn === undefined ?
+                  Array.prototype['sort'].call(array) :
+                  Array.prototype['sort'].call(array, compareFn)
+              )
           }
-          obj[dictionary][key][1].add(arm)
-        }
-      } else {
-        let descriptor = Object.getOwnPropertyDescriptor(obj, key)
-        if (!descriptor || 'value' in descriptor) {
-          if (key in (obj[dictionary][arrayKey] as Array<unknown>)) {
-            Object.defineProperty(obj, key, {
-              get() { return this[dictionary][arrayKey][key] },
-              set(value) {
-                infect(obj, value)
-                let old = this[dictionary][arrayKey][key]
-                this[dictionary][arrayKey][key] = value
-                if (old !== value) {
-                  obj[dictionary][reactiveKey][0][1]()
-                }
-              },
-              configurable: true,
-              enumerable: true
-            })
+        },
+        reverse: {
+          get() { return () => call(Array.prototype['reverse'].call(array)) }
+        },
+        copyWithin: {
+          get() {
+            return (target: number, start: number, end?: number | undefined) =>
+              call(
+                Array.prototype['copyWithin'].call(array,
+                  target,
+                  start !== undefined ? start : 0,
+                  end !== undefined ? end : array.length
+                )
+              )
           }
         }
+      })
+    }
+  }
+  if (isReactive in obj) {
+    let recursiveReactive = (obj as ReactiveObject)[isReactive][recursiveKey][0]
+    for (let key in obj) {
+      addReactive(obj as ReactiveObject, key, recursiveReactive)
+    }
+  }
+}
+
+export function addReactive(obj: ReactiveObject, key: string | number, reactive?: Reactive): void
+{
+  if (!Array.isArray(obj) || typeof key !== 'number' && isNaN(key as unknown as number)) { // not array
+    // new key
+    if (!(key in obj[isReactive])) {
+      obj[isReactive][key] = [obj[key], new Set<Reactive>()]
+      Object.defineProperty(obj, key, {
+        get() { return this[isReactive][key][0] },
+        set(value) {
+          launch(this, this[isReactive][key] as PropertyTuple, value)
+        }
+      })
+    }
+    if (reactive) {
+      for (let item of obj[isReactive][key][1]) {
+        if (item[1] === reactive[1]) return
+      }
+      obj[isReactive][key][1].add(reactive)
+    }
+  } else { // array 何してる？
+    let descriptor = Object.getOwnPropertyDescriptor(obj, key)
+    if (!descriptor || 'value' in descriptor) {
+      if (key in (obj[isReactive][arrayKey] as Array<unknown>)) {
+        Object.defineProperty(obj, key, {
+          get() { return this[isReactive][arrayKey][key] },
+          set(value) {
+            let old = this[isReactive][arrayKey][key]
+            console.log('change:', old, value)
+            if (old !== value) {
+              infect(this, value)
+              purify(this, old)
+              this[isReactive][arrayKey][key] = value
+              obj[isReactive][recursiveKey][0][1]()
+            }
+          },
+          configurable: true,
+          enumerable: true
+        })
       }
     }
   }
@@ -196,28 +177,40 @@ export function pollute(obj: BeakoObject, key?: string | number, arm?: ArmTuple)
 /**
  * Copy bio only
  */
-function infect(obj: BeakoObject, data: unknown)
+function infect(obj: ReactiveObject, data: unknown)
 {
-  obj[dictionary][reactiveKey][1].forEach(callback => watch(data, callback))
+  obj[isReactive][recursiveKey][1].forEach(callback => watch(data, callback))
   return data
 }
 
-function launch(page: PageTuple, value: unknown)
+/**
+ * Remove bio only
+ */
+function purify(obj: ReactiveObject, data: unknown)
 {
-  let old = page[0]
-  page[0] = value
+  obj[isReactive][recursiveKey][1].forEach(callback => unreach(data, callback))
+  return data
+}
+
+
+function launch(obj: ReactiveObject, property: PropertyTuple, value: unknown)
+{
+  let old = property[0]
+  property[0] = value
 
   if (old !== value) {
-    page[1].forEach(arm => {
-      switch(arm[0]) {
+    infect(obj, value)
+    purify(obj, old)
+    property[1].forEach(reactive => {
+      switch(reactive[0]) {
         case 'bio':
-          (arm[1] as RecursiveCallback)()
+          (reactive[1] as RecursiveCallback)()
           break
         // deno-lint-ignore no-fallthrough
         case 'bom':
-          page[1].delete(arm)
+          property[1].delete(reactive)
         case 'spy':
-          arm[1](value, old)
+          reactive[1](value, old)
           break
       }
     })

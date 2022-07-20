@@ -1,31 +1,53 @@
 // deno-lint-ignore-file no-explicit-any
-export const dictionary = Symbol.for('Beako Object')
-export const reactiveKey = Symbol.for('Beako Reactive')
-export const arrayKey = Symbol.for('Beako Array')
+export const isReactive = Symbol.for('Beako Reactive')
 export const isLocked = Symbol.for('Beako Lock')
+export const recursiveKey = Symbol.for('Beako Recursive')
+export const arrayKey = Symbol.for('Beako Array')
 
-export interface Dictionary {
-  [key: string]: PageTuple
-  [reactiveKey]: RecursiveTuple
+export interface ReactiveDictionary {
+  [key: string]: PropertyTuple
+  [recursiveKey]: RecursiveTuple
   [arrayKey]?: Array<unknown>
 }
 
-export type PageTuple = [unknown, Set<ArmTuple>]
+export type PropertyTuple = [
+  unknown, // property data
+  Set<Reactive>
+]
 
-export type RecursiveTuple = [BioTuple, Set<RecursiveCallback>]
+export type RecursiveTuple = [
+  RecursiveReactive, // same RecursiveReactive in all property
+  Set<RecursiveCallback>
+]
 
-export type ArmType = 'bio' | 'spy' | 'bom'
+export type ReactiveType =
+  'bio' | // RecursiveReactive
+  'spy' | // TargetReactive
+  'bom' // only once Reactive
 
-export type ArmTuple = [ArmType, Callback]
-export type BioTuple = ['bio', RecursiveCallback]
-export type SpyTuple = ['spy', TargetCallback]
+export type Reactive = [ReactiveType, Callback]
+export type RecursiveReactive = ['bio', RecursiveCallback]
+export type TargetReactive = ['spy', TargetCallback]
 
 export type RecursiveCallback = () => void
 export type TargetCallback = ((newValue: any, oldValue: any) => void)
 export type Callback = RecursiveCallback | TargetCallback
 
-export interface BeakoObject {
+
+export interface ReactivableObject {
   [key: string]: unknown
-  [dictionary]: Dictionary
-  [isLocked: symbol]: unknown
+  [isReactive]?: ReactiveDictionary
+}
+
+export interface ReactiveObject extends ReactivableObject {
+  [key: string]: unknown
+  [isReactive]: ReactiveDictionary
+  [isLocked]?: boolean
+}
+
+export function instanceOfReactivableObject(object: any): object is ReactivableObject {
+  return typeof object === 'object' &&
+    object !== null &&
+    (Object.getPrototypeOf(object) === Object.prototype || Array.isArray(object)) &&
+    !object[isLocked]
 }
