@@ -3,11 +3,6 @@ import { eventTypes as symbol } from './types.ts'
 let destroy = 'destroy'
 let patch = 'patch'
 
-declare global {
-  interface Window {
-    [symbol]: { destroy: string, patch: string }
-  }
-}
 
 if (!(symbol in window)) {
   Object.defineProperty(window, symbol, {
@@ -20,4 +15,5 @@ if (!(symbol in window)) {
   })
 }
 
-export let eventTypes = window[symbol]
+// deno-lint-ignore no-explicit-any
+export let eventTypes = (window as any)[symbol] as { destroy: string, patch: string }

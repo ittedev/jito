@@ -1,0 +1,26 @@
+{
+  "name": "jito",
+  "version": "1.0.0",
+  "description": "Web component tools with Data Binding, Template Engine and Virtual Dom for ESM.",
+  "keywords": [
+    "jito",
+    "spa"
+  ],
+  "files": [
+    "LICENSE",
+    "jito.js",
+    "jito.d.ts"
+  ],
+  "module": "jito.js",
+  "typings": "jito.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ittedev/jito.git"
+  },
+  "author": "Nakamura",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ittedev/jito/issues"
+  },
+  "homepage": "https://github.com/ittedev/jito#readme"
+}

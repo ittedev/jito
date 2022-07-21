@@ -14,7 +14,7 @@ import {
   patchOn
 } from './patch.ts'
 
-export function destroy(tree: LinkedVirtualRoot, useEvent = true)
+export function destroy(tree: LinkedVirtualRoot, useEvent = true): void
 {
   if (!(tree as LinkedRealTarget).invalid?.children && tree.el instanceof Node) {
     tree.children?.forEach(child =>

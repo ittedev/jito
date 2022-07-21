@@ -199,7 +199,7 @@ export let specialTagPlugin = {
         attrs: true,
         children: true
       }
-    }
+    } as RealTarget
     evaluateAttrs(template, stack, cache, re)
     return re
   }

@@ -12,11 +12,11 @@ She support JavaScript and TypeScript for Deno.
 
 [Glitch Examples](https://glitch.com/@itte1)
 
-## Usage
+## Import
 
 Jito use ES Modules.
 
-### Local
+### From a local file
 
 ```js
 <script type="module">
@@ -25,24 +25,41 @@ Jito use ES Modules.
 </script>
 ```
 
-### CDN
+### From CDN
 
 From jsDelivr.
 
 ```js
 <script type="module">
-  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/beako@1.0.1/beako.js'
+  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.0.0/jito.js'
   ...
 </script>
 ```
 
-### TypeScript for Deno
+### For Deno
 
 ```ts
-import { ... } from 'https://deno.land/x/beako@1.0.1/mod.ts'
+import { ... } from 'https://deno.land/x/jito@1.0.0/mod.ts'
 ```
 
+### For Node.js
+
+Install:
+
+```sh
+npm i jito
+```
+
+Import:
+
+```ts
+import { ... } from 'jito'
+```
+
+
 ## First Example
+
+Please save the following code as `example.html` and try opening it in your web browser. A counter that counts up every second is displayed.
 
 ```html
 <!DOCTYPE html>

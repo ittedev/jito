@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["deno.unstable", "deno.ns", "ES2021", "DOM", "DOM.Iterable"]
-  },
-  "tasks": {
-    "build": "jito build mod.ts -o jito.js"
+    "lib": ["ES2021", "DOM", "DOM.Iterable"]
   },
   "lint": {
     "rules": {

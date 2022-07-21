@@ -76,7 +76,7 @@ function parseTree(node: TemporaryNode): Array<Template | string>
   while (lexer.node) {
     let result = parseNode(lexer)
     if (result !== undefined) {
-      children.push(result)
+      children.push(result as string | Template)
     }
   }
   return children

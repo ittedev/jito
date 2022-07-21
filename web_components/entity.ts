@@ -89,7 +89,7 @@ export class Entity
     })()
   }
 
-  public setAttr(name: string, value: unknown)
+  public setAttr(name: string, value: unknown): void
   {
     switch (name) {
       case 'is': case 'class': case 'part': case 'style': return
@@ -130,7 +130,7 @@ export class Entity
   public get root(): ShadowRoot { return this._tree.el as ShadowRoot }
   public get attrs(): Record<string, unknown> { return this._attrs }
 
-  public get ready()
+  public get ready(): () => Promise<void>
   {
     return (): Promise<void> => this._ready
   }

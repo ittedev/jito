@@ -1,4 +1,4 @@
-export let eventTypes = Symbol.for('Jito Event Types')
+export const eventTypes = Symbol.for('Jito Event Types')
 
 export interface HasAttrs {
   class?: Array<string>

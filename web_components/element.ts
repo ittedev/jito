@@ -15,7 +15,7 @@ export class ComponentElement extends HTMLElement
     super()
   }
 
-  setAttr(name: string, value: unknown)
+  setAttr(name: string, value: unknown): void
   {
     this._entity?.setAttr(name, value)
   }
@@ -25,7 +25,7 @@ export class ComponentElement extends HTMLElement
     return undefined
   }
 
-  loadAttrs()
+  loadAttrs(): void
   {
     if (this.hasAttributes()) {
       this.getAttributeNames().forEach(name => {
@@ -53,7 +53,7 @@ export class ComponentElement extends HTMLElement
     }
   }
 
-  get entity()
+  get entity(): Entity | undefined
   {
     return this._entity
   }
