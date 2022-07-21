@@ -1,8 +1,8 @@
-# Beako.js
+# Jito
 
-## What is Beako.js?
+## What is Jito?
 
-Beako.js is web component tools with Data Binding, Template Engine and Virtual DOM.
+Jito is web component tools with Data Binding, Template Engine and Virtual DOM.
 
 You can experience single page application development with just a web browser.
 
@@ -14,13 +14,13 @@ She support JavaScript and TypeScript for Deno.
 
 ## Usage
 
-Beako.js use ES Modules.
+Jito use ES Modules.
 
 ### Local
 
 ```js
 <script type="module">
-  import { ... } from './beako.js'
+  import { ... } from './jito.js'
   ...
 </script>
 ```
@@ -49,7 +49,7 @@ import { ... } from 'https://deno.land/x/beako@1.0.1/mod.ts'
 <meta charset="UTF-8">
 <body></body>
 <script type="module">
-  import { watch, mount } from './beako.js'
+  import { watch, mount } from './jito.js'
 
   let state = watch({
     count: 1

@@ -8,7 +8,7 @@ import type {
 } from '../template_engine/types.ts'
 import { Entity } from './entity.ts'
 
-export const special = Symbol.for('Beako Special')
+export const special = Symbol.for('Jito Special')
 
 export type Patcher = (stack: StateStack) => VirtualTree
 

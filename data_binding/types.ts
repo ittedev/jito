@@ -1,8 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
-export const isReactive = Symbol.for('Beako Reactive')
-export const isLocked = Symbol.for('Beako Lock')
-export const recursiveKey = Symbol.for('Beako Recursive')
-export const arrayKey = Symbol.for('Beako Array')
+export const isReactive = Symbol.for('Jito Reactive')
+export const isLocked = Symbol.for('Jito Lock')
+export const recursiveKey = Symbol.for('Jito Recursive')
+export const arrayKey = Symbol.for('Jito Array')
 
 export interface ReactiveDictionary {
   [key: string]: PropertyTuple

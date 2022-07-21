@@ -65,12 +65,12 @@ export let componentPlugin = {
   {
     let temp = template as ComponentTemplate
     let ve: VirtualElement = {
-      tag: componentElementTag // 'beako-element'
+      tag: componentElementTag // 'jito-element'
     }
 
     let component
 
-    // If tag is not "beako-element"
+    // If tag is not "jito-element"
     if (temp.tag !== componentElementTag ) {
       component = pickup(stack, temp.tag)
       if (component) {
@@ -89,7 +89,7 @@ export let componentPlugin = {
 
     evaluateAttrs(temp, stack, cache, ve)
 
-    // If tag is "beako-element",
+    // If tag is "jito-element",
     // require a component property
     // because attach shadow error occurs
     if (temp.tag === componentElementTag) {

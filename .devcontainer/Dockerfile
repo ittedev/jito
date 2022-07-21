@@ -10,4 +10,4 @@ ENV PATH /home/vscode/.deno/bin:/usr/local/bin:$PATH
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends webfs
 
-RUN sudo -u vscode deno install -fA https://deno.land/x/beako_cli/beako.ts
+RUN sudo -u vscode deno install -fA https://deno.land/x/jito_cli/jito.ts

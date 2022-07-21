@@ -64,7 +64,7 @@ import {
   mount,
   pickup,
   elementize
-} from '../beako.js'
+} from '../jito.js'
 
 mocha.setup('bdd')
 class XX extends HTMLDivElement { constructor() { super() } }
@@ -76,78 +76,78 @@ describe('Web Components', function() {
 
   describe('define()', function() {
     it('define string', async () => {
-      define('define-1', `Hello beako!`)
+      define('define-1', `Hello jito!`)
       document.getElementById('define_target1').innerHTML = '<define-1>Hello world!</define-1>'
       await sleep()
       await sleep()
       let el = document.querySelector('define-1')
       equal(el.tagName, 'DEFINE-1')
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
     it('define template', async () => {
-      define('define-2', parse(`Hello beako!`))
+      define('define-2', parse(`Hello jito!`))
       document.getElementById('define_target2').innerHTML = '<define-2>Hello world!</define-2>'
       await sleep()
       await sleep()
       let el = document.querySelector('define-2')
       equal(el.tagName, 'DEFINE-2')
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
     it('define string and data', async () => {
-      define('define-3', `Hello {{ name }}!`, { name: 'beako' })
+      define('define-3', `Hello {{ name }}!`, { name: 'jito' })
       document.getElementById('define_target3').innerHTML = '<define-3>Hello world!</define-3>'
       await sleep()
       await sleep()
       let el = document.querySelector('define-3')
       equal(el.tagName, 'DEFINE-3')
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
     it('define component', async () => {
-      define('define-4', compact(`Hello beako!`))
+      define('define-4', compact(`Hello jito!`))
       document.getElementById('define_target4').innerHTML = '<define-4>Hello world!</define-4>'
       await sleep()
       await sleep()
       let el = document.querySelector('define-4')
       equal(el.tagName, 'DEFINE-4')
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
   })
 
   describe('mount()', function() {
     it('mount string', async () => {
       let el = document.querySelector('#mount_target1')
-      mount(el, `Hello beako!`)
+      mount(el, `Hello jito!`)
       await sleep()
       await sleep()
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
     it('mount template', async () => {
       let el = document.querySelector('#mount_target2')
-      mount(el, parse(`Hello beako!`))
+      mount(el, parse(`Hello jito!`))
       await sleep()
       await sleep()
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
     it('mount string and data', async () => {
       let el = document.querySelector('#mount_target3')
-      mount(el, `Hello {{ name }}!`, { name: 'beako' })
+      mount(el, `Hello {{ name }}!`, { name: 'jito' })
       await sleep()
       await sleep()
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
     it('mount component', async () => {
       let el = document.querySelector('#mount_target4')
-      mount(el, compact(`Hello beako!`))
+      mount(el, compact(`Hello jito!`))
       await sleep()
       await sleep()
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
     it('mount query string', async () => {
       let el = document.querySelector('#mount_target5')
-      mount('#mount_target5', compact(`Hello beako!`))
+      mount('#mount_target5', compact(`Hello jito!`))
       await sleep()
       await sleep()
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
   })
 
@@ -158,21 +158,21 @@ describe('Web Components', function() {
       mount(el, component)
       await sleep()
       await sleep()
-      el.innerHTML = `<span slot="my-text">Hello beako!</span>`
-      equal(el.innerText, 'Hello beako!')
+      el.innerHTML = `<span slot="my-text">Hello jito!</span>`
+      equal(el.innerText, 'Hello jito!')
       equal(el.shadowRoot.querySelector('slot').innerHTML, 'Hello world!')
-      equal(el.shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Hello jito!')
     })
 
     it('compact use constructer', async () => {
       let el = document.querySelector('#compact_target2')
       let component = compact(`Hello {{ name }}!`, () => {
-        return [{ name: 'beako' }]
+        return [{ name: 'jito' }]
       })
       mount(el, component)
       await sleep()
       await sleep()
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
 
     it('compact use constructer with receive from HTML', async () => {
@@ -182,11 +182,11 @@ describe('Web Components', function() {
         return [{ name }]
       })
       define('compact-3', component)
-      el.innerHTML = '<compact-3 name="beako"></compact-3>'
+      el.innerHTML = '<compact-3 name="jito"></compact-3>'
       await sleep()
       await sleep()
       let root = document.querySelector('compact-3')
-      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+      equal(root.shadowRoot.innerHTML, 'Hello jito!')
     })
 
     it('compact use constructer with receive from setAttribute', async () => {
@@ -198,91 +198,91 @@ describe('Web Components', function() {
       define('compact-4', component)
       el.innerHTML = '<compact-4></compact-4>'
       let root = document.querySelector('compact-4')
-      root.setAttribute('name', 'beako')
+      root.setAttribute('name', 'jito')
       await sleep()
       await sleep()
-      equal(root.shadowRoot.innerHTML, 'Hello beako!')
+      equal(root.shadowRoot.innerHTML, 'Hello jito!')
     })
 
     it('compact local component', async () => {
       let el = document.querySelector('#compact_target5')
-      let local = compact('<p>Hello {{ name }}!</p>', { name: 'beako' })
+      let local = compact('<p>Hello {{ name }}!</p>', { name: 'jito' })
       let component = compact('<hello></hello>', { hello: local })
       mount(el, component)
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('p').innerText, 'Hello jito!')
     })
   })
 
   describe('elementize', function() {
     it('no component attr', async () => {
       let el = document.querySelector('#element_target1')
-      let component = compact('<beako-element></beako-element>')
+      let component = compact('<jito-element></jito-element>')
       mount(el, component)
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot, null)
     })
     it('component is null', async () => {
       let el = document.querySelector('#element_target2')
-      let component = compact('<beako-element component:="component"></beako-element>', { component: null })
+      let component = compact('<jito-element component:="component"></jito-element>', { component: null })
       mount(el, component)
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot, null)
     })
     it('component is undefined', async () => {
       let el = document.querySelector('#element_target3')
-      let component = compact('<beako-element component:="component"></beako-element>', { component: undefined })
+      let component = compact('<jito-element component:="component"></jito-element>', { component: undefined })
       mount(el, component)
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot, null)
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot, null)
     })
     it('component is a defined component', async () => {
-      define('element-3', compact(`Hello beako!`))
+      define('element-3', compact(`Hello jito!`))
       let el = document.querySelector('#element_target4')
-      let component = compact('<beako-element component="element-3"></beako-element>')
+      let component = compact('<jito-element component="element-3"></jito-element>')
       mount(el, component)
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.innerHTML, 'Hello jito!')
     })
     it('component is a local component', async () => {
       let el = document.querySelector('#element_target5')
       let component = compact(
-        '<beako-element component:="component"></beako-element>',
-        { component: compact(`Hello beako!`)
+        '<jito-element component:="component"></jito-element>',
+        { component: compact(`Hello jito!`)
       })
       mount(el, component)
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.innerHTML, 'Hello jito!')
     })
     it('component is a changed component', async () => {
       let el = document.querySelector('#element_target6')
-      let state = watch({ component: compact(`Hello beako!`) })
-      let component = compact('<beako-element component:="component"></beako-element>', state)
+      let state = watch({ component: compact(`Hello jito!`) })
+      let component = compact('<jito-element component:="component"></jito-element>', state)
       mount(el, component)
       await sleep()
       await sleep()
       state.component = compact(`Hello world!`)
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, 'Hello world!')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.innerHTML, 'Hello world!')
     })
     it('elementize tag', async () => {
       let el = await elementize('a')
       equal(el.tagName, 'A')
     })
     it('elementize component', async () => {
-      let el = await elementize(compact(`Hello beako!`))
+      let el = await elementize(compact(`Hello jito!`))
       await sleep()
-      equal(el.shadowRoot.innerHTML, 'Hello beako!')
+      equal(el.shadowRoot.innerHTML, 'Hello jito!')
     })
   })
 
@@ -292,7 +292,7 @@ describe('Web Components', function() {
       let el1 = document.querySelector('#sync_target1_1')
       let el2 = document.querySelector('#sync_target1_2')
       let data = {
-        name: 'beako'
+        name: 'jito'
       }
       let component1 = compact('<p>Hello {{ name }}!</p>', data)
       let component2 = compact('<p>Welcome {{ name }}!</p>', data)
@@ -300,8 +300,8 @@ describe('Web Components', function() {
       mount(el2, component2)
       await sleep()
       await sleep()
-      equal(el1.shadowRoot.querySelector('p').innerText, 'Hello beako!')
-      equal(el2.shadowRoot.querySelector('p').innerText, 'Welcome beako!')
+      equal(el1.shadowRoot.querySelector('p').innerText, 'Hello jito!')
+      equal(el2.shadowRoot.querySelector('p').innerText, 'Welcome jito!')
     })
 
     it('compact share data on childe scope', async () => {
@@ -317,7 +317,7 @@ describe('Web Components', function() {
           })
 
           let child = compact('', () => {
-            data.name = 'beako'
+            data.name = 'jito'
           })
 
           return [data, { child }]
@@ -327,18 +327,18 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('p').innerText, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('p').innerText, 'Hello jito!')
     })
 
     it('compact receive attrs', async () => {
       let el = document.querySelector('#sync_target3')
       let local = compact('<p>Hello {{ name }}!</p>')
-      let component = compact('<hello name:="name"></hello>', { hello: local, name: 'beako' })
+      let component = compact('<hello name:="name"></hello>', { hello: local, name: 'jito' })
       mount(el, component)
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Hello beako!')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('p').innerText, 'Hello jito!')
     })
 
     it('expand content', async () => {
@@ -352,12 +352,12 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
     })
 
     it('expand @as', async () => {
@@ -371,12 +371,12 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('span')[0].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('span')[1].innerText, '4')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('span')[2].innerText, '5')
     })
 
     it('expand @as and <group>', async () => {
@@ -385,7 +385,7 @@ describe('Web Components', function() {
       let component = compact(`
         <local>
           <group @as="header">
-            <h2>Beako.js</h2>
+            <h2>Jito</h2>
             <p>Welcome!</p>
           </group>
         </local>
@@ -394,8 +394,8 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('h2').innerText, 'Beako.js')
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('p').innerText, 'Welcome!')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('h2').innerText, 'Jito')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('p').innerText, 'Welcome!')
     })
 
     it('expand content, @as and slot', async () => {
@@ -416,9 +416,9 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('h2').innerText, 'Welcome!')
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('button').innerText, 'Click me')
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Good bye!')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('h2').innerText, 'Welcome!')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('button').innerText, 'Click me')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('slot').assignedElements()[0].innerHTML, 'Good bye!')
     })
 
     it('expand no content', async () => {
@@ -432,12 +432,12 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('p')[0].innerText, '1')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('p')[1].innerText, '2')
-      equal(el.shadowRoot.querySelectorAll('beako-element')[1].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[0].shadowRoot.querySelectorAll('p')[2].innerText, '3')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('p')[0].innerText, '1')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('p')[1].innerText, '2')
+      equal(el.shadowRoot.querySelectorAll('jito-element')[1].shadowRoot.querySelectorAll('p')[2].innerText, '3')
     })
 
     it('expand chain', async () => {
@@ -453,7 +453,7 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.querySelector('span').innerText, '2')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('span').innerText, '2')
     })
 
     it('attrs', async () => {
@@ -466,7 +466,7 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '9')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.innerHTML, '9')
     })
 
     it('assign attrs', async () => {
@@ -479,7 +479,7 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '13')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.innerHTML, '13')
     })
 
     it('boolean attrs truthy', async () => {
@@ -492,7 +492,7 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '18')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.innerHTML, '18')
     })
 
     it('boolean attrs falsy', async () => {
@@ -505,7 +505,7 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.innerHTML, '')
     })
 
     it('ref attrs', async () => {
@@ -521,7 +521,7 @@ describe('Web Components', function() {
       await sleep()
       await sleep()
       await sleep()
-      equal(el.shadowRoot.querySelector('beako-element').shadowRoot.innerHTML, '2')
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.innerHTML, '2')
       equal(state.y, 2)
     })
   })

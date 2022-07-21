@@ -1,4 +1,4 @@
-export const isRef = Symbol.for('Beako Ref')
+export const isRef = Symbol.for('Jito Ref')
 
 export type StateStack = Array<Record<string, unknown>>
 

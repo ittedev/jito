@@ -3,7 +3,7 @@ import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
 import { Entity } from './entity.ts'
 
-export let componentElementTag = 'beako-element'
+export let componentElementTag = 'jito-element'
 
 export class ComponentElement extends HTMLElement
 {
