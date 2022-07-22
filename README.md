@@ -1,5 +1,7 @@
 # Jito
 
+<p align="center"><img src="https://xs447853.xsrv.jp/jito.png" width="150" height="150"></p>
+
 ## What is Jito?
 
 Jito is web component tools with Data Binding, Template Engine and Virtual DOM.
@@ -11,6 +13,10 @@ She support JavaScript and TypeScript for Deno.
 ## Examples
 
 [Glitch Examples](https://glitch.com/@itte1)
+
+## Document
+
+[Japanese](https://zenn.dev/itte/books/5ce6aac9166aed)
 
 ## Import
 
