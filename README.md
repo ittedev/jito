@@ -37,7 +37,7 @@ From jsDelivr.
 
 ```js
 <script type="module">
-  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.0.0/jito.js'
+  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.0.2/jito.js'
   ...
 </script>
 ```
@@ -45,7 +45,7 @@ From jsDelivr.
 ### For Deno
 
 ```ts
-import { ... } from 'https://deno.land/x/jito@1.0.0/mod.ts'
+import { ... } from 'https://deno.land/x/jito@1.0.2/mod.ts'
 ```
 
 ### For Node.js
