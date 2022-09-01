@@ -279,23 +279,11 @@ export function patchForm(
   newVe: HasAttrs
 ): void
 {
-  // <input>
+  // <input> checked
   if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.el)) {
     let input = ve.el as HTMLInputElement
-    // value
-    if (input.value !== newVe.attrs?.value) {
-      if (newVe.attrs && 'value' in newVe.attrs) {
-        if (input.value !== (newVe.attrs?.value as string).toString()) { // Object.create(null)?
-          input.value = newVe.attrs.value as string
-        }
-      } else {
-        if ((ve.el as HTMLInputElement).value !== '') {
-          (ve.el as HTMLInputElement).value = ''
-        }
-      }
-    }
 
-    // checked
+    
     if (!input.checked && newVe.attrs && 'checked' in newVe.attrs) {
       input.checked = true
     } else if (input.checked && !(newVe.attrs && 'checked' in newVe.attrs)) {
