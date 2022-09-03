@@ -178,6 +178,7 @@ export function addReactive(obj: ReactiveObject, key: string | number, reactive?
  */
 function infect(obj: ReactiveObject, data: unknown)
 {
+  watch(data)
   obj[isReactive][recursiveKey][1].forEach(callback => watch(data, callback))
   return data
 }

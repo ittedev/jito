@@ -151,6 +151,34 @@ describe('Data Binding', function() {
         equal(data, { x: 1, y: { z: 5 } })
         equal(y, 2)
       })
+      it('change old property array', () => {
+        let oldObj = []
+        let newObj = []
+        let data = {
+          x: 1,
+          y: oldObj
+        }
+        let y = 0
+        watch(data, () => { y++ })
+        data.y = newObj
+        equal(data, { x: 1, y: [] })
+        equal(y, 1)
+        oldObj.push(4)
+        equal(data, { x: 1, y: [] })
+        equal(y, 1)
+        newObj.push(5)
+        equal(data, { x: 1, y: [5] })
+        equal(y, 2)
+      })
+      it('change old property array literal', () => {
+        let data = watch({
+          x: 1,
+          y: []
+        })
+        console.log('data.y:', data.y)
+        data.y = []
+        console.log('data.y:', data.y)
+      })
     })
 
     describe(': bio array', function() {
