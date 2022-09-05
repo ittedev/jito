@@ -59,8 +59,8 @@ export function patchElement(
   patchClass(ve, newVe)
   patchPart(ve, newVe)
   patchStyle(ve, newVe)
-  patchAttrs(ve, newVe)
   patchForm(ve, newVe)
+  patchAttrs(ve, newVe)
   patchOn(ve, newVe)
   patchChildren(ve, newVe, useEvent)
 
@@ -96,8 +96,8 @@ export function patchRealElement(
     patchClass(ve as LinkedRealElement, newVe)
     patchPart(ve as LinkedRealElement, newVe)
     patchStyle(ve as LinkedRealElement, newVe)
-    patchAttrs(ve as LinkedRealElement, newVe)
     patchForm(ve as LinkedRealElement, newVe)
+    patchAttrs(ve as LinkedRealElement, newVe)
   }
   if (!ve.invalid?.on) {
     patchOn(ve, newVe)
@@ -283,7 +283,19 @@ export function patchForm(
   if (Object.prototype.isPrototypeOf.call(HTMLInputElement.prototype, ve.el)) {
     let input = ve.el as HTMLInputElement
 
-    
+    // value
+    if (ve.attrs?.value !== newVe.attrs?.value && input.value !== newVe.attrs?.value) {
+      if (newVe.attrs && 'value' in newVe.attrs) {
+        if (input.value !== (newVe.attrs?.value as string).toString()) {
+          input.value = newVe.attrs.value as string
+        }
+      } else {
+        if ((ve.el as HTMLInputElement).value !== '') {
+          (ve.el as HTMLInputElement).value = ''
+        }
+      }
+    }
+
     if (!input.checked && newVe.attrs && 'checked' in newVe.attrs) {
       input.checked = true
     } else if (input.checked && !(newVe.attrs && 'checked' in newVe.attrs)) {
