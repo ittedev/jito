@@ -14,6 +14,7 @@ export type Template =
   HashTemplate |
   JoinTemplate |
   FlagsTemplate |
+  TryTemplate |
   IfTemplate |
   ForTemplate |
   ElementTemplate |
@@ -123,11 +124,18 @@ export interface FlagsTemplate {
   value: Template
 }
 
+export interface TryTemplate {
+  type: 'try'
+  value: Template
+  failure?: Template
+}
+
 export interface IfTemplate {
   type: 'if'
   condition: Template
   truthy: Template
   falsy?: Template | undefined
+  isTryed: boolean
 }
 
 export interface ForTemplate {
@@ -135,6 +143,7 @@ export interface ForTemplate {
   array: Template
   value: Template
   each?: string
+  isTryed: boolean
 }
 
 export interface TreeTemplate {

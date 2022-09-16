@@ -4,6 +4,7 @@ import {
   JoinTemplate,
   GroupTemplate,
   FlagsTemplate,
+  TryTemplate,
   IfTemplate,
   ForTemplate,
   ElementTemplate,
@@ -87,7 +88,7 @@ function parseNode(lexer: DomLexer): Template | string | void
   if (!lexer.node) {
     lexer.pop()
   } else if (instanceOfTemporaryElement(lexer.node)) {
-    return parseFor(lexer)
+    return parseTry(lexer)
   } else {
     return parseText(new Lexer((lexer.pop() as TemporaryText).text, 'text'))
   }
@@ -95,7 +96,22 @@ function parseNode(lexer: DomLexer): Template | string | void
 
 function parseChild(lexer: DomLexer): Template
 {
-  return parseFor(lexer)
+  return parseTry(lexer)
+}
+
+function parseTry(lexer: DomLexer): Template
+{
+  let el = lexer.node as TemporaryElement
+  if (hasAttr(el, '@try')) {
+    let value = parseFor(lexer)
+    let template = { type: 'try', value } as TryTemplate
+    if (lexer.isSkippable('@catch')) {
+      template.failure = parseChild(lexer.skip())
+    }
+    return template
+  } else {
+    return parseFor(lexer)
+  }
 }
 
 function parseFor(lexer: DomLexer): Template

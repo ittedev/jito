@@ -106,7 +106,9 @@ function distinguish(field: TokenField, value: string): TokenType
       break
     case 'attr':
       switch (value) {
-        case '@if': case '@else': case '@for': case '@each':
+        case '@try': case '@catch':
+        case '@if': case '@else':
+        case '@for': case '@each':
           return '@'
         case '=': case ':=': case '&=': case '*=':
           return 'assign'

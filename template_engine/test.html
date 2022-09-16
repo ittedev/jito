@@ -1377,6 +1377,43 @@ describe('Template Engine', function() {
       // })
     })
 
+    describe(': @try', function() {
+      it('parse: @try', () => {
+        let template = parse('<p @try></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "try",
+              value: {
+                tag: "p",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @try @catch', () => {
+        let template = parse('<p @try></p><div @catch></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "try",
+              value: {
+                tag: "p",
+                type: "element"
+              },
+              failure: {
+                tag: "div",
+                type: "element"
+              },
+            }
+          ]
+        })
+      })
+    })
+
     describe(': @if', function() {
       it('parse: @if', () => {
         let template = parse('<p @if="isActive"></p>')
@@ -1776,6 +1813,177 @@ describe('Template Engine', function() {
                   type: "group",
                   children: ["Hello"]
                 }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @try and @if', () => {
+        let template = parse('<p @try @if="isActive"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "try",
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  tag: "p",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @try, @if and @else', () => {
+        let template = parse('<p @try @if="isActive"></p><div @else></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "try",
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  tag: "p",
+                  type: "element"
+                },
+                falsy: {
+                  tag: "div",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @try, @catch and @if', () => {
+        let template = parse('<p @try @if="isActive"></p><div @catch></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "try",
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  tag: "p",
+                  type: "element"
+                }
+              },
+              failure: {
+                tag: "div",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @try, @catch, @if and @else', () => {
+        let template = parse('<p @try @if="isActive"></p><div @else></div><section @catch></section>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "try",
+              value: {
+                type: "if",
+                condition: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "isActive"
+                  }
+                },
+                truthy: {
+                  tag: "p",
+                  type: "element"
+                },
+                falsy: {
+                  tag: "div",
+                  type: "element"
+                }
+              },
+              failure: {
+                tag: "section",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @try and @for', () => {
+        let template = parse('<p @try @for="array"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "try",
+              value: {
+                type: "for",
+                array: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "array"
+                  }
+                },
+                value: {
+                  tag: "p",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @try, @for and @catch', () => {
+        let template = parse('<p @try @for="array"></p><div @catch></div>')
+        console.log('template:', template)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "try",
+              value: {
+                type: "for",
+                array: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "array"
+                  }
+                },
+                value: {
+                  tag: "p",
+                  type: "element"
+                }
+              },
+              failure: {
+                tag: "div",
+                type: "element"
               }
             }
           ]
@@ -2632,6 +2840,45 @@ describe('Template Engine', function() {
                 { tag: "span", children: ['10'] }
               ]
             },
+          ]
+        })
+      })
+    })
+
+    describe(': @try', function() {
+      it('evaluate: @try no error', () => {
+        let tree = evaluate(parse('<p @try>{{ x }}</p>'), [{ x: 1 }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ['1']
+            }
+          ]
+        })
+      })
+      it('evaluate: @try error', () => {
+        let tree = evaluate(parse('<p @try>{{ x.y }}</p>'))
+        equal(tree, {})
+      })
+      it('evaluate: @try @catch no error', () => {
+        let tree = evaluate(parse('<p @try>{{ x }}</p><div @catch></div>'), [{ x: 1 }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ['1']
+            }
+          ]
+        })
+      })
+      it('evaluate: @try @catch error', () => {
+        let tree = evaluate(parse('<p @try>{{ x.y }}</p><div @catch></div>'))
+        equal(tree, {
+          children: [
+            {
+              tag: "div"
+            }
           ]
         })
       })

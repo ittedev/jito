@@ -199,6 +199,15 @@ export let evaluate = function (
       return []
     }
 
+    case 'try':
+      try {
+        return evaluate(temp.value, stack, cache)
+      } catch {
+        return temp.failure?
+          evaluate((temp.failure as Template), stack, cache) :
+          null
+      }
+
     case 'if':
       return evaluate(temp.condition, stack, cache) ?
         evaluate(temp.truthy, stack, cache) :

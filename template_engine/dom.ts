@@ -111,7 +111,7 @@ function attr(lexer: Lexer): Array<[string, string, string]>
           } else {
             break
           }
-          if (attr[0] === '@else') {
+          if (attr[0] === '@try' || attr[0] === '@catch' || attr[0] === '@else') {
             attr[2] = attr[0]
           } else {
             let token = (lexer.must('assign') as Token)
