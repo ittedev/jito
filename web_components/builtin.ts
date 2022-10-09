@@ -15,6 +15,5 @@ export let builtin = lock({
   location,
   history,
   navigator,
-  setTimeout,
-  setInterval
+  setTimeout
 })
