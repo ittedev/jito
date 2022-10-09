@@ -49,5 +49,6 @@ export function instanceOfReactivableObject(object: any): object is ReactivableO
   return typeof object === 'object' &&
     object !== null &&
     (Object.getPrototypeOf(object) === Object.prototype || Array.isArray(object)) &&
+    !Object.isFrozen(object) &&
     !object[isLocked]
 }

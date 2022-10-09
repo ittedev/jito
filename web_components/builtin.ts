@@ -1,6 +1,4 @@
-import { lock } from '../data_binding/lock.ts'
-
-export let builtin = lock({
+export let builtin = Object.freeze({
   alert,
   console,
   Object,

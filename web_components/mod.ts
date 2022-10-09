@@ -13,9 +13,6 @@ export type {
   ComponentTemplate
 } from './types.ts'
 
-// A builtin state
-export { builtin } from './builtin.ts'
-
 // Objects
 export { Entity } from './entity.ts'
 export { ComponentElement } from './element.ts'
