@@ -499,6 +499,16 @@ describe('Template Engine', function() {
         })
       })
 
+      it('parse entity', () => {
+        let template = parse('&amp;&lt;&gt;&quot; &amp; &lt; &gt; &quot;')
+        equal(template, {
+          type: 'tree',
+          children: [
+            '&<>" & < > "'
+          ]
+        })
+      })
+
       it('parse a variable in Text Node', () => {
         let template = parse('Hello {{ name }}!')
         equal(template, {
@@ -2874,6 +2884,14 @@ describe('Template Engine', function() {
         equal(tree, {
           children: [
             { tag: "span" },
+          ]
+        })
+      })
+      it('evaluate: html comment entity', () => {
+        let tree = evaluate(parse('<!-- &amp; --> &amp;'))
+        equal(tree, {
+          children: [
+            ' &',
           ]
         })
       })

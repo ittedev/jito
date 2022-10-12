@@ -283,6 +283,7 @@ export type TokenType =
   '`' |
   '/' |
   '...' |
+  'entity' |
   'return' |
   'null' |
   'undefined' |
