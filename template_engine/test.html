@@ -509,6 +509,35 @@ describe('Template Engine', function() {
         })
       })
 
+      it('parse html literal', () => {
+        let template = parse("<p>{{ '<p>' }}</p>")
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              children: [
+                {
+                  type: "flat",
+                  values: [
+                    "",
+                    {
+                      type: "draw",
+                      value: {
+                        type: "literal",
+                        value: "<p>"
+                      }
+                    },
+                    ""
+                  ]
+                }
+              ]
+            }
+          ]
+        })
+      })
+
       it('parse a variable in Text Node', () => {
         let template = parse('Hello {{ name }}!')
         equal(template, {
@@ -1464,7 +1493,7 @@ describe('Template Engine', function() {
           ]
         })
       })
-      
+
       it('parse: @if @else has not space', () => {
         let template = parse(`<p @if="isActive"></p>.<div @else></div>`)
         equal(template, {

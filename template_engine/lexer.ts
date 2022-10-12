@@ -95,13 +95,14 @@ function distinguish(field: TokenField, value: string): TokenType
         case '>':
         case '<!--':
         case '/':
+        case '{{':
           return value
         case '&':
         case '&a': case '&am': case '&amp':
         case '&l': case '&lt':
         case '&g': case '&gt':
         case '&q': case '&qu': case '&quo': case '&quot':
-        case '<': case '</': case '<!': case '<!-':
+        case '<': case '</': case '<!': case '<!-': case '{':
           return 'partial'
         case '&amp;': case '&lt;': case '&gt;': case '&quot;':
           return 'entity'
@@ -110,7 +111,6 @@ function distinguish(field: TokenField, value: string): TokenType
         case /^\/\/.*$/.test(value): return '//'
         case /^<[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(value): return 'start'
         case /^<\/[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(value): return 'end'
-        case /^&[a-z]{,4}$/.test(value): return 'partial'
       }
       break
     case 'attr':

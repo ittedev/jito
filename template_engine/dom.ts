@@ -43,7 +43,7 @@ export function dom(html: Lexer | string): TemporaryNode | undefined
 
 function skip(lexer: Lexer): string
 {
-  let text = lexer.skip(['>', '/'])
+  let text = lexer.skip(['>', '/', '}}'])
   if (lexer.nextIs('entity')) {
     let token = lexer.pop() as Token
     switch (token[1]) {
@@ -52,6 +52,14 @@ function skip(lexer: Lexer): string
       case '&gt;': return text + '>' + skip(lexer)
       case '&quot;': return text + '"' + skip(lexer)
     }
+  }
+  if (lexer.nextIs('{{')) {
+    text += (lexer.pop() as Token)[1]
+    lexer.expand('text', () => {
+      text += lexer.skip(['{{'])
+      text += lexer.must('}}')[1]
+    })
+    return text + skip(lexer)
   }
   return text
 }
