@@ -76,9 +76,24 @@ export let evaluate = function (
       }
 
       let { record, key } = value
+
+      // Skip Prototype Pollution
+      if (typeof record === 'function' || (record as unknown) === Object) {
+        throw Error('Cannot assign to this object')
+      }
+      if (key === '__proto__') {
+          throw Error('Cannot assign to ' + key)
+      }
+
       let prevalue = record[key]
 
+      // Skip Prototype Pollution
+      if (typeof prevalue === 'function') {
+        throw Error('Cannot assign to function')
+      }
+
       let right = evaluate(temp.right, stack, cache)
+
       if (temp.operator.length > 1) {
         let operator = temp.operator.slice(0, -1)
         if (continueEvaluation(operator, prevalue)) {
@@ -96,6 +111,11 @@ export let evaluate = function (
         let value = evaluate((temp.name as GetTemplate).value, stack, cache) as Ref
         if (!value) {
           throw Error(evaluate(((temp.name as GetTemplate).value as HashTemplate).key, stack, cache) as string + ' is not defined')
+        }
+        switch(value.key) {
+          case '__defineGetter__':
+          case '__defineSetter__':
+            throw Error('Cannot get ' + value.key)
         }
         let f = value.record[value.key]
         if (typeof f === 'function') {
@@ -120,7 +140,14 @@ export let evaluate = function (
 
     case 'get': {
       let value = evaluate(temp.value, stack, cache) as Ref
-      return value ? value.record[value.key] : value
+      if (value) {
+        if (value.key === '__proto__') {
+          throw Error('Cannot get ' + value.key)
+        }
+        return value.record[value.key]
+      } else {
+        return value
+      }
     }
 
     case 'flat': {

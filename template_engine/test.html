@@ -2966,6 +2966,29 @@ describe('Template Engine', function() {
       })
     })
   })
+
+  describe('Security', function() {
+    it('evaluate: assign __proto__', () => {
+      chai.assert.throws(() => evaluate(expression('a.__proto__ = 1'), [{ a: {} }]), Error, "Cannot assign to __proto__")
+      chai.assert.throws(() => evaluate(expression('a["__proto__"] = 1'), [{ a: {} }]), Error, "Cannot assign to __proto__")
+      chai.assert.throws(() => evaluate(expression('a.__proto__.b = 1'), [{ a: {} }]), Error, "Cannot get __proto__")
+    })
+    it('evaluate: assign to function', () => {
+      chai.assert.throws(() => evaluate(expression('JSON.parse = 10'), [{ JSON }]), Error, "Cannot assign to function")
+      chai.assert.throws(() => evaluate(expression('f.constructor = 10'), [{ f: () => {} }]), Error, "Cannot assign to this object")
+    })
+    it('evaluate: assign to Object', () => {
+      chai.assert.throws(() => evaluate(expression('Object.is = 10'), [{ Object }]), Error, "Cannot assign to this object")
+    })
+    it('evaluate: getter setter', () => {
+      let a = {}
+      chai.assert.throws(() => evaluate(expression('a["__defineGetter__"]("b", f)'), [{ a, f: () => 5 }]), Error, "Cannot get __defineGetter__")
+      chai.assert.throws(() => evaluate(expression('a.__defineGetter__("b", f)'), [{ a, f: () => 5 }]), Error, "Cannot get __defineGetter__")
+      chai.assert.throws(() => evaluate(expression('a["__defineSetter__"]("b", f)'), [{ a: {}, f: (v) => {} }]), Error, "Cannot get __defineSetter__")
+      chai.assert.throws(() => evaluate(expression('a.__defineSetter__("b", f)'), [{ a: {}, f: (v) => {} }]), Error, "Cannot get __defineSetter__")
+    })
+  })
+
   describe('Future support', function() {
     let stack = {
       x: 1,
@@ -3055,6 +3078,7 @@ describe('Template Engine', function() {
         * 2*/ + 1`)), 11)
     })
   })
+
   describe('Not support', function() {
     let stack = {
       x: 1,
