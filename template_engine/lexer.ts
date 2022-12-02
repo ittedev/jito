@@ -33,9 +33,10 @@ export class Lexer
         if (skipArray.includes(distinguish(this.field, this.text[i]))) {
           value += this.text[i]
         } else {
-          this.token = this._next(i)
+          this.token = this._next(i) as Token
           if (this.token && this.token[0] === 'partial') {
             value += this.token[1]
+            i = this.index - 1
             this.token = null
           } else {
             return value
@@ -94,9 +95,17 @@ function distinguish(field: TokenField, value: string): TokenType
         case '>':
         case '<!--':
         case '/':
+        case '{{':
           return value
-        case '<': case '</': case '<!': case '<!-':
+        case '&':
+        case '&a': case '&am': case '&amp':
+        case '&l': case '&lt':
+        case '&g': case '&gt':
+        case '&q': case '&qu': case '&quo': case '&quot':
+        case '<': case '</': case '<!': case '<!-': case '{':
           return 'partial'
+        case '&amp;': case '&lt;': case '&gt;': case '&quot;':
+          return 'entity'
       }
       switch (true) {
         case /^\/\/.*$/.test(value): return '//'

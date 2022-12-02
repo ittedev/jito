@@ -11,3 +11,5 @@ RUN apt update && export DEBIAN_FRONTEND=noninteractive
 RUN apt -y install --no-install-recommends webfs
 RUN apt -y install nodejs
 RUN apt -y install npm
+RUN npm install n -g
+RUN n stable

@@ -15,13 +15,13 @@ export function dom(lexer: Lexer): TemporaryNode | undefined
 export function dom(html: Lexer | string): TemporaryNode | undefined
 {
   let lexer = typeof html === 'string' ? new Lexer(html, 'html') : html
-  let text = { text: lexer.skip(['>', '/']) } as TemporaryText
+  let text = { text: skip(lexer) } as TemporaryText
 
   // remove comment
   while (lexer.nextIs('<!--')) {
     lexer.pop()
     lexer.expand('comment', () => lexer.must('-->'))
-    text.text += lexer.skip(['>', '/'])
+    text.text += skip(lexer)
     continue
   }
 
@@ -39,6 +39,29 @@ export function dom(html: Lexer | string): TemporaryNode | undefined
     }
   }
   return text.text ? text : text.next ? text.next : undefined
+}
+
+function skip(lexer: Lexer): string
+{
+  let text = lexer.skip(['>', '/', '}}'])
+  if (lexer.nextIs('entity')) {
+    let token = lexer.pop() as Token
+    switch (token[1]) {
+      case '&amp;': return text + '&' + skip(lexer)
+      case '&lt;': return text + '<' + skip(lexer)
+      case '&gt;': return text + '>' + skip(lexer)
+      case '&quot;': return text + '"' + skip(lexer)
+    }
+  }
+  if (lexer.nextIs('{{')) {
+    text += (lexer.pop() as Token)[1]
+    lexer.expand('text', () => {
+      text += lexer.skip(['{{'])
+      text += lexer.must('}}')[1]
+    })
+    return text + skip(lexer)
+  }
+  return text
 }
 
 function el(lexer: Lexer): TemporaryNode | undefined

@@ -1,9 +1,15 @@
-import { lock } from '../data_binding/lock.ts'
-
-export let builtin = lock({
+export let builtin = Object.freeze({
   alert,
   console,
-  Object,
+  Object: Object.freeze({
+    // assign: Object.assign, <- prototype pollution
+    entries: Object.entries,
+    fromEntries: Object.fromEntries,
+    hasOwn: Object.hasOwn,
+    is: Object.is,
+    keys: Object.keys,
+    values: Object.values
+  }),
   Number,
   Math,
   Date,
@@ -15,6 +21,5 @@ export let builtin = lock({
   location,
   history,
   navigator,
-  setTimeout,
-  setInterval
+  setTimeout
 })
