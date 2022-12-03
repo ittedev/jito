@@ -137,6 +137,14 @@ function distinguish(field: TokenField, value: string): TokenType
           return 'partial'
       }
       break
+    case 'plane':
+      switch (value) {
+        case '<': case '</': case '</s': case '</sc': case '</scr': case '</scri': case '</scrip': case '</script':
+          return 'partial'
+        case '</script>':
+          return 'end'
+      }
+      break
     case 'script':
       switch (value) {
         case '+': case '-':
