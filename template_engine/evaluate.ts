@@ -45,9 +45,15 @@ export let evaluate = function (
       return temp.values.map((value: Template) => evaluate(value, stack, cache))
 
     case 'object':
-      return Object.fromEntries(
-        (temp as ObjectTemplate).entries.map(entry => entry.map(value => evaluate(value, stack)))
-      )
+      return (temp as ObjectTemplate).entries
+        .map(entry => entry.map(value => evaluate(value, stack)))
+        .reduce<Record<string, unknown>>((obj, entry) => {
+          obj[entry[0] as string] = entry[1]
+          return obj
+        }, {})
+      // return Object.fromEntries(
+      //   (temp as ObjectTemplate).entries.map(entry => entry.map(value => evaluate(value, stack)))
+      // )
 
     case 'variable': {
       let [, index] = pickupIndex(stack, (temp as VariableTemplate).name)
@@ -151,12 +157,16 @@ export let evaluate = function (
     }
 
     case 'flat': {
-      let values = temp.values.flatMap(
+      let values = temp.values.map(
           (value: Template | string) =>
             typeof value === 'string' ?
               [value] :
               flatwrap(evaluate(value, stack, cache)) as Array<string | VirtualElement | RealTarget | number>
         )
+        .reduce<Array<string | VirtualElement | RealTarget | number>>((ary, values) => { // flatMap
+          ary.push(...values)
+          return ary
+        },[])
         .filter(value => value !== '')
         .reduce<Array<string | VirtualElement | RealTarget | number>>((result, child) => {
           let len = result.length
@@ -253,24 +263,29 @@ export let evaluate = function (
       } else {
         entries = [[0, array]] // or errer?
       }
-      return entries.flatMap(([key, value], index) => {
-        let loop = new Loop(key, value, index, entries, stack)
-        let result =
-          (flatwrap(
-            evaluate(
-              (temp as ForTemplate).value,
-              stack.concat([(temp as ForTemplate).each ? { [((temp as ForTemplate).each as string)]: value, loop } : { loop }]),
-              cache
-            )
-          ) as Array<string | VirtualElement | RealTarget | number>)
-          .filter(child => typeof child !== 'number')
-        if (typeof loop.value === 'object') {
-          result
-            .filter(child => typeof child === 'object')
-            .forEach(child => (child as VirtualElement).key = loop.value)
-        }
-        return result
-      })
+      return entries
+        .map(([key, value], index) => {
+          let loop = new Loop(key, value, index, entries, stack)
+          let result =
+            (flatwrap(
+              evaluate(
+                (temp as ForTemplate).value,
+                stack.concat([(temp as ForTemplate).each ? { [((temp as ForTemplate).each as string)]: value, loop } : { loop }]),
+                cache
+              )
+            ) as Array<string | VirtualElement | RealTarget | number>)
+            .filter(child => typeof child !== 'number')
+          if (typeof loop.value === 'object') {
+            result
+              .filter(child => typeof child === 'object')
+              .forEach(child => (child as VirtualElement).key = loop.value)
+          }
+          return result
+        })
+        .reduce((ary, values) => { // flatMap
+          ary.push(...values)
+          return ary
+        }, [])
     }
 
     case 'tree': {
@@ -280,7 +295,8 @@ export let evaluate = function (
 
     // deno-lint-ignore no-fallthrough
     case 'custom': {
-      let el = plugins.find(plugin => plugin.match(temp as CustomElementTemplate | CustomTemplate, stack, cache))?.exec(temp, stack, cache)
+      let plugin = plugins.find(plugin => plugin.match(temp as CustomElementTemplate | CustomTemplate, stack, cache))
+      let el = plugin ? plugin.exec(temp, stack, cache) : undefined
       if (el) {
         return el
       }
@@ -325,8 +341,10 @@ export let evaluate = function (
     case 'evaluation':
       return evaluate(temp.value, stack, cache)
 
-    default:
-      return plugins.find(plugin => plugin.match(template as CustomTemplate, stack, cache))?.exec(template as CustomTemplate, stack, cache)
+    default: {
+      let plugin = plugins.find(plugin => plugin.match(template as CustomTemplate, stack, cache))
+      return plugin ? plugin.exec(template as CustomTemplate, stack, cache) : undefined
+    }
   }
 } as Evaluate
 
@@ -408,7 +426,10 @@ export function evaluateChildren(
   // Cache number
   let i = 0
   if (children.length) {
-    if ((cache.groups ?? (cache.groups = [new WeakMap<HasChildrenTemplate, number>(), 0]))[0].has(template)) {
+    if (!cache.groups) {
+      cache.groups = [new WeakMap<HasChildrenTemplate, number>(), 0]
+    }
+    if (cache.groups[0].has(template)) {
       i = cache.groups[0].get(template) as number
     } else {
       i = cache.groups[1] = cache.groups[1] + children.length
@@ -417,7 +438,7 @@ export function evaluateChildren(
   }
 
   let result = children
-    .flatMap((child, index) => {
+    .map((child, index) => {
       if (instanceOfTemplate(child)) {
         let result = (flatwrap(evaluate(child, stack, cache)) as Array<string | VirtualElement | RealTarget | number>)
         switch ((child as Template).type) {
@@ -429,6 +450,10 @@ export function evaluateChildren(
         return [child] as Array<string | VirtualElement | RealTarget | number>
       }
     })
+    .reduce((ary, values) => { // flatMap
+      ary.push(...values)
+      return ary
+    }, [])
   if (typeof result[result.length - 1] === 'number') {
     result.pop()
   }
@@ -452,7 +477,10 @@ export function evaluateAttrs(
         let value = template.bools[key]
         let result = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
         if (result) {
-          (ve.attrs ?? (ve.attrs = {}))[key] = result
+          if (!ve.attrs) {
+            ve.attrs = {}
+          }
+          ve.attrs[key] = result
         }
       }
     }
@@ -461,8 +489,11 @@ export function evaluateAttrs(
   if (template.attrs) {
     for (let key in template.attrs) {
       if (!key.startsWith('@')) { // Remove syntax attributes
-        let value = template.attrs[key];
-        (ve.attrs ?? (ve.attrs = {}))[key] = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
+        let value = template.attrs[key]
+        if (!ve.attrs) {
+          ve.attrs = {}
+        }
+        (ve.attrs as Record<string, unknown>)[key] = typeof value === 'string' ? value : evaluate(value as Template, stack, cache)
       }
     }
   }
@@ -579,7 +610,7 @@ export function operateBinary(operator: string, left: any, right: any)
     // Binary logical operators
     case '&&': return left && right
     case '||': return left || right
-    case '??': return left ?? right
+    case '??': return (left !== null && left !== undefined) ? left : right
 
     // Other operators
     default: throw Error(operator + ' does not exist')

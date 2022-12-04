@@ -10,7 +10,12 @@ export async function receive(data: unknown, ...keys: string[] | string[][]): Pr
 {
   if (instanceOfReactivableObject(data)) {
     reactivate(data)
-    let keys2 = Array.isArray(keys[0]) ? (keys as string[][]).flatMap(k => k) : keys as string[]
+    let keys2 = Array.isArray(keys[0]) ?
+      (keys as string[][]).reduce<string[]>((ary, k) => { // flatMap(k => k)
+        ary.push(...k)
+        return ary
+      }, []) :
+      keys as string[]
     let values = await Promise.all(keys2.map(key => {
       if ((data as ReactiveObject)[key] === undefined) {
         return new Promise(resolve => {
@@ -20,7 +25,11 @@ export async function receive(data: unknown, ...keys: string[] | string[][]): Pr
         return (data as ReactiveObject)[key]
       }
     }))
-    return Object.fromEntries(keys2.map((key, index) => [key, values[index]]))
+    return keys2.reduce<Record<string, unknown>>((obj, key, index) => {
+      obj[key] = values[index]
+      return obj
+    }, {})
+    // return Object.fromEntries(keys2.map((key, index) => [key, values[index]]))
   }
   return {}
 }

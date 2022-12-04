@@ -64,7 +64,7 @@ class DomLexer
   pop(): TemporaryNode | undefined
   {
     let node = this.node
-    this.node = this.node?.next
+    this.node = this.node && this.node.next
     return node
   }
 }
@@ -133,16 +133,18 @@ function parseGroup(el: TemporaryElement): Template
     let template = {
       type: 'group',
     } as GroupTemplate
-    el.attrs?.forEach(([name,, value]) => {
-      // syntax attribute
-      if (name.match(/^@(if|else|for|each)$/)) return
-      if (name.match(/^@.*$/)) {
-        if (!template.attrs) {
-          template.attrs = {} as Record<string, unknown | Template>
+    if (el.attrs) {
+      el.attrs.forEach(([name,, value]) => {
+        // syntax attribute
+        if (name.match(/^@(if|else|for|each)$/)) return
+        if (name.match(/^@.*$/)) {
+          if (!template.attrs) {
+            template.attrs = {} as Record<string, unknown | Template>
+          }
+          (template.attrs as Record<string, unknown | Template>)[name] = value
         }
-        (template.attrs as Record<string, unknown | Template>)[name] = value
-      }
-    })
+      })
+    }
     if (el.child) {
       let children = parseTree(el.child)
       if (children.length) {
@@ -164,61 +166,84 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
 
   {
     let style = [] as Array<string | Template>
-    el.attrs?.forEach(([name, assign, value]) => {
-      switch (assign) {
-        case '=': { // string attribute
-          switch (name) {
-            case 'is': {
-              if (!(name in template)) {
-                template.is = value
+    if (el.attrs) {
+      el.attrs.forEach(([name, assign, value]) => {
+        switch (assign) {
+          case '=': { // string attribute
+            switch (name) {
+              case 'is': {
+                if (!(name in template)) {
+                  template.is = value
+                }
+                return
               }
-              return
+              case 'class':
+              case 'part': {
+                if (!template[name]) {
+                  template[name] = []
+                }
+                return (template[name] as string[][]).push(value.split(/\s+/))
+              }
+              case 'style': {
+                return style.push(value)
+              }
             }
-            case 'class':
-            case 'part': {
-              return (template[name] ??= []).push(value.split(/\s+/))
+            if (!template.attrs) {
+              template.attrs = {}
             }
-            case 'style': {
-              return style.push(value)
+            if (!(name in template.attrs)) {
+              return (template.attrs as Record<string, unknown | Template>)[name] = value
             }
+            return
           }
-          if (!(name in (template.attrs ??= {}))) {
-            return (template.attrs as Record<string, unknown | Template>)[name] = value
-          }
-          return
-        }
 
-        case ':=': {// assign attribute
-          switch (name) {
-            case 'is':
-              return template.is = expression(value)
-            case 'class':
-            case 'part': {
-              return (template[name] ??= [])
-                .push({ type: 'flags', value: expression(value) } as FlagsTemplate)
+          case ':=': {// assign attribute
+            switch (name) {
+              case 'is':
+                return template.is = expression(value)
+              case 'class':
+              case 'part': {
+                if (!template[name]) {
+                  template[name] = []
+                }
+                return (template[name] as FlagsTemplate[])
+                  .push({ type: 'flags', value: expression(value) } as FlagsTemplate)
+              }
+              case 'style': {
+                return style.push(expression(value))
+              }
             }
-            case 'style': {
-              return style.push(expression(value))
+            if (!template.attrs) {
+              template.attrs = {}
             }
+            return template.attrs[name] = expression(value)
           }
-          return (template.attrs ??= {})[name] = expression(value)
-        }
 
-        case '*=': { // ref attribute
-          let ref = expression(value)
-          if (instanceOfTemplate(ref) && ref.type === 'get') {
-            ref = (ref as GetTemplate).value
+          case '*=': { // ref attribute
+            let ref = expression(value)
+            if (instanceOfTemplate(ref) && ref.type === 'get') {
+              ref = (ref as GetTemplate).value
+            }
+            if (!template.attrs) {
+              template.attrs = {}
+            }
+            return template.attrs[name] = ref
           }
-          return (template.attrs ??= {})[name] = ref
-        }
 
-        case 'on': { // on attribute
-          let type = name.slice(2)
-          let handler = { type: 'handler', value: expression(value) } as HandlerTemplate
-          return ((template.on ??= {})[type] ??= []).push(handler)
+          case 'on': { // on attribute
+            let type = name.slice(2)
+            let handler = { type: 'handler', value: expression(value) } as HandlerTemplate
+            if (!template.on) {
+              template.on = {}
+            }
+            if (!template.on[type]) {
+              template.on[type] = []
+            }
+            return template.on[type].push(handler)
+          }
         }
-      }
-    })
+      })
+    }
 
     if (style.length) {
       if (style.length === 1 && typeof style[0] === 'string') {
@@ -229,17 +254,22 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
     }
 
      // boolean attribute
-    el.attrs?.forEach(([name, assign, value]) => {
-      if (assign === '&=') {
-        (template.bools ??= {})[name] = expression(value)
-        if (template.attrs) {
-          delete template.attrs[name]
-          if (!Object.keys(template.attrs).length) {
-            delete template.attrs
+    if (el.attrs) {
+      el.attrs.forEach(([name, assign, value]) => {
+        if (assign === '&=') {
+          if (!template.bools) {
+            template.bools = {}
+          }
+          template.bools[name] = expression(value)
+          if (template.attrs) {
+            delete template.attrs[name]
+            if (!Object.keys(template.attrs).length) {
+              delete template.attrs
+            }
           }
         }
-      }
-    })
+      })
+    }
   }
 
   if (el.child) {
@@ -259,12 +289,12 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
 
 function hasAttr(el: TemporaryElement, attr: string): boolean
 {
-  return el.attrs?.some(a => a[0] === attr)
+  return el.attrs && el.attrs.some(a => a[0] === attr)
 }
 
 function getAttr(el: TemporaryElement, attr: string): string
 {
-  let a = el.attrs?.find(a => a[0] === attr)
+  let a = el.attrs && el.attrs.find(a => a[0] === attr)
   return a ? a[2] : ''
 }
 

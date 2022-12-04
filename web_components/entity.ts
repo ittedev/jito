@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import type { TargetCallback } from '../data_binding/types.ts'
 import type { Component, SpecialCache, Patcher } from './types.ts'
 import type {
@@ -188,8 +189,8 @@ function isHoistingTarget(el: VirtualElement | RealTarget) {
 
 function isWaitingTarget(el: VirtualNode) {
   return (el as VirtualElement).tag === 'link' &&
-    (el as VirtualElement).attrs?.href !== '' &&
-    ((el as VirtualElement).attrs?.rel as string).toLocaleLowerCase() === 'stylesheet'
+    ((el as VirtualElement).attrs && ((el as VirtualElement).attrs as any).href) !== '' &&
+    (((el as VirtualElement).attrs && ((el as VirtualElement).attrs as any).rel) as string).toLocaleLowerCase() === 'stylesheet'
 }
 
 /**
@@ -215,31 +216,40 @@ class SafeUpdater
     let body = tree
 
     // pre patch
-    let oldLinks = (this.header?.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
-    let newLinks = (header.children?.filter(isWaitingTarget) || []) as Array<VirtualElement>
+    let oldLinks = (this.header && this.header.children && this.header.children.filter(isWaitingTarget) || []) as Array<VirtualElement>
+    let newLinks = (header.children && header.children.filter(isWaitingTarget) || []) as Array<VirtualElement>
     let addedLinks = newLinks
-      .filter(link => oldLinks.every(el => el.attrs?.href !== link.attrs?.href))
+      .filter(link => oldLinks.every(el => (el.attrs && el.attrs.href) !== (link.attrs && link.attrs.href)))
     let removedLinks = oldLinks
-      .filter(link => newLinks.every(el => el.attrs?.href !== link.attrs?.href))
+      .filter(link => newLinks.every(el => (el.attrs && el.attrs.href) !== (link.attrs && link.attrs.href)))
 
     // set a load event listener
     newLinks.forEach(link => {
-      if (!((link.on ??= {}).load ??= []).includes(this.loaded)) {
+      if (!link.on) {
+        link.on = {}
+      }
+      if (!link.on.load) {
+        link.on.load = []
+      }
+      if (!link.on.load.includes(this.loaded)) {
         link.on.load.push(this.loaded)
       }
-      if (!(link.on.error ??= []).includes(this.loaded)) {
+      if (!link.on.error) {
+        link.on.error = []
+      }
+      if (!link.on.error.includes(this.loaded)) {
         link.on.error.push(this.loaded)
       }
     })
 
     // add to wait list
     addedLinks.forEach(link => {
-      this.addWaitUrl(link.attrs?.href as string)
+      this.addWaitUrl((link.attrs && link.attrs.href) as string)
       link.new = true
     })
 
     // remove from wait list
-    removedLinks.forEach(link => this.removeWaitUrl(link.attrs?.href as string))
+    removedLinks.forEach(link => this.removeWaitUrl((link.attrs && link.attrs.href) as string))
 
     if (removedLinks.length) {
       // patch old header and new header

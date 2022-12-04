@@ -15,7 +15,7 @@ import {
   expression,
   parse,
   evaluate
-} from '../jito.js'
+} from './jito.js'
 
 mocha.setup('bdd')
 class XX extends HTMLDivElement { constructor() { super() } }
@@ -3003,10 +3003,10 @@ describe('Template Engine', function() {
       equal(evaluate(expression('-0x190AF'), [stack]), -0x190AF)
     })
 
-    it('expression: number: bigint', () => {
-      equal(evaluate(expression('86885378418394941n'), [stack]), 86885378418394941n)
-      equal(evaluate(expression('-86885378418394941n'), [stack]), -86885378418394941n)
-    })
+    // it('expression: number: bigint', () => {
+    //   equal(evaluate(expression('86885378418394941n'), [stack]), 86885378418394941n)
+    //   equal(evaluate(expression('-86885378418394941n'), [stack]), -86885378418394941n)
+    // })
 
     it('expression: array [...a]', () => {
       equal(evaluate(expression('[2, ...a[2]]'), [stack]), [2, 6])
@@ -3071,38 +3071,7 @@ describe('Template Engine', function() {
     })
   })
 
-  describe('Not support', function() {
-    let stack = {
-      x: 1,
-      y: 10,
-      s: 'o',
-      h: { x: 2, y: { x: 3 }, z: [7] },
-      a: [4, 5, [6], { x: 8 }],
-      text: 'x',
-      f: () => 5,
-      add: (a, b) => a + b
-    }
 
-    it('expression: number: integer binary', () => {
-      equal(evaluate(expression('0b000'), [stack]), 0b000)
-      equal(evaluate(expression('0b0011'), [stack]), 0b0011)
-      equal(evaluate(expression('-0b0011'), [stack]), -0b0011)
-    })
-
-    it('expression: number: floating-point index part', () => {
-      equal(evaluate(expression('0E+0'), [stack]), 0E+0)
-      equal(evaluate(expression('0E-0'), [stack]), 0E-0)
-      equal(evaluate(expression('0e+0'), [stack]), 0e+0)
-      equal(evaluate(expression('0e-0'), [stack]), 0e-0)
-      equal(evaluate(expression('3.14E+10'), [stack]), 3.14E+10)
-      equal(evaluate(expression('.123E-10'), [stack]), .123E-10)
-      equal(evaluate(expression('-3.14E+10'), [stack]), -3.14E+10)
-      equal(evaluate(expression('-.123E-10'), [stack]), -.123E-10)
-    })
-    it('evaluate: js line comment', () => {
-      equal(evaluate(expression('10  + 1 // * 2')), 11)
-    })
-  })
 })
 
 mocha.run()

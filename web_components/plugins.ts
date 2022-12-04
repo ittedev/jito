@@ -76,7 +76,10 @@ export let componentPlugin = {
       if (component) {
         // If local component,
         // set a component property
-        (ve.attrs ??= {}).component = component
+        if (!ve.attrs) {
+          ve.attrs = {}
+        }
+        ve.attrs.component = component
       } else {
         // If global component,
         // don't change the tag
@@ -93,8 +96,11 @@ export let componentPlugin = {
     // require a component property
     // because attach shadow error occurs
     if (temp.tag === componentElementTag) {
-      component = ve.attrs?.component
-      ;(ve.attrs ??= {}).component = component
+      component = ve.attrs && ve.attrs.component
+      if (!ve.attrs) {
+        ve.attrs = {}
+      }
+      ve.attrs.component = component
     }
 
     if (
@@ -106,7 +112,10 @@ export let componentPlugin = {
     ) {
       // default module
       component = (component as Module).default
-      ;(ve.attrs ??= {}).component = component
+      if (!ve.attrs) {
+        ve.attrs = {}
+      }
+      ve.attrs.component = component
     }
 
     // Create new element,
@@ -216,21 +225,26 @@ function resolveProperties(
 {
   let values = [] as Array<Template | string>
   let contents = [] as Array<[string, Template]>
-  let children = (template.children || [])?.flatMap(child => {
-    if (!(typeof child === 'string')) {
-      let temp = child as HasAttrTemplate
-      if (temp.attrs) {
-        if (temp.attrs['@as']) {
-          contents.push([temp.attrs['@as'] as string, temp])
-          return []
-        } else if(temp.attrs.slot) {
-          return [evaluate(child, stack, cache) as string | VirtualElement | number]
+  let children = (template.children || [])
+    .map(child => {
+      if (!(typeof child === 'string')) {
+        let temp = child as HasAttrTemplate
+        if (temp.attrs) {
+          if (temp.attrs['@as']) {
+            contents.push([temp.attrs['@as'] as string, temp])
+            return []
+          } else if(temp.attrs.slot) {
+            return [evaluate(child, stack, cache) as string | VirtualElement | number]
+          }
         }
       }
-    }
-    values.push(child)
-    return []
-  })
+      values.push(child)
+      return []
+    })
+    .reduce((ary, values) => { // flatMap
+      ary.push(...values)
+      return ary
+    }, [])
   if (values.length) {
     contents.push(['content', { type: 'group', children: values } as GroupTemplate])
   }

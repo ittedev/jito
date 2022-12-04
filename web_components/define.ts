@@ -62,21 +62,26 @@ export function getInnerContents(
 {
   let values = [] as Array<Template | string>
   let contents = [] as Array<[string, Template]>
-  (template.children || [])?.flatMap(child => {
-    if (!(typeof child === 'string')) {
-      let temp = child as HasAttrTemplate
-      if (temp.attrs) {
-        if (temp.attrs['@as']) {
-          contents.push([temp.attrs['@as'] as string, temp])
-          return []
-        } else if(temp.attrs.slot) {
-          return [evaluate(child) as string | VirtualElement | number]
+  (template.children || [])
+    .map(child => {
+      if (!(typeof child === 'string')) {
+        let temp = child as HasAttrTemplate
+        if (temp.attrs) {
+          if (temp.attrs['@as']) {
+            contents.push([temp.attrs['@as'] as string, temp])
+            return []
+          } else if(temp.attrs.slot) {
+            return [evaluate(child) as string | VirtualElement | number]
+          }
         }
       }
-    }
-    values.push(child)
-    return []
-  })
+      values.push(child)
+      return []
+    })
+    .reduce((ary, values) => { // flatMap
+      ary.push(...values)
+      return ary
+    }, [])
   if (values.length) {
     contents.push(['content', { type: 'group', children: values } as GroupTemplate])
   }

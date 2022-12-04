@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   LinkedVirtualRoot,
   LinkedVirtualElement,
@@ -16,11 +17,13 @@ import {
 
 export function destroy(tree: LinkedVirtualRoot, useEvent = true): void
 {
-  if (!(tree as LinkedRealTarget).invalid?.children && tree.el instanceof Node) {
-    tree.children?.forEach(child =>
-      typeof child === 'object' &&
-      destroy(child as LinkedVirtualRoot, useEvent)
-    )
+  if (!((tree as LinkedRealTarget).invalid && ((tree as LinkedRealTarget).invalid as any).children) && tree.el instanceof Node) {
+    if (tree.children) {
+      tree.children.forEach(child =>
+        typeof child === 'object' &&
+        destroy(child as LinkedVirtualRoot, useEvent)
+      )
+    }
     let el = tree.el as Node
     while (el.firstChild) {
       el.removeChild(el.firstChild)
@@ -31,10 +34,10 @@ export function destroy(tree: LinkedVirtualRoot, useEvent = true): void
       bubbles: false
     }))
   }
-  if (!(tree as LinkedRealTarget).invalid?.on) {
+  if (!((tree as LinkedRealTarget).invalid && ((tree as LinkedRealTarget).invalid as any).on)) {
     patchOn(tree, {})
   }
-  if (!(tree as LinkedRealTarget).invalid?.attrs && tree.el instanceof Element) {
+  if (!((tree as LinkedRealTarget).invalid && ((tree as LinkedRealTarget).invalid as any).attrs) && tree.el instanceof Element) {
     patchClass(tree as LinkedVirtualElement | LinkedRealElement, {})
     patchPart(tree as LinkedVirtualElement | LinkedRealElement, {})
     patchStyle(tree as LinkedVirtualElement | LinkedRealElement, {})

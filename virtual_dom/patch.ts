@@ -88,21 +88,32 @@ export function patchRealElement(
       ve.override = newVe.override
     }
     if ('invalid' in newVe) {
-      ve.invalid = { ...newVe.invalid }
+      ve.invalid = {}
+      for (let key in newVe.invalid) { // Spread
+        ve.invalid[key as keyof {
+          attrs?: boolean | undefined;
+          on?: boolean | undefined;
+          children?: boolean | undefined;
+      }] = newVe.invalid[key as keyof {
+          attrs?: boolean | undefined;
+          on?: boolean | undefined;
+          children?: boolean | undefined;
+      }]
+      }
     }
   }
 
-  if (!ve.invalid?.attrs && ve.el instanceof Element) {
+  if (!(ve.invalid && ve.invalid.attrs) && ve.el instanceof Element) {
     patchClass(ve as LinkedRealElement, newVe)
     patchPart(ve as LinkedRealElement, newVe)
     patchStyle(ve as LinkedRealElement, newVe)
     patchForm(ve as LinkedRealElement, newVe)
     patchAttrs(ve as LinkedRealElement, newVe)
   }
-  if (!ve.invalid?.on) {
+  if (!(ve.invalid && ve.invalid.on)) {
     patchOn(ve, newVe)
   }
-  if (!ve.invalid?.children && ve.el instanceof Node) {
+  if (!(ve.invalid && ve.invalid.children) && ve.el instanceof Node) {
     patchChildren(ve as LinkedVirtualTree, newVe, useEvent)
   }
 
@@ -206,7 +217,10 @@ export function patchAttrs(
     .forEach(key => ve.el.removeAttribute(key))
 
   if (newAttrsKeys.length) {
-    ve.attrs = { ...newAttrs }
+    ve.attrs = {}
+    for (let attr in newAttrs) { // Spread
+      ve.attrs[attr] = newAttrs[attr]
+    }
   } else {
     delete ve.attrs
   }
@@ -284,9 +298,9 @@ export function patchForm(
     let input = ve.el as HTMLInputElement
 
     // value
-    if (ve.attrs?.value !== newVe.attrs?.value && input.value !== newVe.attrs?.value) {
+    if ((ve.attrs && ve.attrs.value) !== (newVe.attrs && newVe.attrs.value) && input.value !== (newVe.attrs && newVe.attrs.value)) {
       if (newVe.attrs && 'value' in newVe.attrs) {
-        if (input.value !== (newVe.attrs?.value as string).toString()) {
+        if (input.value !== ((newVe.attrs && newVe.attrs.value) as string).toString()) {
           input.value = newVe.attrs.value as string
         }
       } else {
@@ -324,7 +338,8 @@ class Stock {
     this.stock = new Map<unknown, Array<LinkedVirtualElement>>()
   }
   has(key: unknown) {
-    return this.stock.get(key)?.length
+    let el = this.stock.get(key)
+    return el && el.length
   }
   push(key: unknown, value: LinkedVirtualElement) {
     if (this.stock.has(key)) {
