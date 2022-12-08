@@ -1,9 +1,12 @@
 // Copyright 2022 itte.dev. All rights reserved. MIT license.
 // This module is browser compatible.
 import type { Main, Component, Patcher } from './types.ts'
-import { StateStack, TreeTemplate } from '../template_engine/types.ts'
+import type { VirtualElement } from '../virtual_dom/types.ts'
+import type { StateStack, TreeTemplate, HasChildrenTemplate, Template, HasAttrTemplate, GroupTemplate } from '../template_engine/types.ts'
 import { instanceOfComponent } from './types.ts'
 import { load } from '../virtual_dom/load.ts'
+import { parse } from '../template_engine/parse.ts'
+import { evaluate } from '../template_engine/evaluate.ts'
 import { compact } from './compact.ts'
 import { ComponentElement } from './element.ts'
 import { Entity } from './entity.ts'
@@ -40,7 +43,10 @@ export function define(
 
       if(this.innerHTML) {
         // if this is rendered from html
-        (this.entity as Entity).setAttr('content', this.innerHTML)
+        let contents = getInnerContents(parse(this.innerHTML))
+        contents.forEach(([name, value]) => {
+          (this.entity as Entity).setAttr(name, value)
+        })
       }
       this.loadAttrs()
     }
@@ -48,4 +54,36 @@ export function define(
       return component
     }
   })
+}
+
+export function getInnerContents(
+  template: HasChildrenTemplate
+): Array<[string, Template]>
+{
+  let values = [] as Array<Template | string>
+  let contents = [] as Array<[string, Template]>
+  (template.children || [])
+    .map(child => {
+      if (!(typeof child === 'string')) {
+        let temp = child as HasAttrTemplate
+        if (temp.attrs) {
+          if (temp.attrs['@as']) {
+            contents.push([temp.attrs['@as'] as string, temp])
+            return []
+          } else if(temp.attrs.slot) {
+            return [evaluate(child) as string | VirtualElement | number]
+          }
+        }
+      }
+      values.push(child)
+      return []
+    })
+    .reduce((ary, values) => { // flatMap
+      ary.push(...values)
+      return ary
+    }, [])
+  if (values.length) {
+    contents.push(['content', { type: 'group', children: values } as GroupTemplate])
+  }
+  return contents
 }

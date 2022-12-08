@@ -256,7 +256,8 @@ export type TokenField =
   'double' |
   'template' |
   'comment' |
-  'attr'
+  'attr' |
+  'plane'
 
 export type TokenType =
   '' |

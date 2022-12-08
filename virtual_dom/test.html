@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <title>virtual_dom/load.test.js</title>
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
-<div id="mocha"></div>
+<body><div id="mocha"></div></body>
 <script src="https://unpkg.com/chai/chai.js"></script>
 <script>
 var i = 0
@@ -12,20 +12,8 @@ var sleep = t => new Promise(r => setTimeout(r, t || 0))
 <script src="https://unpkg.com/mocha/mocha.js"></script>
 <script type="module">
 import {
-  watch,
-  receive,
-  unwatch,
-  reach,
-  lock,
-  unlock,
   load,
-  patch,
-  expression,
-  parse,
-  evaluate,
-  define,
-  compact,
-  mount
+  patch
 } from '../jito.js'
 
 mocha.setup('bdd')
@@ -1197,7 +1185,7 @@ describe('Virtual Dom', function() {
           }],
           el: {}
         })
-        equal(parent.firstChild.innerText, 'Helloworld!')
+        equal(parent.firstChild.innerText.replace('\n', ''), 'Helloworld!') // if safari, <br> -> \n
         equal(parent.firstChild.children[0].tagName, 'BR')
         equal(parent.firstChild.children[1].tagName, 'SPAN')
         equal(parent.firstChild.children[2].tagName, 'A')

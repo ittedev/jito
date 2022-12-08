@@ -17,7 +17,9 @@ export class ComponentElement extends HTMLElement
 
   setAttr(name: string, value: unknown): void
   {
-    this._entity?.setAttr(name, value)
+    if (this._entity) {
+      this._entity.setAttr(name, value)
+    }
   }
 
   static getComponent(): Component | undefined

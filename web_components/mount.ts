@@ -3,7 +3,9 @@
 import type { Main, Component, Patcher } from './types.ts'
 import { StateStack, TreeTemplate } from '../template_engine/types.ts'
 import { instanceOfComponent } from './types.ts'
+import { getInnerContents } from './define.ts'
 import { load } from '../virtual_dom/load.ts'
+import { parse } from '../template_engine/parse.ts'
 import { compact } from './compact.ts'
 import { Entity } from './entity.ts'
 
@@ -52,7 +54,10 @@ export function mount(
   let entity = new Entity(component, host, tree)
 
   if (host.innerHTML) {
-    entity.setAttr('content', host.innerHTML)
+    let contents = getInnerContents(parse(host.innerHTML))
+    contents.forEach(([name, value]) => {
+      entity.setAttr(name, value)
+    })
   }
   if (host.hasAttributes()) {
     host.getAttributeNames().forEach(name => {

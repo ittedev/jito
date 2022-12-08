@@ -8,6 +8,6 @@ export function seal(
   options: ComponentOptions = {}
 ): Component
 {
-  component.options = Object.freeze({ mode: 'closed', ...options })
+  component.options = Object.freeze(Object.assign({ mode: 'closed' }, options))
   return Object.freeze(component)
 }

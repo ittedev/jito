@@ -4,8 +4,7 @@ import {
   TemporaryElement,
   Token,
   TokenField,
-  TokenType,
-  instanceOfTemporaryElement
+  TokenType
 } from './types.ts'
 import { Lexer, unescape } from './lexer.ts'
 import { notHasEnd } from './is_primitive.ts'
@@ -22,21 +21,10 @@ export function dom(html: Lexer | string): TemporaryNode | undefined
     lexer.pop()
     lexer.expand('comment', () => lexer.must('-->'))
     text.text += skip(lexer)
-    continue
   }
 
   if (lexer.nextIs('start')) {
-    let next = el(lexer)
-    if (next) {
-      if (instanceOfTemporaryElement(next)) {
-        text.next = next
-      } else {
-        text.text = (next as TemporaryText).text
-        if (next.next) {
-          text.next = next.next
-        }
-      }
-    }
+    text.next = el(lexer)
   }
   return text.text ? text : text.next ? text.next : undefined
 }
@@ -83,9 +71,13 @@ function el(lexer: Lexer): TemporaryNode | undefined
     lexer.must('>')
   } else {
     lexer.must('>')
-    let child = dom(lexer)
-    if (child) {
-      el.child = child
+    if (el.tag !== 'script') {
+      let child = dom(lexer)
+      if (child) {
+        el.child = child
+      }
+    } else { // skip <script>
+      lexer.expand('plane', () => lexer.nextIs('end'))
     }
     // Not supported: p, dt, dd, li, option, thead, tfoot, th, tr, td, rt, rp, optgroup, caption
     if (lexer.must('end')[1].slice(2) !== el.tag) {
@@ -98,7 +90,7 @@ function el(lexer: Lexer): TemporaryNode | undefined
     el.next = next
   }
   if (el.tag === 'script') { // skip <script>
-    return el.next ? el.next : el
+    return el.next ? el.next : undefined
   } else {
     return el
   }
