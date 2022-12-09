@@ -362,6 +362,8 @@ export function evaluate (
   stack?: StateStack
 ): unknown
 
+export function render(tree: VirtualTree): string
+
 export function pickup(
   stack: StateStack,
   name: string

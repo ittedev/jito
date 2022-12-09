@@ -10,7 +10,7 @@ export function render(tree: VirtualTree): string
 }
 
 // Not support RealTarget
-export function renderChildren(children: VirtualNode[]): string
+function renderChildren(children: VirtualNode[]): string
 {
   return children
     .filter(child => typeof child !== 'number')
@@ -18,7 +18,7 @@ export function renderChildren(children: VirtualNode[]): string
     .join('')
 }
 
-export function renderElement(ve: VirtualElement): string
+function renderElement(ve: VirtualElement): string
 {
   let idSection = ve.is ? ` is="${ve.is}"` : ''
   let classSection = ve.class ? ` class="${ve.class.join(' ')}"` : ''
