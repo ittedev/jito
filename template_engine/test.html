@@ -3363,6 +3363,10 @@ describe('Template Engine', function() {
     let zz = { name: 'zz' }
     let collection = [xx, yy, zz]
 
+    it('expression: regex', () => {
+      equal(evaluate(expression('"string".text(/string/)')), true)
+    })
+
     it('expression: number: integer hexadecimal', () => {
       equal(evaluate(expression('0x000'), [stack]), 0x000)
       equal(evaluate(expression('0x190AF'), [stack]), 0x190AF)
