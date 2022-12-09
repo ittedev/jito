@@ -14,7 +14,8 @@ var sleep = t => new Promise(r => setTimeout(r, t || 0))
 import {
   expression,
   parse,
-  evaluate
+  evaluate,
+  render
 } from '../jito.js'
 
 mocha.setup('bdd')
@@ -3225,6 +3226,124 @@ describe('Template Engine', function() {
       chai.assert.throws(() => evaluate(expression('a.__defineGetter__("b", f)'), [{ a, f: () => 5 }]), Error, "Cannot get __defineGetter__")
       chai.assert.throws(() => evaluate(expression('a["__defineSetter__"]("b", f)'), [{ a: {}, f: (v) => {} }]), Error, "Cannot get __defineSetter__")
       chai.assert.throws(() => evaluate(expression('a.__defineSetter__("b", f)'), [{ a: {}, f: (v) => {} }]), Error, "Cannot get __defineSetter__")
+    })
+  })
+
+  describe('render()', function() {
+    describe(': tree', function() {
+      it('render no children', () => {
+        let html = render({})
+        equal(html, '')
+      })
+
+      it('render text', () => {
+        let html = render({ children: ['Hello'] })
+        equal(html, 'Hello')
+      })
+
+      it('render element', () => {
+        let html = render({ children: [
+          {
+            tag: 'span'
+          }
+        ]})
+        equal(html, '<span></span>')
+      })
+
+      it('render custom element', () => {
+        let html = render({ children: [
+          {
+            tag: 'custom-element'
+          }
+        ]})
+        equal(html, '<custom-element></custom-element>')
+      })
+
+      it('render number', () => {
+        let html = render({ children: [5] })
+        equal(html, '')
+      })
+
+      it('render grandchild text', () => {
+        let html = render({ children: [
+          {
+            tag: 'span',
+            children: ['Hello']
+          }
+        ]})
+        equal(html, '<span>Hello</span>')
+      })
+
+      it('render grandchild element', () => {
+        let html = render({ children: [
+          {
+            tag: 'span',
+            children: [{ tag: 'small' }]
+          }
+        ]})
+        equal(html, '<span><small></small></span>')
+      })
+    })
+    describe(': element', function() {
+      it('render is', () => {
+        let html = render({ children: [
+          {
+            tag: 'div',
+            is: 'custome-element'
+          }
+        ]})
+        equal(html, '<div is="custome-element"></div>')
+      })
+      it('render class', () => {
+        let html = render({ children: [
+          {
+            tag: 'div',
+            class: ['button', 'is-primary']
+          }
+        ]})
+        equal(html, '<div class="button is-primary"></div>')
+      })
+      it('render part', () => {
+        let html = render({ children: [
+          {
+            tag: 'div',
+            part: ['button', 'is-primary']
+          }
+        ]})
+        equal(html, '<div part="button is-primary"></div>')
+      })
+      it('render style', () => {
+        let html = render({ children: [
+          {
+            tag: 'div',
+            style: 'display: inline-block;'
+          }
+        ]})
+        equal(html, '<div style="display: inline-block;"></div>')
+      })
+      it('render attrs', () => {
+        let html = render({ children: [
+          {
+            tag: 'div',
+            attrs: {
+              id: 'id',
+              title: 'title'
+            }
+          }
+        ]})
+        equal(html, '<div id="id" title="title"></div>')
+      })
+      it('render on (no render)', () => {
+        let html = render({ children: [
+          {
+            tag: 'div',
+            on: {
+              click: [() => console.log]
+            }
+          }
+        ]})
+        equal(html, '<div></div>')
+      })
     })
   })
 
