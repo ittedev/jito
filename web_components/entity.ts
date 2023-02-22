@@ -128,6 +128,7 @@ export class Entity
 
   public get component(): Component { return this._component }
   public get host(): Element { return this._host }
+  public get tree(): LinkedVirtualTree { return this._tree }
   public get root(): ShadowRoot { return this._tree.el as ShadowRoot }
   public get attrs(): Record<string, unknown> { return this._attrs }
 

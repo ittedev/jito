@@ -128,7 +128,7 @@ class GrobalComponentElement extends ComponentElement
           if (def && ComponentElement.isPrototypeOf(def)) {
             let component = (def as typeof ComponentElement).getComponent()
             if (component) {
-              let tree = load(this.attachShadow(component.options))
+              let tree = this.entity ? this.entity.tree : load(this.attachShadow(component.options))
               this._setEntity(new Entity(component, this, tree))
             }
           } else {
@@ -138,7 +138,7 @@ class GrobalComponentElement extends ComponentElement
         }
         case 'object':
           if (instanceOfComponent(value)) {
-            let tree = load(this.attachShadow(value.options))
+            let tree = this.entity ? this.entity.tree : load(this.attachShadow(value.options))
             this._setEntity(new Entity(value, this, tree))
           } else if (value !== null) {
             throw Error('The object is not a component.')

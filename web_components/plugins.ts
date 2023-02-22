@@ -118,13 +118,6 @@ export let componentPlugin = {
       ve.attrs.component = component
     }
 
-    // Create new element,
-    // to avoid attach shadow error
-    if (temp.cache !== component) {
-      ve.new = true
-    }
-    temp.cache = component
-
     return ve
   }
 } as EvaluatePlugin
