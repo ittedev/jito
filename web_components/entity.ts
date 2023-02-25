@@ -38,6 +38,8 @@ export class Entity
   private _ready: Promise<void>
   private _requirePatch = false
   private _updater: SafeUpdater
+  private _destroies: Set<() => void>
+  private _destroyEvent: () => void
 
   public constructor(component: Component, host: Element, tree: LinkedVirtualTree)
   {
@@ -50,15 +52,18 @@ export class Entity
     this._updater = new SafeUpdater(tree)
     this.patch = this.patch.bind(this)
     this.dispatch = this.dispatch.bind(this)
+    this.destroy = this.destroy.bind(this)
+    this.onDestroy = this.onDestroy.bind(this)
     this._cache = { [special]: [host, root] }
+    this._destroies = new Set()
+    this._destroyEvent = () => {
+      this.destroy()
+    }
 
     if (this._component.options.mode === 'closed') {
       root.addEventListener(eventTypes.patch, event => event.stopPropagation())
     }
-    host.addEventListener(eventTypes.destroy, () => {
-      this.patch({ type: 'tree' })
-      unreach(this._stack, this.patch)
-    })
+    host.addEventListener(eventTypes.destroy, this._destroyEvent)
 
     let main = typeof this._component.main === 'function' ? this._component.main(this) : this._component.main;
     this._ready = (async () => {
@@ -172,6 +177,21 @@ export class Entity
     this._host.dispatchEvent(new CustomEvent(typeArg, {
       detail: detail
     }))
+  }
+
+  public destroy(takeOver?: boolean): void
+  {
+    if (takeOver) {
+      this.patch({ type: 'tree' })
+    }
+    unreach(this._stack, this.patch)
+    this._destroies.forEach(event => event())
+    this._destroies.clear()
+    this._host.removeEventListener(eventTypes.destroy, this._destroyEvent)
+  }
+
+  public onDestroy(listener: () => void) {
+    this._destroies.add(listener)
   }
 
   public toJSON()
