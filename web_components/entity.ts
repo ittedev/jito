@@ -41,15 +41,20 @@ export class Entity
   private _destroies: Set<() => void>
   private _destroyEvent: () => void
 
-  public constructor(component: Component, host: Element, tree: LinkedVirtualTree)
+  public constructor(
+    component: Component,
+    host: Element,
+    tree: LinkedVirtualTree,
+    oldEntity?: Entity,
+  )
   {
     let root = tree.el as ShadowRoot
     this._component = component
     this._template = component.template
     this._patcher = component.patcher
     this._host = host
-    this._tree = tree as LinkedVirtualTree
-    this._updater = new SafeUpdater(tree)
+    this._tree = tree
+    this._updater = oldEntity ? oldEntity._updater : new SafeUpdater(tree)
     this.patch = this.patch.bind(this)
     this.dispatch = this.dispatch.bind(this)
     this.destroy = this.destroy.bind(this)

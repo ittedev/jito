@@ -117,6 +117,16 @@ class GrobalComponentElement extends ComponentElement
     super()
   }
 
+  private _changeComonent(component: Component) {
+    if (this.entity) {
+      this.entity.destroy(true)
+      this._setEntity(new Entity(component, this, this.entity.tree, this.entity))
+    } else {
+      let tree = load(this.attachShadow(component.options))
+      this._setEntity(new Entity(component, this, tree))
+    }
+  }
+
   setAttr(name: string, value: unknown)
   {
     // if change a component property
@@ -128,11 +138,7 @@ class GrobalComponentElement extends ComponentElement
           if (def && ComponentElement.isPrototypeOf(def)) {
             let component = (def as typeof ComponentElement).getComponent()
             if (component) {
-              if (this.entity) {
-                this.entity.destroy(true)
-              }
-              let tree = this.entity ? this.entity.tree : load(this.attachShadow(component.options))
-              this._setEntity(new Entity(component, this, tree))
+              this._changeComonent(component)
             }
           } else {
             throw Error(value + ' is not a component.')
@@ -141,11 +147,7 @@ class GrobalComponentElement extends ComponentElement
         }
         case 'object':
           if (instanceOfComponent(value)) {
-            if (this.entity) {
-              this.entity.destroy(true)
-            }
-            let tree = this.entity ? this.entity.tree : load(this.attachShadow(value.options))
-            this._setEntity(new Entity(value, this, tree))
+            this._changeComonent(value)
           } else if (value !== null) {
             throw Error('The object is not a component.')
           }
