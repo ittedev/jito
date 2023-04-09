@@ -34,7 +34,8 @@ describe('Template Engine', function() {
       a: [4, 5, [6], { x: 8 }],
       text: 'x',
       f: () => 5,
-      add: (a, b) => a + b
+      add: (a, b) => a + b,
+      JSON,
     }
 
     it('expression: null', () => {
@@ -158,6 +159,10 @@ describe('Template Engine', function() {
 
     it('expression: function f(a, b)', () => {
       equal(evaluate(expression('add(4, 7)'), [stack]), 11)
+    })
+
+    it('expression: function f({})', () => {
+      equal(evaluate(expression('JSON.stringify({})'), [stack]), '{}')
     })
 
     it('expression: hash a[0]', () => {
