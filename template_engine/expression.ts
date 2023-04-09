@@ -285,12 +285,12 @@ function term(lexer: Lexer): Template
         if (lexer.nextIs(',')) {
           lexer.pop()
         } else if (lexer.nextIs('}')) {
-          lexer.pop()
           break
         } else {
           throw Error("'}' is required")
         }
       }
+      lexer.pop()
       return { type: 'object', entries } as ObjectTemplate
     }
 
