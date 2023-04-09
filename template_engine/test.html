@@ -1998,7 +1998,6 @@ describe('Template Engine', function() {
       })
       it('parse: @try, @for and @catch', () => {
         let template = parse('<p @try @for="array"></p><div @catch></div>')
-        console.log('template:', template)
         equal(template, {
           type: 'tree',
           children: [
