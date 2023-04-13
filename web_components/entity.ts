@@ -1,5 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
-import type { TargetCallback } from '../data_binding/types.ts'
+import type {
+  RecursiveCallback,
+  TargetCallback,
+} from '../data_binding/types.ts'
 import type { Component, SpecialCache, Patcher } from './types.ts'
 import type {
   VirtualElement,
@@ -38,6 +41,7 @@ export class Entity
   private _ready: Promise<void>
   private _requirePatch = false
   private _updater: SafeUpdater
+  private _watcher: Set<[unknown, RecursiveCallback | string | undefined, TargetCallback | boolean | undefined]>
 
   public constructor(component: Component, host: Element, tree: LinkedVirtualTree)
   {
@@ -48,7 +52,9 @@ export class Entity
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._updater = new SafeUpdater(tree)
+    this._watcher = new Set()
     this.patch = this.patch.bind(this)
+    this.watch = this.watch.bind(this)
     this.dispatch = this.dispatch.bind(this)
     this._cache = { [special]: [host, root] }
 
@@ -57,6 +63,7 @@ export class Entity
     }
     host.addEventListener(eventTypes.destroy, () => {
       this.patch({ type: 'tree' })
+      this._watcher.forEach(value => unwatch(...(value as [unknown, string, TargetCallback])))
       unreach(this._stack, this.patch)
     })
 
@@ -171,6 +178,20 @@ export class Entity
     this._host.dispatchEvent(new CustomEvent(typeArg, {
       detail: detail
     }))
+  }
+
+  public watch<T>(data: T): T
+  public watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
+  public watch<T>(data: T, key: string, callback: TargetCallback, isExecute?: boolean): T
+  public watch<T>(
+    data: T,
+    keyOrCallback?:  RecursiveCallback | string,
+    isExecuteOrcallback?: TargetCallback | boolean,
+    isExecute?: boolean,
+  ): T
+  {
+    this._watcher.add([data, keyOrCallback, isExecuteOrcallback])
+    return watch(data, keyOrCallback as string, isExecuteOrcallback as TargetCallback, isExecute)
   }
 
   public toJSON()

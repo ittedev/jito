@@ -24,7 +24,7 @@ export function unwatch<T>(
   if (instanceOfReactivableObject(data)) {
     if (keyOrCallback === undefined) { // All deReactivate
       _unreach(data, [], true)
-    } else if (callback) { // TargetCallback
+    } else if (typeof callback === 'function') { // TargetCallback
       removeReactive(data as ReactiveObject, keyOrCallback as string, callback)
       deReactivate(data)
     } else { // RecursiveCallback
