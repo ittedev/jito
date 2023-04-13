@@ -41,6 +41,7 @@ export class Entity
   private _ready: Promise<void>
   private _requirePatch = false
   private _updater: SafeUpdater
+  private _watcher: Set<[unknown, RecursiveCallback | string | undefined, TargetCallback | boolean | undefined]>
 
   public constructor(component: Component, host: Element, tree: LinkedVirtualTree)
   {
@@ -51,6 +52,7 @@ export class Entity
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._updater = new SafeUpdater(tree)
+    this._watcher = new Set()
     this.patch = this.patch.bind(this)
     this.watch = this.watch.bind(this)
     this.dispatch = this.dispatch.bind(this)
@@ -61,6 +63,7 @@ export class Entity
     }
     host.addEventListener(eventTypes.destroy, () => {
       this.patch({ type: 'tree' })
+      this._watcher.forEach(value => unwatch(...(value as [unknown, string, TargetCallback])))
       unreach(this._stack, this.patch)
     })
 
@@ -186,6 +189,7 @@ export class Entity
     isExecuteOrcallback?: TargetCallback | boolean
   ): T
   {
+    this._watcher.add([data, keyOrCallback, isExecuteOrcallback])
     return watch(data, keyOrCallback as RecursiveCallback, isExecuteOrcallback as boolean)
   }
 
