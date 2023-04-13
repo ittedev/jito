@@ -18,22 +18,25 @@ import { _reach } from './reach.ts'
 import { unreach } from './unreach.ts'
 
 export function watch<T>(data: T): T
-export function watch<T>(data: T, callback: RecursiveCallback): T
+export function watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
 export function watch<T>(data: T, key: string, callback: TargetCallback): T
 export function watch<T>(
   data: T,
   keyOrCallback?:  RecursiveCallback | string,
-  callback?: TargetCallback
+  isExecuteOrcallback?: TargetCallback | boolean
 ): T
 {
   if (instanceOfReactivableObject(data)) {
     if (keyOrCallback === undefined) { // reactivate only
       _reach(data, [], true)
-    } else if (callback) { // TargetCallback
+    } else if (typeof isExecuteOrcallback === 'function') { // TargetCallback
       _reach(data, [], true)
-      addReactive(data as ReactiveObject, keyOrCallback as string, ['spy', callback])
+      addReactive(data as ReactiveObject, keyOrCallback as string, ['spy', isExecuteOrcallback])
     } else { // RecursiveCallback
       _reach(data, [], true, keyOrCallback as RecursiveCallback)
+      if (isExecuteOrcallback) {
+        (keyOrCallback as RecursiveCallback)()
+      }
     }
   }
   return data

@@ -177,6 +177,13 @@ describe('Data Binding', function() {
         })
         data.y = []
       })
+
+      it('watch object exec function first', () => {
+        let data = {}
+        let y = 0
+        watch(data, () => { y = 2 }, true)
+        equal(y, 2)
+      })
     })
 
     describe(': bio array', function() {
