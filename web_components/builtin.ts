@@ -21,5 +21,6 @@ export let builtin = Object.freeze({
   location,
   history,
   navigator,
-  setTimeout
+  setTimeout,
+  structuredClone: typeof structuredClone !== 'undefined' ? structuredClone : undefined,
 })
