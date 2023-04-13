@@ -5,13 +5,8 @@ export type TargetCallback = ((newValue: any, oldValue: any) => void)
 export type Callback = RecursiveCallback | TargetCallback
 
 export function watch<T>(data: T): T
-export function watch<T>(data: T, callback: RecursiveCallback): T
+export function watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
 export function watch<T>(data: T, key: string, callback: TargetCallback): T
-export function watch<T>(
-  data: T,
-  keyOrCallback?:  RecursiveCallback | string,
-  callback?: TargetCallback
-): T
 
 export function receive(data: unknown, ...keys: string[]): Promise<Record<string, unknown>>
 export function receive(data: unknown, keys: string[]): Promise<Record<string, unknown>>
@@ -20,11 +15,6 @@ export function receive(data: unknown, ...keys: string[] | string[][]): Promise<
 export function unwatch<T>(data: T): T
 export function unwatch<T>(data: T, callback: RecursiveCallback): T
 export function unwatch<T>(data: T, key: string, callback: TargetCallback): T
-export function unwatch<T>(
-  data: T,
-  keyOrCallback?: RecursiveCallback | string,
-  callback?: TargetCallback
-): T
 
 export function reach(data: unknown, callback: RecursiveCallback): unknown
 
@@ -418,6 +408,9 @@ export class Entity
   public get ready(): () => Promise<void>
   public patch(template?: string | TreeTemplate | Patcher): void
   public dispatch(typeArg: string, detail?: unknown): void
+  public watch<T>(data: T): T
+  public watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
+  public watch<T>(data: T, key: string, callback: TargetCallback): T
 }
 
 export class ComponentElement extends HTMLElement
@@ -454,10 +447,6 @@ export function compact(patcher: Patcher, stack: StateStack): Component
 export function compact(patcher: Patcher, state: Record<string, unknown>): Component
 export function compact(patcher: Patcher, main: Main): Component
 export function compact(template: string | TreeTemplate | Patcher, main: StateStack | Record<string, unknown> | Main): Component
-export function compact(
-  template: string | TreeTemplate | Patcher,
-  main?: StateStack | Record<string, unknown> | Main
-): Component
 
 export function define(name: string, component: Component): void
 export function define(name: string, html: string): void
@@ -473,11 +462,6 @@ export function define(name: string, patcher: Patcher, stack: StateStack): void
 export function define(name: string, patcher: Patcher, state: Record<string, unknown>): void
 export function define(name: string, patcher: Patcher, main: Main): void
 export function define(name: string, template: string | TreeTemplate | Patcher | Component, main: StateStack | Record<string, unknown> | Main): void
-export function define(
-  name: string,
-  template: string | TreeTemplate | Patcher | Component,
-  main?: StateStack | Record<string, unknown> | Main
-): void
 
 export function mount(selectors: string, component: Component): void
 export function mount(selectors: string, html: string): void
@@ -506,11 +490,6 @@ export function mount(element: Element, patcher: Patcher, stack: StateStack): vo
 export function mount(element: Element, patcher: Patcher, state: Record<string, unknown>): void
 export function mount(element: Element, patcher: Patcher, main: Main): void
 export function mount(target: string | Element, template: string | TreeTemplate | Patcher | Component, main: StateStack | Record<string, unknown> | Main): void
-export function mount(
-  target: string | Element,
-  template: string | TreeTemplate | Patcher | Component,
-  main?: StateStack | Record<string, unknown> | Main
-): void
 
 export function seal(
   component: Component,
