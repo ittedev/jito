@@ -1,5 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
-import type { TargetCallback } from '../data_binding/types.ts'
+import type {
+  RecursiveCallback,
+  TargetCallback,
+} from '../data_binding/types.ts'
 import type { Component, SpecialCache, Patcher } from './types.ts'
 import type {
   VirtualElement,
@@ -49,6 +52,7 @@ export class Entity
     this._tree = tree as LinkedVirtualTree
     this._updater = new SafeUpdater(tree)
     this.patch = this.patch.bind(this)
+    this.watch = this.watch.bind(this)
     this.dispatch = this.dispatch.bind(this)
     this._cache = { [special]: [host, root] }
 
@@ -171,6 +175,18 @@ export class Entity
     this._host.dispatchEvent(new CustomEvent(typeArg, {
       detail: detail
     }))
+  }
+
+  public watch<T>(data: T): T
+  public watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
+  public watch<T>(data: T, key: string, callback: TargetCallback): T
+  public watch<T>(
+    data: T,
+    keyOrCallback?:  RecursiveCallback | string,
+    isExecuteOrcallback?: TargetCallback | boolean
+  ): T
+  {
+    return watch(data, keyOrCallback as RecursiveCallback, isExecuteOrcallback as boolean)
   }
 
   public toJSON()
