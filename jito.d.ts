@@ -6,7 +6,7 @@ export type Callback = RecursiveCallback | TargetCallback
 
 export function watch<T>(data: T): T
 export function watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
-export function watch<T>(data: T, key: string, callback: TargetCallback): T
+export function watch<T>(data: T, key: string, callback: TargetCallback, isExecute?: boolean): T
 
 export function receive(data: unknown, ...keys: string[]): Promise<Record<string, unknown>>
 export function receive(data: unknown, keys: string[]): Promise<Record<string, unknown>>
@@ -410,7 +410,7 @@ export class Entity
   public dispatch(typeArg: string, detail?: unknown): void
   public watch<T>(data: T): T
   public watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
-  public watch<T>(data: T, key: string, callback: TargetCallback): T
+  public watch<T>(data: T, key: string, callback: TargetCallback, isExecute?: boolean): T
 }
 
 export class ComponentElement extends HTMLElement

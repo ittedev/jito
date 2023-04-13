@@ -182,15 +182,16 @@ export class Entity
 
   public watch<T>(data: T): T
   public watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
-  public watch<T>(data: T, key: string, callback: TargetCallback): T
+  public watch<T>(data: T, key: string, callback: TargetCallback, isExecute?: boolean): T
   public watch<T>(
     data: T,
     keyOrCallback?:  RecursiveCallback | string,
-    isExecuteOrcallback?: TargetCallback | boolean
+    isExecuteOrcallback?: TargetCallback | boolean,
+    isExecute?: boolean,
   ): T
   {
     this._watcher.add([data, keyOrCallback, isExecuteOrcallback])
-    return watch(data, keyOrCallback as RecursiveCallback, isExecuteOrcallback as boolean)
+    return watch(data, keyOrCallback as string, isExecuteOrcallback as TargetCallback, isExecute)
   }
 
   public toJSON()

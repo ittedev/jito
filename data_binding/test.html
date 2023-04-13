@@ -360,6 +360,15 @@ describe('Data Binding', function() {
         equal(y, 2)
       })
 
+      it('watch a property first exec', () => {
+        let data = {
+          x: 1
+        }
+        let y = 0
+        watch(data, 'x', () => { y = 2 }, true)
+        equal(y, 2)
+      })
+
       it('bio and spy watch', () => {
         let data = {
           x1: 2,
