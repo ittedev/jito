@@ -63,3 +63,9 @@ export function instanceOfModule(object: any): object is Module {
     'default' in object &&
     (object as Module)[Symbol.toStringTag] === 'Module'
 }
+
+export type TakeOptions = {
+  [key: string]: boolean | {
+    default?: unknown
+  }
+}

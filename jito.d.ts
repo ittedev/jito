@@ -394,6 +394,12 @@ export type Module = {
   [attr: string]: unknown
 }
 
+export type TakeOptions = {
+  [key: string]: boolean | {
+    default?: unknown
+  }
+}
+
 export let builtin: Record<string, unknown>
 
 export class Entity
@@ -411,6 +417,7 @@ export class Entity
   public watch<T>(data: T): T
   public watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
   public watch<T>(data: T, key: string, callback: TargetCallback, isExecute?: boolean): T
+  public take<T>(options: TakeOptions): Promise<T>
 }
 
 export class ComponentElement extends HTMLElement
