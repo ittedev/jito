@@ -10,7 +10,10 @@ export type {
   Patcher,
 
   // Custom Templates
-  ComponentTemplate
+  ComponentTemplate,
+
+  // Options for take method
+  TakeOptions,
 } from './types.ts'
 
 // Objects

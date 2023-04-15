@@ -3,7 +3,12 @@ import type {
   RecursiveCallback,
   TargetCallback,
 } from '../data_binding/types.ts'
-import type { Component, SpecialCache, Patcher } from './types.ts'
+import type {
+  Component,
+  SpecialCache,
+  Patcher,
+  TakeOptions,
+} from './types.ts'
 import type {
   VirtualElement,
   RealTarget,
@@ -15,6 +20,7 @@ import type { TreeTemplate, StateStack, Ref } from '../template_engine/types.ts'
 import { special } from './types.ts'
 import { instanceOfRef } from '../template_engine/types.ts'
 import { watch } from '../data_binding/watch.ts'
+import { receive } from '../data_binding/receive.ts'
 import { change } from '../data_binding/change.ts'
 import { reach } from '../data_binding/reach.ts'
 import { unreach } from '../data_binding/unreach.ts'
@@ -55,6 +61,7 @@ export class Entity
     this._watcher = new Set()
     this.patch = this.patch.bind(this)
     this.watch = this.watch.bind(this)
+    this.take = this.take.bind(this)
     this.dispatch = this.dispatch.bind(this)
     this._cache = { [special]: [host, root] }
 
@@ -192,6 +199,22 @@ export class Entity
   {
     this._watcher.add([data, keyOrCallback, isExecuteOrcallback])
     return watch(data, keyOrCallback as string, isExecuteOrcallback as TargetCallback, isExecute)
+  }
+
+  public async take<T>(options: TakeOptions): Promise<T>
+  {
+    let keys = Object.entries(options)
+      .filter(entry => typeof entry[1] === 'object' && entry[1] !== null && !('default' in entry[1]) || (typeof entry[1] === 'boolean' && entry[1]))
+      .map(entry => entry[0])
+    Object.entries(options)
+      .filter(entry => typeof entry[1] === 'object' && entry[1] !== null && 'default' in entry[1])
+      .forEach(entry => {
+        if (!(entry[0] in this._attrs)) {
+          this._attrs[entry[0]] = (entry[1] as { default: unknown }).default
+        }
+      })
+    await receive(this._attrs, keys)
+    return this._attrs as T
   }
 
   public toJSON()
