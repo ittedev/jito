@@ -183,7 +183,7 @@ export class Entity
   public dispatch(typeArg: string, detail: unknown = null): void
   {
     this._host.dispatchEvent(new CustomEvent(typeArg, {
-      detail: detail
+      detail: typeof structuredClone !== 'undefined' ? structuredClone(detail) : JSON.parse(JSON.stringify(detail))
     }))
   }
 
