@@ -4,6 +4,9 @@ import {
 } from './types.ts'
 import { reactivate, addReactive } from './watch.ts'
 
+/**
+ * @deprecated
+ */
 export async function receive(data: unknown, ...keys: string[]): Promise<Record<string, unknown>>
 export async function receive(data: unknown, keys: string[]): Promise<Record<string, unknown>>
 export async function receive(data: unknown, ...keys: string[] | string[][]): Promise<Record<string, unknown>>

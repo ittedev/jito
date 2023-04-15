@@ -1,6 +1,14 @@
 // deno-lint-ignore-file no-explicit-any
-import type { TargetCallback } from '../data_binding/types.ts'
-import type { Component, SpecialCache, Patcher } from './types.ts'
+import type {
+  RecursiveCallback,
+  TargetCallback,
+} from '../data_binding/types.ts'
+import type {
+  Component,
+  SpecialCache,
+  Patcher,
+  TakeOptions,
+} from './types.ts'
 import type {
   VirtualElement,
   RealTarget,
@@ -12,6 +20,7 @@ import type { TreeTemplate, StateStack, Ref } from '../template_engine/types.ts'
 import { special } from './types.ts'
 import { instanceOfRef } from '../template_engine/types.ts'
 import { watch } from '../data_binding/watch.ts'
+import { receive } from '../data_binding/receive.ts'
 import { change } from '../data_binding/change.ts'
 import { reach } from '../data_binding/reach.ts'
 import { unreach } from '../data_binding/unreach.ts'
@@ -38,6 +47,7 @@ export class Entity
   private _ready: Promise<void>
   private _requirePatch = false
   private _updater: SafeUpdater
+  private _watcher: Set<[unknown, RecursiveCallback | string | undefined, TargetCallback | boolean | undefined]>
 
   public constructor(component: Component, host: Element, tree: LinkedVirtualTree)
   {
@@ -48,7 +58,10 @@ export class Entity
     this._host = host
     this._tree = tree as LinkedVirtualTree
     this._updater = new SafeUpdater(tree)
+    this._watcher = new Set()
     this.patch = this.patch.bind(this)
+    this.watch = this.watch.bind(this)
+    this.take = this.take.bind(this)
     this.dispatch = this.dispatch.bind(this)
     this._cache = { [special]: [host, root] }
 
@@ -57,6 +70,7 @@ export class Entity
     }
     host.addEventListener(eventTypes.destroy, () => {
       this.patch({ type: 'tree' })
+      this._watcher.forEach(value => unwatch(...(value as [unknown, string, TargetCallback])))
       unreach(this._stack, this.patch)
     })
 
@@ -169,8 +183,38 @@ export class Entity
   public dispatch(typeArg: string, detail: unknown = null): void
   {
     this._host.dispatchEvent(new CustomEvent(typeArg, {
-      detail: detail
+      detail: typeof structuredClone !== 'undefined' ? structuredClone(detail) : JSON.parse(JSON.stringify(detail))
     }))
+  }
+
+  public watch<T>(data: T): T
+  public watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
+  public watch<T>(data: T, key: string, callback: TargetCallback, isExecute?: boolean): T
+  public watch<T>(
+    data: T,
+    keyOrCallback?:  RecursiveCallback | string,
+    isExecuteOrcallback?: TargetCallback | boolean,
+    isExecute?: boolean,
+  ): T
+  {
+    this._watcher.add([data, keyOrCallback, isExecuteOrcallback])
+    return watch(data, keyOrCallback as string, isExecuteOrcallback as TargetCallback, isExecute)
+  }
+
+  public async take<T>(options: TakeOptions): Promise<T>
+  {
+    let keys = Object.entries(options)
+      .filter(entry => typeof entry[1] === 'object' && entry[1] !== null && !('default' in entry[1]) || (typeof entry[1] === 'boolean' && entry[1]))
+      .map(entry => entry[0])
+    Object.entries(options)
+      .filter(entry => typeof entry[1] === 'object' && entry[1] !== null && 'default' in entry[1])
+      .forEach(entry => {
+        if (!(entry[0] in this._attrs)) {
+          this._attrs[entry[0]] = (entry[1] as { default: unknown }).default
+        }
+      })
+    await receive(this._attrs, keys)
+    return this._attrs as T
   }
 
   public toJSON()
