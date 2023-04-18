@@ -9,6 +9,9 @@ evaluate.plugin(componentPlugin)
 evaluate.plugin(specialTagPlugin)
 evaluate.plugin(componentElementPlugin)
 
+/**
+ * Create a component.
+ */
 export function compact(html: string): Component
 export function compact(html: string, stack: StateStack): Component
 export function compact(html: string, state: Record<string, unknown>): Component

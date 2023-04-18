@@ -1,7 +1,7 @@
 import { LinkedVirtualTree, LinkedVirtualElement } from './types.ts'
 
 /**
- * Create a vertual tree from a dom node.
+ * Create a vertual tree from a real dom node.
  */
 export function load(el: Element | DocumentFragment): LinkedVirtualTree
 {
