@@ -72,14 +72,29 @@ Please save the following code as `example.html` and try opening it in your web 
 <meta charset="UTF-8">
 <body></body>
 <script type="module">
-  import { watch, mount } from './jito.js'
+  import { mount } from './jito.js'
 
-  let state = watch({
-    count: 1
-  })
+  let main = ({ watch }) => {
+    let state = watch({
+      count: 1
+    })
 
-  setInterval(() => { state.count++ }, 1000)
+    setInterval(() => { state.count++ }, 1000)
 
-  mount(document.body, `Counter: {{ count }}`, [state])
+    return [state]
+  }
+
+  let html = `Counter: {{ count }}`
+
+  mount(document.body, html, main)
 </script>
 ```
+
+# Functions
+
+| API | Functions | Browser | Server |
+| --- | --- | --- | --- |
+| Data Binding | watch, unwatch, reach, unreach, change, lock, unlock | ✓ | ✓ |
+| Virtual DOM | load, patch | ✓ |  |
+| Template Engine | parse, evaluate, pickup | ✓ | ✓ |
+| Web Components | compact, mount, define, elementize | ✓ |  |
