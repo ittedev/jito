@@ -31,7 +31,7 @@ export function patch(
 }
 
 /**
- * Apply a patch to a dom element.
+ * Apply a patch to a virtual tree linked a dom element.
  */
 export function patchElement(
   ve: LinkedVirtualElement | null,
