@@ -12,7 +12,7 @@ She support JavaScript and TypeScript for Deno.
 
 ## Examples
 
-[Glitch Examples](https://glitch.com/@itte1)
+[Glitch Examples](https://glitch.com/@ittedev/jito-examples)
 
 ## Document
 
