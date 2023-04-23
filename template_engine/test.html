@@ -2086,6 +2086,15 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('evaluate null', () => {
+        let tree = evaluate(parse('Hello {{ name }}!'), [{ name: null }])
+        equal(tree, {
+          children: [
+            "Hello !"
+          ]
+        })
+      })
     })
 
     describe(': tag', function() {

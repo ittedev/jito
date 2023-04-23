@@ -187,12 +187,6 @@ export let evaluate = function (
 
     case 'draw': {
       let value = evaluate(temp.value, stack, cache)
-      // if (value instanceof EventTarget) { // real element
-      //   let el = {
-      //     el: value
-      //   } as RealElement
-      //   return el
-      // } else
       if (typeof value === 'object') {
         if (instanceOfTemplate(value)) { // expand
           if (value.type === 'tree') {
@@ -204,7 +198,7 @@ export let evaluate = function (
             return evaluate(value, stack, cache)
           }
         } else {
-          return Object.getPrototypeOf(value) === Object.prototype ? JSON.stringify(value) : ''
+          return value !== null && Object.getPrototypeOf(value) === Object.prototype ? JSON.stringify(value) : ''
         }
       } else {
         return value === null || value === undefined ? '' : value + ''
