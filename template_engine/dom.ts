@@ -55,7 +55,7 @@ function skip(lexer: Lexer): string
 function el(lexer: Lexer): TemporaryNode | undefined
 {
   let el = {
-    tag: (lexer.pop() as Token)[1].slice(1).toLocaleLowerCase() // start = <.*
+    tag: (lexer.pop() as Token)[1].slice(1) // start = <.*
   } as TemporaryElement
 
   // get attributes
