@@ -17,7 +17,7 @@
 <div id="compact_target3" style="display: none;"></div>
 <div id="compact_target4" style="display: none;"></div>
 <div id="compact_target5" style="display: none;"></div>
-<div id="compact_target7" style="display: none;"></div>
+<div id="compact_target6" style="display: none;"></div>
 <div id="element_target1" style="display: none;"></div>
 <div id="element_target2" style="display: none;"></div>
 <div id="element_target3" style="display: none;"></div>
@@ -209,6 +209,17 @@ describe('Web Components', function() {
       let el = document.querySelector('#compact_target5')
       let local = compact('<p>Hello {{ name }}!</p>', { name: 'jito' })
       let component = compact('<hello></hello>', { hello: local })
+      mount(el, component)
+      await sleep()
+      await sleep()
+      await sleep()
+      equal(el.shadowRoot.querySelector('jito-element').shadowRoot.querySelector('p').innerText, 'Hello jito!')
+    })
+
+    it('compact local component PascalCase', async () => {
+      let el = document.querySelector('#compact_target6')
+      let local = compact('<p>Hello {{ name }}!</p>', { name: 'jito' })
+      let component = compact('<Hello />', { Hello: local })
       mount(el, component)
       await sleep()
       await sleep()
