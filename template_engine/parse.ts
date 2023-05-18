@@ -326,6 +326,13 @@ function parseText(lexer: Lexer): Template | string
       })
       lexer.must('}}')
       values.push(lexer.skip())
+    } else if (lexer.nextIs('{|')) {
+      lexer.pop()
+      lexer.expand('script', () => {
+        values.push({ type: 'draw', value: expression(lexer) } as DrawTemplate)
+      })
+      lexer.must('|}')
+      values.push(lexer.skip())
     } else {
       lexer.pop()
     }
