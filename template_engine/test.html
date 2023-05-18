@@ -508,7 +508,7 @@ describe('Template Engine', function() {
       })
 
       it('parse html literal', () => {
-        let template = parse("<p>{{ '<p>' }}</p>")
+        let template = parse("<p>{| '<p>' |}</p>")
         equal(template, {
           type: 'tree',
           children: [
@@ -537,7 +537,7 @@ describe('Template Engine', function() {
       })
 
       it('parse a variable in Text Node', () => {
-        let template = parse('Hello {{ name }}!')
+        let template = parse('Hello {| name |}!')
         equal(template, {
           type: 'tree',
           children: [
@@ -2049,7 +2049,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate a variable in Text Node', () => {
-        let tree = evaluate(parse('Hello {{ name }}!'), [{ name: 'jito' }])
+        let tree = evaluate(parse('Hello {| name |}!'), [{ name: 'jito' }])
         equal(tree, {
           children: [
             "Hello jito!"
@@ -2088,7 +2088,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate null', () => {
-        let tree = evaluate(parse('Hello {{ name }}!'), [{ name: null }])
+        let tree = evaluate(parse('Hello {| name |}!'), [{ name: null }])
         equal(tree, {
           children: [
             "Hello !"
@@ -2603,7 +2603,7 @@ describe('Template Engine', function() {
         equal(tree, {})
       })
       it('evaluate: @for array: @each', () => {
-        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{| value |}</p>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -2622,7 +2622,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for array: loop', () => {
-        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse('<p @for="array">{| loop.key |}|{| loop.value |}|{| loop.index |}|{| loop.size |}|{| loop.isFirst |}|{| loop.isLast |}</p>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -2641,7 +2641,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for object: @each', () => {
-        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{| value |}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
         equal(tree, {
           children: [
             {
@@ -2660,7 +2660,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for object: loop', () => {
-        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
+        let tree = evaluate(parse('<p @for="array">{| loop.key |}|{| loop.value |}|{| loop.index |}|{| loop.size |}|{| loop.isFirst |}|{| loop.isLast |}</p>'), [{ array: { x: 'xx', y: 'yy', z: 'zz' } }])
         equal(tree, {
           children: [
             {
@@ -2679,7 +2679,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for Set: @each', () => {
-        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{| value |}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
         equal(tree, {
           children: [
             {
@@ -2698,7 +2698,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for Set: loop', () => {
-        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
+        let tree = evaluate(parse('<p @for="array">{| loop.key |}|{| loop.value |}|{| loop.index |}|{| loop.size |}|{| loop.isFirst |}|{| loop.isLast |}</p>'), [{ array: new Set(['x', 'y', 'z']) }])
         equal(tree, {
           children: [
             {
@@ -2717,7 +2717,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for Map: @each', () => {
-        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{| value |}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
         equal(tree, {
           children: [
             {
@@ -2736,7 +2736,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for Map: loop', () => {
-        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
+        let tree = evaluate(parse('<p @for="array">{| loop.key |}|{| loop.value |}|{| loop.index |}|{| loop.size |}|{| loop.isFirst |}|{| loop.isLast |}</p>'), [{ array: new Map([['x', 'xx'], ['y', 'yy'], ['z', 'zz']]) }])
         equal(tree, {
           children: [
             {
@@ -2760,7 +2760,7 @@ describe('Template Engine', function() {
             yield 'y'
             yield 'z'
         }
-        let tree = evaluate(parse('<p @for="array" @each="value">{{ value }}</p>'), [{ array: generate() }])
+        let tree = evaluate(parse('<p @for="array" @each="value">{| value |}</p>'), [{ array: generate() }])
         equal(tree, {
           children: [
             {
@@ -2784,7 +2784,7 @@ describe('Template Engine', function() {
             yield 'y'
             yield 'z'
         }
-        let tree = evaluate(parse('<p @for="array">{{ loop.key }}|{{ loop.value }}|{{ loop.index }}|{{ loop.size }}|{{ loop.isFirst }}|{{ loop.isLast }}</p>'), [{ array: generate() }])
+        let tree = evaluate(parse('<p @for="array">{| loop.key |}|{| loop.value |}|{| loop.index |}|{| loop.size |}|{| loop.isFirst |}|{| loop.isLast |}</p>'), [{ array: generate() }])
         equal(tree, {
           children: [
             {
@@ -2826,7 +2826,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for nested', () => {
-        let tree = evaluate(parse('<p @for="array1"><span @for="array2">{{ loop.value }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        let tree = evaluate(parse('<p @for="array1"><span @for="array2">{| loop.value |}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
         equal(tree, {
           children: [
             {
@@ -2847,7 +2847,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for nested @each', () => {
-        let tree = evaluate(parse('<p @for="array1" @each="x"><span @for="array2" @each="y">{{ x * y }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        let tree = evaluate(parse('<p @for="array1" @each="x"><span @for="array2" @each="y">{| x * y |}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
         equal(tree, {
           children: [
             {
@@ -2868,7 +2868,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for nested loop', () => {
-        let tree = evaluate(parse('<p @for="array1"><span @for="array2">{{ loop.parent.value * loop.value }}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
+        let tree = evaluate(parse('<p @for="array1"><span @for="array2">{| loop.parent.value * loop.value |}</span></p>'), [{ array1: [1, 2], array2: [3, 5] }])
         equal(tree, {
           children: [
             {
@@ -2892,7 +2892,7 @@ describe('Template Engine', function() {
 
     describe(': @try', function() {
       it('evaluate: @try no error', () => {
-        let tree = evaluate(parse('<p @try>{{ x }}</p>'), [{ x: 1 }])
+        let tree = evaluate(parse('<p @try>{| x |}</p>'), [{ x: 1 }])
         equal(tree, {
           children: [
             {
@@ -2903,11 +2903,11 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @try error', () => {
-        let tree = evaluate(parse('<p @try>{{ x.y }}</p>'))
+        let tree = evaluate(parse('<p @try>{| x.y |}</p>'))
         equal(tree, {})
       })
       it('evaluate: @try @catch no error', () => {
-        let tree = evaluate(parse('<p @try>{{ x }}</p><div @catch></div>'), [{ x: 1 }])
+        let tree = evaluate(parse('<p @try>{| x |}</p><div @catch></div>'), [{ x: 1 }])
         equal(tree, {
           children: [
             {
@@ -2918,7 +2918,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @try @catch error', () => {
-        let tree = evaluate(parse('<p @try>{{ x.y }}</p><div @catch></div>'))
+        let tree = evaluate(parse('<p @try>{| x.y |}</p><div @catch></div>'))
         equal(tree, {
           children: [
             {
@@ -2956,14 +2956,14 @@ describe('Template Engine', function() {
 
     describe(': expand', function() {
       it('evaluate: expand no template', () => {
-        let tree = evaluate(parse('<p>{{ template }}</p>'))
+        let tree = evaluate(parse('<p>{| template |}</p>'))
         equal(tree, {
           children: [{ tag: "p" }]
         })
       })
       it('evaluate: expand template', () => {
         let template = parse('<div></div>')
-        let tree = evaluate(parse('<p>{{ template }}</p>'), [{ template }])
+        let tree = evaluate(parse('<p>{| template |}</p>'), [{ template }])
         equal(tree, {
           children: [{
             tag: "p",
@@ -2973,14 +2973,14 @@ describe('Template Engine', function() {
       })
       it('evaluate: expand template in group', () => {
         let template = parse('<div></div>')
-        let tree = evaluate(parse('<group>{{ template }}</group>'), [{ template }])
+        let tree = evaluate(parse('<group>{| template |}</group>'), [{ template }])
         equal(tree, {
           children: [{ tag: "div" }]
         })
       })
       it('evaluate: expand template assign data', () => {
-        let template = parse('<div>{{ name }}</div>')
-        let tree = evaluate(parse('<p>{{ template }}</p>'), [{ template, name: 'jito' }])
+        let template = parse('<div>{| name |}</div>')
+        let tree = evaluate(parse('<p>{| template |}</p>'), [{ template, name: 'jito' }])
         equal(tree, {
           children: [{
             tag: "p",
@@ -2992,9 +2992,9 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: expand template chain', () => {
-        let template1 = parse('<div>{{ template2 }}</div>')
+        let template1 = parse('<div>{| template2 |}</div>')
         let template2 = parse('<h2></h2>')
-        let tree = evaluate(parse('<p>{{ template1 }}</p>'), [{ template1, template2 }])
+        let tree = evaluate(parse('<p>{| template1 |}</p>'), [{ template1, template2 }])
         equal(tree, {
           children: [{
             tag: "p",
@@ -3006,14 +3006,14 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: expand no template with text', () => {
-        let tree = evaluate(parse('<p>{{ template1 }}</p> b'))
+        let tree = evaluate(parse('<p>{| template1 |}</p> b'))
         equal(tree, {
           children: [{ tag: "p" }, ' b']
         })
       })
       it('evaluate: @if true and expand template', () => {
         let template = parse('<div></div>')
-        let tree = evaluate(parse('<p @if="isActive">{{ template }}</p>'), [{ template, isActive: true }])
+        let tree = evaluate(parse('<p @if="isActive">{| template |}</p>'), [{ template, isActive: true }])
         equal(tree, {
           children: [{
             tag: "p",
@@ -3025,7 +3025,7 @@ describe('Template Engine', function() {
 
     describe(': combinate', function() {
       it('evaluate: @if and @for', () => {
-        let tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p>`), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{| loop.value |}</p>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -3040,7 +3040,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @if, @else and @for', () => {
-        let tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{{ loop.value }}</p><div @else>{{ loop.value }}</div>`), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse(`<p @for="array" @if="loop.value !== 'y'">{| loop.value |}</p><div @else>{| loop.value |}</div>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -3081,19 +3081,19 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: @for and <group>', () => {
-        let tree = evaluate(parse('<group @for="array">{{ loop.value }}</group>'), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse('<group @for="array">{| loop.value |}</group>'), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: ["x", "y", "z"]
         })
       })
       it('evaluate: @if, @for and <group>', () => {
-        let tree = evaluate(parse(`<group @for="array" @if="loop.value !== 'y'">{{ loop.value }}</group>`), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse(`<group @for="array" @if="loop.value !== 'y'">{| loop.value |}</group>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: ["x", "z"]
         })
       })
       it('evaluate: @if with text in @for and <group>', () => {
-        let tree = evaluate(parse(`<group @for="array"><p @if="loop.value !== 'y'">{{ loop.value }}</p> b</group>`), [{ array: ['x', 'y', 'z'] }])
+        let tree = evaluate(parse(`<group @for="array"><p @if="loop.value !== 'y'">{| loop.value |}</p> b</group>`), [{ array: ['x', 'y', 'z'] }])
         equal(tree, {
           children: [
             {
@@ -3118,7 +3118,7 @@ describe('Template Engine', function() {
       let zz = { name: 'zz' }
       let collection = [xx, yy, zz]
       it('evaluate: collection: @for array', () => {
-        let tree = evaluate(parse('<p @for="collection" @each="user">{{ user.name }}</p>'), [{ collection }])
+        let tree = evaluate(parse('<p @for="collection" @each="user">{| user.name |}</p>'), [{ collection }])
         equal(tree, {
           children: [
             { tag: "p", key: xx, children: ['xx'] },
@@ -3128,7 +3128,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: collection: @for array loop', () => {
-        let tree = evaluate(parse('<p @for="collection">{{ loop.value.name }}</p>'), [{ collection }])
+        let tree = evaluate(parse('<p @for="collection">{| loop.value.name |}</p>'), [{ collection }])
         equal(tree, {
           children: [
             { tag: "p", key: xx, children: ['xx'] },
@@ -3138,7 +3138,7 @@ describe('Template Engine', function() {
         })
       })
       it('evaluate: collection: @for and <group> elements', () => {
-        let tree = evaluate(parse('<group @for="collection"><span>{{ loop.key }}</span><span>{{ loop.value.name }}</span></group>'), [{ collection }])
+        let tree = evaluate(parse('<group @for="collection"><span>{| loop.key |}</span><span>{| loop.value.name |}</span></group>'), [{ collection }])
         equal(tree, {
           children: [
             { tag: "span", children: ["0"], key: xx },
@@ -3190,7 +3190,7 @@ describe('Template Engine', function() {
             }
           }
         }
-        let tree = evaluate(parse('{{ template }}'), [{ template, name: 'Hello' }])
+        let tree = evaluate(parse('{| template |}'), [{ template, name: 'Hello' }])
         equal(tree, {
           children: ["Hello"]
         })
@@ -3212,7 +3212,7 @@ describe('Template Engine', function() {
             ]
           }
         }
-        let tree = evaluate(parse('{{ template }}'), [{ template, name: 'Hello' }])
+        let tree = evaluate(parse('{| template |}'), [{ template, name: 'Hello' }])
         equal(tree, {
           children: ["Hello!"]
         })
@@ -3435,7 +3435,7 @@ describe('Template Engine', function() {
     })
 
     it('evaluate: collection: @for @each destructuring assignment', () => {
-      let tree = evaluate(parse('<p @for="collection" @each="{ name }">{{ name }}</p>'), [{ collection }])
+      let tree = evaluate(parse('<p @for="collection" @each="{ name }">{| name |}</p>'), [{ collection }])
       equal(tree, {
         children: [
           { tag: "p", key: xx, children: ['xx'] },
