@@ -3,10 +3,11 @@ import {
   Module,
 } from '../web_components/types.ts'
 import {
+  Elementable,
   Params,
 } from './type.ts'
 import { pageTupples } from './router.ts'
-import { find } from './push.ts'
+import { find, appear } from './push.ts'
 import { router } from './router.ts'
 
 export function page(pathname: string, component: Component): void
@@ -15,7 +16,7 @@ export function page(pathname: string, module: Module): void
 export function page(pathname: string, module: Promise<Module>): void
 export function page(
   pathname: string,
-  component: Component | Promise<Component> | Module | Promise<Module>
+  component: Elementable
 ): void
 {
   let names = pathname.split('/')
@@ -34,11 +35,11 @@ export function page(
   pages.set(key, [params, component])
 }
 
-self.addEventListener('popstate', () => {
+self.addEventListener('popstate', async () => {
   let tupple = find(location.pathname)
   if (tupple) {
     router.pathname = location.pathname
-    router.router = tupple[0]
+    router.router = await appear(tupple[0])
     router.params = tupple[1]
   }
 })

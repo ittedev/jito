@@ -3,6 +3,7 @@ import {
   Module,
 } from '../web_components/types.ts'
 
+export type Elementable = Component | Promise<Component> | Module | Promise<Module>
 export type Params = [string, number][]
 export type Page = [Params, Component | Promise<Component> | Module | Promise<Module>]
 export type Kinds = Set<number>
@@ -21,13 +22,14 @@ export interface Panel {
 
 export interface Router {
   pathname: null | string
-  router: null | Component | Element
+  router: null | Component | Module | Element
   params: Record<string, string>
   page: ((pathname: string, component: Component) => void)
     | ((pathname: string, component: Promise<Component>) => void)
     | ((pathname: string, module: Module) => void)
     | ((pathname: string, module: Promise<Module>) => void)
-  replace: (pathname: string) => void
+  push: (pathname: string) => Promise<void>
+  replace: (pathname: string) => Promise<void>
   back: () => void
   forward: () => void
 }

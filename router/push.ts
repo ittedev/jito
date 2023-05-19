@@ -1,5 +1,10 @@
-import { Component } from '../web_components/types.ts'
 import {
+  Component,
+  Module,
+  instanceOfModule,
+} from '../web_components/types.ts'
+import {
+  Elementable,
   Page,
 } from './type.ts'
 import {
@@ -8,17 +13,17 @@ import {
   router,
 } from './router.ts'
 
-export function push(pathname: string): void {
+export async function push(pathname: string): Promise<void> {
   let tupple = find(pathname)
   if (tupple) {
     router.pathname = pathname
-    router.router = tupple[0]
+    router.router = await appear(tupple[0])
     router.params = tupple[1]
     history.pushState({}, '', pathname)
   }
 }
 
-export function find(pathname: string): [Component, Record<string, string>] | undefined {
+export function find(pathname: string): [Elementable, Record<string, string>] | undefined {
   let names = pathname.split('/')
   let len = names.length
   let kinds = pageTupples[len][0]
@@ -34,7 +39,11 @@ export function find(pathname: string): [Component, Record<string, string>] | un
       if (router.pathname !== null) {
         leftHistoryQueue.push(router.pathname)
       }
-      return [page[1] as Component, params]
+      return [page[1], params]
     }
   }
+}
+
+export async function appear(component: Elementable): Promise<Component | Module> {
+  return await component
 }
