@@ -3,15 +3,15 @@ import {
   Module,
 } from '../web_components/types.ts'
 import {
-  PanelState,
+  Panel,
 } from './type.ts'
 
-export function panel(): PanelState {
+export function panel(): Panel {
   let pages = new Map<string | number, Component | Promise<Component> | Module | Promise<Module>>()
   let leftHistoryQueue: (string | number)[] = []
   let rightHistoryQueue: (string | number)[] = []
 
-  let state: PanelState = {
+  let panel: Panel = {
     current: null,
     panel: null,
 
@@ -59,9 +59,9 @@ export function panel(): PanelState {
       }
     },
   }
-  state.push = state.push.bind(state)
-  state.replace = state.replace.bind(state)
-  state.back = state.back.bind(state)
-  state.forward = state.forward.bind(state)
-  return state
+  panel.push = panel.push.bind(panel)
+  panel.replace = panel.replace.bind(panel)
+  panel.back = panel.back.bind(panel)
+  panel.forward = panel.forward.bind(panel)
+  return panel
 }

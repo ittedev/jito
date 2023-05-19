@@ -9,7 +9,7 @@ export type Kinds = Set<number>
 export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]
 
-export interface PanelState {
+export interface Panel {
   current: null | string | number
   panel: null | Component | Element
   page: (name: string | number, component: Component | Promise<Component> | Module | Promise<Module>) => void

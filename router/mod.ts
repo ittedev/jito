@@ -1,3 +1,8 @@
+export type {
+  Panel,
+  Router,
+} from './type.ts'
+
 export { panel } from './panel.ts'
 export { page } from './page.ts'
 export { push } from './push.ts'
