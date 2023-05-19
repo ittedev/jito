@@ -27,7 +27,7 @@ export interface Router {
     | ((pathname: string, component: Promise<Component>) => void)
     | ((pathname: string, module: Module) => void)
     | ((pathname: string, module: Promise<Module>) => void)
-  push: (pathname: string) => void
+  replace: (pathname: string) => void
   back: () => void
   forward: () => void
 }

@@ -4,6 +4,7 @@ import {
 } from './type.ts'
 import { page } from './page.ts'
 import { push } from './push.ts'
+import { replace } from './replace.ts'
 import { back } from './back.ts'
 import { forward } from './forward.ts'
 
@@ -17,6 +18,7 @@ export let router: Router = {
   params: {},
   page,
   push,
+  replace,
   back,
   forward,
 }
