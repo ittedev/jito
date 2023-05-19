@@ -3,6 +3,12 @@ import {
   Module,
 } from '../web_components/types.ts'
 
+export type Params = [string, number][]
+export type Page = [Params, Component | Promise<Component> | Module | Promise<Module>]
+export type Kinds = Set<number>
+export type Pages = Map<string, Page>
+export type PageTupple = [Kinds, Pages]
+
 export interface PanelState {
   current: null | string | number
   panel: null | Component | Element
@@ -11,4 +17,15 @@ export interface PanelState {
   replace: (name: string | number) => void
   back: () => void
   forward: () => void
+}
+
+export interface Router {
+  pathname: null | string
+  router: null | Component | Element
+  params: Record<string, string>
+  page: ((pathname: string, component: Component) => void)
+    | ((pathname: string, component: Promise<Component>) => void)
+    | ((pathname: string, module: Module) => void)
+    | ((pathname: string, module: Promise<Module>) => void)
+  push: (pathname: string) => void
 }
