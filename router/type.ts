@@ -28,4 +28,6 @@ export interface Router {
     | ((pathname: string, module: Module) => void)
     | ((pathname: string, module: Promise<Module>) => void)
   push: (pathname: string) => void
+  back: () => void
+  forward: () => void
 }

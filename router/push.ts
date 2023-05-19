@@ -4,10 +4,21 @@ import {
 } from './type.ts'
 import {
   pageTupples,
+  leftHistoryQueue,
   router,
 } from './router.ts'
 
 export function push(pathname: string): void {
+  let tupple = find(pathname)
+  if (tupple) {
+    router.pathname = pathname
+    router.router = tupple[0]
+    router.params = tupple[1]
+    history.pushState({}, '', pathname)
+  }
+}
+
+export function find(pathname: string): [Component, Record<string, string>] | undefined {
   let names = pathname.split('/')
   let len = names.length
   let kinds = pageTupples[len][0]
@@ -20,11 +31,10 @@ export function push(pathname: string): void {
       page[0].forEach(tupple => {
         params[tupple[0]] = names[tupple[1]]
       })
-      router.pathname = pathname
-      router.router = page[1] as Component
-      router.params = params
-      history.pushState({}, '', pathname)
-      break
+      if (router.pathname !== null) {
+        leftHistoryQueue.push(router.pathname)
+      }
+      return [page[1] as Component, params]
     }
   }
 }

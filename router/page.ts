@@ -6,6 +6,8 @@ import {
   Params,
 } from './type.ts'
 import { pageTupples } from './router.ts'
+import { find } from './push.ts'
+import { router } from './router.ts'
 
 export function page(pathname: string, component: Component): void
 export function page(pathname: string, component: Promise<Component>): void
@@ -31,3 +33,12 @@ export function page(
   pageTupples[len][0] = new Set(Array.from(kinds).sort())
   pages.set(key, [params, component])
 }
+
+self.addEventListener('popstate', () => {
+  let tupple = find(location.pathname)
+  if (tupple) {
+    router.pathname = location.pathname
+    router.router = tupple[0]
+    router.params = tupple[1]
+  }
+})
