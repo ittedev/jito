@@ -12,6 +12,23 @@ export type Kinds = Set<number>
 export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]
 
+export interface Router {
+  pathname: null | string
+  router: null | Component | Module | Element
+  params: Record<string, string>
+  page: ((pathname: string, component: Component, elementize?: Elementize) => void)
+    | ((pathname: string, component: Promise<Component>, elementize?: Elementize) => void)
+    | ((pathname: string, module: Module, elementize?: Elementize) => void)
+    | ((pathname: string, module: Promise<Module>, elementize?: Elementize) => void)
+    | ((pathname: string, filePath: string, elementize?: Elementize) => void)
+    | ((pathname: string, element: Element) => void)
+    | ((pathname: string, element: Promise<Element>) => void)
+  push: (pathname: string) => Promise<void>
+  replace: (pathname: string) => Promise<void>
+  back: () => void
+  forward: () => void
+}
+
 export type PanelName = string | number
 export type PanelPage = [Elementable, Elementize | undefined]
 
@@ -27,23 +44,6 @@ export interface Panel {
     | ((name: PanelName, element: Promise<Element>) => void)
   push: (name: PanelName) => void
   replace: (name: PanelName) => void
-  back: () => void
-  forward: () => void
-}
-
-export interface Router {
-  pathname: null | string
-  router: null | Component | Module | Element
-  params: Record<string, string>
-  page: ((pathname: string, component: Component, elementize?: Elementize) => void)
-    | ((pathname: string, component: Promise<Component>, elementize?: Elementize) => void)
-    | ((pathname: string, module: Module, elementize?: Elementize) => void)
-    | ((pathname: string, module: Promise<Module>, elementize?: Elementize) => void)
-    | ((pathname: string, filePath: string, elementize?: Elementize) => void)
-    | ((pathname: string, element: Element) => void)
-    | ((pathname: string, element: Promise<Element>) => void)
-  push: (pathname: string) => Promise<void>
-  replace: (pathname: string) => Promise<void>
   back: () => void
   forward: () => void
 }
