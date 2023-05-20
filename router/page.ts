@@ -32,14 +32,14 @@ export function page(
   names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
   kinds.add(kind)
   pageTupples[len][0] = new Set(Array.from(kinds).sort())
-  pages.set(key, [params, component])
+  pages.set(key, [pattern, params, component])
 }
 
 self.addEventListener('popstate', async () => {
   let tupple = find(location.pathname)
   if (tupple) {
     router.pathname = location.pathname
-    router.router = await appear(tupple[0])
+    router.router = await appear(tupple[0][2])
     router.params = tupple[1]
   }
 })
