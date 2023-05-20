@@ -45,7 +45,11 @@ export function find(pathname: string): [Page, Record<string, string>] | undefin
 }
 
 export async function appear(component: Elementable): Promise<Component | Module> {
-  return await component
+  if (typeof component === 'string') {
+    return await import(component)
+  } else {
+    return await component
+  }
 }
 
 export async function getRouter(page: Page) : Promise<Component | Module | Element> {

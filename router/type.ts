@@ -5,7 +5,7 @@ import {
 
 export type Pattern = string
 export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, attrs?: Record<string, unknown>) => Promise<Element>
-export type Elementable = Component | Promise<Component> | Module | Promise<Module>
+export type Elementable = Component | Promise<Component> | Module | Promise<Module> | string
 export type Params = [string, number][]
 export type Page = [Pattern, Params, Elementable, Elementize | undefined]
 export type Kinds = Set<number>
@@ -22,6 +22,7 @@ export interface Panel {
     | ((name: PanelName, component: Promise<Component>, elementize?: Elementize) => void)
     | ((name: PanelName, module: Module, elementize?: Elementize) => void)
     | ((name: PanelName, module: Promise<Module>, elementize?: Elementize) => void)
+    | ((name: PanelName, filePath: string, elementize?: Elementize) => void)
   push: (name: PanelName) => void
   replace: (name: PanelName) => void
   back: () => void
@@ -36,6 +37,7 @@ export interface Router {
     | ((pathname: string, component: Promise<Component>, elementize?: Elementize) => void)
     | ((pathname: string, module: Module, elementize?: Elementize) => void)
     | ((pathname: string, module: Promise<Module>, elementize?: Elementize) => void)
+    | ((pathname: string, filePath: string, elementize?: Elementize) => void)
   push: (pathname: string) => Promise<void>
   replace: (pathname: string) => Promise<void>
   back: () => void
