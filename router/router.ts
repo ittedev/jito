@@ -11,6 +11,7 @@ import { forward } from './forward.ts'
 export let pageTupples: PageTupple[] = []
 export let leftHistoryQueue: string[] = []
 export let rightHistoryQueue: string[] = []
+export let elementHolder = new Map<string, Element>()
 
 export let router: Router = {
   pathname: null,

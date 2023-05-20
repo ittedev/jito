@@ -1,26 +1,40 @@
 import {
+  Elementize,
   Elementable,
+  PanelName,
+  PanelPage,
   Panel,
 } from './type.ts'
 import { appear } from './push.ts'
 
 export function panel(): Panel {
-  let pages = new Map<string | number, Elementable>()
-  let leftHistoryQueue: (string | number)[] = []
-  let rightHistoryQueue: (string | number)[] = []
+  let pages = new Map<PanelName, PanelPage>()
+  let leftHistoryQueue: (PanelName)[] = []
+  let rightHistoryQueue: (PanelName)[] = []
+  let elements = new Map<PanelName, Element>()
+  let getPanel = async (name: PanelName, page: PanelPage) => {
+    if (page[1]) {
+      if (!elements.has(name)) {
+        elements.set(name, await page[1](await appear(page[0])))
+      }
+      return elements.get(name) as Element
+    } else {
+      return await appear(page[0])
+    }
+  }
 
   let panel: Panel = {
     current: null,
     panel: null,
 
-    page(name: string | number, component: Elementable): void {
-      pages.set(name, component)
+    page(name: PanelName, component: Elementable, elementize?: Elementize): void {
+      pages.set(name, [component, elementize])
     },
 
-    async push(name: string | number): Promise<void> {
+    async push(name: PanelName): Promise<void> {
       let page = pages.get(name)
       if (page !== undefined) {
-        this.panel = await appear(page)
+        this.panel = await getPanel(name, page)
         if (this.current !== null) {
           leftHistoryQueue.push(this.current)
         }
@@ -31,28 +45,28 @@ export function panel(): Panel {
       }
     },
 
-    async replace(name: string | number): Promise<void> {
+    async replace(name: PanelName): Promise<void> {
       let page = pages.get(name)
       if (page !== undefined) {
-        this.panel = await appear(page)
+        this.panel = await getPanel(name, page)
         this.current = name
       }
     },
 
     async back(): Promise<void> {
       if (leftHistoryQueue.length) {
-        let name = leftHistoryQueue.pop() as string | number
-        this.panel = await appear(pages.get(name) as Elementable)
-        rightHistoryQueue.push(this.current as string | number)
+        let name = leftHistoryQueue.pop() as PanelName
+        this.panel = await getPanel(name, pages.get(name) as PanelPage)
+        rightHistoryQueue.push(this.current as PanelName)
         this.current = name
       }
     },
 
     async forward(): Promise<void> {
       if (rightHistoryQueue.length) {
-        let name = rightHistoryQueue.pop() as string | number
-        this.panel = await appear(pages.get(name) as Elementable)
-        leftHistoryQueue.push(this.current as string | number)
+        let name = rightHistoryQueue.pop() as PanelName
+        this.panel = await getPanel(name, pages.get(name) as PanelPage)
+        leftHistoryQueue.push(this.current as PanelName)
         this.current = name
       }
     },

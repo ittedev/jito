@@ -9,6 +9,7 @@ import {
 import {
   pageTupples,
   leftHistoryQueue,
+  elementHolder,
   router,
 } from './router.ts'
 
@@ -16,7 +17,7 @@ export async function push(pathname: string): Promise<void> {
   let tupple = find(pathname)
   if (tupple) {
     router.pathname = pathname
-    router.router = await appear(tupple[0][2])
+    router.router = await getRouter(tupple[0])
     router.params = tupple[1]
     history.pushState({}, '', pathname)
   }
@@ -45,4 +46,15 @@ export function find(pathname: string): [Page, Record<string, string>] | undefin
 
 export async function appear(component: Elementable): Promise<Component | Module> {
   return await component
+}
+
+export async function getRouter(page: Page) : Promise<Component | Module | Element> {
+  if (page[3]) {
+    if (!elementHolder.has(page[0])) {
+      elementHolder.set(page[0], await page[3](await appear(page[2])))
+    }
+    return elementHolder.get(page[0]) as Element
+  } else {
+    return await appear(page[2])
+  }
 }

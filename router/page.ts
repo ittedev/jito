@@ -3,20 +3,22 @@ import {
   Module,
 } from '../web_components/types.ts'
 import {
+  Elementize,
   Elementable,
   Params,
 } from './type.ts'
 import { pageTupples } from './router.ts'
-import { find, appear } from './push.ts'
+import { find, getRouter } from './push.ts'
 import { router } from './router.ts'
 
-export function page(pattern: string, component: Component): void
-export function page(pattern: string, component: Promise<Component>): void
-export function page(pattern: string, module: Module): void
-export function page(pattern: string, module: Promise<Module>): void
+export function page(pattern: string, component: Component, elementize?: Elementize): void
+export function page(pattern: string, component: Promise<Component>, elementize?: Elementize): void
+export function page(pattern: string, module: Module, elementize?: Elementize): void
+export function page(pattern: string, module: Promise<Module>, elementize?: Elementize): void
 export function page(
   pattern: string,
-  component: Elementable
+  component: Elementable,
+  elementize?: Elementize,
 ): void
 {
   let names = pattern.split('/')
@@ -32,14 +34,14 @@ export function page(
   names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
   kinds.add(kind)
   pageTupples[len][0] = new Set(Array.from(kinds).sort())
-  pages.set(key, [pattern, params, component])
+  pages.set(key, [pattern, params, component, elementize])
 }
 
 self.addEventListener('popstate', async () => {
   let tupple = find(location.pathname)
   if (tupple) {
     router.pathname = location.pathname
-    router.router = await appear(tupple[0][2])
+    router.router = await getRouter(tupple[0])
     router.params = tupple[1]
   }
 })
