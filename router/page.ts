@@ -10,16 +10,16 @@ import { pageTupples } from './router.ts'
 import { find, appear } from './push.ts'
 import { router } from './router.ts'
 
-export function page(pathname: string, component: Component): void
-export function page(pathname: string, component: Promise<Component>): void
-export function page(pathname: string, module: Module): void
-export function page(pathname: string, module: Promise<Module>): void
+export function page(pattern: string, component: Component): void
+export function page(pattern: string, component: Promise<Component>): void
+export function page(pattern: string, module: Module): void
+export function page(pattern: string, module: Promise<Module>): void
 export function page(
-  pathname: string,
+  pattern: string,
   component: Elementable
 ): void
 {
-  let names = pathname.split('/')
+  let names = pattern.split('/')
   let len = names.length
   while (pageTupples.length < len + 1) {
     pageTupples.push([new Set(), new Map()])

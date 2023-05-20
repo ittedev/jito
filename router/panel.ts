@@ -1,8 +1,4 @@
 import {
-  Component,
-  Module,
-} from '../web_components/types.ts'
-import {
   Elementable,
   Panel,
 } from './type.ts'

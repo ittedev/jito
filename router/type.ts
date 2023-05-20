@@ -12,7 +12,7 @@ export type PageTupple = [Kinds, Pages]
 
 export interface Panel {
   current: null | string | number
-  panel: null | Component | Element
+  panel: null | Component | Module | Element
   page: (name: string | number, component: Component | Promise<Component> | Module | Promise<Module>) => void
   push: (name: string | number) => void
   replace: (name: string | number) => void
