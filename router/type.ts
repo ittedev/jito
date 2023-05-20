@@ -26,24 +26,26 @@ export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]
 export type MatchedPageTupple = [string, Record<string, string>, Page]
 
+export type SetPage = ((pathname: string, component: Component, elementize?: Elementize) => void)
+  | ((pathname: string, component: Promise<Component>, elementize?: Elementize) => void)
+  | ((pathname: string, module: Module, elementize?: Elementize) => void)
+  | ((pathname: string, module: Promise<Module>, elementize?: Elementize) => void)
+  | ((pathname: string, filePath: string, elementize?: Elementize) => void)
+  | ((pathname: string, element: Element) => void)
+  | ((pathname: string, element: Promise<Element>) => void)
+  | ((pathname: string, middlewares: Middleware[], component: Component, elementize?: Elementize) => void)
+  | ((pathname: string, middlewares: Middleware[], component: Promise<Component>, elementize?: Elementize) => void)
+  | ((pathname: string, middlewares: Middleware[], module: Module, elementize?: Elementize) => void)
+  | ((pathname: string, middlewares: Middleware[], module: Promise<Module>, elementize?: Elementize) => void)
+  | ((pathname: string, middlewares: Middleware[], filePath: string, elementize?: Elementize) => void)
+  | ((pathname: string, middlewares: Middleware[], element: Element) => void)
+  | ((pathname: string, middlewares: Middleware[], element: Promise<Element>) => void)
+
 export interface Router {
   pathname: null | string
   router: null | Component | Module | Element
   params: Record<string, string>
-  page: ((pathname: string, component: Component, elementize?: Elementize) => void)
-    | ((pathname: string, component: Promise<Component>, elementize?: Elementize) => void)
-    | ((pathname: string, module: Module, elementize?: Elementize) => void)
-    | ((pathname: string, module: Promise<Module>, elementize?: Elementize) => void)
-    | ((pathname: string, filePath: string, elementize?: Elementize) => void)
-    | ((pathname: string, element: Element) => void)
-    | ((pathname: string, element: Promise<Element>) => void)
-    | ((pathname: string, middlewares: Middleware[], component: Component, elementize?: Elementize) => void)
-    | ((pathname: string, middlewares: Middleware[], component: Promise<Component>, elementize?: Elementize) => void)
-    | ((pathname: string, middlewares: Middleware[], module: Module, elementize?: Elementize) => void)
-    | ((pathname: string, middlewares: Middleware[], module: Promise<Module>, elementize?: Elementize) => void)
-    | ((pathname: string, middlewares: Middleware[], filePath: string, elementize?: Elementize) => void)
-    | ((pathname: string, middlewares: Middleware[], element: Element) => void)
-    | ((pathname: string, middlewares: Middleware[], element: Promise<Element>) => void)
+  page: SetPage
   push: (pathname: string) => Promise<void>
   replace: (pathname: string) => Promise<void>
   back: () => void
