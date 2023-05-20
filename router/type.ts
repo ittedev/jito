@@ -3,14 +3,28 @@ import {
   Module,
 } from '../web_components/types.ts'
 
+export type NextAction = (props?: Record<string, unknown>) => true
+export type RedirectAction = (pathname: string, reload?: boolean) => false
+export type BlockAction = () => false
+export type MiddlewareAction = NextAction | RedirectAction | BlockAction
+export type MiddlewareContext = {
+  pathname: string,
+  params: Record<string, string>,
+  props: Record<string, unknown>
+  next: NextAction,
+  redirect: RedirectAction,
+  block: BlockAction,
+}
+export type Middleware = (context: MiddlewareContext) => void | boolean | Promise<void | boolean>
 export type Pattern = string
 export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, attrs?: Record<string, unknown>) => Promise<Element>
 export type Elementable = Component | Promise<Component> | Module | Promise<Module> | string | Element | Promise<Element>
 export type Params = [string, number][]
-export type Page = [Pattern, Params, Elementable, Elementize | undefined]
+export type Page = [Pattern, Params, Middleware[], Elementable, Elementize | undefined]
 export type Kinds = Set<number>
 export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]
+export type MatchedPageTupple = [string, Record<string, string>, Page]
 
 export interface Router {
   pathname: null | string
@@ -23,6 +37,13 @@ export interface Router {
     | ((pathname: string, filePath: string, elementize?: Elementize) => void)
     | ((pathname: string, element: Element) => void)
     | ((pathname: string, element: Promise<Element>) => void)
+    | ((pathname: string, middlewares: Middleware[], component: Component, elementize?: Elementize) => void)
+    | ((pathname: string, middlewares: Middleware[], component: Promise<Component>, elementize?: Elementize) => void)
+    | ((pathname: string, middlewares: Middleware[], module: Module, elementize?: Elementize) => void)
+    | ((pathname: string, middlewares: Middleware[], module: Promise<Module>, elementize?: Elementize) => void)
+    | ((pathname: string, middlewares: Middleware[], filePath: string, elementize?: Elementize) => void)
+    | ((pathname: string, middlewares: Middleware[], element: Element) => void)
+    | ((pathname: string, middlewares: Middleware[], element: Promise<Element>) => void)
   push: (pathname: string) => Promise<void>
   replace: (pathname: string) => Promise<void>
   back: () => void
@@ -30,7 +51,17 @@ export interface Router {
 }
 
 export type PanelName = string | number
-export type PanelPage = [Elementable, Elementize | undefined]
+export type PanelRedirectAction = (name: PanelName) => false
+export type PanelMiddleware = (context: PanelMiddlewareContext) => void | boolean | Promise<void | boolean>
+export type PanelMiddlewareContext = {
+  name: PanelName,
+  props: Record<string, unknown>
+  next: NextAction,
+  redirect: PanelRedirectAction,
+  block: BlockAction,
+}
+export type PanelPage = [PanelMiddleware[], Elementable, Elementize | undefined]
+export type MatchedPanelTupple = [PanelName, PanelPage]
 
 export interface Panel {
   current: null | PanelName
@@ -42,8 +73,15 @@ export interface Panel {
     | ((name: PanelName, filePath: string, elementize?: Elementize) => void)
     | ((name: PanelName, element: Element) => void)
     | ((name: PanelName, element: Promise<Element>) => void)
-  push: (name: PanelName) => void
-  replace: (name: PanelName) => void
+    | ((name: PanelName, middlewares: PanelMiddleware[], component: Component, elementize?: Elementize) => void)
+    | ((name: PanelName, middlewares: PanelMiddleware[], component: Promise<Component>, elementize?: Elementize) => void)
+    | ((name: PanelName, middlewares: PanelMiddleware[], module: Module, elementize?: Elementize) => void)
+    | ((name: PanelName, middlewares: PanelMiddleware[], module: Promise<Module>, elementize?: Elementize) => void)
+    | ((name: PanelName, middlewares: PanelMiddleware[], filePath: string, elementize?: Elementize) => void)
+    | ((name: PanelName, middlewares: PanelMiddleware[], element: Element) => void)
+    | ((name: PanelName, middlewares: PanelMiddleware[], element: Promise<Element>) => void)
+  push: (name: PanelName) => Promise<void>
+  replace: (name: PanelName) => Promise<void>
   back: () => void
   forward: () => void
 }
