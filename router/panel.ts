@@ -1,4 +1,8 @@
 import {
+  Component,
+  Module,
+} from '../web_components/types.ts'
+import {
   Elementize,
   Elementable,
   PanelName,
@@ -15,7 +19,8 @@ export function panel(): Panel {
   let getPanel = async (name: PanelName, page: PanelPage) => {
     if (page[1]) {
       if (!elements.has(name)) {
-        elements.set(name, await page[1](await appear(page[0])))
+        let elementable = await appear(page[0])
+        elements.set(name, elementable instanceof Element ? elementable : await page[1](elementable))
       }
       return elements.get(name) as Element
     } else {

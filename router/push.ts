@@ -44,7 +44,7 @@ export function find(pathname: string): [Page, Record<string, string>] | undefin
   }
 }
 
-export async function appear(component: Elementable): Promise<Component | Module> {
+export async function appear(component: Elementable): Promise<Component | Module | Element> {
   if (typeof component === 'string') {
     return await import(component)
   } else {
@@ -55,7 +55,8 @@ export async function appear(component: Elementable): Promise<Component | Module
 export async function getRouter(page: Page) : Promise<Component | Module | Element> {
   if (page[3]) {
     if (!elementHolder.has(page[0])) {
-      elementHolder.set(page[0], await page[3](await appear(page[2])))
+      let elementable = await appear(page[2])
+      elementHolder.set(page[0], elementable instanceof Element ? elementable : await page[3](elementable))
     }
     return elementHolder.get(page[0]) as Element
   } else {
