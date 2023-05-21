@@ -11,10 +11,9 @@ import {
   router,
 } from './router.ts'
 
-export async function open(pathname: string): Promise<Record<string, unknown>> {
+export async function open(pathname: string, props: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
   let mutchedData = find(pathname)
   if (mutchedData) {
-    let props: Record<string, unknown> = {}
     // let redirect = (pathname: string, reload = false) => {
       // if (reload) {
       //   if (isReplace) {
