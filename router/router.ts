@@ -7,7 +7,7 @@ import {
   Page,
 } from './type.ts'
 
-class Router {
+export class Router {
   private _pageTupples: PageTupple[] = []
   private _history: History | MemoryHistory
 
@@ -17,19 +17,11 @@ class Router {
     if (history === self.history) {
       self.addEventListener('popstate', (event) => {
         let pathname = event.state && 'pathname' in event.state ? event.state.pathname : location.pathname
-        router.open(pathname).then(props => {
-          // router.pathname = location.pathname
-          // router.router = await getRouter(tupple[2])
-          // router.params = tupple[1]
-        }).catch(() => {})
+        router.open(pathname).catch(() => {})
       })
     } else {
       history.addEventListener('popstate', (event) => {
-        router.open(event.state.pathname).then(props => {
-          // router.pathname = location.pathname
-          // router.router = await getRouter(tupple[2])
-          // router.params = tupple[1]
-        }).catch(() => {})
+        router.open(event.state.pathname).catch(() => {})
       })
     }
   }
@@ -80,6 +72,7 @@ class Router {
         let result = await middleware({
           pathname: mutchedData.pathname,
           params: mutchedData.params,
+          pattern: mutchedData.page[0],
           props,
           next: (newProps?: Record<string, unknown>) => {
             props = newProps || {}
@@ -99,9 +92,6 @@ class Router {
   public push(pathname: string): Promise<void>
   {
     return this.open(pathname).then(props => {
-      // router.pathname = pathname
-      // router.router = await getRouter(tupple[2])
-      // router.params = tupple[1]
       this._history.pushState({ pathname }, '', pathname)
     }).catch(() => {})
   }
@@ -109,9 +99,6 @@ class Router {
   public replace(pathname: string): Promise<void>
   {
     return this.open(pathname).then(props => {
-      // router.pathname = pathname
-      // router.router = await getRouter(tupple[2])
-      // router.params = tupple[1]
       this._history.replaceState({ pathname }, '', pathname)
     }).catch(() => {})
   }
@@ -146,6 +133,3 @@ class Router {
 }
 
 export let router = new Router(history as MemoryHistory)
-
-export let elementHolder = new Map<string, Element>()
-

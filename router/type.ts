@@ -9,6 +9,7 @@ export type MiddlewareAction = NextAction | BlockAction
 export type MiddlewareContext = {
   pathname: string,
   params: Record<string, string>,
+  pattern: string,
   props: Record<string, unknown>
   next: NextAction,
   block: BlockAction,
@@ -25,49 +26,13 @@ export type PageTupple = [Kinds, Pages]
 export type MatchedPageData = {
   pathname: string,
   params: Record<string, string>,
-  page:Page,
+  page: Page,
 }
-
 
 export type SetPage = (pathname: string, ...middlewares: Middleware[]) => void
 
-export type PanelName = string | number
-export type PanelRedirectAction = (name: PanelName) => false
-export type PanelMiddleware = (context: PanelMiddlewareContext) => void | boolean | Promise<void | boolean>
-export type PanelMiddlewareContext = {
-  name: PanelName,
-  props: Record<string, unknown>
-  next: NextAction,
-  redirect: PanelRedirectAction,
-  block: BlockAction,
-}
-export type PanelPage = [PanelMiddleware[], Elementable, Elementize | undefined]
-export type MatchedPanelTupple = [PanelName, PanelPage]
 export type MemoryHistoryStateEvent = {
   type: 'reload' | 'popstate',
   state: any,
   stopImmediatePropagation: () => void
-}
-
-export interface Panel {
-  current: null | PanelName
-  panel: null | Component | Module | Element
-  page: ((name: PanelName, component: Component, elementize?: Elementize) => void)
-    | ((name: PanelName, component: Promise<Component>, elementize?: Elementize) => void)
-    | ((name: PanelName, module: Module, elementize?: Elementize) => void)
-    | ((name: PanelName, module: Promise<Module>, elementize?: Elementize) => void)
-    | ((name: PanelName, filePath: string, elementize?: Elementize) => void)
-    | ((name: PanelName, element: Element) => void)
-    | ((name: PanelName, element: Promise<Element>) => void)
-    | ((name: PanelName, middlewares: PanelMiddleware[], component: Component, elementize?: Elementize) => void)
-    | ((name: PanelName, middlewares: PanelMiddleware[], component: Promise<Component>, elementize?: Elementize) => void)
-    | ((name: PanelName, middlewares: PanelMiddleware[], module: Module, elementize?: Elementize) => void)
-    | ((name: PanelName, middlewares: PanelMiddleware[], module: Promise<Module>, elementize?: Elementize) => void)
-    | ((name: PanelName, middlewares: PanelMiddleware[], filePath: string, elementize?: Elementize) => void)
-    | ((name: PanelName, middlewares: PanelMiddleware[], element: Element) => void)
-    | ((name: PanelName, middlewares: PanelMiddleware[], element: Promise<Element>) => void)
-  push: (name: PanelName) => Promise<void>
-  replace: (name: PanelName) => Promise<void>
-  back: () => void
-  forward: () => void
 }

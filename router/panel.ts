@@ -1,129 +1,69 @@
 import {
-  PanelMiddleware,
-  Elementize,
+  Component,
+  Module,
+} from '../web_components/types.ts'
+import {
   Elementable,
-  PanelName,
-  PanelPage,
-  MatchedPanelTupple,
-  Panel,
+  Elementize,
+  Middleware,
+  MiddlewareContext,
 } from './type.ts'
-import { appear } from './push.ts'
+import {
+} from './type.ts'
 
-export function panel(): Panel {
-  let pages = new Map<PanelName, PanelPage>()
-  let leftHistoryQueue: (PanelName)[] = []
-  let rightHistoryQueue: (PanelName)[] = []
-  let elements = new Map<PanelName, Element>()
-
-  let getPanel = async (name: PanelName, page: PanelPage) => {
-    if (page[2]) {
-      if (!elements.has(name)) {
-        let elementable = await appear(page[1])
-        elements.set(name, elementable instanceof Element ? elementable : await page[2](elementable))
-      }
-      return elements.get(name) as Element
-    } else {
-      return await appear(page[1])
-    }
-}
-
-  async function validate(name: PanelName, page: PanelPage, func: (name: PanelName) => Promise<void>): Promise<Record<string, unknown> | undefined> {
-    let props: Record<string, unknown> = {}
-    for (let middleware of page[0]) {
-      let result = await middleware({
-        name,
-        props,
-        next: (newProps?: Record<string, unknown>) => {
-          props = newProps || {}
-          return true
-        },
-        redirect: (name: PanelName) => {
-          func(name)
-          return false
-        },
-        block: () => false,
-      })
-      if (result !== undefined && !result) {
-        return
-      }
-    }
-    return props
-  }
-
-  let panel: Panel = {
-    current: null,
+export class Panel {
+  private _elements: Map<string, Element> = new Map<string, Element>()
+  public panelState: {
+    pathname: string,
+    params: Record<string, string>,
+    panel: null | Component | Module | Element
+  } = {
+    pathname: '',
+    params: {},
     panel: null,
-
-    page(
-      name: PanelName,
-      orMiddlewares: PanelMiddleware[] | Elementable,
-      orComponent?: Elementable | Elementize,
-      elementizable?: Elementize,
-    ): void {
-      let middlewares = Array.isArray(orMiddlewares) ? orMiddlewares : []
-      let component = Array.isArray(orMiddlewares) ? orComponent as Elementable : orMiddlewares
-      let elementize = Array.isArray(orMiddlewares) ? elementizable : orComponent as Elementize
-      pages.set(name, [middlewares, component, elementize])
-    },
-
-    async push(name: PanelName): Promise<void> {
-      let page = pages.get(name)
-      if (page !== undefined) {
-        let props = await validate(name, page, this.push)
-        if (props) {
-          this.panel = await getPanel(name, page)
-          if (this.current !== null) {
-            leftHistoryQueue.push(this.current)
-          }
-          this.current = name
-          if (rightHistoryQueue.length) {
-            rightHistoryQueue = []
-          }
-        }
-      }
-    },
-
-    async replace(name: PanelName): Promise<void> {
-      let page = pages.get(name)
-      if (page !== undefined) {
-        let props = await validate(name, page, this.replace)
-        if (props) {
-          this.panel = await getPanel(name, page)
-          this.current = name
-        }
-      }
-    },
-
-    async back(): Promise<void> {
-      if (leftHistoryQueue.length) {
-        let name = leftHistoryQueue.pop() as PanelName
-        let page = pages.get(name) as PanelPage
-        let props = await validate(name, page, this.replace)
-        if (props) {
-          this.panel = await getPanel(name, page)
-          rightHistoryQueue.push(this.current as PanelName)
-          this.current = name
-        }
-      }
-    },
-
-    async forward(): Promise<void> {
-      if (rightHistoryQueue.length) {
-        let name = rightHistoryQueue.pop() as PanelName
-        let page = pages.get(name) as PanelPage
-        let props = await validate(name, page, this.replace)
-        if (props) {
-          this.panel = await getPanel(name, page)
-          leftHistoryQueue.push(this.current as PanelName)
-          this.current = name
-        }
-      }
-    },
+  }
+  public embed(component: Component, elementize?: Elementize): Middleware
+  public embed(component: Promise<Component>, elementize?: Elementize): Middleware
+  public embed(module: Module, elementize?: Elementize): Middleware
+  public embed(module: Promise<Module>, elementize?: Elementize): Middleware
+  public embed(filePath: string, elementize?: Elementize): Middleware
+  public embed(element: Element, elementize?: Elementize): Middleware
+  public embed(element: Promise<Element>, elementize?: Elementize): Middleware
+  public embed(
+    elementable: Elementable,
+    elementize?: Elementize,
+  ): Middleware
+  {
+    return async (context: MiddlewareContext) => {
+      this.panelState.pathname = context.pathname
+      this.panelState.panel = await this.getElement(context.pattern, elementable, elementize)
+      this.panelState.params = context.params
+    }
   }
 
-  panel.push = panel.push.bind(panel)
-  panel.replace = panel.replace.bind(panel)
-  panel.back = panel.back.bind(panel)
-  panel.forward = panel.forward.bind(panel)
-  return panel
+  private async getElement(
+    name: string,
+    elementable: Elementable,
+    elementize?: Elementize,
+  ): Promise<Component | Module | Element> {
+    if (elementize) {
+      if (!this._elements.has(name)) {
+        let elementOrComponent = await appear(elementable)
+        this._elements.set(name, elementOrComponent instanceof Element ? elementOrComponent : await elementize(elementOrComponent))
+      }
+      return this._elements.get(name) as Element
+    } else {
+      return await appear(elementable)
+    }
+  }
 }
+
+async function appear(component: Elementable): Promise<Component | Module | Element> {
+  if (typeof component === 'string') {
+    return await import(component)
+  } else {
+    return await component
+  }
+}
+
+export let panel = new Panel()
