@@ -5,20 +5,15 @@ import {
 import {
   Elementable,
 } from './type.ts'
-import { find } from './find.ts'
-import { validate } from './validate.ts'
+import { open } from './open.ts'
 
-export async function push(pathname: string): Promise<void> {
-  let tupple = find(pathname)
-  if (tupple) {
-    let props = await validate(tupple, false)
-    if (props) {
-      // router.pathname = pathname
-      // router.router = await getRouter(tupple[2])
-      // router.params = tupple[1]
-      history.pushState({}, '', pathname)
-    }
-  }
+export function push(pathname: string): Promise<void> {
+  return open(pathname).then(props => {
+    // router.pathname = pathname
+    // router.router = await getRouter(tupple[2])
+    // router.params = tupple[1]
+    history.pushState({}, '', pathname)
+  }).catch(() => {})
 }
 
 export async function appear(component: Elementable): Promise<Component | Module | Element> {

@@ -4,15 +4,13 @@ import {
 } from '../web_components/types.ts'
 
 export type NextAction = (props?: Record<string, unknown>) => true
-export type RedirectAction = (pathname: string, reload?: boolean) => false
 export type BlockAction = () => false
-export type MiddlewareAction = NextAction | RedirectAction | BlockAction
+export type MiddlewareAction = NextAction | BlockAction
 export type MiddlewareContext = {
   pathname: string,
   params: Record<string, string>,
   props: Record<string, unknown>
   next: NextAction,
-  redirect: RedirectAction,
   block: BlockAction,
 }
 export type Middleware = (context: MiddlewareContext) => void | boolean | Promise<void | boolean>

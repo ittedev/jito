@@ -3,8 +3,7 @@ import {
   Params,
 } from './type.ts'
 import { pageTupples } from './router.ts'
-import { find } from './find.ts'
-import { validate } from './validate.ts'
+import { open } from './open.ts'
 
 export function page(pattern: string, ...middlewares: Middleware[]): void
 {
@@ -65,14 +64,10 @@ export function page(pattern: string, ...middlewares: Middleware[]): void
 //   pages.set(key, [pattern, params, middlewares, component, elementize])
 // }
 
-self.addEventListener('popstate', async () => {
-  let tupple = find(location.pathname)
-  if (tupple) {
-    let props = await validate(tupple, false)
-    if (props) {
-      // router.pathname = location.pathname
-      // router.router = await getRouter(tupple[2])
-      // router.params = tupple[1]
-    }
-  }
+self.addEventListener('popstate', () => {
+  open(location.pathname).then(props => {
+    // router.pathname = location.pathname
+    // router.router = await getRouter(tupple[2])
+    // router.params = tupple[1]
+  }).catch(() => {})
 })
