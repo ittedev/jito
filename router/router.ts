@@ -1,3 +1,4 @@
+import { LocalHistory } from './local_history.ts'
 import {
   PageTupple,
   Middleware,
@@ -7,10 +8,11 @@ import {
 } from './type.ts'
 
 class Router {
-  private _pathname: null | string = null
   private _pageTupples: PageTupple[] = []
-  private _leftHistoryQueue: string[] = []
-  private _rightHistoryQueue: string[] = []
+
+  constructor(
+    private history: History = new LocalHistory()
+  ) {}
 
   public page(pattern: string, ...middlewares: Middleware[]): void
   {
@@ -69,9 +71,6 @@ class Router {
           throw Error()
         }
       }
-      if (this._pathname !== null) {
-        this._leftHistoryQueue.push(this._pathname)
-      }
       return props
     }
     throw Error() // not found
@@ -98,4 +97,4 @@ class Router {
 
 export let elementHolder = new Map<string, Element>()
 
-export let router = new Router()
+export let router = new Router(history)
