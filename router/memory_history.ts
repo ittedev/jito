@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-export class LocalHistory extends History {
+export class MemoryHistory extends History {
   private _historyStack: [string, any][] = []
   private _currentIndex = -1
 

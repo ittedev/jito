@@ -1,4 +1,4 @@
-import { LocalHistory } from './local_history.ts'
+import { MemoryHistory } from './memory_history.ts'
 import {
   PageTupple,
   Middleware,
@@ -11,7 +11,7 @@ class Router {
   private _pageTupples: PageTupple[] = []
 
   constructor(
-    private history: History = new LocalHistory()
+    private history: History = new MemoryHistory()
   ) {}
 
   public page(pattern: string, ...middlewares: Middleware[]): void
