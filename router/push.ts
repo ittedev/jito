@@ -5,7 +5,7 @@ import {
 import {
   Elementable,
   Page,
-  MatchedPageTupple,
+  MatchedPageData,
 } from './type.ts'
 import {
   pageTupples,
@@ -28,7 +28,7 @@ export async function push(pathname: string): Promise<void> {
   }
 }
 
-export function find(pathname: string): MatchedPageTupple | undefined {
+export function find(pathname: string): MatchedPageData | undefined {
   let names = pathname.split('/')
   let len = names.length
   let kinds = pageTupples[len][0]
@@ -44,7 +44,7 @@ export function find(pathname: string): MatchedPageTupple | undefined {
       if (router.pathname !== null) {
         leftHistoryQueue.push(router.pathname)
       }
-      return [pathname, params, page]
+      return { pathname, params, page }
     }
   }
 }
@@ -69,12 +69,12 @@ export async function appear(component: Elementable): Promise<Component | Module
 //   }
 // }
 
-export async function validate(tupple: MatchedPageTupple, isReplace: boolean): Promise<Record<string, unknown> | undefined> {
+export async function validate(data: MatchedPageData, isReplace: boolean): Promise<Record<string, unknown> | undefined> {
   let props: Record<string, unknown> = {}
-  for (let middleware of tupple[2][2]) {
+  for (let middleware of data.page[2]) {
     let result = await middleware({
-      pathname: tupple[0],
-      params: tupple[1],
+      pathname: data.pathname,
+      params: data.params,
       props,
       next: (newProps?: Record<string, unknown>) => {
         props = newProps || {}

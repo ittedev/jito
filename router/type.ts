@@ -24,7 +24,12 @@ export type Page = [Pattern, Params, Middleware[]]
 export type Kinds = Set<number>
 export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]
-export type MatchedPageTupple = [string, Record<string, string>, Page]
+export type MatchedPageData = {
+  pathname: string,
+  params: Record<string, string>,
+  page:Page,
+}
+
 
 export type SetPage = (pathname: string, ...middlewares: Middleware[]) => void
 
