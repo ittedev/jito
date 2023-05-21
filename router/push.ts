@@ -20,9 +20,9 @@ export async function push(pathname: string): Promise<void> {
   if (tupple) {
     let props = await validate(tupple, false)
     if (props) {
-      router.pathname = pathname
-      router.router = await getRouter(tupple[2])
-      router.params = tupple[1]
+      // router.pathname = pathname
+      // router.router = await getRouter(tupple[2])
+      // router.params = tupple[1]
       history.pushState({}, '', pathname)
     }
   }
@@ -57,17 +57,17 @@ export async function appear(component: Elementable): Promise<Component | Module
   }
 }
 
-export async function getRouter(page: Page): Promise<Component | Module | Element> {
-  if (page[4]) {
-    if (!elementHolder.has(page[0])) {
-      let elementable = await appear(page[3])
-      elementHolder.set(page[0], elementable instanceof Element ? elementable : await page[4](elementable))
-    }
-    return elementHolder.get(page[0]) as Element
-  } else {
-    return await appear(page[3])
-  }
-}
+// export async function getRouter(page: Page): Promise<Component | Module | Element> {
+//   if (page[4]) {
+//     if (!elementHolder.has(page[0])) {
+//       let elementable = await appear(page[3])
+//       elementHolder.set(page[0], elementable instanceof Element ? elementable : await page[4](elementable))
+//     }
+//     return elementHolder.get(page[0]) as Element
+//   } else {
+//     return await appear(page[3])
+//   }
+// }
 
 export async function validate(tupple: MatchedPageTupple, isReplace: boolean): Promise<Record<string, unknown> | undefined> {
   let props: Record<string, unknown> = {}

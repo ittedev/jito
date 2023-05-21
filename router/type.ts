@@ -20,26 +20,13 @@ export type Pattern = string
 export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, attrs?: Record<string, unknown>) => Promise<Element>
 export type Elementable = Component | Promise<Component> | Module | Promise<Module> | string | Element | Promise<Element>
 export type Params = [string, number][]
-export type Page = [Pattern, Params, Middleware[], Elementable, Elementize | undefined]
+export type Page = [Pattern, Params, Middleware[]]
 export type Kinds = Set<number>
 export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]
 export type MatchedPageTupple = [string, Record<string, string>, Page]
 
-export type SetPage = ((pathname: string, component: Component, elementize?: Elementize) => void)
-  | ((pathname: string, component: Promise<Component>, elementize?: Elementize) => void)
-  | ((pathname: string, module: Module, elementize?: Elementize) => void)
-  | ((pathname: string, module: Promise<Module>, elementize?: Elementize) => void)
-  | ((pathname: string, filePath: string, elementize?: Elementize) => void)
-  | ((pathname: string, element: Element) => void)
-  | ((pathname: string, element: Promise<Element>) => void)
-  | ((pathname: string, middlewares: Middleware[], component: Component, elementize?: Elementize) => void)
-  | ((pathname: string, middlewares: Middleware[], component: Promise<Component>, elementize?: Elementize) => void)
-  | ((pathname: string, middlewares: Middleware[], module: Module, elementize?: Elementize) => void)
-  | ((pathname: string, middlewares: Middleware[], module: Promise<Module>, elementize?: Elementize) => void)
-  | ((pathname: string, middlewares: Middleware[], filePath: string, elementize?: Elementize) => void)
-  | ((pathname: string, middlewares: Middleware[], element: Element) => void)
-  | ((pathname: string, middlewares: Middleware[], element: Promise<Element>) => void)
+export type SetPage = (pathname: string, ...middlewares: Middleware[]) => void
 
 export interface Router {
   pathname: null | string
