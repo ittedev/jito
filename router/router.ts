@@ -76,6 +76,36 @@ class Router {
     throw Error() // not found
   }
 
+  public push(pathname: string): Promise<void>
+  {
+    return this.open(pathname).then(props => {
+      // router.pathname = pathname
+      // router.router = await getRouter(tupple[2])
+      // router.params = tupple[1]
+      this.history.pushState({}, '', pathname)
+    }).catch(() => {})
+  }
+
+  public replace(pathname: string): Promise<void>
+  {
+    return this.open(pathname).then(props => {
+      // router.pathname = pathname
+      // router.router = await getRouter(tupple[2])
+      // router.params = tupple[1]
+      this.history.replaceState({}, '', pathname)
+    }).catch(() => {})
+  }
+
+  public back(): void
+  {
+    this.history.back()
+  }
+
+  public forward(): void
+  {
+    this.history.forward()
+  }
+
   private _find(pathname: string): MatchedPageData | undefined {
     let names = pathname.split('/')
     let len = names.length
@@ -95,6 +125,15 @@ class Router {
   }
 }
 
+export let router = new Router(history)
+
+self.addEventListener('popstate', () => {
+  router.open(location.pathname).then(props => {
+    // router.pathname = location.pathname
+    // router.router = await getRouter(tupple[2])
+    // router.params = tupple[1]
+  }).catch(() => {})
+})
+
 export let elementHolder = new Map<string, Element>()
 
-export let router = new Router(history)

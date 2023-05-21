@@ -1,3 +1,5 @@
+import { router } from './router.ts'
+
 export function back(): void {
-  history.back()
+  router.back()
 }

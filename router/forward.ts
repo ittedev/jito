@@ -1,3 +1,6 @@
-export function forward(): void {
-  history.forward()
+import { router } from './router.ts'
+
+export function forward(): void
+{
+  router.forward()
 }

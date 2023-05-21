@@ -5,15 +5,10 @@ import {
 import {
   Elementable,
 } from './type.ts'
-import { open } from './open.ts'
+import { router } from './router.ts'
 
 export function push(pathname: string): Promise<void> {
-  return open(pathname).then(props => {
-    // router.pathname = pathname
-    // router.router = await getRouter(tupple[2])
-    // router.params = tupple[1]
-    history.pushState({}, '', pathname)
-  }).catch(() => {})
+  return router.push(pathname)
 }
 
 export async function appear(component: Elementable): Promise<Component | Module | Element> {

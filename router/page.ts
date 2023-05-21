@@ -49,11 +49,3 @@ export function page(pattern: string, ...middlewares: Middleware[]): void
 //   pageTupples[len][0] = new Set(Array.from(kinds).sort())
 //   pages.set(key, [pattern, params, middlewares, component, elementize])
 // }
-
-self.addEventListener('popstate', () => {
-  open(location.pathname).then(props => {
-    // router.pathname = location.pathname
-    // router.router = await getRouter(tupple[2])
-    // router.params = tupple[1]
-  }).catch(() => {})
-})
