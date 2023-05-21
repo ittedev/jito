@@ -8,8 +8,6 @@ import {
   Middleware,
   MiddlewareContext,
 } from './type.ts'
-import {
-} from './type.ts'
 
 export class Panel {
   private _elements: Map<string, Element> = new Map<string, Element>()
