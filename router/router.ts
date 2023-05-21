@@ -9,10 +9,30 @@ import {
 
 class Router {
   private _pageTupples: PageTupple[] = []
+  private _history: History | MemoryHistory
 
-  constructor(
-    private history: History = new MemoryHistory()
-  ) {}
+  constructor(history: MemoryHistory = new MemoryHistory()) {
+    this._history = history
+
+    if (history === self.history) {
+      self.addEventListener('popstate', (event) => {
+        let pathname = event.state && 'pathname' in event.state ? event.state.pathname : location.pathname
+        router.open(pathname).then(props => {
+          // router.pathname = location.pathname
+          // router.router = await getRouter(tupple[2])
+          // router.params = tupple[1]
+        }).catch(() => {})
+      })
+    } else {
+      history.addEventListener('popstate', (event) => {
+        router.open(event.state.pathname).then(props => {
+          // router.pathname = location.pathname
+          // router.router = await getRouter(tupple[2])
+          // router.params = tupple[1]
+        }).catch(() => {})
+      })
+    }
+  }
 
   public page(pattern: string, ...middlewares: Middleware[]): void
   {
@@ -82,7 +102,7 @@ class Router {
       // router.pathname = pathname
       // router.router = await getRouter(tupple[2])
       // router.params = tupple[1]
-      this.history.pushState({}, '', pathname)
+      this._history.pushState({ pathname }, '', pathname)
     }).catch(() => {})
   }
 
@@ -92,18 +112,18 @@ class Router {
       // router.pathname = pathname
       // router.router = await getRouter(tupple[2])
       // router.params = tupple[1]
-      this.history.replaceState({}, '', pathname)
+      this._history.replaceState({ pathname }, '', pathname)
     }).catch(() => {})
   }
 
   public back(): void
   {
-    this.history.back()
+    this._history.back()
   }
 
   public forward(): void
   {
-    this.history.forward()
+    this._history.forward()
   }
 
   private _find(pathname: string): MatchedPageData | undefined {
@@ -125,15 +145,7 @@ class Router {
   }
 }
 
-export let router = new Router(history)
-
-self.addEventListener('popstate', () => {
-  router.open(location.pathname).then(props => {
-    // router.pathname = location.pathname
-    // router.router = await getRouter(tupple[2])
-    // router.params = tupple[1]
-  }).catch(() => {})
-})
+export let router = new Router(history as MemoryHistory)
 
 export let elementHolder = new Map<string, Element>()
 

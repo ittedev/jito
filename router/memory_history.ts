@@ -1,7 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
+import { MemoryHistoryStateEvent } from './type.ts'
+
 export class MemoryHistory extends History {
   private _historyStack: [string, any][] = []
   private _currentIndex = -1
+  private _handlers = new Map<'reload' | 'popstate', Set<(event: MemoryHistoryStateEvent) => void>>()
 
   public get state(): any {
     if (this._historyStack.length) {
@@ -13,7 +16,19 @@ export class MemoryHistory extends History {
 
   public go(delta: number) {
     if (delta !== 0) {
-      this._currentIndex = Math.max(Math.min(this._currentIndex + delta, 0), this._historyStack.length - 1)
+      let index = Math.max(Math.min(this._currentIndex + delta, 0), this._historyStack.length - 1)
+      if (this._currentIndex !== index) {
+        this._dispatchEvent({
+          type: 'popstate',
+          state: this._historyStack[index]
+        } as MemoryHistoryStateEvent)
+      }
+      this._currentIndex = index
+    } else if (this._historyStack.length) {
+      this._dispatchEvent({
+        type: 'reload',
+        state: this._historyStack[this._currentIndex]
+      } as MemoryHistoryStateEvent)
     }
   }
 
@@ -36,5 +51,40 @@ export class MemoryHistory extends History {
   public replaceState(state: any, _unused: string, url: string)
   {
     this._historyStack.splice(this._currentIndex, this._historyStack.length - this._currentIndex, [url, state])
+  }
+
+  public addEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void)
+  {
+    if (!this._handlers.has(type)) {
+      this._handlers.set(type, new Set())
+    }
+    (this._handlers.get(type) as Set<(event: MemoryHistoryStateEvent) => void>).add(listener)
+  }
+
+  public removeEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void)
+  {
+    if (!this._handlers.has(type)) {
+      return
+    }
+    (this._handlers.get(type) as Set<(event: MemoryHistoryStateEvent) => void>).delete(listener)
+  }
+
+  private _dispatchEvent(event: MemoryHistoryStateEvent) {
+    let handlers = this._handlers.get(event.type)
+    if (handlers) {
+      let isFinish = false
+      let stopImmediatePropagation = () => {
+        isFinish = true
+      }
+      for (let handler of handlers) {
+        handler({
+          ...event,
+          stopImmediatePropagation,
+        })
+        if (isFinish) {
+          break
+        }
+      }
+    }
   }
 }

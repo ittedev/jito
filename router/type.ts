@@ -43,6 +43,11 @@ export type PanelMiddlewareContext = {
 }
 export type PanelPage = [PanelMiddleware[], Elementable, Elementize | undefined]
 export type MatchedPanelTupple = [PanelName, PanelPage]
+export type MemoryHistoryStateEvent = {
+  type: 'reload' | 'popstate',
+  state: any,
+  stopImmediatePropagation: () => void
+}
 
 export interface Panel {
   current: null | PanelName
