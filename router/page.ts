@@ -1,16 +1,10 @@
 import {
-  Component,
-  Module,
-} from '../web_components/types.ts'
-import {
   Middleware,
-  Elementize,
-  Elementable,
   Params,
 } from './type.ts'
 import { pageTupples } from './router.ts'
-import { find, validate } from './push.ts'
-import { router } from './router.ts'
+import { find } from './find.ts'
+import { validate } from './validate.ts'
 
 export function page(pattern: string, ...middlewares: Middleware[]): void
 {

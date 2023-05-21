@@ -1,5 +1,6 @@
 import { router } from './router.ts'
-import { find, validate } from './push.ts'
+import { find } from './find.ts'
+import { validate } from './validate.ts'
 
 export async function replace(pathname: string): Promise<void> {
   let tupple = find(pathname)
