@@ -1,6 +1,5 @@
 export type {
   Panel,
-  Router,
 } from './type.ts'
 
 export { panel } from './panel.ts'

@@ -31,17 +31,6 @@ export type MatchedPageData = {
 
 export type SetPage = (pathname: string, ...middlewares: Middleware[]) => void
 
-export interface Router {
-  pathname: null | string
-  router: null | Component | Module | Element
-  params: Record<string, string>
-  page: SetPage
-  push: (pathname: string) => Promise<void>
-  replace: (pathname: string) => Promise<void>
-  back: () => void
-  forward: () => void
-}
-
 export type PanelName = string | number
 export type PanelRedirectAction = (name: PanelName) => false
 export type PanelMiddleware = (context: PanelMiddlewareContext) => void | boolean | Promise<void | boolean>
