@@ -59,22 +59,10 @@ export class Router {
   {
     let mutchedData = this._find(pathname)
     if (mutchedData) {
-      // let redirect = (pathname: string, reload = false) => {
-        // if (reload) {
-        //   if (isReplace) {
-        //     replace(pathname)
-        //   } else {
-        //     push(pathname)
-        //   }
-        // } else {
-        //   if (isReplace) {
-        //     location.replace(pathname)
-        //   } else {
-        //     location.href = pathname
-        //   }
-        // }
-      //   return false
-      // }
+      let redirect = (pathname: string) => {
+        open(pathname)
+        return false
+      }
       let block = () => false
       for (let middleware of mutchedData.page[2]) {
         let result = await middleware({
@@ -86,6 +74,7 @@ export class Router {
             props = newProps || {}
             return true
           },
+          redirect: redirect as (pathname: string) => false,
           block: block as () => false,
         })
         if (result !== undefined && !result) {
