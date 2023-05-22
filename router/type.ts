@@ -11,10 +11,11 @@ export type MiddlewareContext = {
   next: (props?: Record<string, unknown>) => true,
   redirect: (pathname: string) => false
   block: () => false,
+  call: (middleware: Middleware) => void
 }
 export type Middleware = (context: MiddlewareContext) => void | boolean | Promise<void | boolean>
 export type Pattern = string
-export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, attrs?: Record<string, unknown>) => Promise<Element>
+export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, props?: Record<string, unknown>) => Promise<Element>
 export type Elementable = Component | Promise<Component> | Module | Promise<Module> | string | Element | Promise<Element>
 export type Params = [string, number][]
 export type Page = [Pattern, Params, Middleware[]]

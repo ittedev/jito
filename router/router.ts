@@ -6,6 +6,7 @@ import {
   Params,
   Page,
   SetPage,
+  MiddlewareContext,
 } from './type.ts'
 
 export class Router {
@@ -65,7 +66,8 @@ export class Router {
       }
       let block = () => false
       for (let middleware of mutchedData.page[2]) {
-        let result = await middleware({
+        let context: MiddlewareContext
+        context = {
           pathname: mutchedData.pathname,
           params: mutchedData.params,
           pattern: mutchedData.page[0],
@@ -76,7 +78,9 @@ export class Router {
           },
           redirect: redirect as (pathname: string) => false,
           block: block as () => false,
-        })
+          call: (middleware: Middleware) => middleware(context),
+        }
+        let result = await middleware(context)
         if (result !== undefined && !result) {
           throw Error()
         }
