@@ -5,6 +5,7 @@ import {
   MatchedPageData,
   Params,
   Page,
+  SetPage,
 } from './type.ts'
 
 export class Router {
@@ -42,6 +43,13 @@ export class Router {
     kinds.add(kind)
     this._pageTupples[len][0] = new Set(Array.from(kinds).sort())
     pages.set(key, [pattern, params, middlewares])
+  }
+
+  public section(...middlewares: Middleware[]): SetPage
+  {
+    return (pattern: string, ...subMiddlewares: Middleware[]) => {
+      return this.page(pattern, ...middlewares, ...subMiddlewares)
+    }
   }
 
   public async open(
