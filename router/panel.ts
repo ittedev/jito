@@ -11,15 +11,10 @@ import {
 
 export class Panel {
   private _elements: Map<string, Element> = new Map<string, Element>()
-  public panelState: {
-    pathname: string,
-    params: Record<string, string>,
-    panel: null | Component | Module | Element
-  } = {
-    pathname: '',
-    params: {},
-    panel: null,
-  }
+  public pathname: string = ''
+  public params: Record<string, string> = {}
+  public panel: null | Component | Module | Element = null
+
   public embed(component: Component, elementize?: Elementize): Middleware
   public embed(component: Promise<Component>, elementize?: Elementize): Middleware
   public embed(module: Module, elementize?: Elementize): Middleware
@@ -33,9 +28,9 @@ export class Panel {
   ): Middleware
   {
     return async (context: MiddlewareContext) => {
-      this.panelState.pathname = context.pathname
-      this.panelState.panel = await this.getElement(context.pattern, elementable, elementize)
-      this.panelState.params = context.params
+      this.pathname = context.pathname
+      this.panel = await this.getElement(context.pattern, elementable, elementize)
+      this.params = context.params
     }
   }
 
