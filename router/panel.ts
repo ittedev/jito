@@ -58,5 +58,3 @@ async function appear(component: Elementable): Promise<Component | Module | Elem
     return await component
   }
 }
-
-export let panel = new Panel()

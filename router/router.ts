@@ -12,17 +12,17 @@ export class Router {
   private _pageTupples: PageTupple[] = []
   private _history: History | MemoryHistory
 
-  constructor(history: MemoryHistory = new MemoryHistory()) {
+  constructor(history: History | MemoryHistory = new MemoryHistory()) {
     this._history = history
 
     if (history === self.history) {
       self.addEventListener('popstate', (event) => {
         let pathname = event.state && 'pathname' in event.state ? event.state.pathname : location.pathname
-        router.open(pathname).catch(() => {})
+        this.open(pathname).catch(() => {})
       })
     } else {
-      history.addEventListener('popstate', (event) => {
-        router.open(event.state.pathname).catch(() => {})
+      (history as MemoryHistory).addEventListener('popstate', (event) => {
+        this.open(event.state.pathname).catch(() => {})
       })
     }
   }
@@ -139,5 +139,3 @@ export class Router {
     }
   }
 }
-
-export let router = new Router(history as MemoryHistory)
