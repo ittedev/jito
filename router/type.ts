@@ -2,6 +2,7 @@ import {
   Component,
   Module,
 } from '../web_components/types.ts'
+import { Router } from './mod.ts'
 
 export type MiddlewareContext = {
   pathname: string,
@@ -10,6 +11,7 @@ export type MiddlewareContext = {
   props: Record<string, unknown>
   next: (props?: Record<string, unknown>) => true,
   redirect: (pathname: string) => false
+  branch: (pathname: string) => false
   block: () => false,
   call: (middleware: Middleware) => void
 }
@@ -18,7 +20,7 @@ export type Pattern = string
 export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, props?: Record<string, unknown>) => Promise<Element>
 export type Elementable = Component | Promise<Component> | Module | Promise<Module> | string | Element | Promise<Element>
 export type Params = [string, number][]
-export type Page = [Pattern, Params, Middleware[]]
+export type Page = [Pattern, Params, Middleware[], Router]
 export type Kinds = Set<number>
 export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]

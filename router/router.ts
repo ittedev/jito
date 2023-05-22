@@ -30,6 +30,7 @@ export class Router {
 
   public page(pattern: string, ...middlewares: Middleware[]): void
   {
+    let childRouter = new Router()
     let names = pattern.split('/')
     let len = names.length
     while (this._pageTupples.length < len + 1) {
@@ -43,7 +44,7 @@ export class Router {
     names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
     kinds.add(kind)
     this._pageTupples[len][0] = new Set(Array.from(kinds).sort())
-    pages.set(key, [pattern, params, middlewares])
+    pages.set(key, [pattern, params, middlewares, childRouter])
   }
 
   public section(...middlewares: Middleware[]): SetPage
@@ -53,41 +54,52 @@ export class Router {
     }
   }
 
-  public async open(
+  public open(
     pathname: string,
     props: Record<string, unknown> = {},
   ): Promise<Record<string, unknown>>
   {
-    let mutchedData = this._find(pathname)
-    if (mutchedData) {
-      let redirect = (pathname: string) => {
-        open(pathname)
-        return false
-      }
-      let block = () => false
-      for (let middleware of mutchedData.page[2]) {
-        let context: MiddlewareContext
-        context = {
-          pathname: mutchedData.pathname,
-          params: mutchedData.params,
-          pattern: mutchedData.page[0],
-          props,
-          next: (newProps?: Record<string, unknown>) => {
-            props = newProps || {}
-            return true
-          },
-          redirect: redirect as (pathname: string) => false,
-          block: block as () => false,
-          call: (middleware: Middleware) => middleware(context),
+    return new Promise((resolve, reject) => {
+      let mutchedData = this._find(pathname)
+      if (mutchedData) {
+        let redirect = (pathname: string) => {
+          open(pathname)
+          return false
         }
-        let result = await middleware(context)
-        if (result !== undefined && !result) {
-          throw Error()
+        let branch = (pathname: string) => {
+          (mutchedData as MatchedPageData).page[3].open(pathname).then(props => resolve(props))
+          return false
         }
+        let block = () => false
+        ;(async () => {
+          for (let middleware of (mutchedData as MatchedPageData).page[2]) {
+            let context: MiddlewareContext
+            context = {
+              pathname: (mutchedData as MatchedPageData).pathname,
+              params: (mutchedData as MatchedPageData).params,
+              pattern: (mutchedData as MatchedPageData).page[0],
+              props,
+              next: (newProps?: Record<string, unknown>) => {
+                props = newProps || {}
+                return true
+              },
+              redirect: redirect as (pathname: string) => false,
+              branch: branch as (pathname: string) => false,
+              block: block as () => false,
+              call: (middleware: Middleware) => middleware(context),
+            }
+            let result = await middleware(context)
+            if (result !== undefined && !result) {
+              reject()
+              throw Error()
+            }
+          }
+        })()
+          .then(() => resolve(props))
+          .catch(() => {})
       }
-      return props
-    }
-    throw Error() // not found
+      reject() // not found
+    })
   }
 
   public push(pathname: string): Promise<void>
