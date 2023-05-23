@@ -8,6 +8,7 @@ import {
   SetPage,
   MiddlewareContext,
 } from './type.ts'
+import { TimeRef } from './time_ref.ts'
 
 export class Router {
   private _pageTupples: PageTupple[] = []
@@ -44,7 +45,12 @@ export class Router {
     names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
     kinds.add(kind)
     this._pageTupples[len][0] = new Set(Array.from(kinds).sort())
-    pages.set(key, [pattern, params, middlewares, childRouter])
+    pages.set(key, [
+      pattern,
+      params,
+      middlewares,
+      new TimeRef(childRouter, undefined, (ref) => !!ref._pageTupples.length),
+    ])
   }
 
   public section(...middlewares: Middleware[]): SetPage
@@ -67,7 +73,10 @@ export class Router {
           return false
         }
         let branch = (pathname: string) => {
-          (mutchedData as MatchedPageData).page[3].open(pathname).then(props => resolve(props))
+          let childRouter = (mutchedData as MatchedPageData).page[3].deref()
+          if (childRouter) {
+            childRouter.open(pathname).then(props => resolve(props))
+          }
           return false
         }
         let block = () => false
