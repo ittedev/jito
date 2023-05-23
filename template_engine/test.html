@@ -1414,6 +1414,57 @@ describe('Template Engine', function() {
       // })
     })
 
+    describe(': @attrs', function() {
+      it('parse: @attrs', () => {
+        let template = parse('<p @attrs="value"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              onces: [{
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "value"
+                }
+              }]
+            }
+          ]
+        })
+      })
+
+      it('parse: multi @attrs', () => {
+        let template = parse('<p @attrs="value" @attrs="jito"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              onces: [
+                {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "value"
+                  }
+                },
+                {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "jito"
+                  }
+                },
+              ]
+            }
+          ]
+        })
+      })
+    })
+
     describe(': @try', function() {
       it('parse: @try', () => {
         let template = parse('<p @try></p>')
@@ -2513,6 +2564,37 @@ describe('Template Engine', function() {
                 id: "jito",
                 slot: "my-slot",
                 value: 10
+              }
+            }
+          ]
+        })
+      })
+    })
+
+    describe(': @attrs', function() {
+      it('evaluate: @attrs', () => {
+        let tree = evaluate(parse('<p @attrs="value"></p>'), [{ value: { id: 'jito' } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                id: "jito"
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @attrs multi', () => {
+        let tree = evaluate(parse('<p @attrs="value"></p>'), [{ value: { id: 'jito', count: 4 } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                id: "jito",
+                count: 4
               }
             }
           ]
