@@ -30,7 +30,7 @@ export class Panel {
     return async (context: MiddlewareContext) => {
       this.pathname = context.pathname
       this.panel = await this.getElement(context.pattern, elementable, elementize)
-      this.params = context.params
+      this.params = Object.assign({}, context.params, context.query, context.props)
     }
   }
 

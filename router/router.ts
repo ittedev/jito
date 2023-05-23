@@ -3,16 +3,18 @@ import {
   PageTupple,
   Middleware,
   MatchedPageData,
-  Params,
+  ParamHashs,
   Page,
   SetPage,
   MiddlewareContext,
+  RouteContext,
 } from './type.ts'
 import { TimeRef } from './time_ref.ts'
 
 export class Router {
   private _pageTupples: PageTupple[] = []
   private _history: History | MemoryHistory
+  private _from?: RouteContext
 
   constructor(history: History | MemoryHistory = new MemoryHistory()) {
     this._history = history
@@ -23,7 +25,7 @@ export class Router {
         this.open(pathname).catch(() => {})
       })
     } else {
-      (history as MemoryHistory).addEventListener('popstate', (event) => {
+      (history as MemoryHistory).addEventListener('popstate', event => {
         this.open(event.state.pathname).catch(() => {})
       })
     }
@@ -41,7 +43,7 @@ export class Router {
     let pages = this._pageTupples[len][1]
     let kind = names.reduce((kind, name, index) => kind | ((name[0] === ':' ? 1 : 0) << (len - 1 - index)), 0)
     let key = names.map(name => name[0] === ':' ? '*' : name).join('/')
-    let params: Params = []
+    let params: ParamHashs = []
     names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
     kinds.add(kind)
     this._pageTupples[len][0] = new Set(Array.from(kinds).sort())
@@ -49,7 +51,7 @@ export class Router {
       pattern,
       params,
       middlewares,
-      new TimeRef(childRouter, undefined, (ref) => !!ref._pageTupples.length),
+      new TimeRef(childRouter, undefined, ref => !!ref._pageTupples.length),
     ])
   }
 
@@ -63,39 +65,60 @@ export class Router {
   public open(
     pathname: string,
     props: Record<string, unknown> = {},
-  ): Promise<Record<string, unknown>>
+    query: Record<string, string> = {},
+  ): Promise<RouteContext>
+  {
+    return this._open(pathname, props, query)
+  }
+
+  private _open(
+    pathname: string,
+    props: Record<string, unknown>,
+    query: Record<string, string>,
+    parent?: RouteContext,
+  ): Promise<RouteContext>
   {
     return new Promise((resolve, reject) => {
       let mutchedData = this._find(pathname)
       if (mutchedData) {
+        let currentProps = props
+        let currentQuery = query
         let redirect = (pathname: string) => {
-          open(pathname)
+          this.open(pathname)
           return false
         }
         let branch = (pathname: string) => {
-          let childRouter = (mutchedData as MatchedPageData).page[3].deref()
+          let childRouter = (mutchedData as MatchedPageData).page[3].deref() as Router
           if (childRouter) {
-            childRouter.open(pathname).then(props => resolve(props))
+            childRouter._open(pathname, currentProps, currentQuery).then(context => resolve(clone(context)))
           }
           return false
         }
         let block = () => false
         ;(async () => {
-          for (let middleware of (mutchedData as MatchedPageData).page[2]) {
+          for (let middleware of mutchedData.page[2]) {
             let context: MiddlewareContext
             context = {
-              pathname: (mutchedData as MatchedPageData).pathname,
-              params: (mutchedData as MatchedPageData).params,
-              pattern: (mutchedData as MatchedPageData).page[0],
-              props,
-              next: (newProps?: Record<string, unknown>) => {
-                props = newProps || {}
+              parent,
+              from: this._history.state,
+              pathname: mutchedData.pathname,
+              params: mutchedData.params,
+              pattern: mutchedData.page[0],
+              props: currentProps, // todo sharrow copy
+              query: currentQuery, // todo sharrow copy
+              next: (newProps?: Record<string, unknown>, newQuery?: Record<string, string>) => {
+                if (newProps) {
+                  currentProps = newProps
+                }
+                if (newQuery) {
+                  currentQuery = newQuery
+                }
                 return true
               },
               redirect: redirect as (pathname: string) => false,
               branch: branch as (pathname: string) => false,
               block: block as () => false,
-              call: (middleware: Middleware) => middleware(context),
+              call: middleware => middleware(context),
             }
             let result = await middleware(context)
             if (result !== undefined && !result) {
@@ -104,24 +127,40 @@ export class Router {
             }
           }
         })()
-          .then(() => resolve(props))
+          .then(() => resolve({
+            parent,
+            from: this._history.state as RouteContext,
+            pathname: (mutchedData as MatchedPageData).pathname,
+            params: (mutchedData as MatchedPageData).params,
+            pattern: (mutchedData as MatchedPageData).page[0],
+            props: currentProps,
+            query: currentQuery,
+          }))
           .catch(() => {})
       }
       reject() // not found
     })
   }
 
-  public push(pathname: string): Promise<void>
+  public push(
+    pathname: string,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
+  ): Promise<void>
   {
-    return this.open(pathname).then(props => {
-      this._history.pushState({ pathname }, '', pathname)
+    return this.open(pathname, props, query).then(context => {
+      this._history.pushState(clone(context, true), '', createUrl(context))
     }).catch(() => {})
   }
 
-  public replace(pathname: string): Promise<void>
+  public replace(
+    pathname: string,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
+  ): Promise<void>
   {
-    return this.open(pathname).then(props => {
-      this._history.replaceState({ pathname }, '', pathname)
+    return this.open(pathname, props, query).then(context => {
+      this._history.replaceState(clone(context, true), '', createUrl(context))
     }).catch(() => {})
   }
 
@@ -145,11 +184,32 @@ export class Router {
       if (pages.has(key)) {
         let page = pages.get(key) as Page
         let params: Record<string, string> = {}
-        page[1].forEach(tupple => {
-          params[tupple[0]] = names[tupple[1]]
+        page[1].forEach(paramHash => {
+          params[paramHash[0]] = names[paramHash[1]]
         })
         return { pathname, params, page }
       }
     }
   }
+}
+
+function clone(context: RouteContext, removeFrom = false): RouteContext {
+  return {
+    parent: context.parent ? clone(context.parent, removeFrom) : undefined,
+    from: !removeFrom && context.from ? clone(context.from, removeFrom) : undefined,
+    pathname: context.pathname,
+    params: context.params, // todo sharrow copy
+    pattern: context.pattern,
+    props: context.props, // todo sharrow copy
+    query: context.query, // todo sharrow copy
+  }
+}
+
+function createUrl(context: RouteContext): string {
+  let params = new URLSearchParams()
+  for (let key in context.query) {
+    params.append(key, context.query[key])
+  }
+  let queryString = params.toString()
+  return context.pathname + (queryString ? '?' + queryString : '')
 }
