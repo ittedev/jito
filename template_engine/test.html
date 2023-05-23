@@ -1414,16 +1414,16 @@ describe('Template Engine', function() {
       // })
     })
 
-    describe(': @attrs', function() {
-      it('parse: @attrs', () => {
-        let template = parse('<p @attrs="value"></p>')
+    describe(': @chunk', function() {
+      it('parse: @chunk', () => {
+        let template = parse('<p @chunk="value"></p>')
         equal(template, {
           type: 'tree',
           children: [
             {
               tag: "p",
               type: "element",
-              onces: [{
+              chunks: [{
                 type: "get",
                 value: {
                   type: "variable",
@@ -1435,15 +1435,15 @@ describe('Template Engine', function() {
         })
       })
 
-      it('parse: multi @attrs', () => {
-        let template = parse('<p @attrs="value" @attrs="jito"></p>')
+      it('parse: multi @chunk', () => {
+        let template = parse('<p @chunk="value" @chunk="jito"></p>')
         equal(template, {
           type: 'tree',
           children: [
             {
               tag: "p",
               type: "element",
-              onces: [
+              chunks: [
                 {
                   type: "get",
                   value: {
@@ -2571,9 +2571,9 @@ describe('Template Engine', function() {
       })
     })
 
-    describe(': @attrs', function() {
-      it('evaluate: @attrs', () => {
-        let tree = evaluate(parse('<p @attrs="value"></p>'), [{ value: { id: 'jito' } }])
+    describe(': @chunk', function() {
+      it('evaluate: @chunk', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { id: 'jito' } }])
         equal(tree, {
           children: [
             {
@@ -2586,8 +2586,8 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: @attrs multi', () => {
-        let tree = evaluate(parse('<p @attrs="value"></p>'), [{ value: { id: 'jito', count: 4 } }])
+      it('evaluate: @chunk multi', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { id: 'jito', count: 4 } }])
         equal(tree, {
           children: [
             {

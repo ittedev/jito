@@ -259,11 +259,11 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
           }
 
           case '@': {
-            if (name === '@attrs') {
-              if (!template.onces) {
-                template.onces = []
+            if (name === '@chunk') {
+              if (!template.chunks) {
+                template.chunks = []
               }
-              return template.onces.push(expression(value))
+              return template.chunks.push(expression(value))
             }
           }
         }
