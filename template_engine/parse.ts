@@ -257,6 +257,15 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
             }
             return template.on[type].push(handler)
           }
+
+          case '@': {
+            if (name === '@attrs') {
+              if (!template.onces) {
+                template.onces = []
+              }
+              return template.onces.push(expression(value))
+            }
+          }
         }
       })
     }

@@ -162,6 +162,7 @@ export interface ElementTemplate {
   part?: Array<Array<string> | FlagsTemplate>
   attrs?: Record<string, unknown | Template>
   bools?: Record<string, unknown | Template>
+  onces?: Array<Template>
   style?: string | JoinTemplate
   on?: Record<string, Array<HandlerTemplate>>
   children?: Array<Template | string>
@@ -178,6 +179,7 @@ export interface CustomElementTemplate {
   part?: Array<Array<string> | FlagsTemplate>
   attrs?: Record<string, unknown | Template>
   bools?: Record<string, unknown | Template>
+  onces?: Array<Template>
   style?: string | JoinTemplate
   on?: Record<string, Array<HandlerTemplate>>
   children?: Array<Template | string>
@@ -189,6 +191,7 @@ export interface GroupTemplate {
   part: undefined
   attrs?: Record<string, unknown | Template>
   bools: undefined
+  onces: undefined
   style: undefined
   on: undefined
   children?: Array<Template | string>

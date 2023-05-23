@@ -474,6 +474,20 @@ export function evaluateAttrs(
     ve.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack, cache) as string
   }
 
+  if (template.onces) {
+    template.onces.forEach(once => {
+      let result = evaluate(once, stack, cache)
+      if (typeof result === 'object' && result !== null && Object.getPrototypeOf(result) === Object.prototype) {
+        for (let key in result) {
+          if (!ve.attrs) {
+            ve.attrs = {}
+          }
+          ve.attrs[key] = (result as Record<string, unknown>)[key]
+        }
+      }
+    })
+  }
+
   if (template.bools) {
     for (let key in template.bools) {
       if (!key.startsWith('@')) { // Remove syntax attributes
