@@ -2572,7 +2572,91 @@ describe('Template Engine', function() {
     })
 
     describe(': @chunk', function() {
-      it('evaluate: @chunk', () => {
+      it('evaluate: @chunk style', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { style: 'display: block' } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: 'display: block'
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @chunk class', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { class: 'btn' } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ['btn']
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @chunk class array', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { class: ['btn', 'btn-sm'] } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ['btn', 'btn-sm']
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @chunk class object', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { class: { btn: true, 'btn-sm': false } } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ['btn']
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @chunk part', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { part: 'btn' } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ['btn']
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @chunk part array', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { part: ['btn', 'btn-sm'] } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ['btn', 'btn-sm']
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @chunk part object', () => {
+        let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { part: { btn: true, 'btn-sm': false } } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ['btn']
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @chunk attr', () => {
         let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { id: 'jito' } }])
         equal(tree, {
           children: [
@@ -2586,8 +2670,23 @@ describe('Template Engine', function() {
         })
       })
 
-      it('evaluate: @chunk multi', () => {
+      it('evaluate: @chunk multi attr', () => {
         let tree = evaluate(parse('<p @chunk="value"></p>'), [{ value: { id: 'jito', count: 4 } }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                id: "jito",
+                count: 4
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: @chunk multi chunk', () => {
+        let tree = evaluate(parse('<p @chunk="chunk1" @chunk="chunk2"></p>'), [{ chunk1: { id: 'jito' }, chunk2: { count: 4 } }])
         equal(tree, {
           children: [
             {
