@@ -110,7 +110,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
               redirect,
               branch,
               block,
-              call: (middleware: Middleware) => middleware(context),
+              call: async (middleware: Middleware) => await middleware(context),
             }, contextPart)
             if (await middleware(context) === false) {
               resultType = -1
@@ -166,6 +166,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
 
   let back = () => history.back()
   let forward = () => history.forward()
+  let go = (delta: number) => history.go(delta)
 
   let router: Router = {
     pathname: null,
@@ -184,6 +185,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     replace,
     back,
     forward,
+    go,
     embed,
   }
 

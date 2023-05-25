@@ -20,6 +20,7 @@ export interface CoreRouter extends PageContext {
   replace: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
   back: () => void
   forward: () => void
+  go: (delta: number) => void
 }
 
 export interface Panel {
