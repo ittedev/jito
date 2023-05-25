@@ -46,15 +46,105 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     return child
   }
 
+  let section = (...middlewares: Middleware[]) =>
+    (pattern: string, ...subMiddlewares: Middleware[]) =>
+      page(pattern, ...middlewares, ...subMiddlewares)
+
+
   let open = (
     pathname: string,
     props?: Record<string, unknown>,
     query?: Record<string, string>,
-  ) => _open(pathname, props || {}, query || {})
-
-  let section = (...middlewares: Middleware[]) =>
-    (pattern: string, ...subMiddlewares: Middleware[]) =>
-      page(pattern, ...middlewares, ...subMiddlewares)
+    _unused?: unknown,
+    parent?: RouteContext,
+  ): Promise<RouteContext> => {
+    return new Promise<RouteContext>((resolve, reject) => {
+      let mutchedData = find(pathname)
+      if (mutchedData) {
+        let contextPart = {
+          parent,
+          from: history.state,
+          pathname: mutchedData.pathname,
+          params: mutchedData.params,
+          pattern: mutchedData.page[0],
+        }
+        let currentProps = props || {}
+        let currentQuery = query || {}
+        ;(async () => {
+          let resultType = 1 // 1:success, 0: outer, -1:fail
+          let redirect = (pathname: string) => {
+            open(pathname, currentProps, currentQuery).then(resolve).catch(reject)
+            resultType = 0
+          }
+          let branch = (pathname: string) => {
+            let child = (mutchedData as MatchedPageData).page[3].deref() as Router
+            if (child) {
+              child.open(
+                pathname,
+                currentProps,
+                currentQuery,
+                null,
+                Object.assign({
+                  props: currentProps, // todo sharrow copy
+                  query: currentQuery, // todo sharrow copy
+                }, contextPart)).then(resolve).catch(reject)
+            }
+            resultType = 0
+          }
+          let block = () => {
+            resultType = -1
+          }
+          let next = (props?: Record<string, unknown>, query?: Record<string, string>) => {
+            if (props) {
+              currentProps = props
+            }
+            if (query) {
+              currentQuery = query
+            }
+          }
+          for (let middleware of mutchedData.page[2]) {
+            let context: MiddlewareContext = Object.assign({
+              props: currentProps, // todo sharrow copy
+              query: currentQuery, // todo sharrow copy
+              next,
+              redirect,
+              branch,
+              block,
+              call: (middleware: Middleware) => middleware(context),
+            }, contextPart)
+            if (await middleware(context) === false) {
+              resultType = -1
+            }
+            if (resultType < 1) {
+              break
+            }
+          }
+          if (resultType === 1) {
+            resolve({
+              parent,
+              from: history.state as RouteContext,
+              pathname: (mutchedData as MatchedPageData).pathname,
+              params: (mutchedData as MatchedPageData).params,
+              pattern: (mutchedData as MatchedPageData).page[0],
+              props: currentProps,
+              query: currentQuery,
+            })
+          } else if (resultType === -1) {
+            reject(Error('blocked'))
+          }
+        })()
+      } else {
+        reject(Error('not found'))
+      }
+    }).then(context => {
+      router.pathname = context.pathname
+      router.pattern = context.pattern
+      router.params = context.params // todo sharrow copy
+      router.props = context.props // todo sharrow copy
+      router.query = context.query // todo sharrow copy
+      return context
+    })
+  }
 
   let push = (
     pathname: string,
@@ -113,91 +203,6 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
         return { pathname, params, page }
       }
     }
-  }
-
-  function _open(
-    pathname: string,
-    props: Record<string, unknown>,
-    query: Record<string, string>,
-    parent?: RouteContext,
-  ): Promise<RouteContext>
-  {
-    return new Promise<RouteContext>((resolve, reject) => {
-      let mutchedData = find(pathname)
-      if (mutchedData) {
-        let currentProps = props
-        let currentQuery = query
-        ;(async () => {
-          let resultType = 1 // 1:success, 0: outer, -1:fail
-          let redirect = (pathname: string) => {
-            open(pathname, currentProps, currentQuery).then(resolve).catch(reject)
-            resultType = 0
-          }
-          let branch = (pathname: string) => {
-            let child = (mutchedData as MatchedPageData).page[3].deref() as Router
-            if (child) {
-              child.open(pathname, currentProps, currentQuery).then(resolve).catch(reject)
-            }
-            resultType = 0
-          }
-          let block = () => {
-            resultType = -1
-          }
-          let next = (props?: Record<string, unknown>, query?: Record<string, string>) => {
-            if (props) {
-              currentProps = props
-            }
-            if (query) {
-              currentQuery = query
-            }
-          }
-          for (let middleware of mutchedData.page[2]) {
-            let context: MiddlewareContext = {
-              parent,
-              from: history.state,
-              pathname: mutchedData.pathname,
-              params: mutchedData.params,
-              pattern: mutchedData.page[0],
-              props: currentProps, // todo sharrow copy
-              query: currentQuery, // todo sharrow copy
-              next,
-              redirect,
-              branch,
-              block,
-              call: middleware => middleware(context),
-            }
-            if (await middleware(context) === false) {
-              resultType = -1
-            }
-            if (resultType < 1) {
-              break
-            }
-          }
-          if (resultType === 1) {
-            resolve({
-              parent,
-              from: history.state as RouteContext,
-              pathname: (mutchedData as MatchedPageData).pathname,
-              params: (mutchedData as MatchedPageData).params,
-              pattern: (mutchedData as MatchedPageData).page[0],
-              props: currentProps,
-              query: currentQuery,
-            })
-          } else if (resultType === -1) {
-            reject(Error('blocked'))
-          }
-        })()
-      } else {
-        reject(Error('not found'))
-      }
-    }).then(context => {
-      router.pathname = context.pathname
-      router.pattern = context.pattern
-      router.params = context.params // todo sharrow copy
-      router.props = context.props // todo sharrow copy
-      router.query = context.query // todo sharrow copy
-      return context
-    })
   }
 
   async function getElement(

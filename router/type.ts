@@ -15,7 +15,7 @@ export interface CoreRouter extends PageContext {
   size: number,
   page: (pattern: string, ...middlewares: Middleware[]) => Router
   section: (...middlewares: Middleware[]) => (pattern: string, ...middlewares: Middleware[]) => Router
-  open: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<RouteContext>
+  open: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>, unused?: unknown, parent?: RouteContext) => Promise<RouteContext>
   push: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
   replace: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
   back: () => void

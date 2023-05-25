@@ -638,6 +638,107 @@ describe('Router', function() {
         equal(router.query, {})
       })
     })
+
+    describe('branch():', function() {
+      it('branch', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch }) => branch('c'))
+        let { page: childPage } = childRouter
+        childPage('b')
+        childPage('c')
+
+        let result = ''
+        let context = {}
+        await open('a')
+          .then((c) => {
+            context = c
+            result = 'success'
+          })
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'c')
+        equal(router.pattern, 'c')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+        equal(context.parent.pathname, 'a')
+        equal(context.parent.pattern, 'a')
+      })
+
+      it('branch fail', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch }) => branch('c'))
+        let { page: childPage } = childRouter
+        childPage('b')
+
+        let result = ''
+        let context = {}
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('branch has props and query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch }) => branch('b'))
+        let { page: childPage } = childRouter
+        childPage('b')
+
+        let result = ''
+        let context = {}
+        await open('a', { name: 'Beako' }, { name: 'Jito' })
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'b')
+        equal(router.pattern, 'b')
+        equal(router.params, {})
+        equal(router.props, { name: 'Beako' })
+        equal(router.query, { name: 'Jito' })
+      })
+
+      it('multi branch', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch }) => branch('b'))
+        let { page: childPage } = childRouter
+        let grandchildRouter = childPage('b', ({ branch }) => branch('c'))
+        let { page: grandchildPage } = grandchildRouter
+        grandchildPage('c')
+
+        let result = ''
+        let context = {}
+        await open('a')
+          .then((c) => {
+            context = c
+            result = 'success'
+          })
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'c')
+        equal(router.pattern, 'c')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+        equal(context.parent.pathname, 'b')
+        equal(context.parent.pattern, 'b')
+        equal(context.parent.parent.pathname, 'a')
+        equal(context.parent.parent.pattern, 'a')
+      })
+    })
   })
 })
 
