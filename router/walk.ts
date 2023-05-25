@@ -21,6 +21,81 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   let pageTupples: PageTupple[] = []
   let elements: Map<string, Element> = new Map<string, Element>()
 
+  let page = (pattern: string, ...middlewares: Middleware[]) => {
+    let child = walk()
+    let names = pattern.split('/')
+    let len = names.length
+    while (pageTupples.length < len + 1) {
+      pageTupples.push([new Set(), new Map()])
+    }
+    let kinds = pageTupples[len][0]
+    let pages = pageTupples[len][1]
+    let kind = names.reduce((kind, name, index) => kind | ((name[0] === ':' ? 1 : 0) << (len - 1 - index)), 0)
+    let key = names.map(name => name[0] === ':' ? '*' : name).join('/')
+    let params: ParamHashs = []
+    names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
+    kinds.add(kind)
+    pageTupples[len][0] = new Set(Array.from(kinds).sort())
+    pages.set(key, [
+      pattern,
+      params,
+      middlewares,
+      new TimeRef(child, undefined, ref => !!ref.size),
+    ])
+    return child
+  }
+
+  let open = (
+    pathname: string,
+    props: Record<string, unknown> = {},
+    query: Record<string, string> = {},
+  ) => _open(pathname, props, query)
+
+  let section = (...middlewares: Middleware[]) =>
+    (pattern: string, ...subMiddlewares: Middleware[]) =>
+      page(pattern, ...middlewares, ...subMiddlewares)
+
+  let push = (
+    pathname: string,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
+  ) =>
+    open(pathname, props, query).then(context => {
+      history.pushState(clone(context, true), '', createUrl(context))
+    }).catch(() => {})
+
+  let replace = (
+    pathname: string,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
+  ) =>
+    open(pathname, props, query).then(context => {
+      history.replaceState(clone(context, true), '', createUrl(context))
+    }).catch(() => {})
+
+  let back = () => history.back()
+  let forward = () => history.forward()
+
+  let router: Router = {
+    pathname: null,
+    pattern: null,
+    params: {},
+    props: {},
+    query: {},
+    panel: null,
+    get size() {
+      return pageTupples.reduce((count, pageTupple) => count + pageTupple[1].size, 0)
+    },
+    page,
+    section,
+    open,
+    push,
+    replace,
+    back,
+    forward,
+    embed,
+  }
+
   function find(pathname: string): MatchedPageData | undefined {
     let names = pathname.split('/')
     let len = names.length
@@ -46,7 +121,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     parent?: RouteContext,
   ): Promise<RouteContext>
   {
-    return new Promise((resolve, reject) => {
+    return new Promise<RouteContext>((resolve, reject) => {
       let mutchedData = find(pathname)
       if (mutchedData) {
         let currentProps = props
@@ -107,6 +182,13 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
       } else {
         reject(Error('not found'))
       }
+    }).then(context => {
+      router.pathname = context.pathname
+      router.pattern = context.pattern
+      router.params = context.params // todo sharrow copy
+      router.props = context.props // todo sharrow copy
+      router.query = context.query // todo sharrow copy
+      return context
     })
   }
 
@@ -126,87 +208,13 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     }
   }
 
-  let page = (pattern: string, ...middlewares: Middleware[]) => {
-    let child = walk()
-    let names = pattern.split('/')
-    let len = names.length
-    while (pageTupples.length < len + 1) {
-      pageTupples.push([new Set(), new Map()])
-    }
-    let kinds = pageTupples[len][0]
-    let pages = pageTupples[len][1]
-    let kind = names.reduce((kind, name, index) => kind | ((name[0] === ':' ? 1 : 0) << (len - 1 - index)), 0)
-    let key = names.map(name => name[0] === ':' ? '*' : name).join('/')
-    let params: ParamHashs = []
-    names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
-    kinds.add(kind)
-    pageTupples[len][0] = new Set(Array.from(kinds).sort())
-    pages.set(key, [
-      pattern,
-      params,
-      middlewares,
-      new TimeRef(child, undefined, ref => !!ref.size),
-    ])
-    return child
-  }
-
-  let open = (
-    pathname: string,
-    props: Record<string, unknown> = {},
-    query: Record<string, string> = {},
-  ) => _open(pathname, props, query)
-
-  let section = (...middlewares: Middleware[]) =>
-    (pattern: string, ...subMiddlewares: Middleware[]) =>
-      page(pattern, ...middlewares, ...subMiddlewares)
-
-  let push = (
-    pathname: string,
-    props?: Record<string, unknown>,
-    query?: Record<string, string>,
-  ) =>
-    open(pathname, props, query).then(context => {
-      history.pushState(clone(context, true), '', createUrl(context))
-    }).catch(() => {})
-
-  let replace = (
-    pathname: string,
-    props?: Record<string, unknown>,
-    query?: Record<string, string>,
-  ) =>
-    open(pathname, props, query).then(context => {
-      history.replaceState(clone(context, true), '', createUrl(context))
-    }).catch(() => {})
-
-  let back = () => history.back()
-  let forward = () => history.forward()
-
-  let router: Router = {
-    pathname: '',
-    params: {},
-    panel: null,
-    get size() {
-      return pageTupples.reduce((count, pageTupple) => count + pageTupple[1].size, 0)
-    },
-    page,
-    section,
-    open,
-    push,
-    replace,
-    back,
-    forward,
-    embed,
-  }
-
   function embed(
     elementable: Elementable,
     elementize?: Elementize,
   ): Middleware
   {
     return async (context: MiddlewareContext) => {
-      router.pathname = context.pathname
       router.panel = await getElement(context.pattern, elementable, elementize)
-      router.params = Object.assign({}, context.params, context.query, context.props)
     }
   }
 

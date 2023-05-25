@@ -3,7 +3,15 @@ import {
   Module,
 } from '../web_components/types.ts'
 
-export interface CoreRouter {
+export interface PageContext {
+  pathname: string | null
+  pattern: string | null
+  params: Record<string, string>
+  props: Record<string, unknown>
+  query: Record<string, string>
+}
+
+export interface CoreRouter extends PageContext {
   size: number,
   page: (pattern: string, ...middlewares: Middleware[]) => Router
   section: (...middlewares: Middleware[]) => (pattern: string, ...middlewares: Middleware[]) => Router
@@ -15,8 +23,6 @@ export interface CoreRouter {
 }
 
 export interface Panel {
-  pathname: string
-  params: Record<string, string>
   panel: null | Component | Module | Element
   embed:
     ((component: Component, elementize?: Elementize) => Middleware) |
@@ -30,17 +36,14 @@ export interface Panel {
 
 export interface Router extends CoreRouter, Panel {}
 
-export interface RouteContext {
+export interface RouteContext extends PageContext {
   parent: RouteContext | undefined
   from: RouteContext | undefined
-  pathname: string
-  pattern: string
-  params: Record<string, string>
-  props: Record<string, unknown>
-  query: Record<string, string>
 }
 
 export interface MiddlewareContext extends RouteContext {
+  pathname: string
+  pattern: string
   next: (props?: Record<string, unknown>) => true
   redirect: (pathname: string) => false
   branch: (pathname: string) => false

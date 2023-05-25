@@ -192,6 +192,32 @@ describe('Router', function() {
       })
     })
   })
+
+  describe('walk()', function() {
+    describe('new:', function() {
+      it('history', () => {
+        let router = walk(history)
+        equal(router.size, 0)
+        equal(router.panel, null)
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+      it('MemoryHistory', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        equal(router.size, 0)
+        equal(router.panel, null)
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+    })
+  })
 })
 
 mocha.run()
