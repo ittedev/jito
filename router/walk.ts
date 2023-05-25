@@ -72,17 +72,17 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
         let currentQuery = query || {}
         ;(async () => {
           let resultType = 1 // 1:success, 0: outer, -1:fail
-          let redirect = (pathname: string) => {
-            open(pathname, currentProps, currentQuery).then(resolve).catch(reject)
+          let redirect = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
+            open(pathname, props, query).then(resolve).catch(reject)
             resultType = 0
           }
-          let branch = (pathname: string) => {
+          let branch = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
             let child = (mutchedData as MatchedPageData).page[3].deref() as Router
             if (child) {
               child.open(
                 pathname,
-                currentProps,
-                currentQuery,
+                props,
+                query,
                 null,
                 Object.assign({
                   props: currentProps, // todo sharrow copy
