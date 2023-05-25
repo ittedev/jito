@@ -217,6 +217,49 @@ describe('Router', function() {
         equal(router.query, {})
       })
     })
+
+    describe('page():', function() {
+      it('page single string', () => {
+        let router = walk(history)
+        let { page } = router
+        page('a')
+
+        equal(router.size, 1)
+      })
+
+      it('page empty string', () => {
+        let router = walk(history)
+        let { page } = router
+        page('')
+
+        equal(router.size, 1)
+      })
+
+      it('page slashed string', () => {
+        let router = walk(history)
+        let { page } = router
+        page('a/b')
+
+        equal(router.size, 1)
+      })
+
+      it('page has a param', () => {
+        let router = walk(history)
+        let { page } = router
+        page(':param1/b')
+
+        equal(router.size, 1)
+      })
+
+      it('multi page', () => {
+        let router = walk(history)
+        let { page } = router
+        page('a/b')
+        page(':param1/b')
+
+        equal(router.size, 2)
+      })
+    })
   })
 })
 
