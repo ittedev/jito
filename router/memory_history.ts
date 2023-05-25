@@ -20,21 +20,23 @@ export class MemoryHistory implements History {
   }
 
   public go(delta: number) {
-    if (delta !== 0) {
-      let index = Math.max(Math.min(this._currentIndex + delta, 0), this._historyStack.length - 1)
-      if (this._currentIndex !== index) {
+    setTimeout(() => {
+      if (delta !== 0) {
+        let index = Math.min(Math.max(this._currentIndex + delta, 0), this._historyStack.length - 1)
+        if (this._currentIndex !== index) {
+          this._dispatchEvent({
+            type: 'popstate',
+            state: this._historyStack[index]
+          } as MemoryHistoryStateEvent)
+        }
+        this._currentIndex = index
+      } else if (this._historyStack.length) {
         this._dispatchEvent({
-          type: 'popstate',
-          state: this._historyStack[index]
+          type: 'reload',
+          state: this._historyStack[this._currentIndex]
         } as MemoryHistoryStateEvent)
       }
-      this._currentIndex = index
-    } else if (this._historyStack.length) {
-      this._dispatchEvent({
-        type: 'reload',
-        state: this._historyStack[this._currentIndex]
-      } as MemoryHistoryStateEvent)
-    }
+    }, 1)
   }
 
   public back()
