@@ -125,22 +125,32 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
       if (mutchedData) {
         let currentProps = props
         let currentQuery = query
-        let redirect = (pathname: string) => {
-          open(pathname, { props: currentProps, query: currentQuery })
-          return false
-        }
-        let branch = (pathname: string) => {
-          let child = (mutchedData as MatchedPageData).page[3].deref() as Router
-          if (child) {
-            child.open(pathname, { props: currentProps, query: currentQuery }).then(context => resolve(clone(context)))
-          }
-          return false
-        }
-        let block = () => false
         ;(async () => {
+          let resultType = 1 // 1:success, 0: outer, -1:fail
+          let redirect = (pathname: string) => {
+            open(pathname, { props: currentProps, query: currentQuery }).then(resolve).catch(reject)
+            resultType = 0
+          }
+          let branch = (pathname: string) => {
+            let child = (mutchedData as MatchedPageData).page[3].deref() as Router
+            if (child) {
+              child.open(pathname, { props: currentProps, query: currentQuery }).then(resolve).catch(reject)
+            }
+            resultType = 0
+          }
+          let block = () => {
+            resultType = -1
+          }
+          let next = (options: NextOptions = {}) => {
+            if (options.props) {
+              currentProps = options.props
+            }
+            if (options.query) {
+              currentQuery = options.query
+            }
+          }
           for (let middleware of mutchedData.page[2]) {
-            let context: MiddlewareContext
-            context = {
+            let context: MiddlewareContext = {
               parent,
               from: history.state,
               pathname: mutchedData.pathname,
@@ -148,36 +158,33 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
               pattern: mutchedData.page[0],
               props: currentProps, // todo sharrow copy
               query: currentQuery, // todo sharrow copy
-              next: (options: NextOptions = {}) => {
-                if (options.props) {
-                  currentProps = options.props
-                }
-                if (options.query) {
-                  currentQuery = options.query
-                }
-                return true
-              },
-              redirect: redirect as (pathname: string) => false,
-              branch: branch as (pathname: string) => false,
-              block: block as () => false,
+              next,
+              redirect,
+              branch,
+              block,
               call: middleware => middleware(context),
             }
-            let result = await middleware(context)
-            if (result !== undefined && !result) {
-              reject(Error('blocked'))
+            if (await middleware(context) === false) {
+              resultType = -1
+            }
+            if (resultType < 1) {
+              break
             }
           }
+          if (resultType === 1) {
+            resolve({
+              parent,
+              from: history.state as RouteContext,
+              pathname: (mutchedData as MatchedPageData).pathname,
+              params: (mutchedData as MatchedPageData).params,
+              pattern: (mutchedData as MatchedPageData).page[0],
+              props: currentProps,
+              query: currentQuery,
+            })
+          } else if (resultType === -1) {
+            reject(Error('blocked'))
+          }
         })()
-          .then(() => resolve({
-            parent,
-            from: history.state as RouteContext,
-            pathname: (mutchedData as MatchedPageData).pathname,
-            params: (mutchedData as MatchedPageData).params,
-            pattern: (mutchedData as MatchedPageData).page[0],
-            props: currentProps,
-            query: currentQuery,
-          }))
-          .catch(() => reject(Error('not found')))
       } else {
         reject(Error('not found'))
       }

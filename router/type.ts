@@ -49,10 +49,10 @@ export interface RouteContext extends PageContext {
 export interface MiddlewareContext extends RouteContext {
   pathname: string
   pattern: string
-  next: (options?: NextOptions) => true
-  redirect: (pathname: string) => false
-  branch: (pathname: string) => false
-  block: () => false,
+  next: (options?: NextOptions) => void
+  redirect: (pathname: string) => void
+  branch: (pathname: string) => void
+  block: () => void,
   call: (middleware: Middleware) => void
 }
 
