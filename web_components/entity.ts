@@ -201,7 +201,7 @@ export class Entity
     return watch(data, keyOrCallback as string, isExecuteOrcallback as TargetCallback, isExecute)
   }
 
-  public async take<T>(options: TakeOptions): Promise<T>
+  public async take<T>(options: TakeOptions = {}): Promise<T>
   {
     let keys = Object.entries(options)
       .filter(entry => typeof entry[1] === 'object' && entry[1] !== null && !('default' in entry[1]) || (typeof entry[1] === 'boolean' && entry[1]))
