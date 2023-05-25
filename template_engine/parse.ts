@@ -257,6 +257,15 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
             }
             return template.on[type].push(handler)
           }
+
+          case '@': {
+            if (name === '@chunk') {
+              if (!template.chunks) {
+                template.chunks = []
+              }
+              return template.chunks.push(expression(value))
+            }
+          }
         }
       })
     }

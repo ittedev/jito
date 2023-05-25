@@ -164,6 +164,7 @@ export interface ElementTemplate {
   bools?: Record<string, unknown | Template>
   style?: string | JoinTemplate
   on?: Record<string, Array<HandlerTemplate>>
+  chunks?: Array<Template>
   children?: Array<Template | string>
 }
 
@@ -180,6 +181,7 @@ export interface CustomElementTemplate {
   bools?: Record<string, unknown | Template>
   style?: string | JoinTemplate
   on?: Record<string, Array<HandlerTemplate>>
+  chunks?: Array<Template>
   children?: Array<Template | string>
 }
 
@@ -191,6 +193,7 @@ export interface GroupTemplate {
   bools: undefined
   style: undefined
   on: undefined
+  chunks: undefined
   children?: Array<Template | string>
 }
 
