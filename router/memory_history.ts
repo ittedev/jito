@@ -13,7 +13,7 @@ export class MemoryHistory implements History {
 
   public get state(): any {
     if (this._historyStack.length) {
-      return this._historyStack[this._currentIndex]
+      return this._historyStack[this._currentIndex][1]
     } else {
       return null
     }

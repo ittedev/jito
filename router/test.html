@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>virtual_dom/load.test.js</title>
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<div id="mocha"></div>
+<script src="https://unpkg.com/chai/chai.js"></script>
+<script>
+var i = 0
+var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
+</script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
+<script type="module">
+import {
+  MemoryHistory,
+  walk,
+} from '../router.js'
+
+mocha.setup('bdd')
+
+describe('Router', function() {
+  describe('MemoryHistory', function() {
+    describe('pushState():', function() {
+      it('pushState state', () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        equal(history.state, 100)
+      })
+      it('pushState states', () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abc')
+        equal(history.state, 200)
+      })
+    })
+  })
+})
+
+mocha.run()
+</script>
