@@ -90,8 +90,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
             }
             let result = await middleware(context)
             if (result !== undefined && !result) {
-              reject()
-              throw Error()
+              reject(Error('blocked'))
             }
           }
         })()
@@ -104,9 +103,10 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
             props: currentProps,
             query: currentQuery,
           }))
-          .catch(() => {})
+          .catch(() => reject(Error('not found')))
+      } else {
+        reject(Error('not found'))
       }
-      reject() // not found
     })
   }
 
