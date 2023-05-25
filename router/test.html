@@ -419,7 +419,7 @@ describe('Router', function() {
         page('a')
 
         let result = ''
-        await open('a', { props: { name: 'Jito' } })
+        await open('a', { name: 'Jito' })
           .then(() => result = 'success')
           .catch(() => result = 'fail')
         equal(result, 'success')
@@ -437,7 +437,7 @@ describe('Router', function() {
         page('a')
 
         let result = ''
-        await open('a', { query: { name: 'Jito' } })
+        await open('a', null, { name: 'Jito' })
           .then(() => result = 'success')
           .catch(() => result = 'fail')
         equal(result, 'success')
@@ -490,7 +490,7 @@ describe('Router', function() {
         let history = new MemoryHistory()
         let router = walk(history)
         let { page, open } = router
-        page('a', ({ next }) => next({ props: { name: 'Jito' } }))
+        page('a', ({ next }) => next({ name: 'Jito' }))
 
         let result = ''
         await open('a')
@@ -508,7 +508,7 @@ describe('Router', function() {
         let history = new MemoryHistory()
         let router = walk(history)
         let { page, open } = router
-        page('a', ({ next }) => next({ query: { name: 'Jito' } }))
+        page('a', ({ next }) => next(null, { name: 'Jito' }))
 
         let result = ''
         await open('a')
@@ -607,7 +607,7 @@ describe('Router', function() {
         page('b')
 
         let result = ''
-        await open('a', { props: { name: 'Beako' }, query: { name: 'Jito' } })
+        await open('a', { name: 'Beako' }, { name: 'Jito' })
           .then(() => result = 'success')
           .catch(() => result = 'fail')
         equal(result, 'success')

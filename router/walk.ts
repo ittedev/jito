@@ -13,7 +13,6 @@ import {
   Elementize,
   Middleware,
   MiddlewareContext,
-  NextOptions,
   ValueRef,
 } from './type.ts'
 import { MemoryHistory } from './memory_history.ts'
@@ -49,8 +48,9 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
 
   let open = (
     pathname: string,
-    options: NextOptions = {},
-  ) => _open(pathname, options.props || {}, options.query || {})
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
+  ) => _open(pathname, props || {}, query || {})
 
   let section = (...middlewares: Middleware[]) =>
     (pattern: string, ...subMiddlewares: Middleware[]) =>
@@ -58,17 +58,19 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
 
   let push = (
     pathname: string,
-    options?: NextOptions,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
   ) =>
-    open(pathname, options).then(context => {
+    open(pathname, props, query).then(context => {
       history.pushState(clone(context, true), '', createUrl(context))
     }).catch(() => {})
 
   let replace = (
     pathname: string,
-    options?: NextOptions,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
   ) =>
-    open(pathname, options).then(context => {
+    open(pathname, props, query).then(context => {
       history.replaceState(clone(context, true), '', createUrl(context))
     }).catch(() => {})
 
@@ -128,25 +130,25 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
         ;(async () => {
           let resultType = 1 // 1:success, 0: outer, -1:fail
           let redirect = (pathname: string) => {
-            open(pathname, { props: currentProps, query: currentQuery }).then(resolve).catch(reject)
+            open(pathname, currentProps, currentQuery).then(resolve).catch(reject)
             resultType = 0
           }
           let branch = (pathname: string) => {
             let child = (mutchedData as MatchedPageData).page[3].deref() as Router
             if (child) {
-              child.open(pathname, { props: currentProps, query: currentQuery }).then(resolve).catch(reject)
+              child.open(pathname, currentProps, currentQuery).then(resolve).catch(reject)
             }
             resultType = 0
           }
           let block = () => {
             resultType = -1
           }
-          let next = (options: NextOptions = {}) => {
-            if (options.props) {
-              currentProps = options.props
+          let next = (props?: Record<string, unknown>, query?: Record<string, string>) => {
+            if (props) {
+              currentProps = props
             }
-            if (options.query) {
-              currentQuery = options.query
+            if (query) {
+              currentQuery = query
             }
           }
           for (let middleware of mutchedData.page[2]) {

@@ -46,7 +46,7 @@ export interface RouteContext extends PageContext {
 export interface MiddlewareContext extends RouteContext {
   pathname: string
   pattern: string
-  next: (options?: NextOptions) => true
+  next: (props?: Record<string, unknown>, query?: Record<string, string>) => true
   redirect: (pathname: string) => false
   branch: (pathname: string) => false
   block: () => false,
@@ -59,9 +59,9 @@ export interface CoreRouter extends PageContext {
   size: number,
   page: (pattern: string, ...middlewares: Middleware[]) => Router
   section: (...middlewares: Middleware[]) => (pattern: string, ...middlewares: Middleware[]) => Router
-  open: (pathname: string, options?: NextOptions) => Promise<RouteContext>
-  push: (pathname: string, options?: NextOptions) => Promise<void>
-  replace: (pathname: string, options?: NextOptions) => Promise<void>
+  open: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<RouteContext>
+  push: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
+  replace: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
   back: () => void
   forward: () => void
 }
