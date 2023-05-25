@@ -17,7 +17,8 @@ import {
 } from './type.ts'
 import { MemoryHistory } from './memory_history.ts'
 
-export function walk(history: History | MemoryHistory = new MemoryHistory()): Router {
+export function walk(history: History | MemoryHistory = new MemoryHistory()): Router
+{
   let pageTupples: PageTupple[] = []
   let elements: Map<string, Element> = new Map<string, Element>()
 
