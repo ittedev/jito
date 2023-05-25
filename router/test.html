@@ -450,6 +450,24 @@ describe('Router', function() {
     })
 
     describe('next():', function() {
+      it('not use next through', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', () => {})
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
       it('next through', async () => {
         let history = new MemoryHistory()
         let router = walk(history)
@@ -502,6 +520,44 @@ describe('Router', function() {
         equal(router.params, {})
         equal(router.props, {})
         equal(router.query, { name: 'Jito' })
+      })
+    })
+
+    describe('block():', function() {
+      it('not use block', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', () => false)
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('use block', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ block }) => block())
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
       })
     })
   })
