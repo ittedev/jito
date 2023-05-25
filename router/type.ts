@@ -2,7 +2,7 @@ import {
   Component,
   Module,
 } from '../web_components/types.ts'
-import type { Router } from './router.ts'
+import type { Router } from './walk.ts'
 import type { TimeRef } from './time_ref.ts'
 
 export interface RouteContext {
