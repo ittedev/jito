@@ -2,7 +2,6 @@ import {
   Component,
   Module,
 } from '../web_components/types.ts'
-import type { TimeRef } from './time_ref.ts'
 
 export interface CoreRouter {
   size: number,
@@ -49,12 +48,16 @@ export interface MiddlewareContext extends RouteContext {
   call: (middleware: Middleware) => void
 }
 
+export interface ValueRef<T> {
+  deref(): T | undefined
+}
+
 export type Middleware = (context: MiddlewareContext) => void | boolean | Promise<void | boolean>
 export type Pattern = string
 export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, props?: Record<string, unknown>) => Promise<Element>
 export type Elementable = Component | Promise<Component> | Module | Promise<Module> | string | Element | Promise<Element>
 export type ParamHashs = [string, number][]
-export type Page = [Pattern, ParamHashs, Middleware[], TimeRef<Router>]
+export type Page = [Pattern, ParamHashs, Middleware[], ValueRef<Router>]
 export type Kinds = Set<number>
 export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]

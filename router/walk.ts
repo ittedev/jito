@@ -13,10 +13,9 @@ import {
   Elementize,
   Middleware,
   MiddlewareContext,
+  ValueRef,
 } from './type.ts'
 import { MemoryHistory } from './memory_history.ts'
-import { TimeRef } from './time_ref.ts'
-
 
 export function walk(history: History | MemoryHistory = new MemoryHistory()): Router {
   let pageTupples: PageTupple[] = []
@@ -223,6 +222,29 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   }
 
   return router
+}
+
+class TimeRef<T> implements ValueRef<T>
+{
+  private _ref: T | undefined
+
+  constructor(ref: T, delay: number = 6e4, block?: (ref: T) => boolean | void)
+  {
+    this._ref = ref
+
+    setTimeout(() => {
+      if (this._ref) {
+        if (!(block && block(this._ref))) {
+          this._ref = undefined
+        }
+      }
+    }, delay)
+  }
+
+  public deref()
+  {
+    return this._ref
+  }
 }
 
 function clone(context: RouteContext, removeFrom = false): RouteContext {
