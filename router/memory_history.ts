@@ -2,8 +2,8 @@
 import { MemoryHistoryStateEvent } from './type.ts'
 
 export class MemoryHistory implements History {
-  private _historyStack: [string, any][] = []
-  private _currentIndex = -1
+  private _historyStack: [string, any][] = [['', null]]
+  private _currentIndex = 0
   private _handlers = new Map<'reload' | 'popstate', Set<(event: MemoryHistoryStateEvent) => void>>()
   public scrollRestoration: 'auto' | 'manual' = 'auto'
 

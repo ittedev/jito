@@ -20,17 +20,43 @@ mocha.setup('bdd')
 
 describe('Router', function() {
   describe('MemoryHistory', function() {
+    describe('new:', function() {
+      it('pushState state', () => {
+        let history = new MemoryHistory()
+        equal(history.state, null)
+        equal(history.length, 1)
+      })
+    })
+
     describe('pushState():', function() {
       it('pushState state', () => {
         let history = new MemoryHistory()
         history.pushState(100, '', 'abc')
         equal(history.state, 100)
+        equal(history.length, 2)
       })
       it('pushState states', () => {
         let history = new MemoryHistory()
         history.pushState(100, '', 'abc')
         history.pushState(200, '', 'abc')
         equal(history.state, 200)
+        equal(history.length, 3)
+      })
+    })
+
+    describe('replaceState():', function() {
+      it('replaceState state', () => {
+        let history = new MemoryHistory()
+        history.replaceState(100, '', 'abc')
+        equal(history.state, 100)
+        equal(history.length, 1)
+      })
+      it('replaceState states', () => {
+        let history = new MemoryHistory()
+        history.replaceState(100, '', 'abc')
+        history.replaceState(200, '', 'abc')
+        equal(history.state, 200)
+        equal(history.length, 1)
       })
     })
   })
