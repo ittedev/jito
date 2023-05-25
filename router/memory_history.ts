@@ -2,7 +2,7 @@
 import { MemoryHistoryStateEvent } from './type.ts'
 
 export class MemoryHistory implements History {
-  private _historyStack: [string, any][] = [['', null]]
+  private _historyStack: any[] = [null]
   private _currentIndex = 0
   private _handlers = new Map<'reload' | 'popstate', Set<(event: MemoryHistoryStateEvent) => void>>()
   public scrollRestoration: 'auto' | 'manual' = 'auto'
@@ -13,7 +13,7 @@ export class MemoryHistory implements History {
 
   public get state(): any {
     if (this._historyStack.length) {
-      return this._historyStack[this._currentIndex][1]
+      return this._historyStack[this._currentIndex]
     } else {
       return null
     }
@@ -49,15 +49,15 @@ export class MemoryHistory implements History {
     this.go(1)
   }
 
-  public pushState(state: any, _unused: string, url: string)
+  public pushState(state: any)
   {
-    this._historyStack.splice(this._currentIndex + 1, this._historyStack.length - this._currentIndex - 1, [url, state])
+    this._historyStack.splice(this._currentIndex + 1, this._historyStack.length - this._currentIndex - 1, state)
     this._currentIndex++
   }
 
-  public replaceState(state: any, _unused: string, url: string)
+  public replaceState(state: any)
   {
-    this._historyStack.splice(this._currentIndex, this._historyStack.length - this._currentIndex, [url, state])
+    this._historyStack.splice(this._currentIndex, this._historyStack.length - this._currentIndex, state)
   }
 
   public addEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void)

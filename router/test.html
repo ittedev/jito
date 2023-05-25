@@ -125,6 +125,72 @@ describe('Router', function() {
         equal(history.length, 3)
       })
     })
+
+    describe('popstate:', function() {
+      it('add listener', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        let state
+        history.addEventListener('popstate', event => {
+          state = event.state
+        })
+        history.back()
+        equal(state, undefined)
+        await sleep(1)
+        equal(state, 100)
+      })
+
+      it('remove listener', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        let state
+        let listener = event => {
+          state = event.state
+        }
+        history.addEventListener('popstate', listener)
+        history.removeEventListener('popstate', listener)
+        history.back()
+        await sleep(1)
+        equal(state, undefined)
+      })
+
+      it('multi listener', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        let count = 0
+        history.addEventListener('popstate', event => {
+          count += 1
+        })
+        history.addEventListener('popstate', event => {
+          count += 2
+        })
+        history.back()
+        equal(count, 0)
+        await sleep(1)
+        equal(count, 3)
+      })
+
+      it('stop multi listener', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        let count = 0
+        history.addEventListener('popstate', event => {
+          count += 1
+          event.stopImmediatePropagation()
+        })
+        history.addEventListener('popstate', event => {
+          count += 2
+        })
+        history.back()
+        equal(count, 0)
+        await sleep(1)
+        equal(count, 1)
+      })
+    })
   })
 })
 
