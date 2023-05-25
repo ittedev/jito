@@ -1,22 +1,26 @@
-import { MemoryHistory } from './memory_history.ts'
+import {
+  Component,
+  Module,
+} from '../web_components/types.ts'
 import {
   Router,
   PageTupple,
-  Middleware,
   MatchedPageData,
   ParamHashs,
   Page,
-  SetPage,
-  MiddlewareContext,
   RouteContext,
+  Elementable,
+  Elementize,
+  Middleware,
+  MiddlewareContext,
 } from './type.ts'
+import { MemoryHistory } from './memory_history.ts'
 import { TimeRef } from './time_ref.ts'
-
 
 
 export function walk(history: History | MemoryHistory = new MemoryHistory()): Router {
   let pageTupples: PageTupple[] = []
-  let from: RouteContext
+  let elements: Map<string, Element> = new Map<string, Element>()
 
   function find(pathname: string): MatchedPageData | undefined {
     let names = pathname.split('/')
@@ -107,8 +111,23 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     })
   }
 
-  function page(pattern: string, ...middlewares: Middleware[]): Router
-  {
+  async function getElement(
+    name: string,
+    elementable: Elementable,
+    elementize?: Elementize,
+  ): Promise<Component | Module | Element> {
+    if (elementize) {
+      if (!elements.has(name)) {
+        let elementOrComponent = await appear(elementable)
+        elements.set(name, elementOrComponent instanceof Element ? elementOrComponent : await elementize(elementOrComponent))
+      }
+      return elements.get(name) as Element
+    } else {
+      return await appear(elementable)
+    }
+  }
+
+  let page = (pattern: string, ...middlewares: Middleware[]) => {
     let child = walk()
     let names = pattern.split('/')
     let len = names.length
@@ -132,55 +151,41 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     return child
   }
 
-  function open(
+  let open = (
     pathname: string,
     props: Record<string, unknown> = {},
     query: Record<string, string> = {},
-  ): Promise<RouteContext>
-  {
-    return _open(pathname, props, query)
-  }
+  ) => _open(pathname, props, query)
 
-  function section(...middlewares: Middleware[]): SetPage
-  {
-    return (pattern: string, ...subMiddlewares: Middleware[]) => {
-      return page(pattern, ...middlewares, ...subMiddlewares)
-    }
-  }
+  let section = (...middlewares: Middleware[]) =>
+    (pattern: string, ...subMiddlewares: Middleware[]) =>
+      page(pattern, ...middlewares, ...subMiddlewares)
 
-  function push(
+  let push = (
     pathname: string,
     props?: Record<string, unknown>,
     query?: Record<string, string>,
-  ): Promise<void>
-  {
-    return open(pathname, props, query).then(context => {
+  ) =>
+    open(pathname, props, query).then(context => {
       history.pushState(clone(context, true), '', createUrl(context))
     }).catch(() => {})
-  }
 
-  function replace(
+  let replace = (
     pathname: string,
     props?: Record<string, unknown>,
     query?: Record<string, string>,
-  ): Promise<void>
-  {
-    return open(pathname, props, query).then(context => {
+  ) =>
+    open(pathname, props, query).then(context => {
       history.replaceState(clone(context, true), '', createUrl(context))
     }).catch(() => {})
-  }
 
-  function back(): void
-  {
-    history.back()
-  }
-
-  function forward(): void
-  {
-    history.forward()
-  }
+  let back = () => history.back()
+  let forward = () => history.forward()
 
   let router: Router = {
+    pathname: '',
+    params: {},
+    panel: null,
     get size() {
       return pageTupples.reduce((count, pageTupple) => count + pageTupple[1].size, 0)
     },
@@ -191,6 +196,19 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     replace,
     back,
     forward,
+    embed,
+  }
+
+  function embed(
+    elementable: Elementable,
+    elementize?: Elementize,
+  ): Middleware
+  {
+    return async (context: MiddlewareContext) => {
+      router.pathname = context.pathname
+      router.panel = await getElement(context.pattern, elementable, elementize)
+      router.params = Object.assign({}, context.params, context.query, context.props)
+    }
   }
 
   if (history === self.history) {
@@ -226,4 +244,12 @@ function createUrl(context: RouteContext): string {
   }
   let queryString = params.toString()
   return context.pathname + (queryString ? '?' + queryString : '')
+}
+
+async function appear(component: Elementable): Promise<Component | Module | Element> {
+  if (typeof component === 'string') {
+    return await import(component)
+  } else {
+    return await component
+  }
 }

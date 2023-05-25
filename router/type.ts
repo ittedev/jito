@@ -4,10 +4,10 @@ import {
 } from '../web_components/types.ts'
 import type { TimeRef } from './time_ref.ts'
 
-export interface Router {
+export interface CoreRouter {
   size: number,
   page: (pattern: string, ...middlewares: Middleware[]) => Router
-  section: (...middlewares: Middleware[]) => SetPage
+  section: (...middlewares: Middleware[]) => (pattern: string, ...middlewares: Middleware[]) => Router
   open: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<RouteContext>
   push: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
   replace: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
@@ -28,6 +28,8 @@ export interface Panel {
     ((element: Element, elementize?: Elementize) => Middleware) |
     ((element: Promise<Element>, elementize?: Elementize) => Middleware)
 }
+
+export interface Router extends CoreRouter, Panel {}
 
 export interface RouteContext {
   parent: RouteContext | undefined
@@ -62,10 +64,9 @@ export type MatchedPageData = {
   page: Page,
 }
 
-export type SetPage = (pathname: string, ...middlewares: Middleware[]) => void
-
 export type MemoryHistoryStateEvent = {
   type: 'reload' | 'popstate',
+  // deno-lint-ignore no-explicit-any
   state: any,
   stopImmediatePropagation: () => void
 }
