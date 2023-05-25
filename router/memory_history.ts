@@ -1,10 +1,15 @@
 // deno-lint-ignore-file no-explicit-any
 import { MemoryHistoryStateEvent } from './type.ts'
 
-export class MemoryHistory extends History {
+export class MemoryHistory implements History {
   private _historyStack: [string, any][] = []
   private _currentIndex = -1
   private _handlers = new Map<'reload' | 'popstate', Set<(event: MemoryHistoryStateEvent) => void>>()
+  public scrollRestoration: 'auto' | 'manual' = 'auto'
+
+  public get length() {
+    return this._historyStack.length
+  }
 
   public get state(): any {
     if (this._historyStack.length) {
