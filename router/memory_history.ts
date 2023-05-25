@@ -7,7 +7,7 @@ export class MemoryHistory implements History {
   private _handlers = new Map<'reload' | 'popstate', Set<(event: MemoryHistoryStateEvent) => void>>()
   public scrollRestoration: 'auto' | 'manual' = 'auto'
 
-  public get length() {
+  public get length(): number {
     return this._historyStack.length
   }
 
@@ -19,7 +19,7 @@ export class MemoryHistory implements History {
     }
   }
 
-  public go(delta: number) {
+  public go(delta: number): void {
     setTimeout(() => {
       if (delta !== 0) {
         let index = Math.min(Math.max(this._currentIndex + delta, 0), this._historyStack.length - 1)
@@ -39,7 +39,7 @@ export class MemoryHistory implements History {
     }, 1)
   }
 
-  public back()
+  public back(): void
   {
     this.go(-1)
   }
@@ -49,18 +49,18 @@ export class MemoryHistory implements History {
     this.go(1)
   }
 
-  public pushState(state: any)
+  public pushState(state: any): void
   {
     this._historyStack.splice(this._currentIndex + 1, this._historyStack.length - this._currentIndex - 1, state)
     this._currentIndex++
   }
 
-  public replaceState(state: any)
+  public replaceState(state: any): void
   {
     this._historyStack.splice(this._currentIndex, this._historyStack.length - this._currentIndex, state)
   }
 
-  public addEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void)
+  public addEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void): void
   {
     if (!this._handlers.has(type)) {
       this._handlers.set(type, new Set())
@@ -68,7 +68,7 @@ export class MemoryHistory implements History {
     (this._handlers.get(type) as Set<(event: MemoryHistoryStateEvent) => void>).add(listener)
   }
 
-  public removeEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void)
+  public removeEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void): void
   {
     if (!this._handlers.has(type)) {
       return
@@ -76,7 +76,8 @@ export class MemoryHistory implements History {
     (this._handlers.get(type) as Set<(event: MemoryHistoryStateEvent) => void>).delete(listener)
   }
 
-  private _dispatchEvent(event: MemoryHistoryStateEvent) {
+  private _dispatchEvent(event: MemoryHistoryStateEvent): void
+  {
     let handlers = this._handlers.get(event.type)
     if (handlers) {
       let isFinish = false
