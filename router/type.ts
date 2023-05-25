@@ -3,6 +3,11 @@ import {
   Module,
 } from '../web_components/types.ts'
 
+export interface NextOptions {
+  props?: Record<string, unknown>
+  query?: Record<string, string>
+}
+
 export interface PageContext {
   pathname: string | null
   pattern: string | null
@@ -15,9 +20,9 @@ export interface CoreRouter extends PageContext {
   size: number,
   page: (pattern: string, ...middlewares: Middleware[]) => Router
   section: (...middlewares: Middleware[]) => (pattern: string, ...middlewares: Middleware[]) => Router
-  open: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<RouteContext>
-  push: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
-  replace: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
+  open: (pathname: string, options?: NextOptions) => Promise<RouteContext>
+  push: (pathname: string, options?: NextOptions) => Promise<void>
+  replace: (pathname: string, options?: NextOptions) => Promise<void>
   back: () => void
   forward: () => void
 }
@@ -44,7 +49,7 @@ export interface RouteContext extends PageContext {
 export interface MiddlewareContext extends RouteContext {
   pathname: string
   pattern: string
-  next: (props?: Record<string, unknown>) => true
+  next: (options?: NextOptions) => true
   redirect: (pathname: string) => false
   branch: (pathname: string) => false
   block: () => false,

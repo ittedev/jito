@@ -13,6 +13,7 @@ import {
   Elementize,
   Middleware,
   MiddlewareContext,
+  NextOptions,
   ValueRef,
 } from './type.ts'
 import { MemoryHistory } from './memory_history.ts'
@@ -48,9 +49,8 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
 
   let open = (
     pathname: string,
-    props: Record<string, unknown> = {},
-    query: Record<string, string> = {},
-  ) => _open(pathname, props, query)
+    options: NextOptions = {},
+  ) => _open(pathname, options.props || {}, options.query || {})
 
   let section = (...middlewares: Middleware[]) =>
     (pattern: string, ...subMiddlewares: Middleware[]) =>
@@ -58,19 +58,17 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
 
   let push = (
     pathname: string,
-    props?: Record<string, unknown>,
-    query?: Record<string, string>,
+    options?: NextOptions,
   ) =>
-    open(pathname, props, query).then(context => {
+    open(pathname, options).then(context => {
       history.pushState(clone(context, true), '', createUrl(context))
     }).catch(() => {})
 
   let replace = (
     pathname: string,
-    props?: Record<string, unknown>,
-    query?: Record<string, string>,
+    options?: NextOptions,
   ) =>
-    open(pathname, props, query).then(context => {
+    open(pathname, options).then(context => {
       history.replaceState(clone(context, true), '', createUrl(context))
     }).catch(() => {})
 
@@ -128,13 +126,13 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
         let currentProps = props
         let currentQuery = query
         let redirect = (pathname: string) => {
-          open(pathname, currentProps, currentQuery)
+          open(pathname, { props: currentProps, query: currentQuery })
           return false
         }
         let branch = (pathname: string) => {
           let child = (mutchedData as MatchedPageData).page[3].deref() as Router
           if (child) {
-            child.open(pathname, currentProps, currentQuery).then(context => resolve(clone(context)))
+            child.open(pathname, { props: currentProps, query: currentQuery }).then(context => resolve(clone(context)))
           }
           return false
         }
@@ -150,12 +148,12 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
               pattern: mutchedData.page[0],
               props: currentProps, // todo sharrow copy
               query: currentQuery, // todo sharrow copy
-              next: (newProps?: Record<string, unknown>, newQuery?: Record<string, string>) => {
-                if (newProps) {
-                  currentProps = newProps
+              next: (options: NextOptions = {}) => {
+                if (options.props) {
+                  currentProps = options.props
                 }
-                if (newQuery) {
-                  currentQuery = newQuery
+                if (options.query) {
+                  currentQuery = options.query
                 }
                 return true
               },
