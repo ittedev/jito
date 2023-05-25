@@ -15,6 +15,20 @@ export interface Router {
   forward: () => void
 }
 
+export interface Panel {
+  pathname: string
+  params: Record<string, string>
+  panel: null | Component | Module | Element
+  embed:
+    ((component: Component, elementize?: Elementize) => Middleware) |
+    ((component: Promise<Component>, elementize?: Elementize) => Middleware) |
+    ((module: Module, elementize?: Elementize) => Middleware) |
+    ((module: Promise<Module>, elementize?: Elementize) => Middleware) |
+    ((filePath: string, elementize?: Elementize) => Middleware) |
+    ((element: Element, elementize?: Elementize) => Middleware) |
+    ((element: Promise<Element>, elementize?: Elementize) => Middleware)
+}
+
 export interface RouteContext {
   parent: RouteContext | undefined
   from: RouteContext | undefined
