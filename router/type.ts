@@ -2,8 +2,18 @@ import {
   Component,
   Module,
 } from '../web_components/types.ts'
-import type { Router } from './walk.ts'
 import type { TimeRef } from './time_ref.ts'
+
+export interface Router {
+  size: number,
+  page: (pattern: string, ...middlewares: Middleware[]) => Router
+  section: (...middlewares: Middleware[]) => SetPage
+  open: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<RouteContext>
+  push: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
+  replace: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
+  back: () => void
+  forward: () => void
+}
 
 export interface RouteContext {
   parent: RouteContext | undefined

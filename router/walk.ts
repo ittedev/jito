@@ -1,5 +1,6 @@
 import { MemoryHistory } from './memory_history.ts'
 import {
+  Router,
   PageTupple,
   Middleware,
   MatchedPageData,
@@ -11,67 +12,31 @@ import {
 } from './type.ts'
 import { TimeRef } from './time_ref.ts'
 
-export class Router {
-  private _pageTupples: PageTupple[] = []
-  private _history: History | MemoryHistory
-  private _from?: RouteContext
 
-  constructor(history: History | MemoryHistory = new MemoryHistory()) {
-    this._history = history
 
-    if (history === self.history) {
-      self.addEventListener('popstate', (event) => {
-        let pathname = event.state && 'pathname' in event.state ? event.state.pathname : location.pathname
-        this.open(pathname).catch(() => {})
-      })
-    } else {
-      (history as MemoryHistory).addEventListener('popstate', event => {
-        this.open(event.state.pathname).catch(() => {})
-      })
-    }
-  }
+export function walk(history: History | MemoryHistory = new MemoryHistory()): Router {
+  let pageTupples: PageTupple[] = []
+  let from: RouteContext
 
-  public page(pattern: string, ...middlewares: Middleware[]): void
-  {
-    let childRouter = new Router()
-    let names = pattern.split('/')
+  function find(pathname: string): MatchedPageData | undefined {
+    let names = pathname.split('/')
     let len = names.length
-    while (this._pageTupples.length < len + 1) {
-      this._pageTupples.push([new Set(), new Map()])
-    }
-    let kinds = this._pageTupples[len][0]
-    let pages = this._pageTupples[len][1]
-    let kind = names.reduce((kind, name, index) => kind | ((name[0] === ':' ? 1 : 0) << (len - 1 - index)), 0)
-    let key = names.map(name => name[0] === ':' ? '*' : name).join('/')
-    let params: ParamHashs = []
-    names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
-    kinds.add(kind)
-    this._pageTupples[len][0] = new Set(Array.from(kinds).sort())
-    pages.set(key, [
-      pattern,
-      params,
-      middlewares,
-      new TimeRef(childRouter, undefined, ref => !!ref._pageTupples.length),
-    ])
-  }
-
-  public section(...middlewares: Middleware[]): SetPage
-  {
-    return (pattern: string, ...subMiddlewares: Middleware[]) => {
-      return this.page(pattern, ...middlewares, ...subMiddlewares)
+    let kinds = pageTupples[len][0]
+    let pages = pageTupples[len][1]
+    for (let kind of kinds) {
+      let key = names.map((name, index) => (1 << (len - 1 - index)) & kind ? '*' : name).join('/')
+      if (pages.has(key)) {
+        let page = pages.get(key) as Page
+        let params: Record<string, string> = {}
+        page[1].forEach(paramHash => {
+          params[paramHash[0]] = names[paramHash[1]]
+        })
+        return { pathname, params, page }
+      }
     }
   }
 
-  public open(
-    pathname: string,
-    props: Record<string, unknown> = {},
-    query: Record<string, string> = {},
-  ): Promise<RouteContext>
-  {
-    return this._open(pathname, props, query)
-  }
-
-  private _open(
+  function _open(
     pathname: string,
     props: Record<string, unknown>,
     query: Record<string, string>,
@@ -79,18 +44,18 @@ export class Router {
   ): Promise<RouteContext>
   {
     return new Promise((resolve, reject) => {
-      let mutchedData = this._find(pathname)
+      let mutchedData = find(pathname)
       if (mutchedData) {
         let currentProps = props
         let currentQuery = query
         let redirect = (pathname: string) => {
-          this.open(pathname)
+          open(pathname, currentProps, currentQuery)
           return false
         }
         let branch = (pathname: string) => {
-          let childRouter = (mutchedData as MatchedPageData).page[3].deref() as Router
-          if (childRouter) {
-            childRouter._open(pathname, currentProps, currentQuery).then(context => resolve(clone(context)))
+          let child = (mutchedData as MatchedPageData).page[3].deref() as Router
+          if (child) {
+            child.open(pathname, currentProps, currentQuery).then(context => resolve(clone(context)))
           }
           return false
         }
@@ -100,7 +65,7 @@ export class Router {
             let context: MiddlewareContext
             context = {
               parent,
-              from: this._history.state,
+              from: history.state,
               pathname: mutchedData.pathname,
               params: mutchedData.params,
               pattern: mutchedData.page[0],
@@ -129,7 +94,7 @@ export class Router {
         })()
           .then(() => resolve({
             parent,
-            from: this._history.state as RouteContext,
+            from: history.state as RouteContext,
             pathname: (mutchedData as MatchedPageData).pathname,
             params: (mutchedData as MatchedPageData).params,
             pattern: (mutchedData as MatchedPageData).page[0],
@@ -142,55 +107,104 @@ export class Router {
     })
   }
 
-  public push(
-    pathname: string,
-    props?: Record<string, unknown>,
-    query?: Record<string, string>,
-  ): Promise<void>
+  function page(pattern: string, ...middlewares: Middleware[]): Router
   {
-    return this.open(pathname, props, query).then(context => {
-      this._history.pushState(clone(context, true), '', createUrl(context))
-    }).catch(() => {})
-  }
-
-  public replace(
-    pathname: string,
-    props?: Record<string, unknown>,
-    query?: Record<string, string>,
-  ): Promise<void>
-  {
-    return this.open(pathname, props, query).then(context => {
-      this._history.replaceState(clone(context, true), '', createUrl(context))
-    }).catch(() => {})
-  }
-
-  public back(): void
-  {
-    this._history.back()
-  }
-
-  public forward(): void
-  {
-    this._history.forward()
-  }
-
-  private _find(pathname: string): MatchedPageData | undefined {
-    let names = pathname.split('/')
+    let child = walk()
+    let names = pattern.split('/')
     let len = names.length
-    let kinds = this._pageTupples[len][0]
-    let pages = this._pageTupples[len][1]
-    for (let kind of kinds) {
-      let key = names.map((name, index) => (1 << (len - 1 - index)) & kind ? '*' : name).join('/')
-      if (pages.has(key)) {
-        let page = pages.get(key) as Page
-        let params: Record<string, string> = {}
-        page[1].forEach(paramHash => {
-          params[paramHash[0]] = names[paramHash[1]]
-        })
-        return { pathname, params, page }
-      }
+    while (pageTupples.length < len + 1) {
+      pageTupples.push([new Set(), new Map()])
+    }
+    let kinds = pageTupples[len][0]
+    let pages = pageTupples[len][1]
+    let kind = names.reduce((kind, name, index) => kind | ((name[0] === ':' ? 1 : 0) << (len - 1 - index)), 0)
+    let key = names.map(name => name[0] === ':' ? '*' : name).join('/')
+    let params: ParamHashs = []
+    names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
+    kinds.add(kind)
+    pageTupples[len][0] = new Set(Array.from(kinds).sort())
+    pages.set(key, [
+      pattern,
+      params,
+      middlewares,
+      new TimeRef(child, undefined, ref => !!ref.size),
+    ])
+    return child
+  }
+
+  function open(
+    pathname: string,
+    props: Record<string, unknown> = {},
+    query: Record<string, string> = {},
+  ): Promise<RouteContext>
+  {
+    return _open(pathname, props, query)
+  }
+
+  function section(...middlewares: Middleware[]): SetPage
+  {
+    return (pattern: string, ...subMiddlewares: Middleware[]) => {
+      return page(pattern, ...middlewares, ...subMiddlewares)
     }
   }
+
+  function push(
+    pathname: string,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
+  ): Promise<void>
+  {
+    return open(pathname, props, query).then(context => {
+      history.pushState(clone(context, true), '', createUrl(context))
+    }).catch(() => {})
+  }
+
+  function replace(
+    pathname: string,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
+  ): Promise<void>
+  {
+    return open(pathname, props, query).then(context => {
+      history.replaceState(clone(context, true), '', createUrl(context))
+    }).catch(() => {})
+  }
+
+  function back(): void
+  {
+    history.back()
+  }
+
+  function forward(): void
+  {
+    history.forward()
+  }
+
+  let router: Router = {
+    get size() {
+      return pageTupples.reduce((count, pageTupple) => count + pageTupple[1].size, 0)
+    },
+    page,
+    section,
+    open,
+    push,
+    replace,
+    back,
+    forward,
+  }
+
+  if (history === self.history) {
+    self.addEventListener('popstate', (event) => {
+      let pathname = event.state && 'pathname' in event.state ? event.state.pathname : location.pathname
+      open(pathname).catch(() => {}) // プロパティが必要？、ブロックされたときにどうするか
+    })
+  } else {
+    (history as MemoryHistory).addEventListener('popstate', event => {
+      open(event.state.pathname).catch(() => {}) // プロパティが必要？、ブロックされたときにどうするか
+    })
+  }
+
+  return router
 }
 
 function clone(context: RouteContext, removeFrom = false): RouteContext {
