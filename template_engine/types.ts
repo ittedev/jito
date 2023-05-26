@@ -17,6 +17,7 @@ export type Template =
   TryTemplate |
   IfTemplate |
   ForTemplate |
+  BindTemplate |
   ElementTemplate |
   CustomElementTemplate |
   TreeTemplate |
@@ -144,6 +145,13 @@ export interface ForTemplate {
   value: Template
   each?: string
   isTryed: boolean
+}
+
+export interface BindTemplate {
+  type: 'bind'
+  name: string
+  to?: Template
+  value: Template
 }
 
 export interface TreeTemplate {

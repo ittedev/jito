@@ -7,6 +7,7 @@ import {
   TryTemplate,
   IfTemplate,
   ForTemplate,
+  BindTemplate,
   ElementTemplate,
   CustomElementTemplate,
   TreeTemplate,
@@ -131,11 +132,44 @@ function parseIf(lexer: DomLexer): Template
   let el = lexer.node as TemporaryElement
   if (hasAttr(el, '@if')) {
     let condition = expression(getAttr(el, '@if'))
-    let truthy = parseGroup(el)
-    lexer.pop()
+    let truthy = parseBind(lexer)
     let template = { type: 'if', condition, truthy } as IfTemplate
     if (lexer.isSkippable('@else')) {
       template.falsy = parseChild(lexer.skip())
+    }
+    return template
+  } else {
+    return parseBind(lexer)
+  }
+}
+
+function parseBind(lexer: DomLexer): Template
+{
+  let el = lexer.node as TemporaryElement
+  if (hasAttr(el, '@bind')) {
+    let name = getAttr(el, '@bind')
+    let template = { type: 'bind', name } as BindTemplate
+    let to = getAttr(el, '@to')
+    if (to) {
+      template.to = expression(to)
+    }
+    template.value = parseLet(lexer)
+    return template
+  } else {
+    return parseLet(lexer)
+  }
+}
+
+function parseLet(lexer: DomLexer): Template {
+  let el = lexer.node as TemporaryElement
+  if (el.tag === 'let') {
+    let template = {
+      type: 'group',
+    } as GroupTemplate
+    lexer.pop()
+    let nextNode = lexer.pop()
+    if (nextNode) {
+      template.children = parseTree(nextNode)
     }
     return template
   } else {
@@ -152,7 +186,7 @@ function parseGroup(el: TemporaryElement): Template
     if (el.attrs) {
       el.attrs.forEach(([name,, value]) => {
         // syntax attribute
-        if (name.match(/^@(if|else|for|each)$/)) return
+        if (name.match(/^@(if|else|for|each|bind|to)$/)) return
         if (name.match(/^@.*$/)) {
           if (!template.attrs) {
             template.attrs = {} as Record<string, unknown | Template>

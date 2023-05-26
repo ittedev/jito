@@ -65,6 +65,8 @@ export function notHasEnd(tag: string): boolean
     case 'link':
     case 'param':
     case 'source':
+
+    case 'let':
       return true
   }
   return false

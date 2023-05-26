@@ -253,7 +253,7 @@ export let evaluate = function (
           entries = Object.entries(array)
         }
       } else {
-        entries = [[0, array]] // or errer?
+        throw Error('@fo syntax requires Object or Array')
       }
       return entries
         .map(([key, value], index) => {
@@ -278,6 +278,15 @@ export let evaluate = function (
           ary.push(...values)
           return ary
         }, [])
+    }
+
+    case 'bind': {
+      let to = temp.to ? evaluate(temp.to, stack, cache) : undefined
+      return evaluate(
+        temp.value,
+        stack.concat([{ [temp.name]: to }]),
+        cache
+      )
     }
 
     case 'tree': {
