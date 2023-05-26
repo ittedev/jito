@@ -1749,6 +1749,25 @@ describe('Template Engine', function() {
           ]
         })
       })
+      it('parse: child let', () => {
+        let template = parse('<p><let>Hello</p>World')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              children: [
+                {
+                  type: "group",
+                  children: ["Hello"]
+                }
+              ]
+            },
+            "World"
+          ]
+        })
+      })
     })
 
     describe(': <group>', function() {
@@ -1850,6 +1869,109 @@ describe('Template Engine', function() {
                 },
                 falsy: {
                   tag: "div",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if and @bind', () => {
+        let template = parse('<p @bind="x" @to="y" @if="isActive"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                type: "bind",
+                name: "x",
+                to: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "y"
+                  }
+                },
+                value: {
+                  tag: "p",
+                  type: "element"
+                }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @if, @else and @bind', () => {
+        let template = parse('<p @bind="x" @to="y" @if="isActive"></p><div @else></div>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                type: "bind",
+                name: "x",
+                to: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "y"
+                  }
+                },
+                value: {
+                  tag: "p",
+                  type: "element"
+                }
+              },
+                falsy: {
+                  tag: "div",
+                  type: "element"
+                }
+            }
+          ]
+        })
+      })
+      it('parse: @bind and @for', () => {
+        let template = parse('<p @for="array" @bind="x" @to="y"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
+                type: "bind",
+                name: "x",
+                to: {
+                  type: "get",
+                  value: {
+                    type: "variable",
+                    name: "y"
+                  }
+                },
+                value: {
+                  tag: "p",
                   type: "element"
                 }
               }
