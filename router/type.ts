@@ -55,7 +55,8 @@ export interface MiddlewareContext extends RouteContext {
   next: (props?: Record<string, unknown>, query?: Record<string, string>) => void
   redirect: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => void
   branch: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => void
-  block: () => void,
+  block: (middleware?: Middleware) => void,
+  through: () => void,
   call: (middleware: Middleware) => void
 }
 

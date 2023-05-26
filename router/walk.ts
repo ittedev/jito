@@ -18,6 +18,13 @@ import {
 } from './type.ts'
 import { MemoryHistory } from './memory_history.ts'
 
+enum ResultType {
+  Success,
+  Other,
+  Through,
+  Fail,
+}
+
 export function walk(history: History | MemoryHistory = new MemoryHistory()): Router
 {
   let router: Router
@@ -60,7 +67,6 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     (pattern: string, ...subMiddlewares: Middleware[]) =>
       page(pattern, ...middlewares, ...subMiddlewares)
 
-
   let open = (
     pathname: string,
     props?: Record<string, unknown>,
@@ -70,23 +76,29 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   ): Promise<RouteContext> => {
     return new Promise<RouteContext>((resolve, reject) => {
       let input = { pathname, props, query }
-      let mutchedData = find(pathname)
-      if (mutchedData) {
-        let contextPart = {
-          parent,
-          from: history.state,
-          pathname: mutchedData.pathname,
-          params: mutchedData.params,
-          pattern: mutchedData.page[0],
+      ;(async () => {
+        let resultType: ResultType = ResultType.Through
+
+        let through = () => {
+          resultType = ResultType.Through
         }
-        let currentProps = props || {}
-        let currentQuery = query || {}
-        ;(async () => {
-          let resultType = 1 // 1:success, 0: outer, -1:fail
-          let redirect = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
-            open(pathname, props, query).then(resolve).catch(reject)
-            resultType = 0
+
+        let redirect = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
+          open(pathname, props, query).then(resolve).catch(reject)
+          resultType = ResultType.Other
+        }
+
+        for (let mutchedData of find(pathname)) {
+          let contextPart = {
+            parent,
+            from: history.state,
+            pathname: mutchedData.pathname,
+            params: mutchedData.params,
+            pattern: mutchedData.page[0],
           }
+          let currentProps = props || {}
+          let currentQuery = query || {}
+
           let branch = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
             let child = (mutchedData as MatchedPageData).page[3].deref() as Router
             if (child) {
@@ -100,11 +112,9 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
                   query: currentQuery, // todo sharrow copy
                 }, contextPart)).then(resolve).catch(reject)
             }
-            resultType = 0
+            resultType = ResultType.Other
           }
-          let block = () => {
-            resultType = -1
-          }
+
           let next = (props?: Record<string, unknown>, query?: Record<string, string>) => {
             if (props) {
               currentProps = props
@@ -113,6 +123,8 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
               currentQuery = query
             }
           }
+
+          resultType = ResultType.Success
           for (let middleware of mutchedData.page[2]) {
             let context: MiddlewareContext = Object.assign({
               props: currentProps, // todo sharrow copy
@@ -120,34 +132,50 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
               next,
               redirect,
               branch,
-              block,
+              through,
+              block: async (middleware?: Middleware) => {
+                resultType = ResultType.Fail
+                if (middleware) {
+                  await middleware(context)
+                }
+                resultType = ResultType.Fail
+              },
               call: async (middleware: Middleware) => await middleware(context),
             }, contextPart)
+
             if (await middleware(context) === false) {
-              resultType = -1
+              resultType = ResultType.Fail
             }
-            if (resultType < 1) {
+
+            if (resultType !== ResultType.Success) {
               break
             }
           }
-          if (resultType === 1) {
-            resolve({
-              input,
-              parent,
-              from: history.state as RouteContext,
-              pathname: (mutchedData as MatchedPageData).pathname,
-              params: (mutchedData as MatchedPageData).params,
-              pattern: (mutchedData as MatchedPageData).page[0],
-              props: currentProps,
-              query: currentQuery,
-            })
-          } else if (resultType === -1) {
-            reject(Error('blocked'))
+          // deno-lint-ignore ban-ts-comment
+          // @ts-ignore
+          if (resultType !== ResultType.Through) {
+            if (resultType === ResultType.Success) {
+              resolve({
+                input,
+                parent,
+                from: history.state as RouteContext,
+                pathname: (mutchedData as MatchedPageData).pathname,
+                params: (mutchedData as MatchedPageData).params,
+                pattern: (mutchedData as MatchedPageData).page[0],
+                props: currentProps,
+                query: currentQuery,
+              })
+            } else if (resultType === ResultType.Fail) {
+              reject(Error('blocked'))
+            }
+            break
           }
-        })()
-      } else {
-        reject(Error('not found'))
-      }
+        } // for
+
+        if (resultType === ResultType.Through) {
+          reject(Error('not found'))
+        }
+      })()
     }).then(context => {
       assign(context)
       return context
@@ -197,7 +225,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     embed,
   }
 
-  function find(pathname: string): MatchedPageData | undefined {
+  function* find(pathname: string): Generator<MatchedPageData> {
     let names = pathname.split('/')
     let len = names.length
     let kinds = pageTupples[len][0]
@@ -210,7 +238,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
         page[1].forEach(paramHash => {
           params[paramHash[0]] = names[paramHash[1]]
         })
-        return { pathname, params, page }
+        yield { pathname, params, page }
       }
     }
   }
