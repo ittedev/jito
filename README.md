@@ -98,3 +98,4 @@ Please save the following code as `example.html` and try opening it in your web 
 | Virtual DOM | load, patch | ✓ |  |
 | Template Engine | parse, evaluate, pickup | ✓ | ✓ |
 | Web Components | compact, mount, define, elementize | ✓ |  |
+| Router | walk | ✓ | ✓ |

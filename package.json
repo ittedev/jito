@@ -13,6 +13,10 @@
   ],
   "module": "jito.js",
   "typings": "jito.d.ts",
+  "exports": {
+    ".": "./jito.js",
+    "./router": "./router.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ittedev/jito.git"
