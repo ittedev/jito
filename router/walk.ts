@@ -36,9 +36,9 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   let assign = (context: RouteContext) => {
     router.pathname = context.pathname
     router.pattern = context.pattern
-    router.params = context.params // todo sharrow copy
-    router.props = context.props // todo sharrow copy
-    router.query = context.query // todo sharrow copy
+    router.params = context.params
+    router.props = context.props
+    router.query = context.query
   }
 
   let page = (pattern: string, ...middlewares: Middleware[]) => {
@@ -101,7 +101,6 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
           }
 
           for (let mutchedData of find(pathname)) {
-            console.log('mutchedData:', mutchedData)
             let contextPart = {
               parent,
               from: history.state,
@@ -109,8 +108,8 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
               params: mutchedData[0],
               pattern: mutchedData[1][0],
             }
-            let currentProps = props || {}
-            let currentQuery = query || {}
+            let currentProps = clone(props || {})
+            let currentQuery = clone(query || {})
 
             let branch = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
               let child = mutchedData[1][3].deref() as Router
@@ -121,8 +120,8 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
                   query,
                   null,
                   Object.assign({
-                    props: currentProps, // todo sharrow copy
-                    query: currentQuery, // todo sharrow copy
+                    props: clone(currentProps),
+                    query: clone(currentQuery),
                   }, contextPart)).then(resolve).catch(reject)
               }
               resultType = ResultType.Other
@@ -140,8 +139,8 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
             resultType = ResultType.Success
             for (let middleware of mutchedData[1][2]) {
               let context: MiddlewareContext = Object.assign({
-                props: currentProps, // todo sharrow copy
-                query: currentQuery, // todo sharrow copy
+                props: currentProps,
+                query: currentQuery,
                 next,
                 redirect,
                 branch,
@@ -204,7 +203,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     query?: Record<string, string>,
   ) =>
     open(pathname, props, query).then(context => {
-      history.pushState(clone(context, true), '', createUrl(context.pathname, context.query))
+      history.pushState(copy(context, true), '', createUrl(context.pathname, context.query))
     }).catch(() => {})
 
   let replace = (
@@ -213,7 +212,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     query?: Record<string, string>,
   ) =>
     open(pathname, props, query).then(context => {
-      history.replaceState(clone(context, true), '', createUrl(context.pathname, context.query))
+      history.replaceState(copy(context, true), '', createUrl(context.pathname, context.query))
     }).catch(() => {})
 
   let back = () => history.back()
@@ -356,16 +355,20 @@ class TimeRef<T> implements ValueRef<T>
   }
 }
 
-function clone(context: RouteContext, removeFrom = false): RouteContext {
+function clone<T>(context: T): T {
+  return structuredClone ? structuredClone(context) : JSON.parse(JSON.stringify(context))
+}
+
+function copy(context: RouteContext, removeFrom = false): RouteContext {
   return {
     input: context.input,
-    parent: context.parent ? clone(context.parent, removeFrom) : undefined,
-    from: !removeFrom && context.from ? clone(context.from, removeFrom) : undefined,
+    parent: context.parent ? copy(context.parent, removeFrom) : undefined,
+    from: !removeFrom && context.from ? copy(context.from, removeFrom) : undefined,
     pathname: context.pathname,
-    params: context.params, // todo sharrow copy
+    params: clone(context.params),
     pattern: context.pattern,
-    props: context.props, // todo sharrow copy
-    query: context.query, // todo sharrow copy
+    props: clone(context.props),
+    query: clone(context.query),
   }
 }
 
