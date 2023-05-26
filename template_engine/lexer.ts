@@ -96,6 +96,7 @@ function distinguish(field: TokenField, value: string): TokenType
         case '<!--':
         case '/':
         case '{{':
+        case '{|':
           return value
         case '&':
         case '&a': case '&am': case '&amp':
@@ -118,6 +119,8 @@ function distinguish(field: TokenField, value: string): TokenType
         case '@try': case '@catch':
         case '@if': case '@else':
         case '@for': case '@each':
+        case '@bind': case '@to':
+        case '@chunk':
           return '@'
         case '=': case ':=': case '&=': case '*=':
           return 'assign'
@@ -179,6 +182,7 @@ function distinguish(field: TokenField, value: string): TokenType
         case '[': case ']': case '{': case '}': case '(': case ')':
         case '...': case '?': case ':': case ',':
         case "'": case '"': case '`':
+        case "|}":
           return value
       }
       switch (true) {
@@ -224,8 +228,9 @@ function distinguish(field: TokenField, value: string): TokenType
       break
     case 'text':
       switch (value) {
-        case '{': case '}': return 'partial'
-        case '{{': case '}}': return value
+        case '{': case '}': case '|': return 'partial'
+        case '{{': case '}}':
+        case '{|': case '|}': return value
       }
       break
   }

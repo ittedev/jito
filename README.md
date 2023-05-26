@@ -37,7 +37,7 @@ From jsDelivr.
 
 ```js
 <script type="module">
-  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.2.2/jito.js'
+  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.3.0/jito.js'
   ...
 </script>
 ```
@@ -45,7 +45,7 @@ From jsDelivr.
 ### For Deno
 
 ```ts
-import { ... } from 'https://deno.land/x/jito@1.2.2/mod.ts'
+import { ... } from 'https://deno.land/x/jito@1.3.0/mod.ts'
 ```
 
 ### For Node.js
@@ -98,3 +98,4 @@ Please save the following code as `example.html` and try opening it in your web 
 | Virtual DOM | load, patch | ✓ |  |
 | Template Engine | parse, evaluate, pickup | ✓ | ✓ |
 | Web Components | compact, mount, define, elementize | ✓ |  |
+| Router | walk | ✓ | ✓ |

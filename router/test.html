@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>virtual_dom/load.test.js</title>
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<div id="mocha"></div>
+<script src="https://unpkg.com/chai/chai.js"></script>
+<script>
+var i = 0
+var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
+</script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
+<script type="module">
+import {
+  MemoryHistory,
+  walk,
+} from '../router.js'
+import {
+  compact,
+  elementize,
+} from '../jito.js'
+
+
+mocha.setup('bdd')
+
+describe('Router', function() {
+  describe('MemoryHistory', function() {
+    describe('new:', function() {
+      it('pushState state', () => {
+        let history = new MemoryHistory()
+        equal(history.state, null)
+        equal(history.length, 1)
+      })
+    })
+
+    describe('pushState():', function() {
+      it('pushState state', () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        equal(history.state, 100)
+        equal(history.length, 2)
+      })
+      it('pushState states', () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abc')
+        equal(history.state, 200)
+        equal(history.length, 3)
+      })
+    })
+
+    describe('replaceState():', function() {
+      it('replaceState state', () => {
+        let history = new MemoryHistory()
+        history.replaceState(100, '', 'abc')
+        equal(history.state, 100)
+        equal(history.length, 1)
+      })
+      it('replaceState states', () => {
+        let history = new MemoryHistory()
+        history.replaceState(100, '', 'abc')
+        history.replaceState(200, '', 'abc')
+        equal(history.state, 200)
+        equal(history.length, 1)
+      })
+    })
+
+    describe('go():', function() {
+      it('no back', async () => {
+        let history = new MemoryHistory()
+        history.back()
+        await sleep(1)
+        equal(history.state, null)
+        equal(history.length, 1)
+      })
+
+      it('back', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.back()
+        equal(history.state, 100)
+        equal(history.length, 2)
+        await sleep(1)
+        equal(history.state, null)
+        equal(history.length, 2)
+      })
+
+      it('no forward', async () => {
+        let history = new MemoryHistory()
+        history.forward()
+        await sleep(1)
+        equal(history.state, null)
+        equal(history.length, 1)
+      })
+
+      it('forward', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.back()
+        await sleep(1)
+        history.forward()
+        equal(history.state, null)
+        equal(history.length, 2)
+        await sleep(1)
+        equal(history.state, 100)
+        equal(history.length, 2)
+      })
+      it('go -2', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        history.go(-2)
+        equal(history.state, 200)
+        equal(history.length, 3)
+        await sleep(1)
+        equal(history.state, null)
+        equal(history.length, 3)
+      })
+      it('go 2', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        history.go(-2)
+        await sleep(1)
+        history.go(2)
+        equal(history.state, null)
+        equal(history.length, 3)
+        await sleep(1)
+        equal(history.state, 200)
+        equal(history.length, 3)
+      })
+    })
+
+    describe('popstate:', function() {
+      it('add listener', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        let state
+        history.addEventListener('popstate', event => {
+          state = event.state
+        })
+        history.back()
+        equal(state, undefined)
+        await sleep(1)
+        equal(state, 100)
+      })
+
+      it('remove listener', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        let state
+        let listener = event => {
+          state = event.state
+        }
+        history.addEventListener('popstate', listener)
+        history.removeEventListener('popstate', listener)
+        history.back()
+        await sleep(1)
+        equal(state, undefined)
+      })
+
+      it('multi listener', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        let count = 0
+        history.addEventListener('popstate', event => {
+          count += 1
+        })
+        history.addEventListener('popstate', event => {
+          count += 2
+        })
+        history.back()
+        equal(count, 0)
+        await sleep(1)
+        equal(count, 3)
+      })
+
+      it('stop multi listener', async () => {
+        let history = new MemoryHistory()
+        history.pushState(100, '', 'abc')
+        history.pushState(200, '', 'abcd')
+        let count = 0
+        history.addEventListener('popstate', event => {
+          count += 1
+          event.stopImmediatePropagation()
+        })
+        history.addEventListener('popstate', event => {
+          count += 2
+        })
+        history.back()
+        equal(count, 0)
+        await sleep(1)
+        equal(count, 1)
+      })
+    })
+  })
+
+  describe('walk()', function() {
+    describe('new:', function() {
+      it('history', () => {
+        let router = walk(history)
+        equal(router.size, 0)
+        equal(router.panel, null)
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+      it('MemoryHistory', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        equal(router.size, 0)
+        equal(router.panel, null)
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+    })
+
+    describe('page():', function() {
+      it('page single string', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('a')
+
+        equal(router.size, 1)
+      })
+
+      it('page empty string', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('')
+
+        equal(router.size, 1)
+      })
+
+      it('page slashed string', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('a/b')
+
+        equal(router.size, 1)
+      })
+
+      it('page has a param', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page(':param1/b')
+
+        equal(router.size, 1)
+      })
+
+      it('multi page', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('a/b')
+        page(':param1/b')
+
+        equal(router.size, 2)
+      })
+
+      it('wildcard page', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('*')
+
+        equal(router.size, 1)
+      })
+    })
+
+    describe('open():', function() {
+      it('open no page', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { open } = router
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open single string', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a')
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open single string fail', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a')
+
+        let result = ''
+        await open('b')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open empty string', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('')
+
+        let result = ''
+        await open('')
+        .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'success')
+        equal(router.pathname, '')
+        equal(router.pattern, '')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open empty string fail', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('')
+
+        let result = ''
+        await open('a')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open slashed string', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a/b')
+
+        let result = ''
+        await open('a/b')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'success')
+        equal(router.pathname, 'a/b')
+        equal(router.pattern, 'a/b')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open slashed string fail', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a/b')
+
+        let result = ''
+        await open('a/a')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open wildcard', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('*')
+
+        let result = ''
+        await open('a/a')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'success')
+        equal(router.pathname, 'a/a')
+        equal(router.pattern, '*')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open has a param', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page(':param1/b')
+
+        let result = ''
+        await open('a/b')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'success')
+        equal(router.pathname, 'a/b')
+        equal(router.pattern, ':param1/b')
+        equal(router.params, { param1: 'a' })
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('multi open', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page(':param1/b')
+        page('a/:param2')
+
+        let result = ''
+        await open('a/b')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'success')
+        equal(router.pathname, 'a/b')
+        equal(router.pattern, 'a/:param2')
+        equal(router.params, { param2: 'b' })
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open has props', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a')
+
+        let result = ''
+        await open('a', { name: 'Jito' })
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, { name: 'Jito' })
+        equal(router.query, {})
+      })
+
+      it('open has query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a')
+
+        let result = ''
+        await open('a', null, { name: 'Jito' })
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, { name: 'Jito' })
+      })
+    })
+
+    describe('next():', function() {
+      it('not use next through', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', () => {})
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('next through', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ next }) => next())
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('next change props', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ next }) => next({ name: 'Jito' }))
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, { name: 'Jito' })
+        equal(router.query, {})
+      })
+
+      it('next change query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ next }) => next(null, { name: 'Jito' }))
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, { name: 'Jito' })
+      })
+    })
+
+    describe('block():', function() {
+      it('not use block', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', () => false)
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('use block', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ block }) => block())
+        page('(:param1)')
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('use block call', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let x = 0
+        let middleware = () => { x++ }
+        page('a', ({ block }) => block(middleware))
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(x, 1)
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('use block call through', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let middleware = ({ next }) => next({ name: 'Jito' })
+        page('a', ({ block }) => block(middleware))
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+    })
+
+    describe('through():', function() {
+      it('use through', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ through }) => through())
+        page(':param1')
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, ':param1')
+        equal(router.params, { param1: 'a' })
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('use through no match', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ through }) => through())
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('use through reset props', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ next }) => next({ name: 'Jito' }), ({ through }) => through())
+        page(':param1')
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, ':param1')
+        equal(router.params, { param1: 'a' })
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+    })
+
+    describe('redirect():', function() {
+      it('redirect', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ redirect }) => redirect('b'))
+        page('b')
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'b')
+        equal(router.pattern, 'b')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('redirect fail', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ redirect }) => redirect('b'))
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('redirect has props and query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ redirect, props, query }) => redirect('b', props, query))
+        page('b')
+
+        let result = ''
+        await open('a', { name: 'Beako' }, { name: 'Jito' })
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'b')
+        equal(router.pattern, 'b')
+        equal(router.params, {})
+        equal(router.props, { name: 'Beako' })
+        equal(router.query, { name: 'Jito' })
+      })
+
+      it('redirect has not props and query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ redirect }) => redirect('b'))
+        page('b')
+
+        let result = ''
+        await open('a', { name: 'Beako' }, { name: 'Jito' })
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'b')
+        equal(router.pattern, 'b')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('multi redirect', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a', ({ redirect }) => redirect('b'))
+        page('b', ({ redirect }) => redirect('c'))
+        page('c')
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'c')
+        equal(router.pattern, 'c')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+    })
+
+    describe('branch():', function() {
+      it('branch', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch }) => branch('c'))
+        let { page: childPage } = childRouter
+        childPage('b')
+        childPage('c')
+
+        let result = ''
+        let context = {}
+        await open('a')
+          .then((c) => {
+            context = c
+            result = 'success'
+          })
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'c')
+        equal(router.pattern, 'c')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+        equal(context.parent.pathname, 'a')
+        equal(context.parent.pattern, 'a')
+      })
+
+      it('branch fail', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch }) => branch('c'))
+        let { page: childPage } = childRouter
+        childPage('b')
+
+        let result = ''
+        let context = {}
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('branch has props and query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch, props, query }) => branch('b', props, query))
+        let { page: childPage } = childRouter
+        childPage('b')
+
+        let result = ''
+        let context = {}
+        await open('a', { name: 'Beako' }, { name: 'Jito' })
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'b')
+        equal(router.pattern, 'b')
+        equal(router.params, {})
+        equal(router.props, { name: 'Beako' })
+        equal(router.query, { name: 'Jito' })
+      })
+
+      it('branch has not props and query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch }) => branch('b'))
+        let { page: childPage } = childRouter
+        childPage('b')
+
+        let result = ''
+        let context = {}
+        await open('a', { name: 'Beako' }, { name: 'Jito' })
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'b')
+        equal(router.pattern, 'b')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('multi branch', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let childRouter = page('a', ({ branch }) => branch('b'))
+        let { page: childPage } = childRouter
+        let grandchildRouter = childPage('b', ({ branch }) => branch('c'))
+        let { page: grandchildPage } = grandchildRouter
+        grandchildPage('c')
+
+        let result = ''
+        let context = {}
+        await open('a')
+          .then((c) => {
+            context = c
+            result = 'success'
+          })
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'c')
+        equal(router.pattern, 'c')
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+        equal(context.parent.pathname, 'b')
+        equal(context.parent.pattern, 'b')
+        equal(context.parent.parent.pathname, 'a')
+        equal(context.parent.parent.pattern, 'a')
+      })
+    })
+
+    describe('call():', function() {
+      it('call middleware', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        let middleware = ({ next }) => next({ name: 'Jito' })
+        page('a', ({ call }) => call(middleware))
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, { name: 'Jito' })
+        equal(router.query, {})
+      })
+    })
+
+    describe('section():', function() {
+      it('section middlewares', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, section, open } = router
+        let middleware1 = ({ next }) => next({ name: 'Jito' })
+        let middleware2 = ({ next }) => next(null, { name: 'beako' })
+        let newPage = section(middleware1, middleware2)
+        newPage('a')
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'success')
+        equal(router.pathname, 'a')
+        equal(router.pattern, 'a')
+        equal(router.params, {})
+        equal(router.props, { name: 'Jito' })
+        equal(router.query, { name: 'beako' })
+      })
+    })
+
+    describe('history methods:', function() {
+      it('open()', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('a')
+
+        open('a')
+        await sleep(10)
+        equal(history.state, null)
+        equal(history.length, 1)
+      })
+
+      it('push()', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, push } = router
+        page('a')
+
+        push('a', { name: 'Jito' })
+        await sleep(10)
+        equal(history.state.props, { name: 'Jito' })
+        equal(history.length, 2)
+      })
+
+      it('replace()', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, replace } = router
+        page('a')
+
+        replace('a', { name: 'Jito' })
+        await sleep(10)
+        equal(history.state.props, { name: 'Jito' })
+        equal(history.length, 1)
+      })
+
+      it('back()', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, push, back } = router
+        page('a')
+        page('b')
+
+        push('a', { name: 'beako' })
+        push('b', { name: 'Jito' })
+        await sleep(10)
+        back()
+        await sleep(5)
+        equal(history.state.props, { name: 'beako' })
+        equal(history.length, 3)
+      })
+
+      it('forward()', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, push, back, forward } = router
+        page('a')
+        page('b')
+
+        push('a', { name: 'beako' })
+        push('b', { name: 'Jito' })
+        await sleep(10)
+        back()
+        await sleep(5)
+        forward()
+        await sleep(5)
+        equal(history.state.props, { name: 'Jito' })
+        equal(history.length, 3)
+      })
+
+      it('go()', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, push, go } = router
+        page('a')
+        page('b')
+        page('c')
+
+        push('a', { name: 'beako' })
+        push('b', { name: 'Jito' })
+        push('c', { name: 'Hello' })
+        await sleep(10)
+        go(-2)
+        await sleep(10)
+        equal(history.state.props, { name: 'beako' })
+        equal(history.length, 4)
+      })
+
+      it('over back()', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, push, back } = router
+        page('a')
+
+        push('a', { name: 'beako' })
+        back()
+        await sleep(5)
+        equal(history.state, null)
+        equal(history.length, 2)
+      })
+    })
+
+    describe('embed():', function() {
+      it('embed element', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open, embed } = router
+        let el = document.createElement('p')
+        page('a', embed(el))
+
+        equal(router.panel, null)
+        await open('a')
+        equal(router.panel === el, true)
+      })
+
+      it('embed component', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open, embed } = router
+        let component = compact('<p />')
+        page('a', embed(component))
+
+        equal(router.panel, null)
+        await open('a')
+        equal(router.panel === component, true)
+      })
+
+      it('embed elementize', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open, embed } = router
+        let component = compact('Hello')
+        page('a', embed(component, elementize))
+
+        equal(router.panel, null)
+        await open('a')
+        equal(router.panel === component, false)
+        await sleep()
+        equal(router.panel.shadowRoot.innerHTML, 'Hello')
+      })
+    })
+
+    describe('link():', function() {
+      it('output chunk', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { link } = router
+
+        let chunk = link('a')
+
+        equal(chunk.href, 'a')
+      })
+
+      it('output chunk has query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { link } = router
+
+        let chunk = link('a', undefined, { name: 'Jito' })
+
+        equal(chunk.href, 'a?name=Jito')
+      })
+
+      it('output chunk multiple', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { link } = router
+
+        let chunk1 = link('a')
+        let chunk2 = link('a')
+
+        equal(chunk1 === chunk2, true)
+      })
+
+      it('output chunk multiple has props', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { link } = router
+
+        let chunk1 = link('a', {})
+        let chunk2 = link('a', {})
+
+        equal(chunk1 === chunk2, false)
+      })
+
+      it('link push', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, link } = router
+        page('a')
+
+        let chunk = link('a')
+        chunk.onclick(new Event('click'))
+        await sleep(10)
+
+        equal(history.state.pathname, 'a')
+      })
+    })
+  })
+})
+
+mocha.run()
+</script>

@@ -17,6 +17,7 @@ export type Template =
   TryTemplate |
   IfTemplate |
   ForTemplate |
+  BindTemplate |
   ElementTemplate |
   CustomElementTemplate |
   TreeTemplate |
@@ -146,6 +147,13 @@ export interface ForTemplate {
   isTryed: boolean
 }
 
+export interface BindTemplate {
+  type: 'bind'
+  name: string
+  to?: Template
+  value: Template
+}
+
 export interface TreeTemplate {
   type: 'tree'
   children?: Array<Template | string>
@@ -164,6 +172,7 @@ export interface ElementTemplate {
   bools?: Record<string, unknown | Template>
   style?: string | JoinTemplate
   on?: Record<string, Array<HandlerTemplate>>
+  chunks?: Array<Template>
   children?: Array<Template | string>
 }
 
@@ -180,6 +189,7 @@ export interface CustomElementTemplate {
   bools?: Record<string, unknown | Template>
   style?: string | JoinTemplate
   on?: Record<string, Array<HandlerTemplate>>
+  chunks?: Array<Template>
   children?: Array<Template | string>
 }
 
@@ -191,6 +201,7 @@ export interface GroupTemplate {
   bools: undefined
   style: undefined
   on: undefined
+  chunks: undefined
   children?: Array<Template | string>
 }
 
@@ -276,6 +287,8 @@ export type TokenType =
   '}' |
   '{{' |
   '}}' |
+  '{|' |
+  '|}' |
   '${' |
   '}' |
   '<!--' |

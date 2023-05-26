@@ -216,18 +216,7 @@ export let evaluate = function (
       }, '')
 
     case 'flags': {
-      let value = evaluate(temp.value, stack, cache)
-
-      if (typeof value === 'string') {
-        return value.split(/\s+/)
-      } else if (typeof value === 'object') {
-        if (Array.isArray(value)) {
-          return value
-        } else if (value) {
-          return Object.keys(value).filter(key => (value as Record<string, unknown>)[key])
-        }
-      }
-      return []
+      return translateClassArray(evaluate(temp.value, stack, cache))
     }
 
     case 'try':
@@ -264,7 +253,7 @@ export let evaluate = function (
           entries = Object.entries(array)
         }
       } else {
-        entries = [[0, array]] // or errer?
+        throw Error('@fo syntax requires Object or Array')
       }
       return entries
         .map(([key, value], index) => {
@@ -289,6 +278,15 @@ export let evaluate = function (
           ary.push(...values)
           return ary
         }, [])
+    }
+
+    case 'bind': {
+      let to = temp.to ? evaluate(temp.to, stack, cache) : undefined
+      return evaluate(
+        temp.value,
+        stack.concat([{ [temp.name]: to }]),
+        cache
+      )
     }
 
     case 'tree': {
@@ -470,8 +468,37 @@ export function evaluateAttrs(
   ve: VirtualElement | RealTarget
 ): void
 {
+  if (template.chunks) {
+    template.chunks.forEach(chunk => {
+      let result = evaluate(chunk, stack, cache)
+      if (typeof result === 'object' && result !== null && Object.getPrototypeOf(result) === Object.prototype) {
+        for (let key in result) {
+          let value = (result as Record<string, unknown>)[key]
+          if (key === 'style') {
+            ve.style = (ve.style || '') + value
+          } else if (key === 'class') {
+            ve.class = (ve.class || []).concat(translateClassArray(value))
+          } else if (key === 'part') {
+            ve.part = (ve.part || []).concat(translateClassArray(value))
+          } else if (key.startsWith('on')) {
+            let type = key.slice(2)
+            if (!ve.on) {
+              ve.on = {}
+            }
+            ve.on[type] = (ve.on[type] || []).concat(Array.of(value) ? value as EventListener[] : [value as EventListener])
+          } else {
+            if (!ve.attrs) {
+              ve.attrs = {}
+            }
+            ve.attrs[key] = value
+          }
+        }
+      }
+    })
+  }
+
   if (template.style) {
-    ve.style = typeof template.style === 'string' ? template.style : evaluate(template.style, stack, cache) as string
+    ve.style = (ve.style || '') + (typeof template.style === 'string' ? template.style : evaluate(template.style, stack, cache) as string)
   }
 
   if (template.bools) {
@@ -518,7 +545,7 @@ export function evaluateAttrs(
       ve.on = {}
     }
     for (let type in template.on) {
-      ve.on[type] = template.on[type].map(listener => evaluate(listener, stack, cache) as EventListener)
+      ve.on[type] = (ve.on[type] || []).concat(template.on[type].map(listener => evaluate(listener, stack, cache) as EventListener))
     }
   }
 }
@@ -618,4 +645,18 @@ export function operateBinary(operator: string, left: any, right: any)
     // Other operators
     default: throw Error(operator + ' does not exist')
   }
+}
+
+function translateClassArray(value: unknown) {
+
+  if (typeof value === 'string') {
+    return value.split(/\s+/)
+  } else if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      return value
+    } else if (value) {
+      return Object.keys(value).filter(key => (value as Record<string, unknown>)[key])
+    }
+  }
+  return []
 }
