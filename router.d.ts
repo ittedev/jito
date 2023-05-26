@@ -4,32 +4,6 @@ import {
   Module,
 } from './jito.d.ts'
 
-export type MemoryHistoryStateEvent = {
-  type: 'reload' | 'popstate',
-  state: any,
-  stopImmediatePropagation: () => void
-}
-
-export class MemoryHistory implements History {
-  public scrollRestoration: 'auto' | 'manual'
-  public get length(): number
-  public get state(): any
-  public go(delta: number): void
-  public back(): void
-  public forward(): void
-  public pushState(state: any): void
-  public replaceState(state: any): void
-  public addEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void): void
-  public removeEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void): void
-}
-
-export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, props?: Record<string, unknown>) => Promise<Element>
-
-export interface NextOptions {
-  props?: Record<string, unknown>
-  query?: Record<string, string>
-}
-
 export interface PageContext {
   pathname: string | null
   pattern: string | null
@@ -38,33 +12,16 @@ export interface PageContext {
   query: Record<string, string>
 }
 
-export interface RouteContext extends PageContext {
-  parent: RouteContext | undefined
-  from: RouteContext | undefined
-}
-
-export interface MiddlewareContext extends RouteContext {
-  pathname: string
-  pattern: string
-  next: (props?: Record<string, unknown>, query?: Record<string, string>) => true
-  redirect: (pathname: string) => false
-  branch: (pathname: string) => false
-  block: (middleware?: Middleware) => void
-  through: () => void
-  call: (middleware: Middleware) => void
-}
-
-export type Middleware = (context: MiddlewareContext) => void | boolean | Promise<void | boolean>
-
 export interface CoreRouter extends PageContext {
   size: number,
   page: (pattern: string, ...middlewares: Middleware[]) => Router
   section: (...middlewares: Middleware[]) => (pattern: string, ...middlewares: Middleware[]) => Router
-  open: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<RouteContext>
+  open: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>, unused?: unknown, parent?: RouteContext) => Promise<RouteContext>
   push: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
   replace: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
   back: () => void
   forward: () => void
+  go: (delta: number) => void
   link: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => LinkChunk
 }
 
@@ -86,5 +43,63 @@ export interface Panel {
 }
 
 export interface Router extends CoreRouter, Panel {}
+
+export interface InputContext {
+  pathname: string
+  props?: Record<string, unknown>
+  query?: Record<string, string>
+}
+
+export interface RouteContext extends PageContext {
+  input?: InputContext
+  parent?: RouteContext
+  from?: RouteContext
+  pathname: string
+  pattern: string
+}
+
+export interface MiddlewareContext extends RouteContext {
+  next: (props?: Record<string, unknown>, query?: Record<string, string>) => void
+  redirect: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => void
+  branch: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => void
+  block: (middleware?: Middleware) => void
+  through: () => void
+  call: (middleware: Middleware) => void
+}
+
+export interface ValueRef<T> {
+  deref(): T | undefined
+}
+
+export type Middleware = (context: MiddlewareContext) => void | boolean | Promise<void | boolean>
+export type Pattern = string
+export type Elementize = (component: Component | Promise<Component> | Module | Promise<Module> | string, props?: Record<string, unknown>) => Promise<Element>
+export type Elementable = Component | Promise<Component> | Module | Promise<Module> | string | Element | Promise<Element>
+export type ParamHashs = [string, number][]
+export type Page = [Pattern, ParamHashs, Middleware[], ValueRef<Router>]
+export type Kinds = Set<number>
+export type Pages = Map<string, Page>
+export type PageTupple = [Kinds, Pages]
+export type MatchedPageData = [Record<string, string>, Page]
+
+export type MemoryHistoryStateEvent = {
+  type: 'reload' | 'popstate',
+  // deno-lint-ignore no-explicit-any
+  state: any,
+  stopImmediatePropagation: () => void
+}
+
+export class MemoryHistory implements History {
+  public scrollRestoration: 'auto' | 'manual'
+  public get length(): number
+  public get state(): any
+  public go(delta: number): void
+  public back(): void
+  public forward(): void
+  public pushState(state: any): void
+  public replaceState(state: any): void
+  public addEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void): void
+  public removeEventListener(type: 'reload' | 'popstate', listener: (event: MemoryHistoryStateEvent) => void): void
+}
 
 export function walk(history?: History | MemoryHistory): Router
