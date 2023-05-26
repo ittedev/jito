@@ -912,6 +912,19 @@ describe('Router', function() {
         equal(history.state.props, { name: 'beako' })
         equal(history.length, 4)
       })
+
+      it('over back()', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, push, back } = router
+        page('a')
+
+        push('a', { name: 'beako' })
+        back()
+        await sleep(5)
+        equal(history.state, null)
+        equal(history.length, 2)
+      })
     })
   })
 })

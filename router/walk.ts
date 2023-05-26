@@ -13,14 +13,24 @@ import {
   Elementize,
   Middleware,
   MiddlewareContext,
+  InputContext,
   ValueRef,
 } from './type.ts'
 import { MemoryHistory } from './memory_history.ts'
 
 export function walk(history: History | MemoryHistory = new MemoryHistory()): Router
 {
+  let router: Router
   let pageTupples: PageTupple[] = []
   let elements: Map<string, Element> = new Map<string, Element>()
+
+  let assign = (context: RouteContext) => {
+    router.pathname = context.pathname
+    router.pattern = context.pattern
+    router.params = context.params // todo sharrow copy
+    router.props = context.props // todo sharrow copy
+    router.query = context.query // todo sharrow copy
+  }
 
   let page = (pattern: string, ...middlewares: Middleware[]) => {
     let child = walk()
@@ -59,6 +69,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     parent?: RouteContext,
   ): Promise<RouteContext> => {
     return new Promise<RouteContext>((resolve, reject) => {
+      let input = { pathname, props, query }
       let mutchedData = find(pathname)
       if (mutchedData) {
         let contextPart = {
@@ -121,6 +132,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
           }
           if (resultType === 1) {
             resolve({
+              input,
               parent,
               from: history.state as RouteContext,
               pathname: (mutchedData as MatchedPageData).pathname,
@@ -137,11 +149,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
         reject(Error('not found'))
       }
     }).then(context => {
-      router.pathname = context.pathname
-      router.pattern = context.pattern
-      router.params = context.params // todo sharrow copy
-      router.props = context.props // todo sharrow copy
-      router.query = context.query // todo sharrow copy
+      assign(context)
       return context
     })
   }
@@ -168,7 +176,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   let forward = () => history.forward()
   let go = (delta: number) => history.go(delta)
 
-  let router: Router = {
+  router = {
     pathname: null,
     pattern: null,
     params: {},
@@ -233,15 +241,22 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     }
   }
 
+  let listener = (event: PopStateEvent) => {
+    if (event.state) {
+      let context = event.state as RouteContext
+      while(context.parent) {
+        context = context.parent
+      }
+      let input = context.input as InputContext
+      open(input.pathname, input.props, input.query)
+    }
+  }
+
   if (history === self.history) {
-    self.addEventListener('popstate', (event) => {
-      let pathname = event.state && 'pathname' in event.state ? event.state.pathname : location.pathname
-      open(pathname).catch(() => {}) // プロパティが必要？、ブロックされたときにどうするか
-    })
+    self.addEventListener('popstate', listener)
   } else {
-    (history as MemoryHistory).addEventListener('popstate', event => {
-      open(event.state.pathname).catch(() => {}) // プロパティが必要？、ブロックされたときにどうするか
-    })
+    // deno-lint-ignore no-explicit-any
+    (history as MemoryHistory).addEventListener('popstate', listener as any)
   }
 
   return router
@@ -272,6 +287,7 @@ class TimeRef<T> implements ValueRef<T>
 
 function clone(context: RouteContext, removeFrom = false): RouteContext {
   return {
+    input: context.input,
     parent: context.parent ? clone(context.parent, removeFrom) : undefined,
     from: !removeFrom && context.from ? clone(context.from, removeFrom) : undefined,
     pathname: context.pathname,

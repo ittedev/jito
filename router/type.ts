@@ -37,14 +37,21 @@ export interface Panel {
 
 export interface Router extends CoreRouter, Panel {}
 
+export interface InputContext {
+  pathname: string
+  props?: Record<string, unknown>
+  query?: Record<string, string>
+}
+
 export interface RouteContext extends PageContext {
-  parent: RouteContext | undefined
-  from: RouteContext | undefined
+  input?: InputContext
+  parent?: RouteContext
+  from?: RouteContext
+  pathname: string
+  pattern: string
 }
 
 export interface MiddlewareContext extends RouteContext {
-  pathname: string
-  pattern: string
   next: (props?: Record<string, unknown>, query?: Record<string, string>) => void
   redirect: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => void
   branch: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => void
