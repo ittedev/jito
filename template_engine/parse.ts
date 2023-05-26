@@ -148,8 +148,13 @@ function parseBind(lexer: DomLexer): Template
   let el = lexer.node as TemporaryElement
   if (hasAttr(el, '@bind')) {
     let name = getAttr(el, '@bind')
-    let to = expression(getAttr(el, '@to'))
-    return { type: 'bind', name, to, value: parseLet(lexer) } as BindTemplate
+    let template = { type: 'bind', name } as BindTemplate
+    let to = getAttr(el, '@to')
+    if (to) {
+      template.to = expression(to)
+    }
+    template.value = parseLet(lexer)
+    return template
   } else {
     return parseLet(lexer)
   }

@@ -281,7 +281,7 @@ export let evaluate = function (
     }
 
     case 'bind': {
-      let to = evaluate(temp.to, stack, cache)
+      let to = temp.to ? evaluate(temp.to, stack, cache) : undefined
       return evaluate(
         temp.value,
         stack.concat([{ [temp.name]: to }]),

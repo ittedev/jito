@@ -150,7 +150,7 @@ export interface ForTemplate {
 export interface BindTemplate {
   type: 'bind'
   name: string
-  to: Template
+  to?: Template
   value: Template
 }
 

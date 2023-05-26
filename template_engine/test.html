@@ -1722,6 +1722,22 @@ describe('Template Engine', function() {
           ]
         })
       })
+      it('parse: @bind only', () => {
+        let template = parse('<p @bind="x"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "bind",
+              name: "x",
+              value: {
+                tag: "p",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
     })
 
     describe(': <let>', function() {
@@ -3344,6 +3360,16 @@ describe('Template Engine', function() {
             {
               tag: "p",
               children: ["5"]
+            },
+          ]
+        })
+      })
+      it('evaluate: @bind only', () => {
+        let tree = evaluate(parse('<p @bind="y">{| y |}</p>'), [{ x: 4 }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p"
             },
           ]
         })
