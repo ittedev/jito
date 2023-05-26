@@ -87,104 +87,108 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     return new Promise<RouteContext>((resolve, reject) => {
       let input = { pathname, props, query }
       ;(async () => {
-        let resultType: ResultType = ResultType.Through
+        try {
+          let resultType: ResultType = ResultType.Through
 
-        let through = () => {
-          resultType = ResultType.Through
-        }
-
-        let redirect = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
-          open(pathname, props, query).then(resolve).catch(reject)
-          resultType = ResultType.Other
-        }
-
-        for (let mutchedData of find(pathname)) {
-          console.log('mutchedData:', mutchedData)
-          let contextPart = {
-            parent,
-            from: history.state,
-            pathname,
-            params: mutchedData[0],
-            pattern: mutchedData[1][0],
+          let through = () => {
+            resultType = ResultType.Through
           }
-          let currentProps = props || {}
-          let currentQuery = query || {}
 
-          let branch = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
-            let child = mutchedData[1][3].deref() as Router
-            if (child) {
-              child.open(
-                pathname,
-                props,
-                query,
-                null,
-                Object.assign({
-                  props: currentProps, // todo sharrow copy
-                  query: currentQuery, // todo sharrow copy
-                }, contextPart)).then(resolve).catch(reject)
-            }
+          let redirect = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
+            open(pathname, props, query).then(resolve).catch(reject)
             resultType = ResultType.Other
           }
 
-          let next = (props?: Record<string, unknown>, query?: Record<string, string>) => {
-            if (props) {
-              currentProps = props
+          for (let mutchedData of find(pathname)) {
+            console.log('mutchedData:', mutchedData)
+            let contextPart = {
+              parent,
+              from: history.state,
+              pathname,
+              params: mutchedData[0],
+              pattern: mutchedData[1][0],
             }
-            if (query) {
-              currentQuery = query
-            }
-          }
+            let currentProps = props || {}
+            let currentQuery = query || {}
 
-          resultType = ResultType.Success
-          for (let middleware of mutchedData[1][2]) {
-            let context: MiddlewareContext = Object.assign({
-              props: currentProps, // todo sharrow copy
-              query: currentQuery, // todo sharrow copy
-              next,
-              redirect,
-              branch,
-              through,
-              block: async (middleware?: Middleware) => {
+            let branch = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
+              let child = mutchedData[1][3].deref() as Router
+              if (child) {
+                child.open(
+                  pathname,
+                  props,
+                  query,
+                  null,
+                  Object.assign({
+                    props: currentProps, // todo sharrow copy
+                    query: currentQuery, // todo sharrow copy
+                  }, contextPart)).then(resolve).catch(reject)
+              }
+              resultType = ResultType.Other
+            }
+
+            let next = (props?: Record<string, unknown>, query?: Record<string, string>) => {
+              if (props) {
+                currentProps = props
+              }
+              if (query) {
+                currentQuery = query
+              }
+            }
+
+            resultType = ResultType.Success
+            for (let middleware of mutchedData[1][2]) {
+              let context: MiddlewareContext = Object.assign({
+                props: currentProps, // todo sharrow copy
+                query: currentQuery, // todo sharrow copy
+                next,
+                redirect,
+                branch,
+                through,
+                block: async (middleware?: Middleware) => {
+                  resultType = ResultType.Fail
+                  if (middleware) {
+                    await middleware(context)
+                  }
+                  resultType = ResultType.Fail
+                },
+                call: async (middleware: Middleware) => await middleware(context),
+              }, contextPart)
+
+              if (await middleware(context) === false) {
                 resultType = ResultType.Fail
-                if (middleware) {
-                  await middleware(context)
-                }
-                resultType = ResultType.Fail
-              },
-              call: async (middleware: Middleware) => await middleware(context),
-            }, contextPart)
+              }
 
-            if (await middleware(context) === false) {
-              resultType = ResultType.Fail
+              if (resultType !== ResultType.Success) {
+                break
+              }
             }
-
-            if (resultType !== ResultType.Success) {
+            // deno-lint-ignore ban-ts-comment
+            // @ts-ignore
+            if (resultType !== ResultType.Through) {
+              if (resultType === ResultType.Success) {
+                resolve({
+                  input,
+                  parent,
+                  from: history.state as RouteContext,
+                  pathname,
+                  params: mutchedData[0],
+                  pattern: mutchedData[1][0],
+                  props: currentProps,
+                  query: currentQuery,
+                })
+              } else if (resultType === ResultType.Fail) {
+                reject(Error('blocked'))
+              }
               break
             }
-          }
-          // deno-lint-ignore ban-ts-comment
-          // @ts-ignore
-          if (resultType !== ResultType.Through) {
-            if (resultType === ResultType.Success) {
-              resolve({
-                input,
-                parent,
-                from: history.state as RouteContext,
-                pathname,
-                params: mutchedData[0],
-                pattern: mutchedData[1][0],
-                props: currentProps,
-                query: currentQuery,
-              })
-            } else if (resultType === ResultType.Fail) {
-              reject(Error('blocked'))
-            }
-            break
-          }
-        } // for
+          } // for
 
-        if (resultType === ResultType.Through) {
-          reject(Error('not found'))
+          if (resultType === ResultType.Through) {
+            reject(Error('not found'))
+          }
+        } catch (e) {
+          reject(e)
         }
       })()
     }).then(context => {
