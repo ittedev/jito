@@ -280,6 +280,15 @@ export let evaluate = function (
         }, [])
     }
 
+    case 'bind': {
+      let to = evaluate(temp.to, stack, cache)
+      return evaluate(
+        temp.value,
+        stack.concat([{ [temp.name]: to }]),
+        cache
+      )
+    }
+
     case 'tree': {
       let children = evaluateChildren(temp, stack, cache)
       return children.length ? { children } : {}

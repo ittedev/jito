@@ -1698,6 +1698,32 @@ describe('Template Engine', function() {
       })
     })
 
+    describe(': @bind', function() {
+      it('parse: @bind', () => {
+        let template = parse('<p @bind="x" @to="y"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "bind",
+              name: "x",
+              to: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "y"
+                }
+              },
+              value: {
+                tag: "p",
+                type: "element"
+              }
+            }
+          ]
+        })
+      })
+    })
+
     describe(': <group>', function() {
       it('parse: group', () => {
         let template = parse('<group>Hello <span>jito</span></group>')
@@ -3065,6 +3091,20 @@ describe('Template Engine', function() {
                 { tag: "span", children: ['6'] },
                 { tag: "span", children: ['10'] }
               ]
+            },
+          ]
+        })
+      })
+    })
+
+    describe(': @bind', function() {
+      it('evaluate: @bind expression', () => {
+        let tree = evaluate(parse('<p @bind="y" @to="x + 1">{| y |}</p>'), [{ x: 4 }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              children: ["5"]
             },
           ]
         })

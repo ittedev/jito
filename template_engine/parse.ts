@@ -7,6 +7,7 @@ import {
   TryTemplate,
   IfTemplate,
   ForTemplate,
+  BindTemplate,
   ElementTemplate,
   CustomElementTemplate,
   TreeTemplate,
@@ -131,13 +132,26 @@ function parseIf(lexer: DomLexer): Template
   let el = lexer.node as TemporaryElement
   if (hasAttr(el, '@if')) {
     let condition = expression(getAttr(el, '@if'))
-    let truthy = parseGroup(el)
-    lexer.pop()
+    let truthy = parseBind(lexer)
     let template = { type: 'if', condition, truthy } as IfTemplate
     if (lexer.isSkippable('@else')) {
       template.falsy = parseChild(lexer.skip())
     }
     return template
+  } else {
+    return parseBind(lexer)
+  }
+}
+
+function parseBind(lexer: DomLexer): Template
+{
+  let el = lexer.node as TemporaryElement
+  if (hasAttr(el, '@bind')) {
+    let name = getAttr(el, '@bind')
+    let to = expression(getAttr(el, '@to'))
+    let value = parseGroup(el)
+    lexer.pop()
+    return { type: 'bind', name, to, value } as BindTemplate
   } else {
     return parseGroup(lexer.pop() as TemporaryElement)
   }
