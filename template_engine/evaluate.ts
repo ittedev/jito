@@ -253,7 +253,7 @@ export let evaluate = function (
           entries = Object.entries(array)
         }
       } else {
-        entries = [[0, array]] // or errer?
+        throw Error('@fo syntax requires Object or Array')
       }
       return entries
         .map(([key, value], index) => {
