@@ -1737,8 +1737,8 @@ describe('Template Engine', function() {
           ]
         })
       })
-      it('parse: let skip child', () => {
-        let template = parse('<let><span />x</let>Hello')
+      it('parse: let no end tag', () => {
+        let template = parse('<let>Hello')
         equal(template, {
           type: 'tree',
           children: [
@@ -1858,7 +1858,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @if and <let>', () => {
-        let template = parse('<let @if="isActive" />Hello')
+        let template = parse('<let @if="isActive">Hello')
         equal(template, {
           type: 'tree',
           children: [
@@ -1928,7 +1928,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @for and <let>', () => {
-        let template = parse('<let @for="array" />Hello')
+        let template = parse('<let @for="array">Hello')
         equal(template, {
           type: 'tree',
           children: [
@@ -2004,7 +2004,7 @@ describe('Template Engine', function() {
         })
       })
       it('parse: @bind and <let>', () => {
-        let template = parse('<let @bind="x" @to="y" />Hello')
+        let template = parse('<let @bind="x" @to="y">Hello')
         equal(template, {
           type: 'tree',
           children: [
@@ -3450,7 +3450,7 @@ describe('Template Engine', function() {
       })
 
       it('evaluate: @bind and <let>', () => {
-        let tree = evaluate(parse(`<let @bind="name" @to="'Ms.' + name" />Hello {| name |}`), [{ name: 'Jito' }])
+        let tree = evaluate(parse(`<let @bind="name" @to="'Ms.' + name">Hello {| name |}`), [{ name: 'Jito' }])
         equal(tree, {
           children: ["Hello Ms.Jito"]
         })
