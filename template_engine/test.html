@@ -1724,6 +1724,33 @@ describe('Template Engine', function() {
       })
     })
 
+    describe(': <let>', function() {
+      it('parse: let', () => {
+        let template = parse('<let />Hello')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "group",
+              children: ["Hello"]
+            }
+          ]
+        })
+      })
+      it('parse: let skip child', () => {
+        let template = parse('<let><span />x</let>Hello')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "group",
+              children: ["Hello"]
+            }
+          ]
+        })
+      })
+    })
+
     describe(': <group>', function() {
       it('parse: group', () => {
         let template = parse('<group>Hello <span>jito</span></group>')
@@ -1830,6 +1857,28 @@ describe('Template Engine', function() {
           ]
         })
       })
+      it('parse: @if and <let>', () => {
+        let template = parse('<let @if="isActive" />Hello')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "if",
+              condition: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "isActive"
+                }
+              },
+              truthy: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
       it('parse: @if and <group>', () => {
         let template = parse('<group @if="isActive">Hello</group>')
         equal(template, {
@@ -1871,6 +1920,28 @@ describe('Template Engine', function() {
                 type: "element"
               },
               falsy: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @for and <let>', () => {
+        let template = parse('<let @for="array" />Hello')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "for",
+              array: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "array"
+                }
+              },
+              value: {
                 type: "group",
                 children: ["Hello"]
               }
@@ -1927,6 +1998,52 @@ describe('Template Engine', function() {
                   type: "group",
                   children: ["Hello"]
                 }
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @bind and <let>', () => {
+        let template = parse('<let @bind="x" @to="y" />Hello')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "bind",
+              name: "x",
+              to: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "y"
+                }
+              },
+              value: {
+                type: "group",
+                children: ["Hello"]
+              }
+            }
+          ]
+        })
+      })
+      it('parse: @bind and <group>', () => {
+        let template = parse('<group @bind="x" @to="y">Hello</group>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "bind",
+              name: "x",
+              to: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "y"
+                }
+              },
+              value: {
+                type: "group",
+                children: ["Hello"]
               }
             }
           ]
@@ -3332,6 +3449,19 @@ describe('Template Engine', function() {
         })
       })
 
+      it('evaluate: @bind and <let>', () => {
+        let tree = evaluate(parse(`<let @bind="name" @to="'Ms.' + name" />Hello {| name |}`), [{ name: 'Jito' }])
+        equal(tree, {
+          children: ["Hello Ms.Jito"]
+        })
+      })
+
+      it('evaluate: @bind and <group>', () => {
+        let tree = evaluate(parse(`<group @bind="name" @to="'Ms.' + name">Hello {| name |}</group>`), [{ name: 'Jito' }])
+        equal(tree, {
+          children: ["Hello Ms.Jito"]
+        })
+      })
     })
     describe(': @for', function() {
       let xx = { name: 'xx' }

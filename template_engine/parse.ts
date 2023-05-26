@@ -149,9 +149,24 @@ function parseBind(lexer: DomLexer): Template
   if (hasAttr(el, '@bind')) {
     let name = getAttr(el, '@bind')
     let to = expression(getAttr(el, '@to'))
-    let value = parseGroup(el)
+    return { type: 'bind', name, to, value: parseLet(lexer) } as BindTemplate
+  } else {
+    return parseLet(lexer)
+  }
+}
+
+function parseLet(lexer: DomLexer): Template {
+  let el = lexer.node as TemporaryElement
+  if (el.tag === 'let') {
+    let template = {
+      type: 'group',
+    } as GroupTemplate
     lexer.pop()
-    return { type: 'bind', name, to, value } as BindTemplate
+    let nextNode = lexer.pop()
+    if (nextNode) {
+      template.children = parseTree(nextNode)
+    }
+    return template
   } else {
     return parseGroup(lexer.pop() as TemporaryElement)
   }
@@ -166,7 +181,7 @@ function parseGroup(el: TemporaryElement): Template
     if (el.attrs) {
       el.attrs.forEach(([name,, value]) => {
         // syntax attribute
-        if (name.match(/^@(if|else|for|each)$/)) return
+        if (name.match(/^@(if|else|for|each|bind|to)$/)) return
         if (name.match(/^@.*$/)) {
           if (!template.attrs) {
             template.attrs = {} as Record<string, unknown | Template>
