@@ -174,8 +174,8 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
                   pathname,
                   params: mutchedData[0],
                   pattern: mutchedData[1][0],
-                  props: currentProps,
-                  query: currentQuery,
+                  props: clone(currentProps),
+                  query: clone(currentQuery),
                 })
               } else if (resultType === ResultType.Fail) {
                 reject(Error('blocked'))
