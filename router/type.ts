@@ -21,6 +21,12 @@ export interface CoreRouter extends PageContext {
   back: () => void
   forward: () => void
   go: (delta: number) => void
+  link: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => LinkChunk
+}
+
+export interface LinkChunk {
+  href: string
+  onclick: EventListener
 }
 
 export interface Panel {
@@ -55,8 +61,8 @@ export interface MiddlewareContext extends RouteContext {
   next: (props?: Record<string, unknown>, query?: Record<string, string>) => void
   redirect: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => void
   branch: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => void
-  block: (middleware?: Middleware) => void,
-  through: () => void,
+  block: (middleware?: Middleware) => void
+  through: () => void
   call: (middleware: Middleware) => void
 }
 

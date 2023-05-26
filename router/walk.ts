@@ -15,6 +15,7 @@ import {
   MiddlewareContext,
   InputContext,
   ValueRef,
+  LinkChunk,
 } from './type.ts'
 import { MemoryHistory } from './memory_history.ts'
 
@@ -203,7 +204,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     query?: Record<string, string>,
   ) =>
     open(pathname, props, query).then(context => {
-      history.pushState(clone(context, true), '', createUrl(context))
+      history.pushState(clone(context, true), '', createUrl(context.pathname, context.query))
     }).catch(() => {})
 
   let replace = (
@@ -212,12 +213,33 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     query?: Record<string, string>,
   ) =>
     open(pathname, props, query).then(context => {
-      history.replaceState(clone(context, true), '', createUrl(context))
+      history.replaceState(clone(context, true), '', createUrl(context.pathname, context.query))
     }).catch(() => {})
 
   let back = () => history.back()
   let forward = () => history.forward()
   let go = (delta: number) => history.go(delta)
+
+  let linkHolder = new Map<string, LinkChunk>()
+  let link = (
+    pathname: string,
+    props?: Record<string, unknown>,
+    query?: Record<string, string>,
+  ) => {
+    let href = createUrl(pathname, query || {})
+    if (!props && linkHolder.has(href)) {
+      return linkHolder.get(href) as LinkChunk
+    }
+    let onclick: EventListener = (event) => {
+      push(pathname, props, query)
+      event.preventDefault()
+    }
+    let chunk = { href, onclick }
+    if (!props) {
+      linkHolder.set(href, chunk)
+    }
+    return chunk
+  }
 
   router = {
     pathname: null,
@@ -238,6 +260,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     forward,
     go,
     embed,
+    link,
   }
 
   function* find(pathname: string): Generator<MatchedPageData> {
@@ -346,13 +369,13 @@ function clone(context: RouteContext, removeFrom = false): RouteContext {
   }
 }
 
-function createUrl(context: RouteContext): string {
+function createUrl(pathname: string, query: Record<string, string>): string {
   let params = new URLSearchParams()
-  for (let key in context.query) {
-    params.append(key, context.query[key])
+  for (let key in query) {
+    params.append(key, query[key])
   }
   let queryString = params.toString()
-  return context.pathname + (queryString ? '?' + queryString : '')
+  return pathname + (queryString ? '?' + queryString : '')
 }
 
 async function appear(component: Elementable): Promise<Component | Module | Element> {

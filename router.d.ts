@@ -49,7 +49,8 @@ export interface MiddlewareContext extends RouteContext {
   next: (props?: Record<string, unknown>, query?: Record<string, string>) => true
   redirect: (pathname: string) => false
   branch: (pathname: string) => false
-  block: () => false,
+  block: (middleware?: Middleware) => void
+  through: () => void
   call: (middleware: Middleware) => void
 }
 
@@ -64,6 +65,12 @@ export interface CoreRouter extends PageContext {
   replace: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => Promise<void>
   back: () => void
   forward: () => void
+  link: (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => LinkChunk
+}
+
+export interface LinkChunk {
+  href: string
+  onclick: EventListener
 }
 
 export interface Panel {

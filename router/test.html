@@ -1114,6 +1114,63 @@ describe('Router', function() {
         equal(router.panel.shadowRoot.innerHTML, 'Hello')
       })
     })
+
+    describe('link():', function() {
+      it('output chunk', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { link } = router
+
+        let chunk = link('a')
+
+        equal(chunk.href, 'a')
+      })
+
+      it('output chunk has query', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { link } = router
+
+        let chunk = link('a', undefined, { name: 'Jito' })
+
+        equal(chunk.href, 'a?name=Jito')
+      })
+
+      it('output chunk multiple', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { link } = router
+
+        let chunk1 = link('a')
+        let chunk2 = link('a')
+
+        equal(chunk1 === chunk2, true)
+      })
+
+      it('output chunk multiple has props', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { link } = router
+
+        let chunk1 = link('a', {})
+        let chunk2 = link('a', {})
+
+        equal(chunk1 === chunk2, false)
+      })
+
+      it('link push', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, link } = router
+        page('a')
+
+        let chunk = link('a')
+        chunk.onclick(new Event('click'))
+        await sleep(10)
+
+        equal(history.state.pathname, 'a')
+      })
+    })
   })
 })
 
