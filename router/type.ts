@@ -73,11 +73,7 @@ export type Page = [Pattern, ParamHashs, Middleware[], ValueRef<Router>]
 export type Kinds = Set<number>
 export type Pages = Map<string, Page>
 export type PageTupple = [Kinds, Pages]
-export type MatchedPageData = {
-  pathname: string,
-  params: Record<string, string>,
-  page: Page,
-}
+export type MatchedPageData = [Record<string, string>, Page]
 
 export type MemoryHistoryStateEvent = {
   type: 'reload' | 'popstate',

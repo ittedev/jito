@@ -29,6 +29,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
 {
   let router: Router
   let pageTupples: PageTupple[] = []
+  let wildcard: Page | null = null
   let elements: Map<string, Element> = new Map<string, Element>()
 
   let assign = (context: RouteContext) => {
@@ -41,25 +42,34 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
 
   let page = (pattern: string, ...middlewares: Middleware[]) => {
     let child = walk()
-    let names = pattern.split('/')
-    let len = names.length
-    while (pageTupples.length < len + 1) {
-      pageTupples.push([new Set(), new Map()])
+    if (pattern === '*') {
+      wildcard = [
+        pattern,
+        [],
+        middlewares,
+        new TimeRef(child, undefined, ref => !!ref.size),
+      ]
+    } else {
+      let names = pattern.split('/')
+      let len = names.length
+      while (pageTupples.length < len + 1) {
+        pageTupples.push([new Set(), new Map()])
+      }
+      let kinds = pageTupples[len][0]
+      let pages = pageTupples[len][1]
+      let kind = names.reduce((kind, name, index) => kind | ((name[0] === ':' ? 1 : 0) << (len - 1 - index)), 0)
+      let key = names.map(name => name[0] === ':' ? '*' : name).join('/')
+      let params: ParamHashs = []
+      names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
+      kinds.add(kind)
+      pageTupples[len][0] = new Set(Array.from(kinds).sort())
+      pages.set(key, [
+        pattern,
+        params,
+        middlewares,
+        new TimeRef(child, undefined, ref => !!ref.size),
+      ])
     }
-    let kinds = pageTupples[len][0]
-    let pages = pageTupples[len][1]
-    let kind = names.reduce((kind, name, index) => kind | ((name[0] === ':' ? 1 : 0) << (len - 1 - index)), 0)
-    let key = names.map(name => name[0] === ':' ? '*' : name).join('/')
-    let params: ParamHashs = []
-    names.forEach((name, index) => name[0] === ':' && params.push([name.slice(1), index]))
-    kinds.add(kind)
-    pageTupples[len][0] = new Set(Array.from(kinds).sort())
-    pages.set(key, [
-      pattern,
-      params,
-      middlewares,
-      new TimeRef(child, undefined, ref => !!ref.size),
-    ])
     return child
   }
 
@@ -89,18 +99,19 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
         }
 
         for (let mutchedData of find(pathname)) {
+          console.log('mutchedData:', mutchedData)
           let contextPart = {
             parent,
             from: history.state,
-            pathname: mutchedData.pathname,
-            params: mutchedData.params,
-            pattern: mutchedData.page[0],
+            pathname,
+            params: mutchedData[0],
+            pattern: mutchedData[1][0],
           }
           let currentProps = props || {}
           let currentQuery = query || {}
 
           let branch = (pathname: string, props?: Record<string, unknown>, query?: Record<string, string>) => {
-            let child = (mutchedData as MatchedPageData).page[3].deref() as Router
+            let child = mutchedData[1][3].deref() as Router
             if (child) {
               child.open(
                 pathname,
@@ -125,7 +136,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
           }
 
           resultType = ResultType.Success
-          for (let middleware of mutchedData.page[2]) {
+          for (let middleware of mutchedData[1][2]) {
             let context: MiddlewareContext = Object.assign({
               props: currentProps, // todo sharrow copy
               query: currentQuery, // todo sharrow copy
@@ -159,9 +170,9 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
                 input,
                 parent,
                 from: history.state as RouteContext,
-                pathname: (mutchedData as MatchedPageData).pathname,
-                params: (mutchedData as MatchedPageData).params,
-                pattern: (mutchedData as MatchedPageData).page[0],
+                pathname,
+                params: mutchedData[0],
+                pattern: mutchedData[1][0],
                 props: currentProps,
                 query: currentQuery,
               })
@@ -212,7 +223,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
     query: {},
     panel: null,
     get size() {
-      return pageTupples.reduce((count, pageTupple) => count + pageTupple[1].size, 0)
+      return pageTupples.reduce((count, pageTupple) => count + pageTupple[1].size, 0) + (wildcard ? 1 : 0)
     },
     page,
     section,
@@ -228,18 +239,23 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   function* find(pathname: string): Generator<MatchedPageData> {
     let names = pathname.split('/')
     let len = names.length
-    let kinds = pageTupples[len][0]
-    let pages = pageTupples[len][1]
-    for (let kind of kinds) {
-      let key = names.map((name, index) => (1 << (len - 1 - index)) & kind ? '*' : name).join('/')
-      if (pages.has(key)) {
-        let page = pages.get(key) as Page
-        let params: Record<string, string> = {}
-        page[1].forEach(paramHash => {
-          params[paramHash[0]] = names[paramHash[1]]
-        })
-        yield { pathname, params, page }
+    if (pageTupples[len]) {
+      let kinds = pageTupples[len][0]
+      let pages = pageTupples[len][1]
+      for (let kind of kinds) {
+        let key = names.map((name, index) => (1 << (len - 1 - index)) & kind ? '*' : name).join('/')
+        if (pages.has(key)) {
+          let page = pages.get(key) as Page
+          let params: Record<string, string> = {}
+          page[1].forEach(paramHash => {
+            params[paramHash[0]] = names[paramHash[1]]
+          })
+          yield [ params, page ]
+        }
       }
+    }
+    if (wildcard) {
+      yield [{}, wildcard]
     }
   }
 

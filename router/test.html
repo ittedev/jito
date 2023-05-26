@@ -15,6 +15,11 @@ import {
   MemoryHistory,
   walk,
 } from '../router.js'
+import {
+  compact,
+  elementize,
+} from '../jito.js'
+
 
 mocha.setup('bdd')
 
@@ -264,9 +269,35 @@ describe('Router', function() {
 
         equal(router.size, 2)
       })
+
+      it('wildcard page', () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('*')
+
+        equal(router.size, 1)
+      })
     })
 
     describe('open():', function() {
+      it('open no page', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { open } = router
+
+        let result = ''
+        await open('a')
+          .then(() => result = 'success')
+          .catch(() => result = 'fail')
+        equal(result, 'fail')
+        equal(router.pathname, null)
+        equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
       it('open single string', async () => {
         let history = new MemoryHistory()
         let router = walk(history)
@@ -370,6 +401,24 @@ describe('Router', function() {
         equal(result, 'fail')
         equal(router.pathname, null)
         equal(router.pattern, null)
+        equal(router.params, {})
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open wildcard', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page('*')
+
+        let result = ''
+        await open('a/a')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'success')
+        equal(router.pathname, 'a/a')
+        equal(router.pattern, '*')
         equal(router.params, {})
         equal(router.props, {})
         equal(router.query, {})
@@ -1023,6 +1072,46 @@ describe('Router', function() {
         await sleep(5)
         equal(history.state, null)
         equal(history.length, 2)
+      })
+    })
+
+    describe('embed():', function() {
+      it('embed element', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open, embed } = router
+        let el = document.createElement('p')
+        page('a', embed(el))
+
+        equal(router.panel, null)
+        await open('a')
+        equal(router.panel === el, true)
+      })
+
+      it('embed component', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open, embed } = router
+        let component = compact('<p />')
+        page('a', embed(component))
+
+        equal(router.panel, null)
+        await open('a')
+        equal(router.panel === component, true)
+      })
+
+      it('embed elementize', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open, embed } = router
+        let component = compact('Hello')
+        page('a', embed(component, elementize))
+
+        equal(router.panel, null)
+        await open('a')
+        equal(router.panel === component, false)
+        await sleep()
+        equal(router.panel.shadowRoot.innerHTML, 'Hello')
       })
     })
   })
