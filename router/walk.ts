@@ -204,7 +204,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   ) =>
     open(pathname, props, query).then(context => {
       history.pushState(copy(context, true), '', createUrl(context.pathname, context.query))
-    }).catch(() => {})
+    })
 
   let replace = (
     pathname: string,
@@ -213,7 +213,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   ) =>
     open(pathname, props, query).then(context => {
       history.replaceState(copy(context, true), '', createUrl(context.pathname, context.query))
-    }).catch(() => {})
+    })
 
   let back = () => history.back()
   let forward = () => history.forward()
