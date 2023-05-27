@@ -204,7 +204,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   ) =>
     open(pathname, props, query).then(context => {
       history.pushState(copy(context, true), '', createUrl(context.pathname, context.query))
-    }).catch(() => {})
+    })
 
   let replace = (
     pathname: string,
@@ -213,7 +213,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
   ) =>
     open(pathname, props, query).then(context => {
       history.replaceState(copy(context, true), '', createUrl(context.pathname, context.query))
-    }).catch(() => {})
+    })
 
   let back = () => history.back()
   let forward = () => history.forward()
@@ -383,7 +383,9 @@ function createUrl(pathname: string, query: Record<string, string>): string {
 
 async function appear(component: Elementable): Promise<Component | Module | Element> {
   if (typeof component === 'string') {
-    return await import(component)
+    let isSameHost = import.meta && location.host === new URL(import.meta.url).host
+    let path = isSameHost ? component : location.protocol + '//' + location.host + (component[0] === '/' ? component : '/' + component)
+    return await import(path)
   } else {
     return await component
   }

@@ -73,7 +73,11 @@ class DomLexer
 
 function parseTree(node: TemporaryNode): Array<Template | string>
 {
-  let lexer = new DomLexer(node)
+  return parseNodes(new DomLexer(node))
+}
+
+function parseNodes(lexer: DomLexer): Array<Template | string>
+{
   let children = [] as Array<Template | string>
   while (lexer.node) {
     let result = parseNode(lexer)
@@ -167,9 +171,9 @@ function parseLet(lexer: DomLexer): Template {
       type: 'group',
     } as GroupTemplate
     lexer.pop()
-    let nextNode = lexer.pop()
-    if (nextNode) {
-      template.children = parseTree(nextNode)
+    let children = parseNodes(lexer)
+    if (children.length) {
+      template.children = children
     }
     return template
   } else {
