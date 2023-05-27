@@ -18,6 +18,7 @@ import {
 import {
   compact,
   elementize,
+  watch,
 } from '../jito.js'
 
 
@@ -946,6 +947,43 @@ describe('Router', function() {
         equal(router.params, {})
         equal(router.props, { name: 'Jito' })
         equal(router.query, {})
+      })
+    })
+
+    describe('size:', function() {
+      it('router size', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('a')
+        equal(router.size, 1)
+      })
+      it('router size wildcard', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('a')
+        page('*')
+        equal(router.size, 2)
+      })
+      it('router size child', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        let childRouter = page('a')
+        {
+          let { page } = childRouter
+          page('b')
+          page('c')
+        }
+        equal(childRouter.size, 2)
+      })
+      it('router size watch', async () => {
+        let history = new MemoryHistory()
+        let router = watch(walk(history))
+        let { page } = router
+        page('a')
+        equal(router.size, 1)
       })
     })
 
