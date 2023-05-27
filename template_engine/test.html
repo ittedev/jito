@@ -1784,6 +1784,37 @@ describe('Template Engine', function() {
           ]
         })
       })
+      it('parse: let next tag', () => {
+        let template = parse('<let> <p>Hello</p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              type: "group",
+              children: [
+                " ",
+                {
+                  tag: "p",
+                  type: "element",
+                  children: ["Hello"]
+                }
+              ]
+            }
+          ]
+        })
+      })
+      it('parse: let last', () => {
+        let template = parse('Hello<let>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            "Hello",
+            {
+              type: "group"
+            }
+          ]
+        })
+      })
     })
 
     describe(': <group>', function() {
@@ -1817,6 +1848,18 @@ describe('Template Engine', function() {
                 ["@as"]: "header"
               },
               children: ["Hello"]
+            }
+          ]
+        })
+      })
+      it('parse: group empty', () => {
+        let template = parse('Hello<group />')
+        equal(template, {
+          type: 'tree',
+          children: [
+            "Hello",
+            {
+              type: "group"
             }
           ]
         })
