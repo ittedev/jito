@@ -383,7 +383,9 @@ function createUrl(pathname: string, query: Record<string, string>): string {
 
 async function appear(component: Elementable): Promise<Component | Module | Element> {
   if (typeof component === 'string') {
-    return await import(component)
+    let isSameHost = import.meta && location.host === new URL(import.meta.url).host
+    let path = isSameHost ? component : location.protocol + '//' + location.host + (component[0] === '/' ? component : '/' + component)
+    return await import(path)
   } else {
     return await component
   }
