@@ -18,6 +18,7 @@ import {
 import {
   compact,
   elementize,
+  watch,
 } from '../jito.js'
 
 
@@ -949,6 +950,43 @@ describe('Router', function() {
       })
     })
 
+    describe('size:', function() {
+      it('router size', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('a')
+        equal(router.size, 1)
+      })
+      it('router size wildcard', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        page('a')
+        page('*')
+        equal(router.size, 2)
+      })
+      it('router size child', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page } = router
+        let childRouter = page('a')
+        {
+          let { page } = childRouter
+          page('b')
+          page('c')
+        }
+        equal(childRouter.size, 2)
+      })
+      it('router size watch', async () => {
+        let history = new MemoryHistory()
+        let router = watch(walk(history))
+        let { page } = router
+        page('a')
+        equal(router.size, 1)
+      })
+    })
+
     describe('section():', function() {
       it('section middlewares', async () => {
         let history = new MemoryHistory()
@@ -993,8 +1031,10 @@ describe('Router', function() {
 
         push('a', { name: 'Jito' })
         await sleep(10)
+        equal(history.state.input.pathname, 'a')
+        equal(history.state.input.props, { name: 'Jito' })
+        equal(history.state.input.query, undefined)
         equal(history.state.props, { name: 'Jito' })
-        equal(history.length, 2)
       })
 
       it('replace()', async () => {
@@ -1021,6 +1061,9 @@ describe('Router', function() {
         await sleep(10)
         back()
         await sleep(5)
+        equal(history.state.input.pathname, 'a')
+        equal(history.state.input.props, { name: 'beako' })
+        equal(history.state.input.query, undefined)
         equal(history.state.props, { name: 'beako' })
         equal(history.length, 3)
       })
@@ -1072,6 +1115,27 @@ describe('Router', function() {
         await sleep(5)
         equal(history.state, null)
         equal(history.length, 2)
+      })
+
+      it('child input', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, push } = router
+        let childRouter = page('a', ({ pathname, branch }) => branch(pathname))
+        {
+          let { page } = childRouter
+          page('a')
+        }
+        push('a', { name: 'Jito' })
+        await sleep(10)
+        equal(history.state.input.pathname, 'a')
+        equal(history.state.input.props, undefined)
+        equal(history.state.input.query, undefined)
+        equal(history.state.parent.props, { name: 'Jito' })
+        equal(history.state.parent.input.pathname, 'a')
+        equal(history.state.parent.input.props, { name: 'Jito' })
+        equal(history.state.parent.input.query, undefined)
+        equal(history.state.props, {})
       })
     })
 
