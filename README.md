@@ -10,6 +10,10 @@ You can experience single page application development with just a web browser.
 
 She support JavaScript and TypeScript for Deno.
 
+## Document
+
+[Japanese](https://zenn.dev/itte/books/5ce6aac9166aed)
+
 ## First Example
 
 Please save the following code as `example.html` and try opening it in your web browser. A counter that counts up every time you click.
@@ -37,10 +41,6 @@ Please save the following code as `example.html` and try opening it in your web 
 ## Examples
 
 [Glitch Examples](https://glitch.com/@ittedev/jito-examples)
-
-## Document
-
-[Japanese](https://zenn.dev/itte/books/5ce6aac9166aed)
 
 ## Import
 
