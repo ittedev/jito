@@ -10,6 +10,30 @@ You can experience single page application development with just a web browser.
 
 She support JavaScript and TypeScript for Deno.
 
+## First Example
+
+Please save the following code as `example.html` and try opening it in your web browser. A counter that counts up every time you click.
+
+```html
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<body></body>
+<script type="module">
+  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.3.3/jito.js'
+
+  let state = watch({
+    count: 0
+  })
+
+  let html = `
+    Counter: {| count |}
+    <button onclick="count++">Add</button>
+  `
+
+  mount(document.body, html, state)
+</script>
+```
+
 ## Examples
 
 [Glitch Examples](https://glitch.com/@ittedev/jito-examples)
@@ -62,34 +86,6 @@ Import:
 import { ... } from 'jito'
 ```
 
-
-## First Example
-
-Please save the following code as `example.html` and try opening it in your web browser. A counter that counts up every second is displayed.
-
-```html
-<!DOCTYPE html>
-<meta charset="UTF-8">
-<body></body>
-<script type="module">
-  import { mount } from './jito.js'
-
-  let main = ({ watch }) => {
-    let state = watch({
-      count: 0
-    })
-
-    return [state]
-  }
-
-  let html = `
-    Counter: {| count |}<br>
-    <button onclick="count++">Add</button>
-  `
-
-  mount(document.body, html, main)
-</script>
-```
 
 # Functions
 
