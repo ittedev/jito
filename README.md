@@ -76,15 +76,16 @@ Please save the following code as `example.html` and try opening it in your web 
 
   let main = ({ watch }) => {
     let state = watch({
-      count: 1
+      count: 0
     })
-
-    setInterval(() => { state.count++ }, 1000)
 
     return [state]
   }
 
-  let html = `Counter: {{ count }}`
+  let html = `
+    Counter: {| count |}<br>
+    <button onclick="count++">Add</button>
+  `
 
   mount(document.body, html, main)
 </script>
@@ -98,4 +99,4 @@ Please save the following code as `example.html` and try opening it in your web 
 | Virtual DOM | load, patch | ✓ |  |
 | Template Engine | parse, evaluate, pickup | ✓ | ✓ |
 | Web Components | compact, mount, define, elementize | ✓ |  |
-| Router | walk | ✓ | ✓ |
+| Router | walk | ✓ |  |
