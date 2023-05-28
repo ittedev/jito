@@ -102,6 +102,7 @@ export function walk(history: History | MemoryHistory = new MemoryHistory()): Ro
 
           for (let mutchedData of find(pathname)) {
             let contextPart = {
+              input,
               parent,
               from: history.state,
               pathname,
