@@ -384,6 +384,23 @@ describe('Data Binding', function() {
         equal(y, 106)
       })
     })
+
+    it('watch skip getter and setter', () => {
+      let x = 0
+      let y = 0
+      let data = {
+        get a() {
+          return x
+        },
+        set a(value) {
+          x = value
+        }
+      }
+      watch(data, () => { y ++ })
+      data.a = 40
+      equal(y, 0)
+      equal(data.a, 40)
+    })
   })
 
   // Test receive() function

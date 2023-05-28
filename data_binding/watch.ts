@@ -140,9 +140,10 @@ export function reactivate(obj: ReactivableObject): void
 
 export function addReactive(obj: ReactiveObject, key: string | number, reactive?: Reactive): void
 {
+  let descriptor = Object.getOwnPropertyDescriptor(obj, key) as PropertyDescriptor
   if (!Array.isArray(obj) || typeof key !== 'number' && isNaN(key as unknown as number)) { // not array
     // new key
-    if (!(key in obj[isReactive])) {
+    if (!(key in obj[isReactive]) && (!descriptor || !descriptor.set && !descriptor.get)) {
       obj[isReactive][key] = [obj[key], new Set<Reactive>()]
       Object.defineProperty(obj, key, {
         get() { return this[isReactive][key][0] },
@@ -151,14 +152,13 @@ export function addReactive(obj: ReactiveObject, key: string | number, reactive?
         }
       })
     }
-    if (reactive) {
+    if (key in obj[isReactive] && reactive) {
       for (let item of obj[isReactive][key][1]) {
         if (item[1] === reactive[1]) return
       }
       obj[isReactive][key][1].add(reactive)
     }
   } else { // array 何してる？
-    let descriptor = Object.getOwnPropertyDescriptor(obj, key)
     if (!descriptor || 'value' in descriptor) {
       if (key in (obj[isReactive][arrayKey] as Array<unknown>)) {
         Object.defineProperty(obj, key, {
