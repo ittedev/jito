@@ -4,11 +4,12 @@
 
 ## What is Jito?
 
-Jito is a web component framework with Data Binding, Template Engine, Virtual DOM and routing.
+Jito is a JavaScript web component framework with Data Binding, Template Engine, Virtual DOM and routing.
 
 You can experience single page application development with just a web browser.
 
-She support JavaScript and TypeScript for Deno.
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/ittedev/jito)
+![GitHub](https://img.shields.io/github/license/ittedev/jito)
 
 ## Document
 
