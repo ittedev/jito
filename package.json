@@ -4,18 +4,23 @@
   "description": "Web component tools with Data Binding, Template Engine and Virtual Dom for ESM.",
   "keywords": [
     "jito",
-    "spa"
+    "spa",
+    "router",
+    "framework"
   ],
   "files": [
     "LICENSE",
     "jito.js",
-    "jito.d.ts"
+    "jito.d.ts",
+    "routing.js",
+    "routing.d.ts",
+    "README.md"
   ],
   "module": "jito.js",
   "typings": "jito.d.ts",
   "exports": {
     ".": "./jito.js",
-    "./router": "./router.js"
+    "./routing": "./routing.js"
   },
   "repository": {
     "type": "git",
