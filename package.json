@@ -12,15 +12,15 @@
     "LICENSE",
     "jito.js",
     "jito.d.ts",
-    "router.js",
-    "router.d.ts",
+    "routing.js",
+    "routing.d.ts",
     "README.md"
   ],
   "module": "jito.js",
   "typings": "jito.d.ts",
   "exports": {
     ".": "./jito.js",
-    "./router": "./router.js"
+    "./routing": "./routing.js"
   },
   "repository": {
     "type": "git",

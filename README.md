@@ -4,7 +4,7 @@
 
 ## What is Jito?
 
-Jito is web component tools with Data Binding, Template Engine and Virtual DOM.
+Jito is a web component framework with Data Binding, Template Engine, Virtual DOM and routing.
 
 You can experience single page application development with just a web browser.
 
@@ -95,4 +95,4 @@ import { ... } from 'jito'
 | Virtual DOM | load, patch | ✓ |  |
 | Template Engine | parse, evaluate, pickup | ✓ | ✓ |
 | Web Components | compact, mount, define, elementize | ✓ |  |
-| Router | walk | ✓ |  |
+| Routing | walk | ✓ |  |

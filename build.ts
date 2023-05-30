@@ -12,8 +12,8 @@ await esbuild.build({
 
 await esbuild.build({
   plugins: [denoPlugin()],
-  entryPoints: ['./router/mod.ts'],
-  outfile: './router.js',
+  entryPoints: ['./routing/mod.ts'],
+  outfile: './routing.js',
   bundle: true,
   minify: true,
   format: 'esm',
