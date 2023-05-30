@@ -24,8 +24,6 @@ There are several available build-in variables.
 
 # Display expression `{| expression |}`
 
-**NOTE:** Prior to version 1.3.1, it was `{{ expression }}`. For compatibility, you can still use `{{ expression }}` in version 1.3.1 and later.
-
 ```html
 {| 10 / 2 + 'px' |}
 ```
@@ -42,13 +40,15 @@ Evaluates the expression enclosed in `{|` and `|}` and replaces it with the resu
 | object | not displayed |
 | Template | DOM Tree |
 
+**NOTE:** Prior to version 1.3.1, it was `{{ expression }}`. For compatibility, you can still use `{{ expression }}` in version 1.3.1 and later.
+
 # Tag `<word />`
 
 The word specified in the tag name is interpreted and drawn as an element. What is expanded differs depending on the word. If there are duplicate tag names, the one with the highest priority is used.
 
 | Priority | Word | What it replaces |
 | --- | --- | --- |
-| 5 | [HTML Tag name](https://developer.mozilla.org/ja/docs/Web/HTML/Element) | HTML Element |
+| 5 | HTML Tag name | HTML Element |
 | 4 | group | Grouping Tag |
 | 4 | let | Declaration Tag |
 | 3 | window | Global `window` object |
