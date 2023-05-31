@@ -136,9 +136,7 @@ If an attribute with the same name is defined with another operator, the other a
 
 ## Referential assignment operator `attr*="expression"`
 
-:::message alert
-This feature is a beta version. It is not guaranteed to work properly.
-::::: attribute
+**NOTE:** This feature is a beta version. It is not guaranteed to work properly.
 
 When you write an attribute using `*=`, the attribute value is not evaluated as an expression, but is passed as a property that is evaluated by reference. In the example below, if you assign a value to the name property in a child component, value will be updated to the same value.
 

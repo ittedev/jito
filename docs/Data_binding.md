@@ -2,7 +2,7 @@
 
 Jito provides several functions for data binding to components. These are not a set of functions intended for pure reactive programming. They are characterized by recursive observation.
 
-NOTE: Jito does not use a Proxy, but observes objects by overriding their properties. Please be careful about compatibility with other libraries as it boldly destroys objects.
+**NOTE:** Jito does not use a Proxy, but observes objects by overriding their properties. Please be careful about compatibility with other libraries as it boldly destroys objects.
 
 ## `watch()`
 
@@ -27,9 +27,7 @@ import { watch } from './jito.js'
 
 ### `watch()` method
 
-:::message
-Supported since version 1.2.0.
-::::.
+**NOTE:** Supported since version 1.2.0.
 
 - Local `watch()` method.
 - Referenced from the argument of the initialization function.
@@ -64,9 +62,7 @@ If the second argument is omitted, the object can be an object that only observe
 
 #### First run
 
-:::message
-Supported since version 1.2.0.
-:::::message
+**NOTE:** Supported since version 1.2.0.
 
 Passing `true` as the third argument will execute the callback function as well as observe recursive observation.
 
