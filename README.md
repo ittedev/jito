@@ -1,6 +1,6 @@
 # Jito
 
-<p align="center"><img src="https://xs447853.xsrv.jp/jito.png" width="150" height="150"></p>
+<p align="center"><img src="https://cdn.jitoin.com/images/jito.png" width="150" height="150"></p>
 
 ## What is Jito?
 
