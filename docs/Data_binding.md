@@ -170,7 +170,7 @@ let state = watch({
 
 setTimeout(() => { state.name = 'jito' }, 2000)
 
-let component = compact('<p>Hello {{ name }}!</p>', state)
+let component = compact('<p>Hello {| name |}!</p>', state)
 // "Hello world!" changes to "Hello jito!" after 2 seconds.
 ```
 ### Component Attributes

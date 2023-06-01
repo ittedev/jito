@@ -38,7 +38,7 @@ let stack = [
   { y: 6 }
 ]
 
-let component = compact(`<strong>{{ x + y }}</strong>`, stack)
+let component = compact(`<strong>{| x + y |}</strong>`, stack)
 ```
 
 ## Initialization function
@@ -56,7 +56,7 @@ let main = entity => {
   return [{ x, y }]
 }
 
-let component = compact(`<strong>{{ x + y }}</strong>`, main)
+let component = compact(`<strong>{| x + y |}</strong>`, main)
 ```
 
 **NOTE:** It is recommended to name the initialization function `main` for the following reasons.
@@ -78,7 +78,7 @@ let main = async () => {
   return [{ obj }]
 }
 
-let component = compact(`<strong>{{ obj.property }}</strong>`, main)
+let component = compact(`<strong>{| obj.property |}</strong>`, main)
 ```
 
 # Elementize components
@@ -101,7 +101,7 @@ The `mount()` function binds a component to an HTML element already existing in 
 ```ts
 import { compact, mount } from './jito.js'
 
-let component = compact('<p>Hello {{ name }}!</p>', [{ name: 'jito' }])
+let component = compact('<p>Hello {| name |}!</p>', [{ name: 'jito' }])
 
 mount('#target', component)
 ```
@@ -118,7 +118,7 @@ The component is elementized when you write a custom element in HTML or create a
 ```ts
 import { compact, define } from './jito.js'
 
-let component = compact('<p>Hello {{ name }}!</p>', [{ name: 'jito' }])
+let component = compact('<p>Hello {| name |}!</p>', [{ name: 'jito' }])
 
 define('hello-tag', component)
 ```
@@ -170,7 +170,7 @@ The `elementize()` function waits for the initialization function to be resolved
 ```js
 import { compact, elementize } from './jito.js'
 
-let component = compact('<p>Hello {{ name }}!</p>')
+let component = compact('<p>Hello {| name |}!</p>')
 
 let element = await elementize(component, { name: 'jito' })
 ```

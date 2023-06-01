@@ -25,7 +25,7 @@ The `<window />` tag can be used to register event handlers for the `window` obj
 let component = compact(
   `
     <window onscroll="value = window.pageYOffset" />
-    {{ value }}
+    {| value |}
   `,
   () => {
     let state = watch({
@@ -44,7 +44,7 @@ The `<host />` tag can be used to register event handlers for host elements. It 
 let component = compact(
   `
     <host ondestroy="destroyed()" />
-    {{ value }}
+    {| value |}
   `,
   () => {
     let intervalId = setInterval(() => console.log('Hello'), 500);
