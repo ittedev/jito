@@ -12,4 +12,6 @@ This document was translated from Japanese using DeepL.
 8. [Component Communications](./Communications.md)
 9. [Shadow DOM and Virtual Dom](./Shadow_dom.md)
 10. [CSS Styling](./Styling.md)
+11. [Component Replacement](./Replacement.md)
+
 11. [Routing](./Routing.md)
