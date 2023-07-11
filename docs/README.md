@@ -13,5 +13,9 @@ This document was translated from Japanese using DeepL.
 9. [Shadow DOM and Virtual Dom](./Shadow_dom.md)
 10. [CSS Styling](./Styling.md)
 11. [Component Replacement](./Replacement.md)
+12. Virtual DOM function only
+13. Template Engine only
 
-11. [Routing](./Routing.md)
+## Routing
+
+14. [Create Router](./Routing/Create_router.md.md)
