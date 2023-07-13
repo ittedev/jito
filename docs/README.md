@@ -19,3 +19,6 @@ This document was translated from Japanese using DeepL.
 ## Routing
 
 14. [Create Router](./Routing/Create_router.md)
+15. [Embed the component as a page](./Routing/Embed_component.md)
+16. [How to create middleware](./Routing/Create_middleware.md)
+17. [Custom page](./Routing/Custom_page.md)
