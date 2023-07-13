@@ -205,3 +205,7 @@ let component = compact(html, main)
 
 // => Hello!
 ```
+
+# Next
+
+4. [Template Syntax](./Template.md)

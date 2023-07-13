@@ -226,4 +226,4 @@ See [Component Communications](./Communications.md).
 
 # Next
 
-4. [Template Syntax](./Template.md)
+5. [Event Handling](./Event_handling.md)

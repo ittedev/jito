@@ -194,4 +194,4 @@ You can also ask questions, make requests, and report bugs in the Issues section
 
 # Next
 
-5. [Event Handling](./Event_handling.md)
+3. [Component](./Component.md)
