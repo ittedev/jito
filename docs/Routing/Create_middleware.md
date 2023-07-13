@@ -112,3 +112,7 @@ let userOnly = async ({ next, block }) => {
 
 page('/', userOnly, embed('/top.js'))
 ```
+
+# Next
+
+17. [Custom page](./Custom_page.md)

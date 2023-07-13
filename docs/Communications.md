@@ -295,3 +295,7 @@ If there is more than one slot or @as attribute, the `content` attribute passed 
 ### Difference between Slot and Template Passing
 
 The main difference between slotting and template passing is that slots are expanded in the parent component's DOM tree and passed to the child component, so they are treated as part of the parent component, whereas template passing is expanded in the child component's shadow tree, so they are The template passing is part of the child component because it is expanded in the shadow tree of the child component. Therefore, there are differences in access from the `root` property of the initialization function argument and in the CSS applied.
+
+# Next
+
+9. [Shadow DOM and Virtual Dom](./Shadow_dom.md)

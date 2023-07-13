@@ -161,3 +161,7 @@ export default compact(html, main)
 ```
 
 Hopefully all web browsers will support correct rendering without using such a method.
+
+# Next
+
+16. [How to create middleware](./Create_middleware.md)

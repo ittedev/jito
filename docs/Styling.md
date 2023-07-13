@@ -166,3 +166,7 @@ define(
   <custom-font color="red">Hello</custom-font>
   <custom-font color="blue">jito</custom-font>
 ```
+
+# Next
+
+11. [Component Replacement](./Replacement.md)

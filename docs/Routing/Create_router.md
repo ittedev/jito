@@ -163,3 +163,7 @@ push('/page1', { name: 'Jito' }, { id: 'jito' })
 ```
 
 The `props` value can pass any serializable data, while the `query` value can only pass strings.
+
+# Next
+
+15. [Embed the component as a page](./Embed_component.md)

@@ -184,3 +184,7 @@ let component = compact(
   }
 )
 ```
+
+# Next
+
+6. [Data Binding](./Data_binding.md)

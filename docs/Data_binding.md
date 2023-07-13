@@ -178,3 +178,7 @@ let component = compact('<p>Hello {| name |}!</p>', state)
 Components observe recursive observation of all attributes except `is`, `class`, `part`, and `style`. Note that if an attribute is given an object, it becomes a reactive object.
 
 **NOTE:** The `is`, `class`, `part`, and `style` are managed by the template engine.
+
+# Next
+
+7. [Form Binding](./Form_binding.md)

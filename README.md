@@ -113,3 +113,8 @@ To use the functions, import them from their respective files as follows.
 | Template Engine | jito.js | parse, evaluate, pickup | ✓ | ✓ |
 | Web Components | jito.js | compact, mount, define, elementize | ✓ |  |
 | Routing | routing.js | walk | ✓ |  |
+
+
+# Next
+
+2. [Tutorial](./docs/Tutorial.md)

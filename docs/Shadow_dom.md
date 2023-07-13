@@ -79,3 +79,7 @@ let component = compact(`
 ```
 
 The `@override` attribute can be used, for example, to rewrite the title in a separate location from the page component on a page-by-page basis.
+
+# Next
+
+10. [CSS Styling](./Styling.md)

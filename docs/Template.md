@@ -223,3 +223,7 @@ See [Shadow DOM and Virtual Dom](./Shadow_dom.md).
 ### Passing template `@as="word"`
 
 See [Component Communications](./Communications.md).
+
+# Next
+
+4. [Template Syntax](./Template.md)

@@ -2,7 +2,7 @@
 
 This document was translated from Japanese using DeepL.
 
-1. [Introduction](../)
+1. [Introduction(Repository Top)](../)
 2. [Tutorial](./Tutorial.md)
 3. [Component](./Component.md)
 4. [Template Syntax](./Template.md)

@@ -261,3 +261,7 @@ let component = compact(`
 ```
 
 ![](https://cdn.jitoin.com/images/jito-docs/a2938c33709a-20220110.gif)
+
+# Next
+
+8. [Component Communications](./Communications.md)

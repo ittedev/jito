@@ -191,3 +191,7 @@ mount(document.body, component)
 Each chapter explains how to use Jito in more detail. If you have any questions, please feel free to read them.
 
 You can also ask questions, make requests, and report bugs in the Issues section.
+
+# Next
+
+5. [Event Handling](./Event_handling.md)
