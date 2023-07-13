@@ -67,7 +67,3 @@ state.child = await elementize(import('child2.js')) // Replacing the component
 
 Jito allows you to switch views simply by swapping components, so you can use your favorite router library for routing according to your URL.
 Jito provides a dedicated router, which can also be used.
-
-# Next
-
-11. [Component Replacement](./Replacement.md)
