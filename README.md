@@ -1,18 +1,20 @@
 # Jito
 
-<p align="center"><img src="https://xs447853.xsrv.jp/jito.png" width="150" height="150"></p>
+<p align="center"><img src="https://cdn.jitoin.com/images/jito-docs/jito.png" width="150" height="150"></p>
 
 ## What is Jito?
 
-Jito is a web component framework with Data Binding, Template Engine, Virtual DOM and routing.
+Jito is a JavaScript web component framework with Data Binding, Template Engine, Virtual DOM and routing.
 
 You can experience single page application development with just a web browser.
 
-She support JavaScript and TypeScript for Deno.
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/ittedev/jito)
+![GitHub](https://img.shields.io/github/license/ittedev/jito)
 
 ## Document
 
-[Japanese](https://zenn.dev/itte/books/5ce6aac9166aed)
+- [日本語](https://zenn.dev/itte/books/5ce6aac9166aed)
+- [English (DeepL Translation)](./docs/)
 
 ## First Example
 
@@ -46,7 +48,12 @@ Please save the following code as `example.html` and try opening it in your web 
 
 Jito use ES Modules.
 
+No installation is required to use Jito.
+Just browse to a single `jito.js` file from your web browser to start using Jito.
+
 ### From a local file
+
+You can download the latest version of the `jito.js` file from [Releases](https://github.com/ittedev/jito/releases).
 
 ```js
 <script type="module">
@@ -68,19 +75,25 @@ From jsDelivr.
 
 ### For Deno
 
+Distributed for Deno on [deno.land/x](https://deno.land/x/jito).
+
+See the following It needs to be built for browsers at [esbuild](https://esbuild.github.io/), etc.
+
 ```ts
 import { ... } from 'https://deno.land/x/jito@1.3.4/mod.ts'
 ```
 
 ### For Node.js
 
-Install:
+It is distributed via npm for Node.js.
+
+For Node.js, installation is required with the following command.
 
 ```sh
 npm i jito
 ```
 
-Import:
+See the following It needs to be built for browsers at [esbuild](https://esbuild.github.io/), etc.
 
 ```ts
 import { ... } from 'jito'
@@ -89,10 +102,19 @@ import { ... } from 'jito'
 
 # Functions
 
-| API | Functions | Browser | Server |
-| --- | --- | --- | --- |
-| Data Binding | watch, unwatch, reach, unreach, change, lock, unlock | ✓ | ✓ |
-| Virtual DOM | load, patch | ✓ |  |
-| Template Engine | parse, evaluate, pickup | ✓ | ✓ |
-| Web Components | compact, mount, define, elementize | ✓ |  |
-| Routing | walk | ✓ |  |
+Jito consists of APIs categorized as data binding, virtual DOM, template engine, web component, and routing. APIs are mainly provided as functions.
+
+To use the functions, import them from their respective files as follows.
+
+| API | File | Functions | Browser | Server |
+| --- | --- | --- | --- | --- |
+| Data Binding | jito.js | watch, unwatch, reach, unreach, change, lock, unlock | ✓ | ✓ |
+| Virtual DOM | jito.js | load, patch | ✓ |  |
+| Template Engine | jito.js | parse, evaluate, pickup | ✓ | ✓ |
+| Web Components | jito.js | compact, mount, define, elementize | ✓ |  |
+| Routing | routing.js | walk | ✓ |  |
+
+
+# Next
+
+2. [Tutorial](./docs/Tutorial.md)
