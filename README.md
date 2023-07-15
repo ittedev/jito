@@ -25,7 +25,7 @@ Please save the following code as `example.html` and try opening it in your web 
 <meta charset="UTF-8">
 <body></body>
 <script type="module">
-  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.3.5/jito.js'
+  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.3.6/jito.js'
 
   let state = watch({
     count: 0
@@ -68,7 +68,7 @@ From jsDelivr.
 
 ```js
 <script type="module">
-  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.3.5/jito.js'
+  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.3.6/jito.js'
   ...
 </script>
 ```
@@ -80,7 +80,7 @@ Distributed for Deno on [deno.land/x](https://deno.land/x/jito).
 See the following It needs to be built for browsers at [esbuild](https://esbuild.github.io/), etc.
 
 ```ts
-import { ... } from 'https://deno.land/x/jito@1.3.5/mod.ts'
+import { ... } from 'https://deno.land/x/jito@1.3.6/mod.ts'
 ```
 
 ### For Node.js
