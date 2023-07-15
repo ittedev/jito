@@ -3,6 +3,7 @@ import {
   VirtualNode,
   VirtualElement
 } from '../virtual_dom/types.ts'
+import { notHasEnd } from './is_primitive.ts'
 
 export function render(tree: VirtualTree): string
 {
@@ -26,5 +27,5 @@ function renderElement(ve: VirtualElement): string
   let styleSection = ve.style ? ` style="${ve.style}"` : ''
   let attrsSection = ve.attrs ? Object.entries(ve.attrs).map(attr => ` ${attr[0]}="${attr[1]}"`).join('') : ''
   let childrenSection = ve.children ? renderChildren(ve.children) : ''
-  return '<' + ve.tag + idSection + classSection + partSection + styleSection + attrsSection + `>${childrenSection}</${ve.tag}>`
+  return '<' + ve.tag + idSection + classSection + partSection + styleSection + attrsSection + `>${notHasEnd(ve.tag) ? '' : `${childrenSection}</${ve.tag}>`}`
 }

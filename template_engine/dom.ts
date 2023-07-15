@@ -89,7 +89,7 @@ function el(lexer: Lexer): TemporaryNode | undefined
     }
     // Not supported: p, dt, dd, li, option, thead, tfoot, th, tr, td, rt, rp, optgroup, caption
     if (lexer.must('end')[1].slice(2) !== el.tag) {
-      throw Error(`end tag <${el.tag}> is required.`)
+      throw Error(`end tag </${el.tag}> is required.`)
     }
     lexer.must('>')
   }
