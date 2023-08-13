@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   RealTarget,
   VirtualElement,
@@ -363,7 +364,9 @@ let realElementPlugin = {
     if (template.type === 'custom') {
       let temp = template as CustomElementTemplate
       if (!isPrimitive(temp.tag)) {
-        return temp.tag === 'window' || pickup(stack, temp.tag) instanceof EventTarget
+        let tagChain = temp.tag.split('.')
+        let el = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Element | DocumentFragment | ShadowRoot | EventTarget
+        return temp.tag === 'window' || el instanceof EventTarget
       }
     }
     return false
@@ -387,7 +390,8 @@ let realElementPlugin = {
       evaluateAttrs(temp, stack, cache, re)
       return re
     }
-    let el = pickup(stack, temp.tag) as Element | DocumentFragment | ShadowRoot | EventTarget
+    let tagChain = temp.tag.split('.')
+    let el = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Element | DocumentFragment | ShadowRoot | EventTarget
     let re = { el } as RealTarget
     evaluateAttrs(temp, stack, cache, re)
     if (el instanceof Element && temp.attrs) {
@@ -576,7 +580,6 @@ function flatwrap(value: unknown): Array<unknown>
     Array.isArray(value) ? value : [value]
 }
 
-// deno-lint-ignore no-explicit-any
 export function operateUnary(operator: string, operand: any)
 {
   switch (operator) {
@@ -590,7 +593,6 @@ export function operateUnary(operator: string, operand: any)
   }
 }
 
-// deno-lint-ignore no-explicit-any
 function continueEvaluation(operator: string, left: any): boolean
 {
   switch (operator) {
@@ -601,7 +603,6 @@ function continueEvaluation(operator: string, left: any): boolean
   }
 }
 
-// deno-lint-ignore no-explicit-any
 export function operateBinary(operator: string, left: any, right: any)
 {
   switch (operator) {
