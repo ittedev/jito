@@ -14,6 +14,7 @@ export type Template =
   HashTemplate |
   JoinTemplate |
   FlagsTemplate |
+  RegexTemplate |
   TryTemplate |
   IfTemplate |
   ForTemplate |
@@ -107,6 +108,12 @@ export interface HashTemplate {
 export interface GetTemplate {
   type: 'get'
   value: Template
+}
+
+export interface RegexTemplate {
+  type: 'regex'
+  value: string
+  flags?: string
 }
 
 export interface DrawTemplate {
@@ -262,6 +269,7 @@ export interface Evaluate extends Pluginable<EvaluatePlugin> {
 export type TokenField =
   'html' |
   'text' |
+  'regex' |
   'script' |
   'single' |
   'double' |
@@ -306,6 +314,7 @@ export type TokenType =
   '`' |
   '/' |
   '...' |
+  'flags' |
   'entity' |
   'return' |
   'null' |
