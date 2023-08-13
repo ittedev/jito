@@ -156,6 +156,10 @@ export let evaluate = function (
       }
     }
 
+    case 'regex': {
+      return new RegExp(temp.value, temp.flags)
+    }
+
     case 'flat': {
       let values = temp.values.map(
           (value: Template | string) =>

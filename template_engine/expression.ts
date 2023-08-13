@@ -12,6 +12,7 @@ import {
   GetTemplate,
   JoinTemplate,
   IfTemplate,
+  RegexTemplate,
   Token,
   TokenField,
   TokenType
@@ -81,7 +82,7 @@ function arithmetic(lexer: Lexer): Template
 {
   let list = new Array<Template | string>()
   list.push(unary(lexer))
-  while(lexer.nextIs('multi') || lexer.nextIs('binary')) {
+  while(lexer.nextIs('multi') || lexer.nextIs('binary') || lexer.nextIs('/')) {
     list.push((lexer.pop() as Token)[1])
     list.push(unary(lexer))
   }
@@ -234,6 +235,7 @@ function term(lexer: Lexer): Template
     case '"': return stringLiteral(lexer, 'double', token[0])
     case "'": return stringLiteral(lexer, 'single', token[0])
     case '`': return stringLiteral(lexer, 'template', token[0])
+    case '/': return regexLiteral(lexer)
 
     // (E)
     case '(': {
@@ -334,4 +336,26 @@ export function stringLiteral(
   } else {
     return { type: 'join', values: texts.filter(value => value !== ''), separator: '' } as JoinTemplate
   }
+}
+
+export function regexLiteral(lexer: Lexer): Template
+{
+  let template = { type: 'regex', value: '' } as RegexTemplate
+  lexer.expand('regex', () => {
+    loop: while (true) {
+      template.value += lexer.skip()
+      let token = lexer.pop() as Token
+      switch (token[0]) {
+        case '/': break loop
+        case 'flags':
+        case 'string':
+          template.value += token[1]
+          break
+      }
+    }
+    if (lexer.nextIs('flags')) {
+      template.flags = (lexer.pop() as Token)[1]
+    }
+  })
+  return template
 }

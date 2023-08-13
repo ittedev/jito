@@ -158,7 +158,7 @@ function distinguish(field: TokenField, value: string): TokenType
         case 'void': case 'typeof': case '~': case '!':
           return 'unary'
 
-        case '/': case '*': case '%': case '**': // Arithmetic operators
+        case '*': case '%': case '**': // Arithmetic operators
         case 'in': case 'instanceof': case '<': case '>': case '<=': case '>=': // Relational operators
         case '==': case '!=': case '===': case '!==': // Equality operators
         case '<<': case '>>': case '>>>': // Bitwise shift operators
@@ -177,6 +177,7 @@ function distinguish(field: TokenField, value: string): TokenType
         case 'false': case 'true':
           return 'boolean'
 
+        case '/':
         case 'null': case 'undefined':
         case '.': case '?.':
         case '[': case ']': case '{': case '}': case '(': case ')':
@@ -232,6 +233,11 @@ function distinguish(field: TokenField, value: string): TokenType
         case '{{': case '}}':
         case '{|': case '|}': return value
       }
+      break
+    case 'regex':
+      if (value === '/') return value
+      if (/^[^gimsuy]$/.test(value)) return 'string'
+      if (/^[gimsuy]+$/.test(value)) return 'flags'
       break
   }
   return 'other'

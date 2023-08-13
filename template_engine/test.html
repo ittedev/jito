@@ -112,6 +112,18 @@ describe('Template Engine', function() {
       equal(evaluate(expression("'\\x0c\\x9F'"), [stack]), "\x0c\x9F")
     })
 
+    it('expression: regex', () => {
+      equal(evaluate(expression('/$(.+)/'), [stack]).source, /$(.+)/.source)
+    })
+
+    it('expression: regex flags', () => {
+      equal(evaluate(expression('/string/igy'), [stack]).flags, /string/igy.flags)
+    })
+
+    it('expression: regex test', () => {
+      equal(evaluate(expression('/string/.test("string")')), true)
+    })
+
     it('expression: word', () => {
       equal(evaluate(expression('x'), [stack]), 1)
       equal(evaluate(expression('text'), [stack]), 'x')
@@ -3917,10 +3929,6 @@ describe('Template Engine', function() {
     let yy = { name: 'yy' }
     let zz = { name: 'zz' }
     let collection = [xx, yy, zz]
-
-    it('expression: regex', () => {
-      equal(evaluate(expression('"string".text(/string/)')), true)
-    })
 
     it('expression: number: integer hexadecimal', () => {
       equal(evaluate(expression('0x000'), [stack]), 0x000)
