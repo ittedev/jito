@@ -507,6 +507,19 @@ describe('Template Engine', function() {
         })
       })
 
+      it('parse don in tag name', () => {
+        let template = parse("<a.b></a.b>")
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "a.b",
+              type: "custom"
+            }
+          ]
+        })
+      })
+
       it('parse html literal', () => {
         let template = parse("<p>{| '<p>' |}</p>")
         equal(template, {
@@ -2536,6 +2549,13 @@ describe('Template Engine', function() {
             }
           ]
         })
+      })
+
+      it('evaluate real element has dot', () => {
+        let test = document.createElement('div')
+        let tree = evaluate(parse('<prop.test />'), [{ prop: { test } }])
+        console.log('tree:', tree)
+        equal(tree.children[0].el === test, true)
       })
     })
 

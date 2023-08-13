@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   special,
   instanceOfComponent,
@@ -36,7 +37,8 @@ export let componentPlugin = {
         return true
       }
       let temp = template as CustomElementTemplate
-      let element = pickup(stack, temp.tag)
+      let tagChain = temp.tag.split('.')
+      let element = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0]))
       if (
         typeof element === 'object' &&
         element !== null &&
@@ -72,7 +74,8 @@ export let componentPlugin = {
 
     // If tag is not "jito-element"
     if (temp.tag !== componentElementTag ) {
-      component = pickup(stack, temp.tag)
+      let tagChain = temp.tag.split('.')
+      component = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0]))
       if (component) {
         // If local component,
         // set a component property
@@ -137,7 +140,8 @@ export let componentElementPlugin = {
   ): boolean
   {
     if (template.type === 'custom') {
-      let element = pickup(stack, template.tag)
+      let tagChain = template.tag.split('.')
+      let element = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0]))
       return (
         typeof element === 'object' &&
         element !== null &&
@@ -154,7 +158,8 @@ export let componentElementPlugin = {
   ): RealTarget
   {
     let temp = template as CustomElementTemplate
-    let el = pickup(stack, temp.tag) as Element | DocumentFragment | ShadowRoot | EventTarget
+    let tagChain = temp.tag.split('.')
+    let el = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Element | DocumentFragment | ShadowRoot | EventTarget
     let re = { el } as RealTarget
 
     // Resolve properties
