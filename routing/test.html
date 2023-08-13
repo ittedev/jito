@@ -14,7 +14,7 @@ var sleep = t => new Promise(r => setTimeout(r, t || 0))
 import {
   MemoryHistory,
   walk,
-} from '../router.js'
+} from '../routing.js'
 import {
   compact,
   elementize,
@@ -439,6 +439,42 @@ describe('Router', function() {
         equal(router.pathname, 'a/b')
         equal(router.pattern, ':param1/b')
         equal(router.params, { param1: 'a' })
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open has a underbar param', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page(':param_name/b')
+
+        let result = ''
+        await open('a/b')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'success')
+        equal(router.pathname, 'a/b')
+        equal(router.pattern, ':param_name/b')
+        equal(router.params, { param_name: 'a' })
+        equal(router.props, {})
+        equal(router.query, {})
+      })
+
+      it('open has a camelcase param', async () => {
+        let history = new MemoryHistory()
+        let router = walk(history)
+        let { page, open } = router
+        page(':paramName/b')
+
+        let result = ''
+        await open('a/b')
+          .then(() => { result = 'success' })
+          .catch(() => { result = 'fail' })
+        equal(result, 'success')
+        equal(router.pathname, 'a/b')
+        equal(router.pattern, ':paramName/b')
+        equal(router.params, { paramName: 'a' })
         equal(router.props, {})
         equal(router.query, {})
       })
