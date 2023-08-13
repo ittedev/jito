@@ -383,6 +383,18 @@ describe('Data Binding', function() {
         data.x3 = 100
         equal(y, 106)
       })
+
+      it('watch a properties', () => {
+        let data = {
+          x: 1,
+          y: 100
+        }
+        let z = 0
+        watch(data, ['x', 'y'], v => { z += v })
+        data.x = 2
+        data.y = 200
+        equal(z, 202)
+      })
     })
 
     it('watch skip getter and setter', () => {
@@ -576,6 +588,20 @@ describe('Data Binding', function() {
       data.x2 = 10
       data.x3 = 100
       equal(y, 100)
+    })
+
+    it('unwatch properties', () => {
+      let data = {
+        x: 1,
+        y: 100
+      }
+      let z = 0
+      let f = v => { z = v }
+      watch(data, ['x', 'y'], f)
+      unwatch(data, ['x', 'y'], f)
+      data.x = 2
+      data.y = 200
+      equal(z, 0)
     })
   })
 
