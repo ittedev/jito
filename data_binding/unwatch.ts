@@ -15,9 +15,10 @@ import { _unreach } from './unreach.ts'
 export function unwatch<T>(data: T): T
 export function unwatch<T>(data: T, callback: RecursiveCallback): T
 export function unwatch<T>(data: T, key: string, callback: TargetCallback): T
+export function unwatch<T>(data: T, keys: string[], callback: TargetCallback): T
 export function unwatch<T>(
   data: T,
-  keyOrCallback?: RecursiveCallback | string,
+  keyOrCallback?: RecursiveCallback | string | string[],
   callback?: TargetCallback
 ): T
 {
@@ -25,7 +26,11 @@ export function unwatch<T>(
     if (keyOrCallback === undefined) { // All deReactivate
       _unreach(data, [], true)
     } else if (typeof callback === 'function') { // TargetCallback
-      removeReactive(data as ReactiveObject, keyOrCallback as string, callback)
+      if (Array.isArray(keyOrCallback)) {
+        keyOrCallback.forEach(key => removeReactive(data as ReactiveObject, key, callback))
+      } else {
+        removeReactive(data as ReactiveObject, keyOrCallback as string, callback)
+      }
       deReactivate(data)
     } else { // RecursiveCallback
       _unreach(data, [], true, keyOrCallback as RecursiveCallback)
