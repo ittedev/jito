@@ -1218,6 +1218,39 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse: template in style', () => {
+        let template = parse('<p style="color: {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  {
+                    type: "join",
+                    values: [
+                      "color: ",
+                      {
+                        type: "get",
+                        value: {
+                          type: "variable",
+                          name: "name"
+                        }
+                      },
+                      "",
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
     })
 
     describe(': attrs', function() {
@@ -2937,6 +2970,18 @@ describe('Template Engine', function() {
             {
               tag: "p",
               style: "color: red;margin-top: 10px"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in style', () => {
+        let tree = evaluate(parse('<p style="color: {| name |}"></p>'), [{ name: 'red' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red"
             }
           ]
         })
