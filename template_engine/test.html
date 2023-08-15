@@ -868,6 +868,33 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse: template in class', () => {
+        let template = parse('<p class="class-a {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [
+                ["class-a"],
+                {
+                  type: "split",
+                  value: {
+                    type: "get",
+                    value: {
+                      type: "variable",
+                      name: "name"
+                    }
+                  },
+                  separator: ' '
+                }
+              ]
+            }
+          ]
+        })
+      })
     })
 
     describe(': part', function() {
@@ -1035,6 +1062,33 @@ describe('Template Engine', function() {
                     type: "literal",
                     value: "part-c"
                   }
+                }
+              ]
+            }
+          ]
+        })
+      })
+
+      it('parse: template in part', () => {
+        let template = parse('<p part="part-a {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [
+                ["part-a"],
+                {
+                  type: "split",
+                  value: {
+                    type: "get",
+                    value: {
+                      type: "variable",
+                      name: "name"
+                    }
+                  },
+                  separator: ' '
                 }
               ]
             }
@@ -2692,6 +2746,7 @@ describe('Template Engine', function() {
           ]
         })
       })
+
       it('evaluate: multi assign classes', () => {
         let tree = evaluate(parse(`<p class:="'class-a'" class:="'class-b'"></p>`))
         equal(tree, {
@@ -2711,6 +2766,18 @@ describe('Template Engine', function() {
             {
               tag: "p",
               class: ["class-a", "class-b", "class-c"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in class', () => {
+        let tree = evaluate(parse('<p class="class-a {| name |}"></p>'), [{ name: 'class-b'}])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b"]
             }
           ]
         })
@@ -2796,6 +2863,18 @@ describe('Template Engine', function() {
             {
               tag: "p",
               part: ["part-a", "part-b", "part-c"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in part', () => {
+        let tree = evaluate(parse('<p part="part-a {| name |}"></p>'), [{ name: 'part-b'}])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b"]
             }
           ]
         })
@@ -2964,7 +3043,6 @@ describe('Template Engine', function() {
 
       it('evaluate: template in attrs', () => {
         let tree = evaluate(parse('<p id="Hello {| name |}"></p>'), [{ name: 'jito' }])
-        console.log('tree:', tree)
         equal(tree, {
           children: [
             {

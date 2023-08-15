@@ -221,6 +221,11 @@ export let evaluate = function (
         }
       }, '')
 
+    case 'split': {
+      let value = typeof temp.value === 'string' ? temp.value : evaluate(temp.value, stack, cache)
+      return typeof value === 'string' ? value.split(temp.separator) : []
+    }
+
     case 'flags': {
       return translateClassArray(evaluate(temp.value, stack, cache))
     }

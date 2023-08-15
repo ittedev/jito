@@ -12,7 +12,7 @@ import {
   CustomElementTemplate,
   TreeTemplate,
   GetTemplate,
-  DrawTemplate,
+  SplitTemplate,
   HandlerTemplate,
   TemporaryNode,
   TemporaryText,
@@ -237,7 +237,18 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
                 if (!template[name]) {
                   template[name] = []
                 }
-                return (template[name] as string[][]).push(value.split(/\s+/))
+                let parsedValue = parseText(value)
+                let values = (typeof parsedValue === 'string' || parsedValue.type !== 'join') ? [parsedValue] : parsedValue.values
+                values.forEach(value => {
+                  if (typeof value === 'string') {
+                    if (value) {
+                      (template[name] as string[][]).push(value.split(/\s+/).filter(v => v))
+                    }
+                  } else if (instanceOfTemplate(value)){
+                    (template[name] as SplitTemplate[]).push({ type: 'split', value, separator: ' ' })
+                  }
+                })
+                return
               }
               case 'style': {
                 return style.push(parseText(value))
