@@ -676,6 +676,7 @@ describe('Template Engine', function() {
           ]
         })
       })
+
       it('parse: assign is', () => {
         let template = parse('<p is:="is"></p>')
         equal(template, {
@@ -690,6 +691,31 @@ describe('Template Engine', function() {
                   type: "variable",
                   name: "is"
                 }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: template in is', () => {
+        let template = parse('<p is="{| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "custom",
+              is: {
+                type: "join",
+                values: [
+                  {
+                    type: "get",
+                    value: {
+                      type: "variable",
+                      name: "name"
+                    }
+                  }
+                ]
               }
             }
           ]
@@ -2708,6 +2734,17 @@ describe('Template Engine', function() {
       })
       it('parse: assign is', () => {
         let tree = evaluate(parse('<p is:="is"></p>'), [{ is: 'word-count' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              is: "word-count"
+            }
+          ]
+        })
+      })
+      it('parse: template in is', () => {
+        let tree = evaluate(parse('<p is="{| is |}"></p>'), [{ is: 'word-count' }])
         equal(tree, {
           children: [
             {
