@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import {
+  VirtualNode,
   RealTarget,
   VirtualElement,
   VirtualTree
@@ -24,6 +25,8 @@ import {
   Evaluate,
   EvaluatePlugin,
   Ref,
+  Snippet,
+  instanceOfSnippet,
 } from './types.ts'
 import { Loop } from './loop.ts'
 import { pickup, pickupIndex } from './pickup.ts'
@@ -428,7 +431,40 @@ let realElementPlugin = {
   }
 }
 
+let snippetPlugin = {
+  match (
+    template: CustomElementTemplate | CustomTemplate,
+    stack: StateStack,
+    _cache: Cache
+  ): boolean
+  {
+    if (template.type === 'custom') {
+      let temp = template as CustomElementTemplate
+      let tagChain = temp.tag.split('.')
+      let el = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Snippet
+
+      if (instanceOfSnippet(el)) {
+        return true
+      }
+    }
+    return false
+  },
+  exec (
+    template: CustomElementTemplate | CustomTemplate,
+    stack: StateStack,
+    cache: Cache
+  ): VirtualNode[] | undefined
+  {
+    let temp = template as CustomElementTemplate
+    let tagChain = temp.tag.split('.')
+    let snippet = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Snippet
+    let tree = evaluate(snippet.template, snippet.restack(stack), cache) as VirtualTree
+    return tree.children
+  }
+}
+
 evaluate.plugin(realElementPlugin)
+evaluate.plugin(snippetPlugin)
 
 export function evaluateChildren(
   template: HasChildrenTemplate,

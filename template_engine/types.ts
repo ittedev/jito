@@ -273,6 +273,20 @@ export interface Evaluate extends Pluginable<EvaluatePlugin> {
   plugin(plugin: EvaluatePlugin): void
 }
 
+export type Restack = (stack: StateStack) => StateStack
+
+export interface Snippet {
+  template: Template,
+  restack: Restack
+}
+
+export function instanceOfSnippet(object: any): object is Snippet {
+  return typeof object === 'object' &&
+    object !== null &&
+    object.template &&
+    object.restack
+}
+
 export type TokenField =
   'html' |
   'text' |
