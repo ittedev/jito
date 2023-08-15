@@ -3,7 +3,8 @@ import {
   VirtualNode,
   RealTarget,
   VirtualElement,
-  VirtualTree
+  VirtualTree,
+  HasAttrs
 } from '../virtual_dom/types.ts'
 import {
   isRef,
@@ -486,7 +487,18 @@ let snippetPlugin = {
         }
       }
     }
-    let tree = evaluate(snippet.template, snippet.restack([...stack, attrs]), cache) as VirtualTree
+    let keys = ['class', 'part', 'is', 'style'] as (keyof HasAttrs)[]
+    keys.forEach(key => {
+      if (key in ve) {
+        attrs[key] = ve[key]
+      }
+    })
+    if (ve.on) {
+      for (let key in ve.on) {
+        attrs['on' + key] = ve.on[key]
+      }
+    }
+    let tree = evaluate(snippet.template, snippet.restack([...stack, { attrs }, attrs]), cache) as VirtualTree
     return tree.children
   }
 }
