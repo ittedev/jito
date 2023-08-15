@@ -124,7 +124,7 @@ export interface DrawTemplate {
 export interface JoinTemplate {
   type: 'join'
   values: Array<unknown | Template>
-  separator: string
+  separator?: string
 }
 
 export interface FlagsTemplate {
