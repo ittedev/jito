@@ -225,40 +225,42 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
       el.attrs.forEach(([name, assign, value]) => {
         switch (assign) {
           case '=': { // template attribute
-            switch (name) {
-              case 'is': {
-                if (!(name in template)) {
-                  template.is = parseText(value)
-                }
-                return
-              }
-              case 'class':
-              case 'part': {
-                if (!template[name]) {
-                  template[name] = []
-                }
-                let parsedValue = parseText(value)
-                let values = (typeof parsedValue === 'string' || parsedValue.type !== 'join') ? [parsedValue] : parsedValue.values
-                values.forEach(value => {
-                  if (typeof value === 'string') {
-                    if (value) {
-                      (template[name] as string[][]).push(value.split(/\s+/).filter(v => v))
-                    }
-                  } else if (instanceOfTemplate(value)){
-                    (template[name] as SplitTemplate[]).push({ type: 'split', value, separator: ' ' })
+            let parsedValue = parseText(value)
+            if (parsedValue) {
+              switch (name) {
+                case 'is': {
+                  if (!(name in template)) {
+                    template.is = parsedValue
                   }
-                })
-                return
+                  return
+                }
+                case 'class':
+                case 'part': {
+                  let values = (typeof parsedValue === 'string' || parsedValue.type !== 'join') ? [parsedValue] : parsedValue.values
+                  if (!template[name]) {
+                    template[name] = []
+                  }
+                  values.forEach(value => {
+                    if (typeof value === 'string') {
+                      if (value) {
+                        (template[name] as string[][]).push(value.split(/\s+/).filter(v => v))
+                      }
+                    } else if (instanceOfTemplate(value)){
+                      (template[name] as SplitTemplate[]).push({ type: 'split', value, separator: ' ' })
+                    }
+                  })
+                  return
+                }
+                case 'style': {
+                  return style.push(parsedValue)
+                }
               }
-              case 'style': {
-                return style.push(parseText(value))
+              if (!template.attrs) {
+                template.attrs = {}
               }
-            }
-            if (!template.attrs) {
-              template.attrs = {}
-            }
-            if (!(name in template.attrs)) {
-              return (template.attrs as Record<string, unknown | Template>)[name] = parseText(value)
+              if (!(name in template.attrs)) {
+                return (template.attrs as Record<string, unknown | Template>)[name] = parsedValue
+              }
             }
             return
           }
@@ -376,26 +378,29 @@ function getAttr(el: TemporaryElement, attr: string): string
 function parseText(text: string, isTree = false): Template | string
 {
   let lexer: Lexer = new Lexer(text, 'text')
-  let values = [] as Array<string | Template>
-  values.push(lexer.skip())
+  let valuesTemp = [] as Array<string | Template>
+  valuesTemp.push(lexer.skip())
   while (lexer.nextIs()) {
     if (lexer.nextIs('{{') || lexer.nextIs('{|')) {
       let start = lexer.pop() as Token
       lexer.expand('script', () => {
         let value = expression(lexer)
-        values.push(isTree ? { type: 'draw', value } : value)
+        valuesTemp.push(isTree ? { type: 'draw', value } : value)
       })
       if (start[0] === '{{') {
         lexer.must('}}')
       } else {
         lexer.must('|}')
       }
-      values.push(lexer.skip())
+      valuesTemp.push(lexer.skip())
     } else {
       lexer.pop()
     }
   }
-  if (values.length === 1 && (typeof values[0] === 'string' || !isTree)) {
+  let values = valuesTemp.filter(v => v)
+  if (values.length === 0) {
+    return ''
+  } else if (values.length === 1 && (typeof values[0] === 'string' || !isTree)) {
     return values[0]
   } else if (isTree) {
     return { type: 'flat', values } as FlatTemplate

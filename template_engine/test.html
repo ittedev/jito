@@ -552,15 +552,13 @@ describe('Template Engine', function() {
                 {
                   type: "flat",
                   values: [
-                    "",
                     {
                       type: "draw",
                       value: {
                         type: "literal",
                         value: "<p>"
                       }
-                    },
-                    ""
+                    }
                   ]
                 }
               ]
@@ -706,16 +704,11 @@ describe('Template Engine', function() {
               tag: "p",
               type: "custom",
               is: {
-                type: "join",
-                values: [
-                  {
-                    type: "get",
-                    value: {
-                      type: "variable",
-                      name: "name"
-                    }
-                  }
-                ]
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "name"
+                }
               }
             }
           ]
@@ -1267,8 +1260,7 @@ describe('Template Engine', function() {
                           type: "variable",
                           name: "name"
                         }
-                      },
-                      "",
+                      }
                     ]
                   }
                 ]
@@ -1467,8 +1459,7 @@ describe('Template Engine', function() {
                         type: "variable",
                         name: "name"
                       }
-                    },
-                    "",
+                    }
                   ]
                 }
               }
