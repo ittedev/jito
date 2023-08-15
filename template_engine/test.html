@@ -116,6 +116,14 @@ describe('Template Engine', function() {
       equal(evaluate(expression('/$(.+)/'), [stack]).source, /$(.+)/.source)
     })
 
+    it('expression: regex escape', () => {
+      equal(evaluate(expression('/\\//'), [stack]).source, /\//.source)
+    })
+
+    it('expression: regex no escape', () => {
+      equal(evaluate(expression('/\\\\/'), [stack]).source, /\\/.source)
+    })
+
     it('expression: regex flags', () => {
       equal(evaluate(expression('/string/igy'), [stack]).flags, /string/igy.flags)
     })
