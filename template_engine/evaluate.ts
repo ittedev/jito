@@ -212,13 +212,19 @@ export let evaluate = function (
 
     case 'join':
       return temp.values.reduce<string>((result: string, value: unknown | Template, index: number) => {
+        let firstHalf = result + (index ? (temp as JoinTemplate).separator || '' : '')
         if (instanceOfTemplate(value)) {
           let text = evaluate(value, stack, cache)
-          return result + (index ? (temp as JoinTemplate).separator : '') + (typeof text === 'object' ? '' : text as string)
+          return firstHalf + (typeof text === 'object' ? '' : text as string)
         } else {
-          return result + (index ? (temp as JoinTemplate).separator : '') + value
+          return firstHalf + value
         }
       }, '')
+
+    case 'split': {
+      let value = typeof temp.value === 'string' ? temp.value : evaluate(temp.value, stack, cache)
+      return typeof value === 'string' ? value.split(temp.separator) : []
+    }
 
     case 'flags': {
       return translateClassArray(evaluate(temp.value, stack, cache))

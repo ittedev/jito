@@ -18,6 +18,7 @@ export type {
   GetTemplate,
   DrawTemplate,
   JoinTemplate,
+  SplitTemplate,
   FlagsTemplate,
   IfTemplate,
   ForTemplate,

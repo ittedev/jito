@@ -552,15 +552,13 @@ describe('Template Engine', function() {
                 {
                   type: "flat",
                   values: [
-                    "",
                     {
                       type: "draw",
                       value: {
                         type: "literal",
                         value: "<p>"
                       }
-                    },
-                    ""
+                    }
                   ]
                 }
               ]
@@ -676,6 +674,7 @@ describe('Template Engine', function() {
           ]
         })
       })
+
       it('parse: assign is', () => {
         let template = parse('<p is:="is"></p>')
         equal(template, {
@@ -689,6 +688,26 @@ describe('Template Engine', function() {
                 value: {
                   type: "variable",
                   name: "is"
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: template in is', () => {
+        let template = parse('<p is="{| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "custom",
+              is: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "name"
                 }
               }
             }
@@ -868,6 +887,33 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse: template in class', () => {
+        let template = parse('<p class="class-a {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [
+                ["class-a"],
+                {
+                  type: "split",
+                  value: {
+                    type: "get",
+                    value: {
+                      type: "variable",
+                      name: "name"
+                    }
+                  },
+                  separator: ' '
+                }
+              ]
+            }
+          ]
+        })
+      })
     })
 
     describe(': part', function() {
@@ -1041,6 +1087,33 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse: template in part', () => {
+        let template = parse('<p part="part-a {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [
+                ["part-a"],
+                {
+                  type: "split",
+                  value: {
+                    type: "get",
+                    value: {
+                      type: "variable",
+                      name: "name"
+                    }
+                  },
+                  separator: ' '
+                }
+              ]
+            }
+          ]
+        })
+      })
     })
 
     describe(': style', function() {
@@ -1156,6 +1229,38 @@ describe('Template Engine', function() {
                         }
                       },
                       "px"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: template in style', () => {
+        let template = parse('<p style="color: {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  {
+                    type: "join",
+                    values: [
+                      "color: ",
+                      {
+                        type: "get",
+                        value: {
+                          type: "variable",
+                          name: "name"
+                        }
+                      }
                     ]
                   }
                 ]
@@ -1329,6 +1434,34 @@ describe('Template Engine', function() {
                   }
                 },
                 slot: "my-slot"
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: template in attrs', () => {
+        let template = parse('<p id="Hello {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              attrs: {
+                id: {
+                  type: "join",
+                  values: [
+                    "Hello ",
+                    {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "name"
+                      }
+                    }
+                  ]
+                }
               }
             }
           ]
@@ -2574,7 +2707,6 @@ describe('Template Engine', function() {
       it('evaluate real element has dot', () => {
         let test = document.createElement('div')
         let tree = evaluate(parse('<prop.test />'), [{ prop: { test } }])
-        console.log('tree:', tree)
         equal(tree.children[0].el === test, true)
       })
     })
@@ -2593,6 +2725,17 @@ describe('Template Engine', function() {
       })
       it('parse: assign is', () => {
         let tree = evaluate(parse('<p is:="is"></p>'), [{ is: 'word-count' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              is: "word-count"
+            }
+          ]
+        })
+      })
+      it('parse: template in is', () => {
+        let tree = evaluate(parse('<p is="{| is |}"></p>'), [{ is: 'word-count' }])
         equal(tree, {
           children: [
             {
@@ -2664,6 +2807,7 @@ describe('Template Engine', function() {
           ]
         })
       })
+
       it('evaluate: multi assign classes', () => {
         let tree = evaluate(parse(`<p class:="'class-a'" class:="'class-b'"></p>`))
         equal(tree, {
@@ -2683,6 +2827,18 @@ describe('Template Engine', function() {
             {
               tag: "p",
               class: ["class-a", "class-b", "class-c"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in class', () => {
+        let tree = evaluate(parse('<p class="class-a {| name |}"></p>'), [{ name: 'class-b'}])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b"]
             }
           ]
         })
@@ -2772,6 +2928,18 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('evaluate: template in part', () => {
+        let tree = evaluate(parse('<p part="part-a {| name |}"></p>'), [{ name: 'part-b'}])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b"]
+            }
+          ]
+        })
+      })
     })
 
     describe(': style', function() {
@@ -2830,6 +2998,18 @@ describe('Template Engine', function() {
             {
               tag: "p",
               style: "color: red;margin-top: 10px"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in style', () => {
+        let tree = evaluate(parse('<p style="color: {| name |}"></p>'), [{ name: 'red' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red"
             }
           ]
         })
@@ -2928,6 +3108,20 @@ describe('Template Engine', function() {
                 id: "jito",
                 slot: "my-slot",
                 value: 10
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in attrs', () => {
+        let tree = evaluate(parse('<p id="Hello {| name |}"></p>'), [{ name: 'jito' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                id: "Hello jito"
               }
             }
           ]
