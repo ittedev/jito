@@ -345,11 +345,14 @@ export let evaluate = function (
       let thisHandlerCache = cache.handler.get(temp) as Array<[StateStack, EventListener]>
       for (let cache of thisHandlerCache) {
         if (compareCache(cache[0], stack)) {
+          cache[0] = stack
           return cache[1]
         }
       }
-      let handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...stack, { event }], cache) as void
-      thisHandlerCache.push([stack, handler])
+      let tupple = [stack] as unknown as [StateStack, EventListener]
+      let handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...tupple[0], { event }], cache) as void
+      tupple.push(handler)
+      thisHandlerCache.push(tupple)
       return handler
     }
 
