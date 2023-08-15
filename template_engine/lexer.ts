@@ -237,9 +237,16 @@ function distinguish(field: TokenField, value: string): TokenType
       }
       break
     case 'regex':
-      if (value === '/') return value
-      if (/^[^gimsuy]$/.test(value)) return 'string'
-      if (/^[gimsuy]+$/.test(value)) return 'flags'
+      switch (value) {
+        case '/': return value
+        case '\\': return 'partial'
+        case '\\/': return 'string'
+      }
+      switch (true) {
+        case /^\\.$/.test(value): return 'escape'
+        case /^[^gimsuy]$/.test(value): return 'string'
+        case /^[gimsuy]+$/.test(value): return 'flags'
+      }
       break
   }
   return 'other'

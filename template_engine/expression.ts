@@ -342,15 +342,13 @@ export function regexLiteral(lexer: Lexer): Template
 {
   let template = { type: 'regex', value: '' } as RegexTemplate
   lexer.expand('regex', () => {
-    loop: while (true) {
+    while (true) {
       template.value += lexer.skip()
       let token = lexer.pop() as Token
-      switch (token[0]) {
-        case '/': break loop
-        case 'flags':
-        case 'string':
-          template.value += token[1]
-          break
+      if (token[0] === '/') {
+        break
+      } else {
+        template.value += token[1]
       }
     }
     if (lexer.nextIs('flags')) {
