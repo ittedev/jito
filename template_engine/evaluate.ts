@@ -458,7 +458,7 @@ let snippetPlugin = {
     let temp = template as CustomElementTemplate
     let tagChain = temp.tag.split('.')
     let snippet = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Snippet
-    let tree = evaluate(snippet.template, snippet.restack(stack), cache) as VirtualTree
+    let tree = evaluate(snippet.template, snippet.restack([...stack]), cache) as VirtualTree
     return tree.children
   }
 }
