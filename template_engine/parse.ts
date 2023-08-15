@@ -95,7 +95,7 @@ function parseNode(lexer: DomLexer): Template | string | void
   } else if (instanceOfTemporaryElement(lexer.node)) {
     return parseTry(lexer)
   } else {
-    return parseText(new Lexer((lexer.pop() as TemporaryText).text, 'text'))
+    return parseText(new Lexer((lexer.pop() as TemporaryText).text, 'text'), true)
   }
 }
 
@@ -223,11 +223,11 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
     if (el.attrs) {
       el.attrs.forEach(([name, assign, value]) => {
         switch (assign) {
-          case '=': { // string attribute
+          case '=': { // template attribute
             switch (name) {
               case 'is': {
                 if (!(name in template)) {
-                  template.is = value
+                  template.is = parseText(new Lexer(value, 'text'))
                 }
                 return
               }
@@ -239,14 +239,14 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
                 return (template[name] as string[][]).push(value.split(/\s+/))
               }
               case 'style': {
-                return style.push(value)
+                return style.push(parseText(new Lexer(value, 'text')))
               }
             }
             if (!template.attrs) {
               template.attrs = {}
             }
             if (!(name in template.attrs)) {
-              return (template.attrs as Record<string, unknown | Template>)[name] = value
+              return (template.attrs as Record<string, unknown | Template>)[name] = parseText(new Lexer(value, 'text'))
             }
             return
           }
@@ -361,7 +361,7 @@ function getAttr(el: TemporaryElement, attr: string): string
   return a ? a[2] : ''
 }
 
-function parseText(lexer: Lexer): Template | string
+function parseText(lexer: Lexer, isTree = false): Template | string
 {
   let values = [] as Array<string | Template>
   values.push(lexer.skip())
@@ -369,14 +369,16 @@ function parseText(lexer: Lexer): Template | string
     if (lexer.nextIs('{{')) {
       lexer.pop()
       lexer.expand('script', () => {
-        values.push({ type: 'draw', value: expression(lexer) } as DrawTemplate)
+        let value = expression(lexer)
+        values.push(isTree ? { type: 'draw', value } : value)
       })
       lexer.must('}}')
       values.push(lexer.skip())
     } else if (lexer.nextIs('{|')) {
       lexer.pop()
       lexer.expand('script', () => {
-        values.push({ type: 'draw', value: expression(lexer) } as DrawTemplate)
+        let value = expression(lexer)
+        values.push(isTree ? { type: 'draw', value } : value)
       })
       lexer.must('|}')
       values.push(lexer.skip())
@@ -384,9 +386,11 @@ function parseText(lexer: Lexer): Template | string
       lexer.pop()
     }
   }
-  if (values.length === 1 && typeof values[0] === 'string') {
+  if (values.length === 1 && (typeof values[0] === 'string' || !isTree)) {
     return values[0]
-  } else {
+  } else if (isTree) {
     return { type: 'flat', values } as FlatTemplate
+  } else {
+    return { type: 'join', values } as JoinTemplate
   }
 }

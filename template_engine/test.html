@@ -1334,6 +1334,35 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse: template in attrs', () => {
+        let template = parse('<p id="Hello {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              attrs: {
+                id: {
+                  type: "join",
+                  values: [
+                    "Hello ",
+                    {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "name"
+                      }
+                    },
+                    "",
+                  ]
+                }
+              }
+            }
+          ]
+        })
+      })
     })
 
     describe(': on', function() {
@@ -2574,7 +2603,6 @@ describe('Template Engine', function() {
       it('evaluate real element has dot', () => {
         let test = document.createElement('div')
         let tree = evaluate(parse('<prop.test />'), [{ prop: { test } }])
-        console.log('tree:', tree)
         equal(tree.children[0].el === test, true)
       })
     })
@@ -2928,6 +2956,21 @@ describe('Template Engine', function() {
                 id: "jito",
                 slot: "my-slot",
                 value: 10
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in attrs', () => {
+        let tree = evaluate(parse('<p id="Hello {| name |}"></p>'), [{ name: 'jito' }])
+        console.log('tree:', tree)
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                id: "Hello jito"
               }
             }
           ]
