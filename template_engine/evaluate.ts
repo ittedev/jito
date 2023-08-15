@@ -7,6 +7,7 @@ import {
 } from '../virtual_dom/types.ts'
 import {
   isRef,
+  instanceOfRef,
   StateStack,
   Template,
   HasChildrenTemplate,
@@ -461,7 +462,31 @@ let snippetPlugin = {
     let temp = template as CustomElementTemplate
     let tagChain = temp.tag.split('.')
     let snippet = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Snippet
-    let tree = evaluate(snippet.template, snippet.restack([...stack]), cache) as VirtualTree
+    let ve: VirtualElement = {
+      tag: temp.tag
+    }
+    evaluateAttrs(temp, stack, cache, ve)
+    let attrs: Record<string, unknown> = {}
+    if (ve.attrs) {
+      for(let key in ve.attrs) {
+        let value = ve.attrs[key]
+        if (instanceOfRef(value)) {
+          Object.defineProperties(attrs, {
+            [key]: {
+              get() {
+                return (value as Ref).record[(value as Ref).key]
+              },
+              set(v) {
+                (value as Ref).record[(value as Ref).key] = v
+              }
+            }
+          })
+        } else {
+          attrs[key] = value
+        }
+      }
+    }
+    let tree = evaluate(snippet.template, snippet.restack([...stack, attrs]), cache) as VirtualTree
     return tree.children
   }
 }
