@@ -18,7 +18,8 @@ import {
   TemporaryText,
   TemporaryElement,
   FlatTemplate,
-  instanceOfTemporaryElement
+  instanceOfTemporaryElement,
+  Token
 } from './types.ts'
 import { Lexer } from './lexer.ts'
 import { expression } from './expression.ts'
@@ -95,7 +96,7 @@ function parseNode(lexer: DomLexer): Template | string | void
   } else if (instanceOfTemporaryElement(lexer.node)) {
     return parseTry(lexer)
   } else {
-    return parseText(new Lexer((lexer.pop() as TemporaryText).text, 'text'), true)
+    return parseText((lexer.pop() as TemporaryText).text, true)
   }
 }
 
@@ -227,7 +228,7 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
             switch (name) {
               case 'is': {
                 if (!(name in template)) {
-                  template.is = parseText(new Lexer(value, 'text'))
+                  template.is = parseText(value)
                 }
                 return
               }
@@ -239,14 +240,14 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
                 return (template[name] as string[][]).push(value.split(/\s+/))
               }
               case 'style': {
-                return style.push(parseText(new Lexer(value, 'text')))
+                return style.push(parseText(value))
               }
             }
             if (!template.attrs) {
               template.attrs = {}
             }
             if (!(name in template.attrs)) {
-              return (template.attrs as Record<string, unknown | Template>)[name] = parseText(new Lexer(value, 'text'))
+              return (template.attrs as Record<string, unknown | Template>)[name] = parseText(value)
             }
             return
           }
@@ -361,26 +362,23 @@ function getAttr(el: TemporaryElement, attr: string): string
   return a ? a[2] : ''
 }
 
-function parseText(lexer: Lexer, isTree = false): Template | string
+function parseText(text: string, isTree = false): Template | string
 {
+  let lexer: Lexer = new Lexer(text, 'text')
   let values = [] as Array<string | Template>
   values.push(lexer.skip())
   while (lexer.nextIs()) {
-    if (lexer.nextIs('{{')) {
-      lexer.pop()
+    if (lexer.nextIs('{{') || lexer.nextIs('{|')) {
+      let start = lexer.pop() as Token
       lexer.expand('script', () => {
         let value = expression(lexer)
         values.push(isTree ? { type: 'draw', value } : value)
       })
-      lexer.must('}}')
-      values.push(lexer.skip())
-    } else if (lexer.nextIs('{|')) {
-      lexer.pop()
-      lexer.expand('script', () => {
-        let value = expression(lexer)
-        values.push(isTree ? { type: 'draw', value } : value)
-      })
-      lexer.must('|}')
+      if (start[0] === '{{') {
+        lexer.must('}}')
+      } else {
+        lexer.must('|}')
+      }
       values.push(lexer.skip())
     } else {
       lexer.pop()
