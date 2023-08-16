@@ -504,6 +504,7 @@ export function evaluateAttrs(
   }
 }
 
+
 function compareCache(
   cache: StateStack,
   stack: StateStack,
