@@ -118,6 +118,7 @@ export let snippetPlugin = {
     let ve: VirtualElement = {
       tag: temp.tag
     }
+    resolveProperties(temp, stack, cache, ve)
     evaluateAttrs(temp, stack, cache, ve)
     let attrs: Record<string, unknown> = {}
     if (ve.attrs) {
