@@ -2,7 +2,7 @@
 import {
   RealTarget,
   VirtualElement,
-  VirtualTree
+  VirtualTree,
 } from '../virtual_dom/types.ts'
 import {
   isRef,
@@ -26,8 +26,8 @@ import {
   Ref,
 } from './types.ts'
 import { Loop } from './loop.ts'
-import { pickup, pickupIndex } from './pickup.ts'
-import { isPrimitive } from './is_primitive.ts'
+import { pickupIndex } from './pickup.ts'
+import { realElementPlugin, snippetPlugin } from './plugins.ts'
 
 let plugins = new Array<EvaluatePlugin>()
 
@@ -342,11 +342,14 @@ export let evaluate = function (
       let thisHandlerCache = cache.handler.get(temp) as Array<[StateStack, EventListener]>
       for (let cache of thisHandlerCache) {
         if (compareCache(cache[0], stack)) {
+          cache[0] = stack
           return cache[1]
         }
       }
-      let handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...stack, { event }], cache) as void
-      thisHandlerCache.push([stack, handler])
+      let tupple = [stack] as unknown as [StateStack, EventListener]
+      let handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...tupple[0], { event }], cache) as void
+      tupple.push(handler)
+      thisHandlerCache.push(tupple)
       return handler
     }
 
@@ -364,71 +367,8 @@ evaluate.plugin = (plugin: EvaluatePlugin) => {
   plugins.unshift(plugin)
 }
 
-let realElementPlugin = {
-  match (
-    template: CustomElementTemplate | CustomTemplate,
-    stack: StateStack,
-    _cache: Cache
-  ): boolean
-  {
-    if (template.type === 'custom') {
-      let temp = template as CustomElementTemplate
-      if (!isPrimitive(temp.tag)) {
-        let tagChain = temp.tag.split('.')
-        let el = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Element | DocumentFragment | ShadowRoot | EventTarget
-        return temp.tag === 'window' || el instanceof EventTarget
-      }
-    }
-    return false
-  },
-  exec (
-    template: CustomElementTemplate | CustomTemplate,
-    stack: StateStack,
-    cache: Cache
-  ): RealTarget
-  {
-    let temp = template as CustomElementTemplate
-    if (template.tag === 'window') {
-      let re = {
-        el: window,
-        override: true,
-        invalid: {
-          attrs: true,
-          children: true
-        }
-      }
-      evaluateAttrs(temp, stack, cache, re)
-      return re
-    }
-    let tagChain = temp.tag.split('.')
-    let el = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Element | DocumentFragment | ShadowRoot | EventTarget
-    let re = { el } as RealTarget
-    evaluateAttrs(temp, stack, cache, re)
-    if (el instanceof Element && temp.attrs) {
-      if ('@override' in temp.attrs) {
-        re.override = true
-      }
-    }
-    if (
-      (
-        el instanceof Element ||
-        el instanceof DocumentFragment ||
-        el instanceof ShadowRoot
-      ) &&
-      temp.children &&
-      temp.children.length
-    ) {
-      re.children = evaluateChildren(temp, stack, cache)
-    } else {
-      re.invalid = {
-        children: true
-      }
-    }
-    return re
-  }
-}
-
 evaluate.plugin(realElementPlugin)
+evaluate.plugin(snippetPlugin)
 
 export function evaluateChildren(
   template: HasChildrenTemplate,
@@ -563,6 +503,7 @@ export function evaluateAttrs(
     }
   }
 }
+
 
 function compareCache(
   cache: StateStack,

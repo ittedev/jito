@@ -15,6 +15,8 @@ import {
   expression,
   parse,
   evaluate,
+  pickup,
+  assign,
   render
 } from '../jito.js'
 
@@ -25,6 +27,27 @@ customElements.define('x-x', XX, { extends: "div" })
 customElements.define('y-y', YY, { extends: "div" })
 
 describe('Template Engine', function() {
+  describe('Stack operation', function() {
+    it('pickup:', () => {
+      let stack = [
+        { x: 'x1', y: 'y1' },
+        { x: 'x2' },
+      ]
+      equal(pickup(stack, 'x'), 'x2')
+    })
+    it('assign:', () => {
+      let stack = [
+        { x: 'x1', y: 'y1' },
+        { x: 'x2' },
+      ]
+      assign(stack, 'x', 'x3')
+      equal(stack, [
+        { x: 'x1', y: 'y1' },
+        { x: 'x3' },
+      ])
+    })
+  })
+
   describe('Script parser', function() {
     let stack = {
       x: 1,
@@ -2939,6 +2962,29 @@ describe('Template Engine', function() {
             }
           ]
         })
+      })
+
+      it('cache: stack', () => {
+        let template = parse('<input oninput="name = event.target.value">')
+        let handlerTemplate = template.children[0].on.input[0]
+        let stack = [{ name: 'world'}]
+        let cache = {}
+        let tree = evaluate(template, stack, cache)
+        equal(1, cache.handler.get(handlerTemplate).length)
+        equal(stack, cache.handler.get(handlerTemplate)[0][0])
+      })
+
+      it('cache: change stack', () => {
+        let template = parse('<input oninput="name = event.target.value">')
+        let handlerTemplate = template.children[0].on.input[0]
+        let stack1 = [{ name: 'world'}]
+        let stack2 = [{ name: 'jito'}]
+        let cache = {}
+        let tree1 = evaluate(template, stack1, cache)
+        let func = cache.handler.get(handlerTemplate)[0][1]
+        let tree2 = evaluate(template, stack2, cache)
+        equal(1, cache.handler.get(handlerTemplate).length)
+        equal(true, func === cache.handler.get(handlerTemplate)[0][1])
       })
     })
 
