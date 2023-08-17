@@ -115,15 +115,18 @@ export let snippetPlugin = {
     let temp = template as CustomElementTemplate
     let tagChain = temp.tag.split('.')
     let snippet = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Snippet
-    let ve: VirtualElement = {
+    let veForContents: VirtualElement = {
       tag: temp.tag
     }
-    resolveProperties(temp, stack, cache, ve)
-    evaluateAttrs(temp, stack, cache, ve)
+    resolveProperties(temp, stack, cache, veForContents)
+    let veForAttrs: VirtualElement = {
+      tag: temp.tag
+    }
+    evaluateAttrs(temp, stack, cache, veForAttrs)
     let attrs: Record<string, unknown> = {}
-    if (ve.attrs) {
-      for(let key in ve.attrs) {
-        let value = ve.attrs[key]
+    if (veForAttrs.attrs) {
+      for(let key in veForAttrs.attrs) {
+        let value = veForAttrs.attrs[key]
         if (instanceOfRef(value)) {
           Object.defineProperties(attrs, {
             [key]: {
@@ -142,16 +145,16 @@ export let snippetPlugin = {
     }
     let keys = ['class', 'part', 'is', 'style'] as (keyof HasAttrs)[]
     keys.forEach(key => {
-      if (key in ve) {
-        attrs[key] = ve[key]
+      if (key in veForAttrs) {
+        attrs[key] = veForAttrs[key]
       }
     })
-    if (ve.on) {
-      for (let key in ve.on) {
-        attrs['on' + key] = ve.on[key]
+    if (veForAttrs.on) {
+      for (let key in veForAttrs.on) {
+        attrs['on' + key] = veForAttrs.on[key]
       }
     }
-    let tree = evaluate(snippet.template, snippet.restack([...stack, { attrs }, attrs]), cache) as VirtualTree
+    let tree = evaluate(snippet.template, snippet.restack([...stack, { attrs }, veForContents.attrs || {}, attrs]), cache) as VirtualTree
     return tree.children
   }
 }
