@@ -57,6 +57,12 @@ The word specified in the tag name is interpreted and drawn as an element. What 
 | 1 | Variable name containing the component | `<jito-element>` element |
 | 1 | Variable name containing the HTML element  | HTML element |
 
+**NOTE:** Since version 1.4.0, you can use `. ` operator can be used in tag names.
+
+```html
+<word.word />
+```
+
 ## Grouping Tag `<group></group>`
 
 The `<group>` tag allows you to wrap content in a tag that is not actually drawn. It is mainly used with `@if` and `@for`.
@@ -113,6 +119,12 @@ Tag attributes can use HTML-extended syntax.
 ## String assignment operator `attr="string"`
 
 When you use `=` to write an attribute, the attribute value is given to the attribute as a string, like in HTML.
+
+**NOTE:** Since version 1.4.0, the expression display `{| expression |}` can be used in the attribute value of the string assignment operator.
+
+```html
+<input type="checkbox" value="Number: {| number |}" />
+```
 
 ## Assignment operator `attr:="expression"`
 
