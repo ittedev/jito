@@ -112,4 +112,20 @@ The second argument of the `snip()` function can be a re-stack function. The res
 
 The restack function is used when you want to add a new variable to the state stack.
 
+```js
+import { mount, snip } from './jito.js'
 
+let restack = stack => {
+  let name = 'Jito'
+  let output = value => alert(value)
+  return [...stack, { name, output }]
+}
+
+let html = `<button type="button" onclick="output(name)">Click me</button>`
+
+let snippet = snip(html, restack)
+
+mount(document.body, `Hello <snippet />`, [{ snippet }])
+```
+
+Click on the button to alert "Jito".
