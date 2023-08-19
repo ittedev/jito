@@ -332,6 +332,13 @@ export interface Evaluate extends Pluginable<EvaluatePlugin> {
   plugin(plugin: EvaluatePlugin): void
 }
 
+export type Restack = (stack: StateStack) => StateStack
+
+export interface Snippet {
+  template: Template,
+  restack: Restack
+}
+
 export class Loop
 {
   get key(): unknown
@@ -359,6 +366,16 @@ export function pickup(
   name: string
 ): unknown
 
+export function assign(
+  stack: StateStack,
+  name: string,
+  value: unknown
+): void
+
+export function snip(
+  template: Template | string,
+  restack?: Restack
+): Snippet
 
 // Web Components
 
