@@ -28,7 +28,10 @@ export type {
   GroupTemplate,
   EvaluationTemplate,
   HandlerTemplate,
-  CustomTemplate
+  CustomTemplate,
+
+  Restack,
+  Snippet,
 } from './types.ts'
 
 // Objects
