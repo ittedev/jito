@@ -25,7 +25,7 @@ Please save the following code as `example.html` and try opening it in your web 
 <meta charset="UTF-8">
 <body></body>
 <script type="module">
-  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.3.6/jito.js'
+  import { watch, mount } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.4.0/jito.js'
 
   let state = watch({
     count: 0
@@ -68,7 +68,7 @@ From jsDelivr.
 
 ```js
 <script type="module">
-  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.3.6/jito.js'
+  import { ... } from 'https://cdn.jsdelivr.net/gh/ittedev/jito@1.4.0/jito.js'
   ...
 </script>
 ```
@@ -80,7 +80,7 @@ Distributed for Deno on [deno.land/x](https://deno.land/x/jito).
 See the following It needs to be built for browsers at [esbuild](https://esbuild.github.io/), etc.
 
 ```ts
-import { ... } from 'https://deno.land/x/jito@1.3.6/mod.ts'
+import { ... } from 'https://deno.land/x/jito@1.4.0/mod.ts'
 ```
 
 ### For Node.js
@@ -110,7 +110,7 @@ To use the functions, import them from their respective files as follows.
 | --- | --- | --- | --- | --- |
 | Data Binding | jito.js | watch, unwatch, reach, unreach, change, lock, unlock | ✓ | ✓ |
 | Virtual DOM | jito.js | load, patch | ✓ |  |
-| Template Engine | jito.js | parse, evaluate, pickup | ✓ | ✓ |
+| Template Engine | jito.js | parse, evaluate, snip, pickup, assign | ✓ | ✓ |
 | Web Components | jito.js | compact, mount, define, elementize | ✓ |  |
 | Routing | routing.js | walk | ✓ |  |
 

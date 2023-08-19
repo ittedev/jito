@@ -13,12 +13,13 @@ This document was translated from Japanese using DeepL.
 9. [Shadow DOM and Virtual Dom](./Shadow_dom.md)
 10. [CSS Styling](./Styling.md)
 11. [Component Replacement](./Replacement.md)
-12. Virtual DOM function only(future)
-13. Template Engine only(future)
+12. [Snippet](./Snippet.md)
+13. Virtual DOM function only(future)
+14. Template Engine only(future)
 
 ## Routing
 
-14. [Create Router](./Routing/Create_router.md)
-15. [Embed the component as a page](./Routing/Embed_component.md)
-16. [How to create middleware](./Routing/Create_middleware.md)
-17. [Custom page](./Routing/Custom_page.md)
+15. [Create Router](./Routing/Create_router.md)
+16. [Embed the component as a page](./Routing/Embed_component.md)
+17. [How to create middleware](./Routing/Create_middleware.md)
+18. [Custom page](./Routing/Custom_page.md)

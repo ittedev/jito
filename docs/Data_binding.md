@@ -95,6 +95,12 @@ state.name = 'jito' // => "Updated! world => "jito" is output
 state.count++ // => Nothing is output
 ```
 
+**NOTE:** Since version 1.4.0, the second argument can be an array of property names.
+
+```js
+watch(state, ['name1', 'name2'], callback)
+```
+
 ## Recursive observation
 
 Recursive observation with the `watch` function recursively traverses all properties of the target object (or each element in the case of an array), monitors them all, and executes all recursive reactive callback functions when changes are made.

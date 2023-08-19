@@ -166,4 +166,4 @@ The `props` value can pass any serializable data, while the `query` value can on
 
 # Next
 
-15. [Embed the component as a page](./Embed_component.md)
+16. [Embed the component as a page](./Embed_component.md)
