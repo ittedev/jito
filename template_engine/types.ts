@@ -13,7 +13,9 @@ export type Template =
   FunctionTemplate |
   HashTemplate |
   JoinTemplate |
+  SplitTemplate |
   FlagsTemplate |
+  RegexTemplate |
   TryTemplate |
   IfTemplate |
   ForTemplate |
@@ -109,6 +111,12 @@ export interface GetTemplate {
   value: Template
 }
 
+export interface RegexTemplate {
+  type: 'regex'
+  value: string
+  flags?: string
+}
+
 export interface DrawTemplate {
   type: 'draw'
   value: Template
@@ -117,6 +125,12 @@ export interface DrawTemplate {
 export interface JoinTemplate {
   type: 'join'
   values: Array<unknown | Template>
+  separator?: string
+}
+
+export interface SplitTemplate {
+  type: 'split'
+  value: string | Template
   separator: string
 }
 
@@ -166,8 +180,8 @@ export interface ElementTemplate {
   type: 'element'
   tag: string
   is?: string | Template
-  class?: Array<Array<string> | FlagsTemplate>
-  part?: Array<Array<string> | FlagsTemplate>
+  class?: Array<Array<string> | FlagsTemplate | SplitTemplate>
+  part?: Array<Array<string> | FlagsTemplate | SplitTemplate>
   attrs?: Record<string, unknown | Template>
   bools?: Record<string, unknown | Template>
   style?: string | JoinTemplate
@@ -183,8 +197,8 @@ export interface CustomElementTemplate {
   type: 'custom'
   tag: string
   is?: string | Template
-  class?: Array<Array<string> | FlagsTemplate>
-  part?: Array<Array<string> | FlagsTemplate>
+  class?: Array<Array<string> | FlagsTemplate | SplitTemplate>
+  part?: Array<Array<string> | FlagsTemplate | SplitTemplate>
   attrs?: Record<string, unknown | Template>
   bools?: Record<string, unknown | Template>
   style?: string | JoinTemplate
@@ -259,9 +273,24 @@ export interface Evaluate extends Pluginable<EvaluatePlugin> {
   plugin(plugin: EvaluatePlugin): void
 }
 
+export type Restack = (stack: StateStack) => StateStack
+
+export interface Snippet {
+  template: Template,
+  restack: Restack
+}
+
+export function instanceOfSnippet(object: any): object is Snippet {
+  return typeof object === 'object' &&
+    object !== null &&
+    object.template &&
+    object.restack
+}
+
 export type TokenField =
   'html' |
   'text' |
+  'regex' |
   'script' |
   'single' |
   'double' |
@@ -306,6 +335,7 @@ export type TokenType =
   '`' |
   '/' |
   '...' |
+  'flags' |
   'entity' |
   'return' |
   'null' |

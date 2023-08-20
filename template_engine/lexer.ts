@@ -110,8 +110,10 @@ function distinguish(field: TokenField, value: string): TokenType
       }
       switch (true) {
         case /^\/\/.*$/.test(value): return '//'
-        case /^<[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(value): return 'start'
-        case /^<\/[_\-a-zA-Z][_\-a-zA-Z0-9]*$/.test(value): return 'end'
+        case /^<[_a-zA-Z][_a-zA-Z0-9]*[\.\-]$/.test(value): return 'partial'
+        case /^<[_a-zA-Z][_a-zA-Z0-9]*([\.\-][_a-zA-Z][_a-zA-Z0-9]*)*$/.test(value): return 'start'
+        case /^<\/[_a-zA-Z][_a-zA-Z0-9]*[\.\-]$/.test(value): return 'partial'
+        case /^<\/[_a-zA-Z][_a-zA-Z0-9]*([\.\-][_a-zA-Z][_a-zA-Z0-9]*)*$/.test(value): return 'end'
       }
       break
     case 'attr':
@@ -158,7 +160,7 @@ function distinguish(field: TokenField, value: string): TokenType
         case 'void': case 'typeof': case '~': case '!':
           return 'unary'
 
-        case '/': case '*': case '%': case '**': // Arithmetic operators
+        case '*': case '%': case '**': // Arithmetic operators
         case 'in': case 'instanceof': case '<': case '>': case '<=': case '>=': // Relational operators
         case '==': case '!=': case '===': case '!==': // Equality operators
         case '<<': case '>>': case '>>>': // Bitwise shift operators
@@ -177,6 +179,7 @@ function distinguish(field: TokenField, value: string): TokenType
         case 'false': case 'true':
           return 'boolean'
 
+        case '/':
         case 'null': case 'undefined':
         case '.': case '?.':
         case '[': case ']': case '{': case '}': case '(': case ')':
@@ -231,6 +234,18 @@ function distinguish(field: TokenField, value: string): TokenType
         case '{': case '}': case '|': return 'partial'
         case '{{': case '}}':
         case '{|': case '|}': return value
+      }
+      break
+    case 'regex':
+      switch (value) {
+        case '/': return value
+        case '\\': return 'partial'
+        case '\\/': return 'string'
+      }
+      switch (true) {
+        case /^\\.$/.test(value): return 'escape'
+        case /^[^gimsuy]$/.test(value): return 'string'
+        case /^[gimsuy]+$/.test(value): return 'flags'
       }
       break
   }

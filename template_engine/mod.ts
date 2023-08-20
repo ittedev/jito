@@ -18,6 +18,7 @@ export type {
   GetTemplate,
   DrawTemplate,
   JoinTemplate,
+  SplitTemplate,
   FlagsTemplate,
   IfTemplate,
   ForTemplate,
@@ -27,7 +28,10 @@ export type {
   GroupTemplate,
   EvaluationTemplate,
   HandlerTemplate,
-  CustomTemplate
+  CustomTemplate,
+
+  Restack,
+  Snippet,
 } from './types.ts'
 
 // Objects
@@ -39,3 +43,5 @@ export { expression } from './expression.ts'
 export { evaluate } from './evaluate.ts'
 export { render } from './render.ts'
 export { pickup } from './pickup.ts'
+export { assign } from './assign.ts'
+export { snip } from './snip.ts'

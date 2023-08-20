@@ -1,7 +1,8 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   RealTarget,
   VirtualElement,
-  VirtualTree
+  VirtualTree,
 } from '../virtual_dom/types.ts'
 import {
   isRef,
@@ -25,8 +26,8 @@ import {
   Ref,
 } from './types.ts'
 import { Loop } from './loop.ts'
-import { pickup, pickupIndex } from './pickup.ts'
-import { isPrimitive } from './is_primitive.ts'
+import { pickupIndex } from './pickup.ts'
+import { realElementPlugin, snippetPlugin } from './plugins.ts'
 
 let plugins = new Array<EvaluatePlugin>()
 
@@ -156,6 +157,10 @@ export let evaluate = function (
       }
     }
 
+    case 'regex': {
+      return new RegExp(temp.value, temp.flags)
+    }
+
     case 'flat': {
       let values = temp.values.map(
           (value: Template | string) =>
@@ -207,13 +212,19 @@ export let evaluate = function (
 
     case 'join':
       return temp.values.reduce<string>((result: string, value: unknown | Template, index: number) => {
+        let firstHalf = result + (index ? (temp as JoinTemplate).separator || '' : '')
         if (instanceOfTemplate(value)) {
           let text = evaluate(value, stack, cache)
-          return result + (index ? (temp as JoinTemplate).separator : '') + (typeof text === 'object' ? '' : text as string)
+          return firstHalf + (typeof text === 'object' ? '' : text as string)
         } else {
-          return result + (index ? (temp as JoinTemplate).separator : '') + value
+          return firstHalf + value
         }
       }, '')
+
+    case 'split': {
+      let value = typeof temp.value === 'string' ? temp.value : evaluate(temp.value, stack, cache)
+      return typeof value === 'string' ? value.split(temp.separator) : []
+    }
 
     case 'flags': {
       return translateClassArray(evaluate(temp.value, stack, cache))
@@ -331,11 +342,14 @@ export let evaluate = function (
       let thisHandlerCache = cache.handler.get(temp) as Array<[StateStack, EventListener]>
       for (let cache of thisHandlerCache) {
         if (compareCache(cache[0], stack)) {
+          cache[0] = stack
           return cache[1]
         }
       }
-      let handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...stack, { event }], cache) as void
-      thisHandlerCache.push([stack, handler])
+      let tupple = [stack] as unknown as [StateStack, EventListener]
+      let handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...tupple[0], { event }], cache) as void
+      tupple.push(handler)
+      thisHandlerCache.push(tupple)
       return handler
     }
 
@@ -353,68 +367,8 @@ evaluate.plugin = (plugin: EvaluatePlugin) => {
   plugins.unshift(plugin)
 }
 
-let realElementPlugin = {
-  match (
-    template: CustomElementTemplate | CustomTemplate,
-    stack: StateStack,
-    _cache: Cache
-  ): boolean
-  {
-    if (template.type === 'custom') {
-      let temp = template as CustomElementTemplate
-      if (!isPrimitive(temp.tag)) {
-        return temp.tag === 'window' || pickup(stack, temp.tag) instanceof EventTarget
-      }
-    }
-    return false
-  },
-  exec (
-    template: CustomElementTemplate | CustomTemplate,
-    stack: StateStack,
-    cache: Cache
-  ): RealTarget
-  {
-    let temp = template as CustomElementTemplate
-    if (template.tag === 'window') {
-      let re = {
-        el: window,
-        override: true,
-        invalid: {
-          attrs: true,
-          children: true
-        }
-      }
-      evaluateAttrs(temp, stack, cache, re)
-      return re
-    }
-    let el = pickup(stack, temp.tag) as Element | DocumentFragment | ShadowRoot | EventTarget
-    let re = { el } as RealTarget
-    evaluateAttrs(temp, stack, cache, re)
-    if (el instanceof Element && temp.attrs) {
-      if ('@override' in temp.attrs) {
-        re.override = true
-      }
-    }
-    if (
-      (
-        el instanceof Element ||
-        el instanceof DocumentFragment ||
-        el instanceof ShadowRoot
-      ) &&
-      temp.children &&
-      temp.children.length
-    ) {
-      re.children = evaluateChildren(temp, stack, cache)
-    } else {
-      re.invalid = {
-        children: true
-      }
-    }
-    return re
-  }
-}
-
 evaluate.plugin(realElementPlugin)
+evaluate.plugin(snippetPlugin)
 
 export function evaluateChildren(
   template: HasChildrenTemplate,
@@ -550,6 +504,7 @@ export function evaluateAttrs(
   }
 }
 
+
 function compareCache(
   cache: StateStack,
   stack: StateStack,
@@ -576,7 +531,6 @@ function flatwrap(value: unknown): Array<unknown>
     Array.isArray(value) ? value : [value]
 }
 
-// deno-lint-ignore no-explicit-any
 export function operateUnary(operator: string, operand: any)
 {
   switch (operator) {
@@ -590,7 +544,6 @@ export function operateUnary(operator: string, operand: any)
   }
 }
 
-// deno-lint-ignore no-explicit-any
 function continueEvaluation(operator: string, left: any): boolean
 {
   switch (operator) {
@@ -601,7 +554,6 @@ function continueEvaluation(operator: string, left: any): boolean
   }
 }
 
-// deno-lint-ignore no-explicit-any
 export function operateBinary(operator: string, left: any, right: any)
 {
   switch (operator) {

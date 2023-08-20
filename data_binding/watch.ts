@@ -19,10 +19,11 @@ import { unreach } from './unreach.ts'
 
 export function watch<T>(data: T): T
 export function watch<T>(data: T, callback: RecursiveCallback, isExecute?: boolean): T
-export function watch<T>(data: T, key: string, callback: TargetCallback, isExecute?: boolean): T
+export function watch<T>(data: T, key: string, callback: TargetCallback, isExecute?: boolean): T // TargetCallback
+export function watch<T>(data: T, keys: string[], callback: TargetCallback, isExecute?: boolean): T // TargetCallback
 export function watch<T>(
   data: T,
-  keyOrCallback?:  RecursiveCallback | string,
+  keyOrCallback?:  RecursiveCallback | string | string[],
   isExecuteOrcallback?: TargetCallback | boolean,
   isExecute?: boolean,
 ): T
@@ -32,7 +33,11 @@ export function watch<T>(
       _reach(data, [], true)
     } else if (typeof isExecuteOrcallback === 'function') { // TargetCallback
       _reach(data, [], true)
-      addReactive(data as ReactiveObject, keyOrCallback as string, ['spy', isExecuteOrcallback])
+      if (Array.isArray(keyOrCallback)) {
+        keyOrCallback.forEach(key => addReactive(data as ReactiveObject, key, ['spy', isExecuteOrcallback]))
+      } else {
+        addReactive(data as ReactiveObject, keyOrCallback as string, ['spy', isExecuteOrcallback])
+      }
       if (isExecute) {
         (isExecuteOrcallback as TargetCallback)(data[keyOrCallback as string], data[keyOrCallback as string])
       }

@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   special,
   instanceOfComponent,
@@ -9,17 +10,14 @@ import {
 import { RealTarget, VirtualElement } from '../virtual_dom/types.ts'
 import {
   StateStack,
-  Template,
-  EvaluationTemplate,
-  HasAttrTemplate,
-  GroupTemplate,
   CustomElementTemplate,
   CustomTemplate,
   Cache,
   EvaluatePlugin
 } from '../template_engine/types.ts'
 import { ComponentElement, componentElementTag } from './element.ts'
-import { evaluate, evaluateAttrs, evaluateChildren } from '../template_engine/evaluate.ts'
+import { evaluateAttrs, evaluateChildren } from '../template_engine/evaluate.ts'
+import { resolveProperties } from '../template_engine/plugins.ts'
 import { isPrimitive } from '../template_engine/is_primitive.ts'
 import { pickup } from '../template_engine/pickup.ts'
 
@@ -36,7 +34,8 @@ export let componentPlugin = {
         return true
       }
       let temp = template as CustomElementTemplate
-      let element = pickup(stack, temp.tag)
+      let tagChain = temp.tag.split('.')
+      let element = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0]))
       if (
         typeof element === 'object' &&
         element !== null &&
@@ -72,7 +71,8 @@ export let componentPlugin = {
 
     // If tag is not "jito-element"
     if (temp.tag !== componentElementTag ) {
-      component = pickup(stack, temp.tag)
+      let tagChain = temp.tag.split('.')
+      component = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0]))
       if (component) {
         // If local component,
         // set a component property
@@ -137,7 +137,8 @@ export let componentElementPlugin = {
   ): boolean
   {
     if (template.type === 'custom') {
-      let element = pickup(stack, template.tag)
+      let tagChain = template.tag.split('.')
+      let element = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0]))
       return (
         typeof element === 'object' &&
         element !== null &&
@@ -154,7 +155,8 @@ export let componentElementPlugin = {
   ): RealTarget
   {
     let temp = template as CustomElementTemplate
-    let el = pickup(stack, temp.tag) as Element | DocumentFragment | ShadowRoot | EventTarget
+    let tagChain = temp.tag.split('.')
+    let el = tagChain.slice(1).reduce((prop: any, key) => prop[key], pickup(stack, tagChain[0])) as Element | DocumentFragment | ShadowRoot | EventTarget
     let re = { el } as RealTarget
 
     // Resolve properties
@@ -214,49 +216,3 @@ export let specialTagPlugin = {
   }
 } as EvaluatePlugin
 
-
-    // Resolve properties
-function resolveProperties(
-  template: CustomElementTemplate | ComponentTemplate,
-  stack: StateStack,
-  cache: Cache,
-  ve: VirtualElement | RealTarget
-)
-{
-  let values = [] as Array<Template | string>
-  let contents = [] as Array<[string, Template]>
-  let children = (template.children || [])
-    .map(child => {
-      if (!(typeof child === 'string')) {
-        let temp = child as HasAttrTemplate
-        if (temp.attrs) {
-          if (temp.attrs['@as']) {
-            contents.push([temp.attrs['@as'] as string, temp])
-            return []
-          } else if(temp.attrs.slot) {
-            return [evaluate(child, stack, cache) as string | VirtualElement | number]
-          }
-        }
-      }
-      values.push(child)
-      return []
-    })
-    .reduce((ary, values) => { // flatMap
-      ary.push(...values)
-      return ary
-    }, [])
-  if (values.length) {
-    contents.push(['content', { type: 'group', children: values } as GroupTemplate])
-  }
-  if (contents.length) {
-    if (!ve.attrs) {
-      ve.attrs = {}
-    }
-    contents.forEach(([name, value]) => {
-      (ve.attrs as Record<string, unknown | Template>)[name] = { type: 'evaluation', value, stack } as EvaluationTemplate
-    })
-  }
-  if (children.length) {
-    ve.children = children
-  }
-}

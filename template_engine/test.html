@@ -15,6 +15,8 @@ import {
   expression,
   parse,
   evaluate,
+  pickup,
+  assign,
   render
 } from '../jito.js'
 
@@ -25,6 +27,27 @@ customElements.define('x-x', XX, { extends: "div" })
 customElements.define('y-y', YY, { extends: "div" })
 
 describe('Template Engine', function() {
+  describe('Stack operation', function() {
+    it('pickup:', () => {
+      let stack = [
+        { x: 'x1', y: 'y1' },
+        { x: 'x2' },
+      ]
+      equal(pickup(stack, 'x'), 'x2')
+    })
+    it('assign:', () => {
+      let stack = [
+        { x: 'x1', y: 'y1' },
+        { x: 'x2' },
+      ]
+      assign(stack, 'x', 'x3')
+      equal(stack, [
+        { x: 'x1', y: 'y1' },
+        { x: 'x3' },
+      ])
+    })
+  })
+
   describe('Script parser', function() {
     let stack = {
       x: 1,
@@ -110,6 +133,26 @@ describe('Template Engine', function() {
 
     it('expression: string escape: \\xXX', () => {
       equal(evaluate(expression("'\\x0c\\x9F'"), [stack]), "\x0c\x9F")
+    })
+
+    it('expression: regex', () => {
+      equal(evaluate(expression('/$(.+)/'), [stack]).source, /$(.+)/.source)
+    })
+
+    it('expression: regex escape', () => {
+      equal(evaluate(expression('/\\//'), [stack]).source, /\//.source)
+    })
+
+    it('expression: regex no escape', () => {
+      equal(evaluate(expression('/\\\\/'), [stack]).source, /\\/.source)
+    })
+
+    it('expression: regex flags', () => {
+      equal(evaluate(expression('/string/igy'), [stack]).flags, /string/igy.flags)
+    })
+
+    it('expression: regex test', () => {
+      equal(evaluate(expression('/string/.test("string")')), true)
     })
 
     it('expression: word', () => {
@@ -507,6 +550,19 @@ describe('Template Engine', function() {
         })
       })
 
+      it('parse don in tag name', () => {
+        let template = parse("<a.b></a.b>")
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "a.b",
+              type: "custom"
+            }
+          ]
+        })
+      })
+
       it('parse html literal', () => {
         let template = parse("<p>{| '<p>' |}</p>")
         equal(template, {
@@ -519,15 +575,13 @@ describe('Template Engine', function() {
                 {
                   type: "flat",
                   values: [
-                    "",
                     {
                       type: "draw",
                       value: {
                         type: "literal",
                         value: "<p>"
                       }
-                    },
-                    ""
+                    }
                   ]
                 }
               ]
@@ -643,6 +697,7 @@ describe('Template Engine', function() {
           ]
         })
       })
+
       it('parse: assign is', () => {
         let template = parse('<p is:="is"></p>')
         equal(template, {
@@ -656,6 +711,26 @@ describe('Template Engine', function() {
                 value: {
                   type: "variable",
                   name: "is"
+                }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: template in is', () => {
+        let template = parse('<p is="{| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "custom",
+              is: {
+                type: "get",
+                value: {
+                  type: "variable",
+                  name: "name"
                 }
               }
             }
@@ -835,6 +910,33 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse: template in class', () => {
+        let template = parse('<p class="class-a {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              class: [
+                ["class-a"],
+                {
+                  type: "split",
+                  value: {
+                    type: "get",
+                    value: {
+                      type: "variable",
+                      name: "name"
+                    }
+                  },
+                  separator: ' '
+                }
+              ]
+            }
+          ]
+        })
+      })
     })
 
     describe(': part', function() {
@@ -1008,6 +1110,33 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('parse: template in part', () => {
+        let template = parse('<p part="part-a {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              part: [
+                ["part-a"],
+                {
+                  type: "split",
+                  value: {
+                    type: "get",
+                    value: {
+                      type: "variable",
+                      name: "name"
+                    }
+                  },
+                  separator: ' '
+                }
+              ]
+            }
+          ]
+        })
+      })
     })
 
     describe(': style', function() {
@@ -1123,6 +1252,38 @@ describe('Template Engine', function() {
                         }
                       },
                       "px"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: template in style', () => {
+        let template = parse('<p style="color: {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              style: {
+                type: "join",
+                separator: ";",
+                values: [
+                  {
+                    type: "join",
+                    values: [
+                      "color: ",
+                      {
+                        type: "get",
+                        value: {
+                          type: "variable",
+                          name: "name"
+                        }
+                      }
                     ]
                   }
                 ]
@@ -1296,6 +1457,34 @@ describe('Template Engine', function() {
                   }
                 },
                 slot: "my-slot"
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: template in attrs', () => {
+        let template = parse('<p id="Hello {| name |}"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              attrs: {
+                id: {
+                  type: "join",
+                  values: [
+                    "Hello ",
+                    {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "name"
+                      }
+                    }
+                  ]
+                }
               }
             }
           ]
@@ -2537,6 +2726,12 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('evaluate real element has dot', () => {
+        let test = document.createElement('div')
+        let tree = evaluate(parse('<prop.test />'), [{ prop: { test } }])
+        equal(tree.children[0].el === test, true)
+      })
     })
 
     describe(': is', function() {
@@ -2553,6 +2748,17 @@ describe('Template Engine', function() {
       })
       it('parse: assign is', () => {
         let tree = evaluate(parse('<p is:="is"></p>'), [{ is: 'word-count' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              is: "word-count"
+            }
+          ]
+        })
+      })
+      it('parse: template in is', () => {
+        let tree = evaluate(parse('<p is="{| is |}"></p>'), [{ is: 'word-count' }])
         equal(tree, {
           children: [
             {
@@ -2624,6 +2830,7 @@ describe('Template Engine', function() {
           ]
         })
       })
+
       it('evaluate: multi assign classes', () => {
         let tree = evaluate(parse(`<p class:="'class-a'" class:="'class-b'"></p>`))
         equal(tree, {
@@ -2643,6 +2850,18 @@ describe('Template Engine', function() {
             {
               tag: "p",
               class: ["class-a", "class-b", "class-c"]
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in class', () => {
+        let tree = evaluate(parse('<p class="class-a {| name |}"></p>'), [{ name: 'class-b'}])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              class: ["class-a", "class-b"]
             }
           ]
         })
@@ -2732,6 +2951,41 @@ describe('Template Engine', function() {
           ]
         })
       })
+
+      it('evaluate: template in part', () => {
+        let tree = evaluate(parse('<p part="part-a {| name |}"></p>'), [{ name: 'part-b'}])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              part: ["part-a", "part-b"]
+            }
+          ]
+        })
+      })
+
+      it('cache: stack', () => {
+        let template = parse('<input oninput="name = event.target.value">')
+        let handlerTemplate = template.children[0].on.input[0]
+        let stack = [{ name: 'world'}]
+        let cache = {}
+        let tree = evaluate(template, stack, cache)
+        equal(1, cache.handler.get(handlerTemplate).length)
+        equal(stack, cache.handler.get(handlerTemplate)[0][0])
+      })
+
+      it('cache: change stack', () => {
+        let template = parse('<input oninput="name = event.target.value">')
+        let handlerTemplate = template.children[0].on.input[0]
+        let stack1 = [{ name: 'world'}]
+        let stack2 = [{ name: 'jito'}]
+        let cache = {}
+        let tree1 = evaluate(template, stack1, cache)
+        let func = cache.handler.get(handlerTemplate)[0][1]
+        let tree2 = evaluate(template, stack2, cache)
+        equal(1, cache.handler.get(handlerTemplate).length)
+        equal(true, func === cache.handler.get(handlerTemplate)[0][1])
+      })
     })
 
     describe(': style', function() {
@@ -2790,6 +3044,18 @@ describe('Template Engine', function() {
             {
               tag: "p",
               style: "color: red;margin-top: 10px"
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in style', () => {
+        let tree = evaluate(parse('<p style="color: {| name |}"></p>'), [{ name: 'red' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              style: "color: red"
             }
           ]
         })
@@ -2888,6 +3154,20 @@ describe('Template Engine', function() {
                 id: "jito",
                 slot: "my-slot",
                 value: 10
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: template in attrs', () => {
+        let tree = evaluate(parse('<p id="Hello {| name |}"></p>'), [{ name: 'jito' }])
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                id: "Hello jito"
               }
             }
           ]
@@ -3917,10 +4197,6 @@ describe('Template Engine', function() {
     let yy = { name: 'yy' }
     let zz = { name: 'zz' }
     let collection = [xx, yy, zz]
-
-    it('expression: regex', () => {
-      equal(evaluate(expression('"string".text(/string/)')), true)
-    })
 
     it('expression: number: integer hexadecimal', () => {
       equal(evaluate(expression('0x000'), [stack]), 0x000)
