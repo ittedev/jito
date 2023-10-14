@@ -682,6 +682,44 @@ describe('Template Engine', function() {
         })
       })
     })
+    describe(': tag', function() {
+      it('HTML Tag', () => {
+        let template = parse('<span />')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "span",
+              type: "element"
+            }
+          ]
+        })
+      })
+      it('Custom element', () => {
+        let template = parse('<custom-element />')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "custom-element",
+              type: "custom"
+            }
+          ]
+        })
+      })
+      it('Custom element: triple', () => {
+        let template = parse('<my-custom-element />')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "my-custom-element",
+              type: "custom"
+            }
+          ]
+        })
+      })
+    })
 
     describe(': is', function() {
       it('parse: is', () => {

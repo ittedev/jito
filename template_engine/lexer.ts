@@ -110,9 +110,9 @@ function distinguish(field: TokenField, value: string): TokenType
       }
       switch (true) {
         case /^\/\/.*$/.test(value): return '//'
-        case /^<[_a-zA-Z][_a-zA-Z0-9]*[\.\-]$/.test(value): return 'partial'
+        case /^<[_a-zA-Z][_a-zA-Z0-9]*([\.\-][_a-zA-Z][_a-zA-Z0-9]*)*[\.\-]$/.test(value): return 'partial'
         case /^<[_a-zA-Z][_a-zA-Z0-9]*([\.\-][_a-zA-Z][_a-zA-Z0-9]*)*$/.test(value): return 'start'
-        case /^<\/[_a-zA-Z][_a-zA-Z0-9]*[\.\-]$/.test(value): return 'partial'
+        case /^<\/[_a-zA-Z][_a-zA-Z0-9]*([\.\-][_a-zA-Z][_a-zA-Z0-9]*)*[\.\-]$/.test(value): return 'partial'
         case /^<\/[_a-zA-Z][_a-zA-Z0-9]*([\.\-][_a-zA-Z][_a-zA-Z0-9]*)*$/.test(value): return 'end'
       }
       break
