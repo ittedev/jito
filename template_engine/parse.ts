@@ -226,41 +226,39 @@ function parseElement(el: TemporaryElement): ElementTemplate | CustomElementTemp
         switch (assign) {
           case '=': { // template attribute
             let parsedValue = parseText(value)
-            if (parsedValue) {
-              switch (name) {
-                case 'is': {
-                  if (!(name in template)) {
-                    template.is = parsedValue
-                  }
-                  return
+            switch (name) {
+              case 'is': {
+                if (!(name in template)) {
+                  template.is = parsedValue
                 }
-                case 'class':
-                case 'part': {
-                  let values = (typeof parsedValue === 'string' || parsedValue.type !== 'join') ? [parsedValue] : parsedValue.values
-                  if (!template[name]) {
-                    template[name] = []
-                  }
-                  values.forEach(value => {
-                    if (typeof value === 'string') {
-                      if (value) {
-                        (template[name] as string[][]).push(value.split(/\s+/).filter(v => v))
-                      }
-                    } else if (instanceOfTemplate(value)){
-                      (template[name] as SplitTemplate[]).push({ type: 'split', value, separator: ' ' })
+                return
+              }
+              case 'class':
+              case 'part': {
+                let values = (typeof parsedValue === 'string' || parsedValue.type !== 'join') ? [parsedValue] : parsedValue.values
+                if (!template[name]) {
+                  template[name] = []
+                }
+                values.forEach(value => {
+                  if (typeof value === 'string') {
+                    if (value) {
+                      (template[name] as string[][]).push(value.split(/\s+/).filter(v => v))
                     }
-                  })
-                  return
-                }
-                case 'style': {
-                  return style.push(parsedValue)
-                }
+                  } else if (instanceOfTemplate(value)){
+                    (template[name] as SplitTemplate[]).push({ type: 'split', value, separator: ' ' })
+                  }
+                })
+                return
               }
-              if (!template.attrs) {
-                template.attrs = {}
+              case 'style': {
+                return style.push(parsedValue)
               }
-              if (!(name in template.attrs)) {
-                return (template.attrs as Record<string, unknown | Template>)[name] = parsedValue
-              }
+            }
+            if (!template.attrs) {
+              template.attrs = {}
+            }
+            if (!(name in template.attrs)) {
+              return (template.attrs as Record<string, unknown | Template>)[name] = parsedValue
             }
             return
           }
