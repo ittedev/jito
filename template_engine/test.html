@@ -1333,6 +1333,23 @@ describe('Template Engine', function() {
         })
       })
 
+      it('parse: native boolean attrs variable', () => {
+        let template = parse(`<p flag></p>`)
+        console.log('template:', template)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              attrs: {
+                flag: ""
+              }
+            }
+          ]
+        })
+      })
+
       it('parse: boolean attrs variable', () => {
         let template = parse(`<p id&="id"></p>`)
         equal(template, {
@@ -3099,6 +3116,20 @@ describe('Template Engine', function() {
               tag: "p",
               attrs: {
                 value: 10
+              }
+            }
+          ]
+        })
+      })
+
+      it('evaluate: native boolean attrs truthy', () => {
+        let tree = evaluate(parse(`<p flag></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                flag: ''
               }
             }
           ]

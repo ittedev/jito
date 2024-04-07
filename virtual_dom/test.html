@@ -612,7 +612,7 @@ describe('Virtual Dom', function() {
           attrs: {
             'attrs-a': 'value 1',
             'attrs-b': 'value 2',
-            'attrs-c': 'value 3'
+            'attrs-c': ''
           }
         }] }
         patch(tree, newTree)
@@ -622,7 +622,7 @@ describe('Virtual Dom', function() {
             attrs: {
               'attrs-a': 'value 1',
               'attrs-b': 'value 2',
-              'attrs-c': 'value 3'
+              'attrs-c': ''
             },
             el: {}
           }],
@@ -632,7 +632,7 @@ describe('Virtual Dom', function() {
         for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
-        equal(output, 'attrs-a: value 1;attrs-b: value 2;attrs-c: value 3;')
+        equal(output, 'attrs-a: value 1;attrs-b: value 2;attrs-c: ;')
       })
 
       it('patch remove attrs', () => {
