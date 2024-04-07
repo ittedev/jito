@@ -3,14 +3,9 @@
 <title>virtual_dom/load.test.js</title>
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <div id="mocha"></div>
-<script src="https://unpkg.com/chai/chai.js"></script>
-<script>
-var i = 0
-var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
-var sleep = t => new Promise(r => setTimeout(r, t || 0))
-</script>
 <script src="https://unpkg.com/mocha/mocha.js"></script>
 <script type="module">
+import { expect, assert } from 'https://unpkg.com/chai/chai.js'
 import {
   expression,
   parse,
@@ -19,6 +14,10 @@ import {
   assign,
   render
 } from '../jito.js'
+
+var i = 0
+var equal = (v, p) => expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
 
 mocha.setup('bdd')
 class XX extends HTMLDivElement { constructor() { super() } }
@@ -682,6 +681,44 @@ describe('Template Engine', function() {
         })
       })
     })
+    describe(': tag', function() {
+      it('HTML Tag', () => {
+        let template = parse('<span />')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "span",
+              type: "element"
+            }
+          ]
+        })
+      })
+      it('Custom element', () => {
+        let template = parse('<custom-element />')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "custom-element",
+              type: "custom"
+            }
+          ]
+        })
+      })
+      it('Custom element: triple', () => {
+        let template = parse('<my-custom-element />')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "my-custom-element",
+              type: "custom"
+            }
+          ]
+        })
+      })
+    })
 
     describe(': is', function() {
       it('parse: is', () => {
@@ -1327,6 +1364,23 @@ describe('Template Engine', function() {
                     name: "id"
                   }
                 }
+              }
+            }
+          ]
+        })
+      })
+
+      it('parse: native boolean attrs variable', () => {
+        let template = parse(`<p flag></p>`)
+        console.log('template:', template)
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              attrs: {
+                flag: ""
               }
             }
           ]
@@ -3105,6 +3159,20 @@ describe('Template Engine', function() {
         })
       })
 
+      it('evaluate: native boolean attrs truthy', () => {
+        let tree = evaluate(parse(`<p flag></p>`))
+        equal(tree, {
+          children: [
+            {
+              tag: "p",
+              attrs: {
+                flag: ''
+              }
+            }
+          ]
+        })
+      })
+
       it('evaluate: boolean attrs truthy', () => {
         let tree = evaluate(parse(`<p id&="1"></p>`))
         equal(tree, {
@@ -4044,23 +4112,23 @@ describe('Template Engine', function() {
 
   describe('Security', function() {
     it('evaluate: assign __proto__', () => {
-      chai.assert.throws(() => evaluate(expression('a.__proto__ = 1'), [{ a: {} }]), Error, "Cannot assign to __proto__")
-      chai.assert.throws(() => evaluate(expression('a["__proto__"] = 1'), [{ a: {} }]), Error, "Cannot assign to __proto__")
-      chai.assert.throws(() => evaluate(expression('a.__proto__.b = 1'), [{ a: {} }]), Error, "Cannot get __proto__")
+      assert.throws(() => evaluate(expression('a.__proto__ = 1'), [{ a: {} }]), Error, "Cannot assign to __proto__")
+      assert.throws(() => evaluate(expression('a["__proto__"] = 1'), [{ a: {} }]), Error, "Cannot assign to __proto__")
+      assert.throws(() => evaluate(expression('a.__proto__.b = 1'), [{ a: {} }]), Error, "Cannot get __proto__")
     })
     it('evaluate: assign to function', () => {
-      chai.assert.throws(() => evaluate(expression('JSON.parse = 10'), [{ JSON }]), Error, "Cannot assign to function")
-      chai.assert.throws(() => evaluate(expression('f.constructor = 10'), [{ f: () => {} }]), Error, "Cannot assign to this object")
+      assert.throws(() => evaluate(expression('JSON.parse = 10'), [{ JSON }]), Error, "Cannot assign to function")
+      assert.throws(() => evaluate(expression('f.constructor = 10'), [{ f: () => {} }]), Error, "Cannot assign to this object")
     })
     it('evaluate: assign to Object', () => {
-      chai.assert.throws(() => evaluate(expression('Object.is = 10'), [{ Object }]), Error, "Cannot assign to this object")
+      assert.throws(() => evaluate(expression('Object.is = 10'), [{ Object }]), Error, "Cannot assign to this object")
     })
     it('evaluate: getter setter', () => {
       let a = {}
-      chai.assert.throws(() => evaluate(expression('a["__defineGetter__"]("b", f)'), [{ a, f: () => 5 }]), Error, "Cannot get __defineGetter__")
-      chai.assert.throws(() => evaluate(expression('a.__defineGetter__("b", f)'), [{ a, f: () => 5 }]), Error, "Cannot get __defineGetter__")
-      chai.assert.throws(() => evaluate(expression('a["__defineSetter__"]("b", f)'), [{ a: {}, f: (v) => {} }]), Error, "Cannot get __defineSetter__")
-      chai.assert.throws(() => evaluate(expression('a.__defineSetter__("b", f)'), [{ a: {}, f: (v) => {} }]), Error, "Cannot get __defineSetter__")
+      assert.throws(() => evaluate(expression('a["__defineGetter__"]("b", f)'), [{ a, f: () => 5 }]), Error, "Cannot get __defineGetter__")
+      assert.throws(() => evaluate(expression('a.__defineGetter__("b", f)'), [{ a, f: () => 5 }]), Error, "Cannot get __defineGetter__")
+      assert.throws(() => evaluate(expression('a["__defineSetter__"]("b", f)'), [{ a: {}, f: (v) => {} }]), Error, "Cannot get __defineSetter__")
+      assert.throws(() => evaluate(expression('a.__defineSetter__("b", f)'), [{ a: {}, f: (v) => {} }]), Error, "Cannot get __defineSetter__")
     })
   })
 

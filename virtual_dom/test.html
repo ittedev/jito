@@ -3,18 +3,17 @@
 <title>virtual_dom/load.test.js</title>
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <body><div id="mocha"></div></body>
-<script src="https://unpkg.com/chai/chai.js"></script>
-<script>
-var i = 0
-var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
-var sleep = t => new Promise(r => setTimeout(r, t || 0))
-</script>
 <script src="https://unpkg.com/mocha/mocha.js"></script>
 <script type="module">
+import { expect } from 'https://unpkg.com/chai/chai.js'
 import {
   load,
   patch
 } from '../jito.js'
+
+var i = 0
+var equal = (v, p) => expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
 
 mocha.setup('bdd')
 class XX extends HTMLDivElement { constructor() { super() } }
@@ -612,7 +611,7 @@ describe('Virtual Dom', function() {
           attrs: {
             'attrs-a': 'value 1',
             'attrs-b': 'value 2',
-            'attrs-c': 'value 3'
+            'attrs-c': ''
           }
         }] }
         patch(tree, newTree)
@@ -622,7 +621,7 @@ describe('Virtual Dom', function() {
             attrs: {
               'attrs-a': 'value 1',
               'attrs-b': 'value 2',
-              'attrs-c': 'value 3'
+              'attrs-c': ''
             },
             el: {}
           }],
@@ -632,7 +631,7 @@ describe('Virtual Dom', function() {
         for(let attrs of parent.firstChild.attributes) {
           output += attrs.name + ': ' + attrs.value + ';';
         }
-        equal(output, 'attrs-a: value 1;attrs-b: value 2;attrs-c: value 3;')
+        equal(output, 'attrs-a: value 1;attrs-b: value 2;attrs-c: ;')
       })
 
       it('patch remove attrs', () => {

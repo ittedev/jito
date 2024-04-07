@@ -118,9 +118,9 @@ function attr(lexer: Lexer): Array<[string, string, string]>
           attr[0] = (lexer.pop() as Token)[1]
           if (lexer.nextIs('assign')) {
             attr[1] = (lexer.must('assign') as Token)[1]
-          } else if (lexer.nextIs('name') || lexer.nextIs('>') || lexer.nextIs('/')) {
+          } else if (lexer.nextIs('name') || lexer.nextIs('>') || lexer.nextIs('/')) { // Boolean Attribute
             attr[1] = '='
-            attr[2] = attr[0]
+            attr[2] = ''
           } else {
             throw Error('assign is required.')
           }
