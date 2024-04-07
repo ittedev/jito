@@ -3,18 +3,17 @@
 <title>virtual_dom/load.test.js</title>
 <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 <body><div id="mocha"></div></body>
-<script src="https://unpkg.com/chai/chai.js"></script>
-<script>
-var i = 0
-var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
-var sleep = t => new Promise(r => setTimeout(r, t || 0))
-</script>
 <script src="https://unpkg.com/mocha/mocha.js"></script>
 <script type="module">
+import { expect } from 'https://unpkg.com/chai/chai.js'
 import {
   load,
   patch
 } from '../jito.js'
+
+var i = 0
+var equal = (v, p) => expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
 
 mocha.setup('bdd')
 class XX extends HTMLDivElement { constructor() { super() } }

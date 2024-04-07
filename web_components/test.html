@@ -47,14 +47,9 @@
 <div id="patcher_target1" style="display: none;"></div>
 <div id="patcher_target2" style="display: none;"></div>
 <div id="security1" style="display: none;"></div>
-<script src="https://unpkg.com/chai/chai.js"></script>
-<script>
-var i = 0
-var equal = (v, p) => chai.expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
-var sleep = t => new Promise(r => setTimeout(r, t || 0))
-</script>
 <script src="https://unpkg.com/mocha/mocha.js"></script>
 <script type="module">
+import { expect } from 'https://unpkg.com/chai/chai.js'
 import {
   watch,
   receive,
@@ -67,6 +62,10 @@ import {
   pickup,
   elementize
 } from '../jito.js'
+
+var i = 0
+var equal = (v, p) => expect(v === undefined ? v : JSON.parse(JSON.stringify(v))).deep.equal(p)
+var sleep = t => new Promise(r => setTimeout(r, t || 0))
 
 mocha.setup('bdd')
 class XX extends HTMLDivElement { constructor() { super() } }
