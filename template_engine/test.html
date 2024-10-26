@@ -1609,52 +1609,32 @@ describe('Template Engine', function() {
           ]
         })
       })
-      // it('parse: add reverse ons', () => {
-      //   let template = parse('<p onclick+="value2" onclick="value" onclick+1="value3"></p>')
-      //   equal(template, {
-      //     type: 'tree',
-      //     children: [
-      //       {
-      //         tag: "p",
-      //         type: "element",
-      //         on: {
-      //           click: [
-      //             {
-      //               type: 'handler',
-      //               value: {
-      //                 type: "get",
-      //                 value: {
-      //                   type: "variable",
-      //                   name: "value"
-      //                 }
-      //               }
-      //             },
-      //             {
-      //               type: 'handler',
-      //               value: {
-      //                 type: "get",
-      //                 value: {
-      //                   type: "variable",
-      //                   name: "value2"
-      //                 }
-      //               }
-      //             },
-      //             {
-      //               type: 'handler',
-      //               value: {
-      //                 type: "get",
-      //                 value: {
-      //                   type: "variable",
-      //                   name: "value3"
-      //                 }
-      //               }
-      //             }
-      //           ]
-      //         }
-      //       }
-      //     ]
-      //   })
-      // })
+      it('parse: this', () => {
+        let template = parse('<p onclick="this"></p>')
+        equal(template, {
+          type: 'tree',
+          children: [
+            {
+              tag: "p",
+              type: "element",
+              on: {
+                click: [
+                  {
+                    type: 'handler',
+                    value: {
+                      type: "get",
+                      value: {
+                        type: "variable",
+                        name: "this"
+                      }
+                    }
+                  },
+                ]
+              }
+            }
+          ]
+        })
+      })
     })
 
     describe(': @chunk', function() {
