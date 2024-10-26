@@ -347,7 +347,9 @@ export let evaluate = function (
         }
       }
       let tupple = [stack] as unknown as [StateStack, EventListener]
-      let handler = (event: Event) => evaluate((temp as HandlerTemplate).value, [...tupple[0], { event }], cache) as void
+      let handler = function (this: Element, event: Event) {
+        return evaluate((temp as HandlerTemplate).value, [...tupple[0], { event, this: this }], cache) as void
+      }
       tupple.push(handler)
       thisHandlerCache.push(tupple)
       return handler
