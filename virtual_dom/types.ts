@@ -1,5 +1,7 @@
 export const eventTypes = Symbol.for('Jito Event Types')
 
+export type NsType = 0 | 1 | 2 // html, svg, math
+
 export interface HasAttrs {
   class?: Array<string>
   part?: Array<string>

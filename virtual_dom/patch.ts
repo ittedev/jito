@@ -1,4 +1,5 @@
 import {
+  NsType,
   HasAttrs,
   VirtualTree,
   LinkedVirtualTree,
@@ -20,7 +21,7 @@ export function patch(
   useEvent = true
 ) : LinkedVirtualTree
 {
-  patchChildren(tree, newTree, useEvent)
+  patchChildren(tree, newTree, 0, useEvent)
   if (useEvent) {
     tree.el.dispatchEvent(new CustomEvent(eventTypes.patch, {
       bubbles: true,
@@ -36,9 +37,19 @@ export function patch(
 export function patchElement(
   ve: LinkedVirtualElement | null,
   newVe: VirtualElement,
+  nsType: NsType, // namespace
   useEvent: boolean
 ): LinkedVirtualElement
 {
+  // Change namespace
+  if (nsType === 0) {
+    if (newVe.tag === 'svg') {
+      nsType = 1
+    } else if (newVe.tag === 'math') {
+      nsType = 2
+    }
+  }
+
   // create new element
   if (
     !ve || // ve is null
@@ -46,13 +57,16 @@ export function patchElement(
     ve.is !== newVe.is || // 'is' is different
     newVe.new // 'new' flag is true
   ) {
+    let ns = nsType === 0 ? 'http://www.w3.org/1999/xhtml' :
+      nsType === 1 ? 'http://www.w3.org/2000/svg' :
+      'http://www.w3.org/1998/Math/MathML'
     ve = newVe.is ? {
       tag: newVe.tag,
       is : newVe.is,
-      el: document.createElement(newVe.tag, { is : newVe.is })
+      el: document.createElementNS(ns, newVe.tag, { is : newVe.is })
     } : {
       tag: newVe.tag,
-      el: document.createElement(newVe.tag)
+      el: document.createElementNS(ns, newVe.tag)
     }
   }
 
@@ -62,7 +76,7 @@ export function patchElement(
   patchForm(ve, newVe)
   patchAttrs(ve, newVe)
   patchOn(ve, newVe)
-  patchChildren(ve, newVe, useEvent)
+  patchChildren(ve, newVe, nsType, useEvent)
 
   if ('key' in newVe) {
     ve.key = newVe.key
@@ -114,7 +128,7 @@ export function patchRealElement(
     patchOn(ve, newVe)
   }
   if (!(ve.invalid && ve.invalid.children) && ve.el instanceof Node) {
-    patchChildren(ve as LinkedVirtualTree, newVe, useEvent)
+    patchChildren(ve as LinkedVirtualTree, newVe, 0, useEvent)
   }
 
   return ve
@@ -362,6 +376,7 @@ class Stock {
 export function patchChildren(
   tree: LinkedVirtualTree,
   newTree: VirtualTree,
+  nsType: NsType,
   useEvent: boolean
 ): void
 {
@@ -394,14 +409,14 @@ export function patchChildren(
 
   // add object
   let add = (newVNode: VirtualElement) => {
-    let tmp = patchElement(null, newVNode, useEvent) as LinkedVirtualElement
+    let tmp = patchElement(null, newVNode, nsType, useEvent) as LinkedVirtualElement
     parent.insertBefore(tmp.el, currentNode || null)
     return tmp
   }
 
   // replace object
   let replace = (newVNode: VirtualElement) => {
-    let tmp = patchElement(oldChildren[index] as LinkedVirtualElement, newVNode, useEvent) as LinkedVirtualElement
+    let tmp = patchElement(oldChildren[index] as LinkedVirtualElement, newVNode, nsType, useEvent) as LinkedVirtualElement
     if (tmp !== oldChildren[index]) {
       destroy(oldChildren[index] as LinkedVirtualElement, useEvent)
       parent.replaceChild(tmp.el, (oldChildren[index] as LinkedVirtualElement).el)
@@ -493,7 +508,7 @@ export function patchChildren(
         // virtual element
         if ('key' in newVNode) {
           if (stock.has(newVNode.key)) {
-            let tmp = patchElement(stock.shift(newVNode.key), newVNode, useEvent)
+            let tmp = patchElement(stock.shift(newVNode.key), newVNode, nsType, useEvent)
             parent.insertBefore(tmp.el, currentNode || null)
             return tmp
           } else {
