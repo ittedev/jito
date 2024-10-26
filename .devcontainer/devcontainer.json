@@ -1,26 +1,24 @@
 {
 	"name": "Deno",
 	"build": {
-		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick an Debian OS version: bullseye, buster
-		"args": {
-			"VARIANT": "bullseye"
+		"dockerfile": "Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"deno.enable": true,
+				"deno.lint": true,
+				"deno.config": "deno.json",
+				"editor.defaultFormatter": "denoland.vscode-deno",
+				"editor.tabSize": 2
+			},
+			// This will install the vscode-deno extension
+			"extensions": [
+				"denoland.vscode-deno",
+				"gruntfuggly.todo-tree"
+			]
 		}
 	},
-	"settings": {
-		"deno.enable": true,
-		"deno.lint": true,
-    "deno.unstable": true,
-    "deno.config": "deno.json",
-		"editor.defaultFormatter": "denoland.vscode-deno",
-		"editor.tabSize": 2
-	},
-
-	// This will install the vscode-deno extension
-	"extensions": [
-		"denoland.vscode-deno",
-		"gruntfuggly.todo-tree"
-	],
 
 	"remoteUser": "vscode"
 }
