@@ -1803,6 +1803,90 @@ describe('Virtual Dom', function() {
         equal(parent.firstChild.childNodes[0].tagName, 'SPAN')
       })
     })
+  
+
+    describe(': namespace', function() {
+      it('patch add no svg', () => {
+        let parent = document.createElement('div')
+        let tree = { el: parent }
+        let newTree = { children: [{ tag: 'p' }] }
+        let patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'p',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.namespaceURI, 'http://www.w3.org/1999/xhtml')
+      })
+
+      it('patch add svg', () => {
+        let parent = document.createElement('div')
+        let tree = { el: parent }
+        let newTree = { children: [{ tag: 'svg' }] }
+        let patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'svg',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.namespaceURI, 'http://www.w3.org/2000/svg')
+      })
+
+      it('patch change svg', () => {
+        let parent = document.createElement('div')
+        let el = document.createElement('div')
+        parent.appendChild(el)
+        let tree = { el: parent, children: [{ tag: 'div', el }] }
+        let newTree = { children: [{ tag: 'svg' }] }
+        let patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'svg',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.namespaceURI, 'http://www.w3.org/2000/svg')
+      })
+
+      it('patch add svg children', () => {
+        let parent = document.createElement('div')
+        let tree = { el: parent }
+        let newTree = { children: [{ tag: 'svg', children: [{ tag: 'path' }] }] }
+        let patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'svg',
+            children: [{
+              tag: 'path',
+              el: {}
+            }],
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.firstChild.namespaceURI, 'http://www.w3.org/2000/svg')
+      })
+
+      it('patch add math', () => {
+        let parent = document.createElement('div')
+        let tree = { el: parent }
+        let newTree = { children: [{ tag: 'math' }] }
+        let patchedTree = patch(tree, newTree)
+        equal(patchedTree, {
+          children: [{
+            tag: 'math',
+            el: {}
+          }],
+          el: {}
+        })
+        equal(parent.firstChild.namespaceURI, 'http://www.w3.org/1998/Math/MathML')
+      })
+    })
   })
 })
 
