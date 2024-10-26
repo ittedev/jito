@@ -11,7 +11,7 @@ When the attribute value is evaluated, the variable `event` is added to the stat
 <button value="val" onclick="value = event.target.value">Click me</button>
 ```
 
-The `this` keyword is not available.
+**NOTE:** Since version 1.5.0, the `this` keyword can also be used.
 
 ## Tags for special event targets
 
