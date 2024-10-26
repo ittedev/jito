@@ -2,6 +2,7 @@
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
+  "lock": false,
   "lint": {
     "rules": {
       "exclude": ["prefer-const"]
